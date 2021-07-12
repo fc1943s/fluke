@@ -13,7 +13,7 @@ module DeepEqual =
     let private fastDeepEqual<'T> (_a: 'T) (_b: 'T) : bool = importDefault "fast-deep-equal/react"
 
     let inline getCompareFnKey obj : string option =
-//        match obj with
+        //        match obj with
 //        Fable.
 //        | :? IComparable<'T> -> ()
 //        | _ -> ()
@@ -28,9 +28,8 @@ module DeepEqual =
 
         //        Fable.Core.JS.undefined
         match a, b with
-        | a, b when unbox a <> null && unbox b <> null ->
-            (compare (unbox a) (unbox b)) = 0
-//            match getCompareFnKey a with
+        | a, b when unbox a <> null && unbox b <> null -> (compare (unbox a) (unbox b)) = 0
+        //            match getCompareFnKey a with
 //            | Some fnKey ->
 //                Browser.Dom.window?compare <- {|
 //                                                  CompareTo = a?CompareTo

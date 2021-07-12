@@ -24,7 +24,7 @@ module ProjectForm =
                         | ProjectName String.InvalidString, _ -> toast (fun x -> x.description <- "Invalid name")
                         | _, AreaName String.InvalidString -> toast (fun x -> x.description <- "Invalid area")
                         | _ ->
-                            let project : Project = { Name = projectName; Area = area }
+                            let project: Project = { Name = projectName; Area = area }
                             do! onSave project
                     }),
                 [|

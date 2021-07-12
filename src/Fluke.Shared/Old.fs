@@ -24,7 +24,7 @@ module Old2 =
     //    type TaskComment = TaskComment of task: Task * comment: UserComment
 
     type CellStatusEntry =
-        CellStatusEntry of user: User * task: Task * moment: FlukeDateTime * manualCellStatus: ManualCellStatus
+        | CellStatusEntry of user: User * task: Task * moment: FlukeDateTime * manualCellStatus: ManualCellStatus
 
     //    type CellComment = CellComment of task: Task * moment: FlukeDateTime * comment: UserComment
     type CellSession = CellSession of task: Task * start: FlukeDateTime * duration: Minute
@@ -152,12 +152,12 @@ module Old2 =
                         taskMap
                         |> Map.tryFind (information, TaskName taskName)
                         |> function
-                        | None -> failwithf $"Invalid task: '{information}/{taskName}'"
-                        | Some taskState ->
-                            {
-                                Task = taskState.Task
-                                Priority = TaskOrderPriority.First
-                            })
+                            | None -> failwithf $"Invalid task: '{information}/{taskName}'"
+                            | Some taskState ->
+                                {
+                                    Task = taskState.Task
+                                    Priority = TaskOrderPriority.First
+                                })
 
             oldTaskOrderList @ newTaskOrderList
 

@@ -7,7 +7,7 @@ open Feliz
 
 
 module Resizable =
-    let private Resizable : obj -> obj = import "Resizable" "re-resizable"
+    let private Resizable: obj -> obj = import "Resizable" "re-resizable"
 
     let resizable props children =
         if JS.deviceInfo.IsMobile then

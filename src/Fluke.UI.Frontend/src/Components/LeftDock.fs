@@ -15,58 +15,9 @@ module LeftDock =
     let LeftDock () =
         let leftDock = Store.useValue Atoms.User.leftDock
         let setRightDock = Store.useSetState Atoms.User.rightDock
-        let templatesDeleted = Store.useValue Atoms.User.templatesDeleted
-
         let deviceInfo = Store.useValue Selectors.deviceInfo
-
         let leftDockSize, setLeftDockSize = Store.useState Atoms.User.leftDockSize
-
         let exportUserSettings = Hydrate.useExportUserSettings ()
-
-        let deleteTemplates =
-            Store.useCallback (
-                (fun getter setter _ ->
-                    promise {
-                        let asyncDatabaseIdAtoms = Store.value getter Selectors.asyncDatabaseIdAtoms
-
-                        let databaseIdArray =
-                            asyncDatabaseIdAtoms
-                            |> Store.waitForAll
-                            |> Store.value getter
-
-                        let owners =
-                            databaseIdArray
-                            |> Array.map Atoms.Database.owner
-                            |> Store.waitForAll
-                            |> Store.value getter
-
-                        let templatesDatabaseIdArray =
-                            owners
-                            |> Array.indexed
-                            |> Array.choose
-                                (fun (i, owner) ->
-                                    if owner = Templates.templatesUser.Username then
-                                        Some databaseIdArray.[i]
-                                    else
-                                        None)
-
-                        Store.change
-                            setter
-                            Atoms.User.selectedDatabaseIdSet
-                            (fun selectedDatabaseIdSet ->
-                                Set.difference selectedDatabaseIdSet (templatesDatabaseIdArray |> Set.ofArray))
-
-                        Store.set setter Atoms.User.hideTemplates (Some true)
-                        Store.set setter Atoms.User.templatesDeleted true
-
-                        do!
-                            templatesDatabaseIdArray
-                            |> Array.map (fun databaseId -> Store.deleteRoot getter (Atoms.Database.name databaseId))
-                            |> Promise.Parallel
-                            |> Promise.ignore
-                    }),
-                [||]
-            )
 
         let items, itemsMap =
             React.useMemo (
@@ -138,16 +89,9 @@ module LeftDock =
                                             "Options",
                                             Icons.bs.BsThreeDotsVertical |> Icons.render,
                                             [
-                                                if not templatesDeleted then
-                                                    MenuItemToggle.MenuItemToggleAtomOption
-                                                        Atoms.User.hideTemplates
-                                                        "Hide Templates"
-
-                                                    ConfirmPopover.ConfirmPopover
-                                                        ConfirmPopover.ConfirmPopoverType.MenuItem
-                                                        Icons.bi.BiTrash
-                                                        "Delete Templates"
-                                                        deleteTemplates
+                                                MenuItemToggle.MenuItemToggleAtomOption
+                                                    Atoms.User.hideTemplates
+                                                    "Hide Templates"
 
                                                 Popover.CustomPopover
                                                     {|
@@ -175,8 +119,6 @@ module LeftDock =
                     let itemsMap = items |> Map.ofSeq
                     items, itemsMap),
                 [|
-                    box deleteTemplates
-                    box templatesDeleted
                     box exportUserSettings
                 |]
             )

@@ -116,7 +116,9 @@ module Rendering =
                             match manualCellStatus, group with
                             | Postponed (Some until), Today when
                                 position
-                                |> FlukeDateTime.GreaterEqualThan dayStart dateId until -> Pending
+                                |> FlukeDateTime.GreaterEqualThan dayStart dateId until
+                                ->
+                                Pending
                             | _ -> userStatus
 
                         StatusCell cellStatus, renderState
@@ -193,10 +195,14 @@ module Rendering =
                         match taskState.Task.MissedAfter, taskState.Task.PendingAfter with
                         | Some missedAfter, _ when
                             position
-                            |> FlukeDateTime.GreaterEqualThan dayStart dateId missedAfter -> MissedToday
+                            |> FlukeDateTime.GreaterEqualThan dayStart dateId missedAfter
+                            ->
+                            MissedToday
                         | _, Some pendingAfter when
                             position
-                            |> FlukeDateTime.GreaterEqualThan dayStart dateId pendingAfter -> Pending
+                            |> FlukeDateTime.GreaterEqualThan dayStart dateId pendingAfter
+                            ->
+                            Pending
                         | _, None -> Pending
                         | _ -> Suggested
 

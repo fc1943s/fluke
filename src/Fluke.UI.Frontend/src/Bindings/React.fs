@@ -50,10 +50,10 @@ module React =
                 []
 
     [<ImportAll "react">]
-    let react : {| StrictMode: obj -> ReactElement |} = jsNative
+    let react: {| StrictMode: obj -> ReactElement |} = jsNative
 
     [<ImportAll "react-dom">]
-    let reactDom : {| createRoot: HTMLElement -> {| render: ReactElement -> unit |} |} = jsNative
+    let reactDom: {| createRoot: HTMLElement -> {| render: ReactElement -> unit |} |} = jsNative
 
     let inline bindComponent<'C, 'P> (props: 'P) (children: seq<ReactElement>) (cmp: 'C) =
         ReactBindings.React.createElement (cmp, props, children)
@@ -67,4 +67,5 @@ module React =
 
     //    ReactDOM.render (appMain (), document.getElementById "root")
     let inline render rootElement appComponent =
-        (reactDom.createRoot rootElement).render appComponent
+        (reactDom.createRoot rootElement)
+            .render appComponent

@@ -165,78 +165,78 @@ module UI =
         }
 
     [<ImportAll "@chakra-ui/react">]
-    let react : {| Accordion: obj
-                   AccordionItem: obj
-                   AccordionButton: obj
-                   AccordionIcon: obj
-                   AccordionPanel: obj
-                   Box: obj
-                   Button: obj
-                   Center: obj
-                   ChakraProvider: obj
-                   Checkbox: obj
-                   CheckboxGroup: obj
-                   Circle: obj
-                   DarkMode: obj
-                   extendTheme: obj -> obj
-                   Flex: obj
-                   Grid: obj
-                   HStack: obj
-                   Icon: obj
-                   IconButton: obj
-                   Image: obj
-                   Input: obj
-                   InputGroup: obj
-                   InputLeftElement: obj
-                   LightMode: obj
-                   Link: obj
-                   Menu: obj
-                   MenuButton: obj
-                   MenuList: obj
-                   MenuItem: obj
-                   MenuItemOption: obj
-                   MenuOptionGroup: obj
-                   Modal: obj
-                   ModalBody: obj
-                   Modal: obj
-                   ModalBody: obj
-                   ModalCloseButton: obj
-                   ModalContent: obj
-                   ModalOverlay: obj
-                   NumberInput: obj
-                   NumberInputField: obj
-                   NumberInputStepper: obj
-                   NumberDecrementStepper: obj
-                   NumberIncrementStepper: obj
-                   Popover: obj
-                   PopoverArrow: obj
-                   PopoverBody: obj
-                   PopoverCloseButton: obj
-                   PopoverContent: obj
-                   PopoverTrigger: obj
-                   Radio: obj
-                   RadioGroup: obj
-                   SimpleGrid: obj
-                   Slider: obj
-                   SliderTrack: obj
-                   SliderFilledTrack: obj
-                   SliderThumb: obj
-                   Spacer: obj
-                   Spinner: obj
-                   Stack: obj
-                   TabList: obj
-                   TabPanel: obj
-                   TabPanels: obj
-                   Tab: obj
-                   Tabs: obj
-                   Textarea: obj
-                   Tooltip: obj
-                   useDisclosure: unit -> Disclosure
-                   useToast: unit -> System.Func<obj, unit> |} =
+    let react: {| Accordion: obj
+                  AccordionItem: obj
+                  AccordionButton: obj
+                  AccordionIcon: obj
+                  AccordionPanel: obj
+                  Box: obj
+                  Button: obj
+                  Center: obj
+                  ChakraProvider: obj
+                  Checkbox: obj
+                  CheckboxGroup: obj
+                  Circle: obj
+                  DarkMode: obj
+                  extendTheme: obj -> obj
+                  Flex: obj
+                  Grid: obj
+                  HStack: obj
+                  Icon: obj
+                  IconButton: obj
+                  Image: obj
+                  Input: obj
+                  InputGroup: obj
+                  InputLeftElement: obj
+                  LightMode: obj
+                  Link: obj
+                  Menu: obj
+                  MenuButton: obj
+                  MenuList: obj
+                  MenuItem: obj
+                  MenuItemOption: obj
+                  MenuOptionGroup: obj
+                  Modal: obj
+                  ModalBody: obj
+                  Modal: obj
+                  ModalBody: obj
+                  ModalCloseButton: obj
+                  ModalContent: obj
+                  ModalOverlay: obj
+                  NumberInput: obj
+                  NumberInputField: obj
+                  NumberInputStepper: obj
+                  NumberDecrementStepper: obj
+                  NumberIncrementStepper: obj
+                  Popover: obj
+                  PopoverArrow: obj
+                  PopoverBody: obj
+                  PopoverCloseButton: obj
+                  PopoverContent: obj
+                  PopoverTrigger: obj
+                  Radio: obj
+                  RadioGroup: obj
+                  SimpleGrid: obj
+                  Slider: obj
+                  SliderTrack: obj
+                  SliderFilledTrack: obj
+                  SliderThumb: obj
+                  Spacer: obj
+                  Spinner: obj
+                  Stack: obj
+                  TabList: obj
+                  TabPanel: obj
+                  TabPanels: obj
+                  Tab: obj
+                  Tabs: obj
+                  Textarea: obj
+                  Tooltip: obj
+                  useDisclosure: unit -> Disclosure
+                  useToast: unit -> System.Func<obj, unit> |} =
         jsNative
 
     [<ImportAll "@chakra-ui/theme-tools">]
-    let themeTools : {| mode: string * string -> obj -> obj |} = jsNative
+    let themeTools: {| mode: string * string -> obj -> obj |} = jsNative
 
     let chakraMemo =
         React.memo
@@ -359,8 +359,8 @@ module UI =
         |> Option.filter (
             string
             >> function
-            | String.ValidString _ -> true
-            | _ -> false
+                | String.ValidString _ -> true
+                | _ -> false
         )
         |> Option.map fn
 

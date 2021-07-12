@@ -22,7 +22,7 @@ module ResourceForm =
                         match resourceName with
                         | ResourceName String.InvalidString -> toast (fun x -> x.description <- "Invalid name")
                         | _ ->
-                            let resource : Resource = { Name = resourceName }
+                            let resource: Resource = { Name = resourceName }
                             do! onSave resource
                     }),
                 [|
@@ -66,4 +66,3 @@ module ResourceForm =
                             ]
                     |}
             ]
-

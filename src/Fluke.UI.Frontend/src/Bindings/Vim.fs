@@ -5,7 +5,7 @@ open Fable.Core.JsInterop
 
 
 module Vim =
-    let private Vim : obj -> obj = import "Vim" "react-vim-wasm"
+    let private Vim: obj -> obj = import "Vim" "react-vim-wasm"
 
     let render
         (input: {| OnVimCreated: obj -> unit
@@ -21,9 +21,15 @@ module Vim =
                         Vim,
                         {|
                             style = {| width = "100%"; height = "100%" |}
-                            cmdArgs = [| "-c set guifont=\"Roboto Condensed:h13\"; set background=white" |]
+                            cmdArgs =
+                                [|
+                                    "-c set guifont=\"Roboto Condensed:h13\"; set background=white"
+                                |]
                             onVimCreated = input.OnVimCreated
-                            files = {| file1 = "/home/web_user/.vim/file1" |}
+                            files =
+                                {|
+                                    file1 = "/home/web_user/.vim/file1"
+                                |}
                             persistentDirs =
                                 [|
                                     "/home/web_user/.vim"

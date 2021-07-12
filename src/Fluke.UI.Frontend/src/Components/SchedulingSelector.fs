@@ -227,7 +227,9 @@ module SchedulingSelector =
                                                 match value with
                                                 | Recurrency (Fixed fixedRecurrencyList) when
                                                     fixedRecurrencyList
-                                                    |> List.contains (Weekly dayOfWeek) -> true
+                                                    |> List.contains (Weekly dayOfWeek)
+                                                    ->
+                                                    true
                                                 | _ -> false
 
                                             x.onChange <-
@@ -308,7 +310,8 @@ module SchedulingSelector =
                                                         x.isChecked <-
                                                             match value with
                                                             | Recurrency (Fixed fixedRecurrencyList) when
-                                                                fixedRecurrencyList |> List.contains (Monthly day) ->
+                                                                fixedRecurrencyList |> List.contains (Monthly day)
+                                                                ->
                                                                 true
                                                             | _ -> false
 
@@ -377,12 +380,12 @@ module SchedulingSelector =
                         | fixedRecurrency -> None, Some fixedRecurrency)
             | _ -> []
             |> function
-            | rows when rows |> List.choose fst |> List.isEmpty ->
-                rows
-                @ [
-                    Some None, None
-                ]
-            | rows -> rows
+                | rows when rows |> List.choose fst |> List.isEmpty ->
+                    rows
+                    @ [
+                        Some None, None
+                    ]
+                | rows -> rows
 
         React.fragment [
             yield!
@@ -527,7 +530,9 @@ module SchedulingSelector =
                                                                         "column"
                                                                         (match row with
                                                                          | Some (Some (i, day, month')) when
-                                                                             month = month' -> Some (i, day, month)
+                                                                             month = month'
+                                                                             ->
+                                                                             Some (i, day, month)
                                                                          | Some (Some (i, day, _)) ->
                                                                              Some (i, day, month)
                                                                          | _ -> Some (-1, Day 1, month))
@@ -557,7 +562,8 @@ module SchedulingSelector =
                                                                             "column"
                                                                             (match row with
                                                                              | Some (Some (i, day, month)) when
-                                                                                 day = Day dayNumber ->
+                                                                                 day = Day dayNumber
+                                                                                 ->
                                                                                  Some (i, day, month)
                                                                              | Some (Some (i, _, month)) ->
                                                                                  Some (i, Day dayNumber, month)
@@ -620,9 +626,7 @@ module SchedulingSelector =
                                                 x.onClick <- fun _ -> promise { setVisible (not visible) }
                                         Children =
                                             [
-                                                tempScheduling.Value
-                                                |> Scheduling.Label
-                                                |> str
+                                                tempScheduling.Value |> Scheduling.Label |> str
                                             ]
                                     |}
                         Body =
@@ -636,8 +640,7 @@ module SchedulingSelector =
                                             x.onChange <-
                                                 fun (radioValueSelected: string) ->
                                                     promise {
-                                                        tempScheduling.SetValue (radioValueSelected |> Json.decode)
-                                                    }
+                                                        tempScheduling.SetValue (radioValueSelected |> Json.decode) }
 
                                             x.value <- tempScheduling.Value |> Json.encode)
                                         [
@@ -649,22 +652,14 @@ module SchedulingSelector =
                                                     ManualRadio tempScheduling.Value
                                                     SuggestedRadio tempScheduling.Value
                                                     OffsetDaysRadio tempScheduling.Value tempScheduling.SetValue
-                                                    OffsetWeeksRadio
-                                                        tempScheduling.Value
-                                                        tempScheduling.SetValue
-                                                    OffsetMonthsRadio
-                                                        tempScheduling.Value
-                                                        tempScheduling.SetValue
+                                                    OffsetWeeksRadio tempScheduling.Value tempScheduling.SetValue
+                                                    OffsetMonthsRadio tempScheduling.Value tempScheduling.SetValue
                                                     FixedWeeklyRadio
                                                         tempScheduling.Value
                                                         tempScheduling.SetValue
                                                         weekStart
-                                                    FixedMonthlyRadio
-                                                        tempScheduling.Value
-                                                        tempScheduling.SetValue
-                                                    FixedYearlyRadio
-                                                        tempScheduling.Value
-                                                        tempScheduling.SetValue
+                                                    FixedMonthlyRadio tempScheduling.Value tempScheduling.SetValue
+                                                    FixedYearlyRadio tempScheduling.Value tempScheduling.SetValue
 
                                                 ]
                                         ]

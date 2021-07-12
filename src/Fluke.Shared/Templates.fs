@@ -1713,12 +1713,10 @@ module Templates =
                                                 sortTaskMap
                                                 |> Map.tryFind taskName
                                                 |> function
-                                                | Some task -> task
-                                                | None ->
-                                                    failwithf
-                                                        $"DslTaskSort. Task not found: {taskName}. Map length: {
-                                                                                                                    sortTaskMap.Count
-                                                        }")
+                                                    | Some task -> task
+                                                    | None ->
+                                                        failwithf
+                                                            $"DslTaskSort. Task not found: {taskName}. Map length: {sortTaskMap.Count}")
 
                                     let interaction =
                                         Interaction.Task (

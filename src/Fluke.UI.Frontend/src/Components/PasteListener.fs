@@ -55,7 +55,8 @@ module PasteListener =
                                             |> Promise.Parallel
 
                                         return Some blobs
-                                    with ex ->
+                                    with
+                                    | ex ->
                                         Browser.Dom.console.error ex
                                         return None
                                 }

@@ -68,13 +68,12 @@ module Jotai =
         abstract atom : 'TValue -> Atom<'TValue>
 
         abstract atom :
-            (GetFn -> JS.Promise<'TValue>) * (GetFn -> SetFn -> 'TValue -> JS.Promise<unit>) option ->
-            Atom<'TValue>
+            (GetFn -> JS.Promise<'TValue>) * (GetFn -> SetFn -> 'TValue -> JS.Promise<unit>) option -> Atom<'TValue>
 
         abstract atom : (GetFn -> 'TValue) * (GetFn -> SetFn -> 'TValue -> unit) option -> Atom<'TValue>
         abstract useAtom : Atom<'TValue> -> 'TValue * ('TValue -> unit)
 
-    let jotai : IJotai = importAll "jotai"
+    let jotai: IJotai = importAll "jotai"
 
 
     type IJotaiUtils =
@@ -89,7 +88,7 @@ module Jotai =
         abstract useAtomCallback : (GetFn * SetFn * 'TArg -> JS.Promise<'TValue>) -> ('TArg -> JS.Promise<'TValue>)
         abstract waitForAll : Atom<'T> [] -> Atom<'T []>
 
-    let jotaiUtils : IJotaiUtils = importAll "jotai/utils"
+    let jotaiUtils: IJotaiUtils = importAll "jotai/utils"
 
 
 [<AutoOpen>]

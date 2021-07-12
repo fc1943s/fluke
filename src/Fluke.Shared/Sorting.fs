@@ -33,7 +33,9 @@ module Sorting =
                     |> Seq.collect (fun cellState -> cellState.Sessions)
                     |> Seq.length
 
-                (disabledCellsCount * 2) - taskSessionsCount - taskAttachmentsCount)
+                (disabledCellsCount * 2)
+                - taskSessionsCount
+                - taskAttachmentsCount)
 
     let sortLanesByIncomingRecurrency dayStart position lanes =
         lanes
@@ -60,7 +62,9 @@ module Sorting =
                         | KeyValue (DateId referenceDay,
                                     (CellStatus.Pending
                                     | CellStatus.UserStatus (_, ManualCellStatus.Scheduled))) when
-                            (referenceDay |> FlukeDate.DateTime) > (position.Date |> FlukeDate.DateTime) -> true
+                            (referenceDay |> FlukeDate.DateTime) > (position.Date |> FlukeDate.DateTime)
+                            ->
+                            true
                         | _ -> false)
                     |> Option.defaultValue statusMap.Count)
 
@@ -77,7 +81,9 @@ module Sorting =
                 | ManualCellStatus.Postponed None -> Postponed
                 | ManualCellStatus.Postponed (Some until) when
                     position
-                    |> FlukeDateTime.GreaterEqualThan dayStart dateId until -> WasPostponed
+                    |> FlukeDateTime.GreaterEqualThan dayStart dateId until
+                    ->
+                    WasPostponed
                 | ManualCellStatus.Postponed _ -> PostponedUntil
                 | _ -> NotPostponed
 

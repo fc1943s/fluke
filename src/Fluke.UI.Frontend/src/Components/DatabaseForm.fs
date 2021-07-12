@@ -30,52 +30,35 @@ module DatabaseForm =
                         match databaseName with
                         | DatabaseName String.InvalidString -> toast (fun x -> x.description <- "Invalid name")
                         | _ ->
-                            let databaseIdAtoms = Store.value getter Selectors.asyncDatabaseIdAtoms
-
-                            let databaseNames =
-                                databaseIdAtoms
-                                |> Array.toList
-                                |> List.map (Store.value getter)
-                                |> List.filter
-                                    (fun databaseId' ->
-                                        databaseId <> Database.Default.Id
-                                        || databaseId <> databaseId')
-                                |> List.map Atoms.Database.name
-                                |> List.map (Store.value getter)
-
                             match username with
                             | Some username ->
-                                if databaseNames |> List.contains databaseName then
-                                    toast (fun x -> x.description <- "Database with this name already exists")
-                                else
-                                    let! database =
-                                        if databaseId = Database.Default.Id then
-                                            {
-                                                Id = DatabaseId.NewId ()
-                                                Name = databaseName
-                                                Owner = username
-                                                SharedWith = DatabaseAccess.Private []
-                                                Position = None
-                                            }
-                                            |> Promise.lift
-                                        else
-                                            promise {
-                                                let database =
-                                                    Store.value getter (Selectors.Database.database databaseId)
+                                let! database =
+                                    if databaseId = Database.Default.Id then
+                                        {
+                                            Id = DatabaseId.NewId ()
+                                            Name = databaseName
+                                            Owner = username
+                                            SharedWith = DatabaseAccess.Private []
+                                            Position = None
+                                        }
+                                        |> Promise.lift
+                                    else
+                                        promise {
+                                            let database = Store.value getter (Selectors.Database.database databaseId)
 
-                                                return { database with Name = databaseName }
-                                            }
+                                            return { database with Name = databaseName }
+                                        }
 
-                                    //                                let eventId = Atoms.Events.newEventId ()
-                                    //                                let event = Atoms.Events.Event.AddDatabase (eventId, databaseName, dayStart)
-                                    //                                setter.set (Atoms.Events.events eventId, event)
-                                    //                                printfn $"event {event}"
+                                //                                let eventId = Atoms.Events.newEventId ()
+                                //                                let event = Atoms.Events.Event.AddDatabase (eventId, databaseName, dayStart)
+                                //                                setter.set (Atoms.Events.events eventId, event)
+                                //                                printfn $"event {event}"
 
-                                    Store.resetTemp setter (Atoms.Database.name databaseId)
+                                Store.resetTemp setter (Atoms.Database.name databaseId)
 
-                                    Store.set setter (Atoms.User.uiFlag UIFlagType.Database) UIFlag.None
+                                Store.set setter (Atoms.User.uiFlag UIFlagType.Database) UIFlag.None
 
-                                    do! onSave database
+                                do! onSave database
                             | None -> ()
                     }),
                 [|

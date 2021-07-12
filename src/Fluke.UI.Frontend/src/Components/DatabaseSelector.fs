@@ -16,7 +16,7 @@ module DatabaseSelector =
         let (DatabaseName databaseName) = Store.useValue (Atoms.Database.name databaseId)
         let hydrateDatabase = Hydrate.useHydrateDatabase ()
 
-        let databaseIdAtoms = Store.useValue Selectors.asyncDatabaseIdAtoms
+        let databaseIdAtoms = Store.useValue Selectors.databaseIdAtoms
 
         let databaseIdList =
             databaseIdAtoms
@@ -68,6 +68,7 @@ module DatabaseSelector =
                         Label = str "Database"
                         Props = fun x -> x.marginBottom <- "5px"
                     |}
+
                 Dropdown.Dropdown
                     {|
                         Tooltip = ""

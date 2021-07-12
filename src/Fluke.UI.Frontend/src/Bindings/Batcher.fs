@@ -15,6 +15,7 @@ module Batcher =
     let batcher<'TKey, 'TFnResult> fn settings =
         let newFn = internalBatcher<'TKey, 'TFnResult> (fun x _lock -> fn x) settings
         let lock = fun () -> ()
+
         fun (x: 'TKey) ->
             JS.jsCall newFn x lock
             ()

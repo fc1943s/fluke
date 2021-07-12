@@ -18,6 +18,7 @@ module Hydrate =
         promise {
             let set atom value = Store.set setter atom value
 
+            set Atoms.User.archive userState.Archive
             set Atoms.User.cellColorDisabled userState.CellColorDisabled
             set Atoms.User.cellColorSuggested userState.CellColorSuggested
             set Atoms.User.cellColorPending userState.CellColorPending

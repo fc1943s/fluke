@@ -139,7 +139,8 @@ module ChangeUserPasswordButton =
                                             Button.Button
                                                 {|
                                                     Hint = None
-                                                    Icon = Some (Icons.fi.FiKey |> Icons.render, Button.IconPosition.Left)
+                                                    Icon =
+                                                        Some (Icons.fi.FiKey |> Icons.render, Button.IconPosition.Left)
                                                     Props =
                                                         fun x ->
                                                             x.onClick <-

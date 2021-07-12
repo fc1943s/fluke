@@ -113,7 +113,7 @@ module Gun =
 //    | Some _ -> ()
 //    | None -> importAll "gun"
 
-    let gun : GunProps -> IGunChainReference =
+    let gun: GunProps -> IGunChainReference =
         if JS.deviceInfo.IsTesting then
             importDefault "gun/gun"
         else
@@ -129,14 +129,15 @@ module Gun =
     importAll "gun/lib/promise"
 
     [<Emit "Gun.SEA">]
-    let sea : ISEA = jsNative
+    let sea: ISEA = jsNative
 
     let createUser (user: IGunUser) username password =
         Promise.create
             (fun res err ->
                 try
                     user.create (username, password, res)
-                with ex ->
+                with
+                | ex ->
                     printfn $"createUser error: {ex}"
                     err ex)
 
@@ -145,7 +146,8 @@ module Gun =
             (fun res err ->
                 try
                     user.auth (username, password, res)
-                with ex ->
+                with
+                | ex ->
                     printfn "authUser error: {ex}"
                     err ex)
 
@@ -154,7 +156,8 @@ module Gun =
             (fun res err ->
                 try
                     user.auth (username, password, res, {| change = newPassword |})
-                with ex ->
+                with
+                | ex ->
                     printfn "changeUserPassword error: {ex}"
                     err ex)
 
@@ -163,7 +166,8 @@ module Gun =
             (fun res err ->
                 try
                     user.delete (username, password, res)
-                with ex ->
+                with
+                | ex ->
                     printfn "deleteUser error: {ex}"
                     err ex)
 
@@ -194,7 +198,8 @@ module Gun =
 //
                     return decoded
                 | _ -> return failwith $"No keys found for user {user.is}"
-            with ex ->
+            with
+            | ex ->
                 Browser.Dom.console.error ("[exception5]", ex)
                 return None
         }
@@ -220,7 +225,8 @@ module Gun =
                     //                    JS.log (fun () -> $"userEncode. json={json} encrypted={encrypted} signed={signed}")
                     return signed
                 | None -> return failwith $"No keys found for user {user.is}"
-            with ex ->
+            with
+            | ex ->
                 Browser.Dom.console.error ("[exception4]", ex)
                 return raise ex
         }
@@ -233,7 +239,7 @@ module Gun =
         Promise.create
             (fun res _err ->
                 let newValue = value
-//                let newValue = if value = JS.undefined && not JS.jestWorkerId then null else value
+                //                let newValue = if value = JS.undefined && not JS.jestWorkerId then null else value
                 gun.put
                     newValue
                     (fun ack _node ->

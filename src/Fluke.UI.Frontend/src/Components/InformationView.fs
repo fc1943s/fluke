@@ -47,7 +47,7 @@ module InformationView =
 
     [<ReactComponent>]
     let InformationView () =
-        let groupIndentationLength = 20
+        let _groupIndentationLength = 20
 
         let tasksByInformationKind = Store.useValue Selectors.Session.tasksByInformationKind
         let cellSize = Store.useValue Atoms.User.cellSize

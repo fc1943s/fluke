@@ -52,7 +52,7 @@ module DebugOverlay =
                 })
 
         React.fragment [
-//            if debug then
+            //            if debug then
 //                Chakra.box
 //                    (fun x ->
 //                        x.id <- "test1"

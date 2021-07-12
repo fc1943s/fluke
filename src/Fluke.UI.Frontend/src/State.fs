@@ -18,17 +18,11 @@ module State =
     open Domain.State
     open View
 
-
-    type TextKey = TextKey of key: string
-
-    and TextKey with
-        static member inline Value (TextKey key) = key
-
     [<RequireQualifiedAccess>]
-    type Join =
-        | Database of DatabaseId
-        | Task of DatabaseId * TaskId
-
+    type DatabaseNodeType =
+        | Template
+        | Owned
+        | Shared
 
     [<RequireQualifiedAccess>]
     type UIFlag =
@@ -390,8 +384,6 @@ module State =
             let rec systemUiFont =
                 Store.atomWithStorageSync ($"{nameof User}/{nameof systemUiFont}", UserState.Default.SystemUiFont, id)
 
-            let rec templatesDeleted = Store.atomWithSync ($"{nameof User}/{nameof templatesDeleted}", false, [])
-
             let rec userColor = Store.atomWithSync ($"{nameof User}/{nameof userColor}", (None: Color option), [])
 
             let rec view = Store.atomWithSync ($"{nameof User}/{nameof view}", UserState.Default.View, [])
@@ -714,6 +706,38 @@ module State =
                 (Guid >> DeviceId)
             )
 
+        let rec databaseIdAtoms =
+            Store.readSelector (
+                $"{nameof databaseIdAtoms}",
+                (fun getter ->
+                    let asyncDatabaseIdAtoms = Store.value getter asyncDatabaseIdAtoms
+                    let hideTemplates = Store.value getter Atoms.User.hideTemplates
+
+                    asyncDatabaseIdAtoms
+                    |> Array.filter
+                        (fun databaseIdAtom ->
+                            let databaseId = Store.value getter databaseIdAtom
+                            let database = Store.value getter (Selectors.Database.database databaseId)
+
+                            let valid =
+                                database.Name
+                                |> DatabaseName.Value
+                                |> String.IsNullOrWhiteSpace
+                                |> not
+                                && database.Owner
+                                   |> Username.Value
+                                   |> String.IsNullOrWhiteSpace
+                                   |> not
+
+                            if not valid then
+                                false
+                            else
+                                let nodeType = Store.value getter (Selectors.Database.nodeType databaseId)
+
+                                nodeType <> DatabaseNodeType.Template
+                                || hideTemplates = Some false))
+            )
+
 
         module User =
             let rec userState =
@@ -809,6 +833,20 @@ module State =
                             Position = Store.value getter (Atoms.Database.position databaseId)
                         })
                 )
+
+            let rec nodeType =
+                Store.readSelectorFamily (
+                    $"{nameof Database}/{nameof nodeType}",
+                    (fun (databaseId: DatabaseId) getter ->
+                        let database = Store.value getter (database databaseId)
+                        let username = Store.value getter Store.Atoms.username
+
+                        match database.Owner with
+                        | owner when owner = Templates.templatesUser.Username -> DatabaseNodeType.Template
+                        | owner when Some owner = username -> DatabaseNodeType.Owned
+                        | _ -> DatabaseNodeType.Shared)
+                )
+
 
             let rec isReadWrite =
                 Store.readSelectorFamily (

@@ -16,7 +16,7 @@ module Accordion =
                 if children
                    |> Seq.exists
                        (fun cmp ->
-                           let props : {| props: UI.IChakraProps |} = unbox cmp
+                           let props: {| props: UI.IChakraProps |} = unbox cmp
 
                            match props.props.flex with
                            | String.ValidString _ -> true
@@ -82,8 +82,8 @@ module Accordion =
                             |> List.map fst
                             |> List.findIndex (fun x -> x = title))
                     |> function
-                    | [||] -> x.defaultIndex
-                    | index -> index |> JS.toJsArray
+                        | [||] -> x.defaultIndex
+                        | index -> index |> JS.toJsArray
 
                 x.onChange <-
                     fun (indexes: obj) ->

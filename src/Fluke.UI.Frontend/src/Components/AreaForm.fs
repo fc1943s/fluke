@@ -23,7 +23,7 @@ module AreaForm =
                         match areaName |> AreaName.Value with
                         | String.InvalidString -> toast (fun x -> x.description <- "Invalid name")
                         | _ ->
-                            let area : Area = { Name = areaName }
+                            let area: Area = { Name = areaName }
                             do! onSave area
                     }),
                 [|

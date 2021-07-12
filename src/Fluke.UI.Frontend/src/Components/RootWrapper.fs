@@ -1,6 +1,5 @@
 namespace Fluke.UI.Frontend.Components
 
-open Fable.React
 open Feliz
 open Feliz.Router
 open Fluke.UI.Frontend.Hooks
@@ -30,7 +29,7 @@ module RootWrapper =
     let RootWrapper children =
         React.strictMode [
             Store.provider [
-//                React.ReactErrorBoundary.renderCatchFn
+                //                React.ReactErrorBoundary.renderCatchFn
 //                    (fun (error, info) -> printfn $"ReactErrorBoundary Error: {info.componentStack} {error}")
 //                    (Html.div [
 //                        prop.classes [ "static" ]
@@ -38,6 +37,6 @@ module RootWrapper =
 //                            str "Unhandled Exception. Check the console log."
 //                        ]
 //                     ])
-                    (ThemeLoader children)
+                (ThemeLoader children)
             ]
         ]

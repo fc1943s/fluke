@@ -6,7 +6,6 @@ open Fable.Core
 open Fable.Extras
 open Fluke.Shared
 open Fluke.Shared.Domain.State
-open Fluke.Shared.Domain.UserInteraction
 open Feliz
 open Fable.React
 open Fluke.UI.Frontend.Hooks
@@ -193,13 +192,13 @@ module Databases =
         | Parent of Guid
         | Leaf of Guid
 
-    type Node = Node of value: NodeValue * label: string * children: Node list * index: int option
+    type Node = Node of value: NodeValue * label: string * children: Node [] * index: int option
 
-    let buildNodesFromPath (ids: Guid option list) (paths: string list) =
+    let buildNodesFromPath (ids: Guid option []) (paths: string []) =
         let rec groupNodes nodes =
             nodes
-            |> List.groupBy (fun (Node (_, label, _, _)) -> label)
-            |> List.map
+            |> Array.groupBy (fun (Node (_, label, _, _)) -> label)
+            |> Array.map
                 (fun (label, nodes) ->
                     let (Node (value, _, _, index)) = nodes.[0]
 
@@ -207,28 +206,28 @@ module Databases =
                         value,
                         label,
                         (nodes
-                         |> List.collect (fun (Node (_, _, children, _)) -> children)
+                         |> Array.collect (fun (Node (_, _, children, _)) -> children)
                          |> groupNodes),
                         index
                     ))
 
         paths
-        |> List.map
+        |> Array.map
             (fun path ->
                 path.Replace("\/", "|||").Split "/"
                 |> Array.map (fun str -> str.Replace ("|||", "/"))
                 |> Array.toList)
-        |> List.mapi
+        |> Array.mapi
             (fun i nodes ->
                 let rec loop depth list =
                     match list with
                     | [ String.ValidString head ] ->
                         let id =
-                            match ids |> List.tryItem i with
+                            match ids |> Array.tryItem i with
                             | Some (Some id) -> NodeValue.Leaf id
                             | _ -> NodeValue.Empty
 
-                        Node (id, head, [], Some i)
+                        Node (id, head, [||], Some i)
                     | String.ValidString head :: tail ->
                         let fullPath = nodes |> List.take depth |> String.concat "/"
                         let nodeId = fullPath |> Crypto.getTextGuidHash
@@ -236,21 +235,16 @@ module Databases =
                         Node (
                             NodeValue.Parent nodeId,
                             head,
-                            [
+                            [|
                                 loop (depth + 1) tail
-                            ],
+                            |],
                             None
                         )
-                    | _ -> Node (NodeValue.Empty, "", [], None)
+                    | _ -> Node (NodeValue.Empty, "", [||], None)
 
                 loop 1 nodes)
         |> groupNodes
 
-    [<RequireQualifiedAccess>]
-    type NodeType =
-        | Template
-        | Owned
-        | Shared
 
     [<ReactComponent>]
     let AddDatabaseButton () =
@@ -333,41 +327,36 @@ module Databases =
 
     [<ReactComponent>]
     let rec Databases props =
-        let databaseIdAtoms = Store.useValue Selectors.asyncDatabaseIdAtoms
+        let databaseIdAtoms = Store.useValue Selectors.databaseIdAtoms
 
-        let databaseIdList =
+        let databaseIdArray =
             databaseIdAtoms
             |> Store.waitForAll
             |> Store.useValue
 
-        let databaseList =
-            databaseIdList
+        let databaseArray =
+            databaseIdArray
             |> Array.map Selectors.Database.database
+            |> Store.waitForAll
+            |> Store.useValue
+
+        let databaseNodeTypeArray =
+            databaseIdArray
+            |> Array.map Selectors.Database.nodeType
             |> Store.waitForAll
             |> Store.useValue
 
         let databaseMap =
             React.useMemo (
                 (fun () ->
-                    databaseList
-                    |> Seq.filter
-                        (fun database ->
-                            database.Name
-                            |> DatabaseName.Value
-                            |> String.IsNullOrWhiteSpace
-                            |> not
-                            && database.Owner
-                               |> Username.Value
-                               |> String.IsNullOrWhiteSpace
-                               |> not)
-                    |> Seq.map (fun database -> database.Id, database)
+                    databaseArray
+                    |> Array.map (fun database -> database.Id, database)
                     |> Map.ofSeq),
                 [|
-                    box databaseList
+                    box databaseArray
                 |]
             )
 
-        let username = Store.useValue Store.Atoms.username
         let hideTemplates = Store.useValue Atoms.User.hideTemplates
         let hideTemplatesCache = React.useRef<bool option> None
 
@@ -392,57 +381,46 @@ module Databases =
         let nodeData =
             React.useMemo (
                 (fun () ->
-                    let filteredDatabaseMap =
-                        databaseMap
-                        |> Map.values
-                        |> Seq.toList
-                        |> List.map
-                            (fun database ->
-                                let nodeType =
-                                    match database.Owner with
-                                    | owner when owner = Templates.templatesUser.Username -> NodeType.Template
-                                    | owner when Some owner = username -> NodeType.Owned
-                                    | _ -> NodeType.Shared
-
+                    let databaseMapByType =
+                        databaseArray
+                        |> Array.mapi
+                            (fun i database ->
+                                let nodeType = databaseNodeTypeArray.[i]
                                 nodeType, database)
-                        |> List.filter
-                            (fun (nodeType, _) ->
-                                nodeType <> NodeType.Template
-                                || hideTemplates = Some false)
-                        |> List.groupBy fst
+                        |> Array.groupBy fst
                         |> Map.ofSeq
-                        |> Map.map (fun _ v -> v |> List.map snd)
+                        |> Map.map (fun _ v -> v |> Array.map snd)
 
-                    [
-                        if hideTemplates = Some false then yield NodeType.Template
-                        yield NodeType.Owned
-                        yield NodeType.Shared
-                    ]
-                    |> List.collect
+                    [|
+                        if hideTemplates = Some false then yield DatabaseNodeType.Template
+                        yield DatabaseNodeType.Owned
+                        yield DatabaseNodeType.Shared
+                    |]
+                    |> Array.collect
                         (fun nodeType ->
-                            let newDatabaseNameList =
-                                filteredDatabaseMap
+                            let newDatabaseNameArray =
+                                databaseMapByType
                                 |> Map.tryFind nodeType
-                                |> Option.map (List.map (fun database -> Some database, database.Name))
-                                |> Option.defaultValue [
+                                |> Option.map (Array.map (fun database -> Some database, database.Name))
+                                |> Option.defaultValue [|
                                     None, DatabaseName "None"
-                                   ]
+                                   |]
 
                             let prefix =
                                 match nodeType with
-                                | NodeType.Template -> "Templates\/Unit Tests"
-                                | NodeType.Owned -> "Created by me"
-                                | NodeType.Shared -> "Shared with me"
+                                | DatabaseNodeType.Template -> "Templates\/Unit Tests"
+                                | DatabaseNodeType.Owned -> "Created by me"
+                                | DatabaseNodeType.Shared -> "Shared with me"
 
-                            newDatabaseNameList
-                            |> List.map
+                            newDatabaseNameArray
+                            |> Array.map
                                 (fun (database, databaseName) ->
                                     database, $"{prefix}/{databaseName |> DatabaseName.Value}")
-                            |> List.sortBy snd)),
+                            |> Array.sortBy snd)),
                 [|
-                    box databaseMap
+                    box databaseNodeTypeArray
+                    box databaseArray
                     box hideTemplates
-                    box username
                 |]
             )
 
@@ -452,23 +430,22 @@ module Databases =
         let nodes, newExpandedDatabaseGuidArray, newSelectedDatabaseGuidArray =
             React.useMemo (
                 (fun () ->
-
                     let nodes =
                         let ids =
                             nodeData
-                            |> List.map fst
-                            |> List.map (Option.map (fun x -> x.Id |> DatabaseId.Value))
+                            |> Array.map fst
+                            |> Array.map (Option.map (fun x -> x.Id |> DatabaseId.Value))
 
-                        let paths = nodeData |> List.map snd
-                        buildNodesFromPath ids paths
+                        let paths = nodeData |> Array.map snd
+                        buildNodesFromPath ids paths |> Array.toList
 
                     let rec loop nodes =
                         match nodes with
                         | Node (value, label, children, index) :: tail ->
                             let nodeChildren =
                                 match children with
-                                | [] -> unbox JS.undefined
-                                | _ -> loop children |> List.toArray
+                                | [||] -> JS.undefined
+                                | _ -> loop (children |> Array.toList) |> List.toArray
 
                             let database =
                                 match index with

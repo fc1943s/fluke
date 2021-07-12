@@ -99,10 +99,8 @@ module CellSelectionSetup =
                     (fun ((taskId, TaskName taskName'), _) _ -> if taskName = taskName' then Some taskId else None)
         }
 
-    let initialSetter (getFn: Store.GetFn) (setFn: Store.SetFn) =
+    let initialSetter (getter: Store.GetFn) (setter: Store.SetFn) =
         promise {
-            let set atom value = Store.set setFn atom value
-
             let dslTemplate =
                 {
                     Templates.Position =
@@ -132,20 +130,24 @@ module CellSelectionSetup =
 
             printfn "initialSetter init"
 
+            do!
+                Hydrate.hydrateUserState
+                    getter
+                    setter
+                    { UserState.Default with
+                        DaysBefore = 2
+                        DaysAfter = 2
+                        View = View.View.Priority
+                        UserColor = Some Color.Default
+                        Archive = Some false
+                    }
+
             let databaseId = DatabaseId.NewId ()
 
             let databaseState =
                 Templates.databaseStateFromDslTemplate Templates.templatesUser databaseId databaseName dslTemplate
 
-
-            //            set Store.Atoms.username (Some Templates.templatesUser.Username)
-            set Atoms.User.userColor (Some Color.Default)
-            set Atoms.User.view View.View.Priority
-            set Atoms.User.daysBefore 2
-            set Atoms.User.daysAfter 2
-            set Atoms.position (Some dslTemplate.Position)
-
-            do! Hydrate.hydrateDatabase getFn setFn (Store.AtomScope.Current, databaseState.Database)
+            do! Hydrate.hydrateDatabase getter setter (Store.AtomScope.Current, databaseState.Database)
 
             do!
                 databaseState.TaskStateMap
@@ -154,14 +156,15 @@ module CellSelectionSetup =
                         promise {
                             do!
                                 Hydrate.hydrateTaskState
-                                    getFn
-                                    setFn
+                                    getter
+                                    setter
                                     (Store.AtomScope.Current, databaseState.Database.Id, taskState)
                         })
                 |> Promise.Parallel
                 |> Promise.ignore
 
-            set Atoms.User.selectedDatabaseIdSet (Set.singleton databaseId)
+            Store.set setter Atoms.User.selectedDatabaseIdSet (Set.singleton databaseId)
+            Store.set setter Atoms.position (Some dslTemplate.Position)
         }
 
     let getApp () =

@@ -99,6 +99,7 @@ module TempData =
     let createInformationCommentInteraction user moment information comment =
         let interaction =
             Interaction.Information (information, InformationInteraction.Attachment (Attachment.Comment comment))
+
         UserInteraction (moment, user, interaction)
 
     let createCellCommentInteraction dayStart (task: Task) moment user comment =
@@ -163,7 +164,7 @@ module TempData =
                                 ((taskMap, taskStateList), tasks)
                                 ||> List.fold
                                         (fun (taskMap, taskStateList) (taskName, dslTasks) ->
-                                            let oldTask : Task option = taskMap |> Map.tryFind taskName
+                                            let oldTask: Task option = taskMap |> Map.tryFind taskName
 
                                             let newTask =
                                                 match oldTask with

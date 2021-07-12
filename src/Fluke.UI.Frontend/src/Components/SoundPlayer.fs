@@ -33,7 +33,9 @@ module SoundPlayer =
                         | Some (TempUI.ActiveSession (_, Minute newDuration)) when oldDuration = -1 && newDuration = 0 ->
                             TempAudio.playTick
                         | Some (TempUI.ActiveSession (_, newDuration)) when
-                            Minute.Value newDuration = Minute.Value sessionDuration -> TempAudio.playDing
+                            Minute.Value newDuration = Minute.Value sessionDuration
+                            ->
+                            TempAudio.playDing
                         | None ->
                             if oldDuration = (Minute.Value sessionDuration)
                                              + (Minute.Value sessionBreakDuration)

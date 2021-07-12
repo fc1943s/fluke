@@ -6,7 +6,7 @@ open System
 
 
 module Crypto =
-    let private jssha : obj = importDefault "jssha"
+    let private jssha: obj = importDefault "jssha"
 
     let private shake128 (str: string) : string =
         let hash = createNew jssha ("SHAKE128", "TEXT")

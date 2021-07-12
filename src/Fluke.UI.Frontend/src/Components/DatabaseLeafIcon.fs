@@ -67,11 +67,9 @@ module DatabaseLeafIcon =
                                 br []
                                 if not newSharedWith.IsEmpty then
                                     str
-                                        $"""Shared with: {
-                                                              newSharedWith
-                                                              |> List.map Username.Value
-                                                              |> String.concat ", "
-                                        }"""
+                                        $"""Shared with: {newSharedWith
+                                                          |> List.map Username.Value
+                                                          |> String.concat ", "}"""
                             ])
                         [
                             UI.box

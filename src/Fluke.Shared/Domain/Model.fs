@@ -154,7 +154,7 @@ module Model =
         static member inline Default = { Name = AreaName "" }
 
     and Project with
-        static member inline Default : Project =
+        static member inline Default: Project =
             {
                 Name = ProjectName ""
                 Area = Area.Default

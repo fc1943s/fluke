@@ -51,19 +51,15 @@ module StatusBar =
                                     br []
 
                                     str
-                                        $"""Device {
-                                                        deviceId
-                                                        |> DeviceId.Value
-                                                        |> string
-                                                        |> Seq.takeWhile ((<>) '-')
-                                                        |> Seq.map string
-                                                        |> String.concat ""
-                                        }: {
-                                                if diffMinutes >= 2 then
-                                                    $"{diffMinutes} minutes"
-                                                else
-                                                    $"{diffSeconds} seconds"
-                                        }"""
+                                        $"""Device {deviceId
+                                                    |> DeviceId.Value
+                                                    |> string
+                                                    |> Seq.takeWhile ((<>) '-')
+                                                    |> Seq.map string
+                                                    |> String.concat ""}: {if diffMinutes >= 2 then
+                                                                               $"{diffMinutes} minutes"
+                                                                           else
+                                                                               $"{diffSeconds} seconds"}"""
                                 ]
                             else
                                 nothing)
@@ -165,14 +161,10 @@ module StatusBar =
                                                                 str sessionInfo.TaskName
                                                             ]
                                                         str
-                                                            $"""). {
-                                                                        if sessionInfo.Left < 0 then
-                                                                            $"Starts in {sessionInfo.Duration}m."
-                                                                        else
-                                                                            $"Started {sessionInfo.Duration}m ago ({
-                                                                                                                        sessionInfo.Left
-                                                                            }m left)"
-                                                            }"""
+                                                            $"""). {if sessionInfo.Left < 0 then
+                                                                        $"Starts in {sessionInfo.Duration}m."
+                                                                    else
+                                                                        $"Started {sessionInfo.Duration}m ago ({sessionInfo.Left}m left)"}"""
                                                     ]
                                             ]
                                     ]
@@ -198,18 +190,10 @@ module StatusBar =
                                                                 (fun x -> x.color <- sessionInfo.Color)
                                                                 [
                                                                     str
-                                                                        $"""{sessionInfo.SessionType}: {
-                                                                                                            if sessionInfo.Left < 0 then
-                                                                                                                $"Starts in {
-                                                                                                                                 sessionInfo.Duration
-                                                                                                                }m"
-                                                                                                            else
-                                                                                                                $" {
-                                                                                                                        sessionInfo.Duration
-                                                                                                                }m ago ({
-                                                                                                                             sessionInfo.Left
-                                                                                                                }m left)"
-                                                                        }. Task: {sessionInfo.TaskName}"""
+                                                                        $"""{sessionInfo.SessionType}: {if sessionInfo.Left < 0 then
+                                                                                                            $"Starts in {sessionInfo.Duration}m"
+                                                                                                        else
+                                                                                                            $" {sessionInfo.Duration}m ago ({sessionInfo.Left}m left)"}. Task: {sessionInfo.TaskName}"""
                                                                 ])
                                             ]
                                     ]
@@ -232,8 +216,7 @@ module StatusBar =
             |> Array.map Atoms.Task.attachmentIdSet
             |> Store.waitForAll
             |> Store.useValue
-            |> Array.map Set.toArray
-            |> Array.collect id
+            |> Array.collect Set.toArray
 
         let cellAttachmentMapArray =
             selectedTaskIdList
@@ -248,11 +231,10 @@ module StatusBar =
             |> Array.map Selectors.Information.attachmentIdMap
             |> Store.waitForAll
             |> Store.useValue
-            |> Array.map (Map.values >> Seq.toArray)
-            |> Array.collect id
+            |> Array.collect (Map.values >> Seq.toArray)
             |> Array.fold Set.union Set.empty
 
-        let databaseIdAtoms = Store.useValue Selectors.asyncDatabaseIdAtoms
+        let databaseIdAtoms = Store.useValue Selectors.databaseIdAtoms
 
         let selectedTaskIdAtoms = Store.useValue Selectors.Session.selectedTaskIdAtoms
         let sortedTaskIdList = Store.useValue Selectors.Session.sortedTaskIdList
