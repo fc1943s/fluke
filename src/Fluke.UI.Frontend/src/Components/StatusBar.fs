@@ -221,8 +221,6 @@ module StatusBar =
 
     [<ReactComponent>]
     let TasksIndicator () =
-        let databaseIdAtoms = Store.useValue Selectors.databaseIdAtoms
-
         let informationSet = Store.useValue Selectors.Session.informationSet
 
         let informationAttachmentSet =
@@ -261,7 +259,6 @@ module StatusBar =
         let detailsText, total =
             React.useMemo (
                 (fun () ->
-                    let database = databaseIdAtoms.Length
                     let information = informationSet.Count
                     let informationAttachment = informationAttachmentSet.Count
                     let taskAttachment = taskAttachments.Length
@@ -301,8 +298,7 @@ module StatusBar =
                         |> Array.sum
 
                     let total =
-                        database
-                        + information
+                        information
                         + informationAttachment
                         + selectedTaskIdAtoms.Length
                         + taskAttachment
@@ -312,7 +308,6 @@ module StatusBar =
 
                     let detailsText =
                         [
-                            $"Database: {database}"
                             $"Information: {information}"
                             $"Information Attachment: {informationAttachment}"
                             $"Task: {selectedTaskIdAtoms.Length}"
@@ -333,7 +328,6 @@ module StatusBar =
                     box cellStateMapArray
                     box informationAttachmentSet
                     box informationSet
-                    box databaseIdAtoms
                 |]
             )
 
