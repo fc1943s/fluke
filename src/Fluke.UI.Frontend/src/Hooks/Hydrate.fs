@@ -95,10 +95,11 @@ module Hydrate =
 
     let useHydrateTask () = Store.useCallback (hydrateTask, [||])
 
-    let hydrateAttachment _getter setter (atomScope, (timestamp, attachment)) =
+    let hydrateAttachmentState _getter setter (atomScope, attachmentState) =
         let attachmentId = AttachmentId.NewId ()
-        Store.scopedSet setter atomScope (Atoms.Attachment.timestamp, attachmentId, Some timestamp)
-        Store.scopedSet setter atomScope (Atoms.Attachment.attachment, attachmentId, Some attachment)
+        Store.scopedSet setter atomScope (Atoms.Attachment.timestamp, attachmentId, Some attachmentState.Timestamp)
+        Store.scopedSet setter atomScope (Atoms.Attachment.archived, attachmentId, Some attachmentState.Archived)
+        Store.scopedSet setter atomScope (Atoms.Attachment.attachment, attachmentId, Some attachmentState.Attachment)
         attachmentId
 
     let hydrateFile _getter setter (atomScope: Store.AtomScope, hexString: string) =
@@ -157,10 +158,8 @@ module Hydrate =
                 atomScope
                 (Atoms.Task.attachmentIdSet,
                  taskState.Task.Id,
-                 taskState.Attachments
-                 |> List.map
-                     (fun (timestamp, attachment) ->
-                         hydrateAttachment getter setter (atomScope, (timestamp, attachment)))
+                 taskState.AttachmentStateList
+                 |> List.map (fun attachmentState -> hydrateAttachmentState getter setter (atomScope, attachmentState))
                  |> Set.ofSeq)
 
             Store.scopedSet
@@ -170,16 +169,16 @@ module Hydrate =
                  taskState.Task.Id,
                  taskState.CellStateMap
                  |> Seq.map
-                     (fun (KeyValue (dateId, { Attachments = attachments })) ->
+                     (fun (KeyValue (dateId, cellState)) ->
                          dateId,
-                         attachments
+                         cellState.AttachmentStateList
                          |> List.choose
-                             (fun (timestamp, attachment) ->
-                                 Some (hydrateAttachment getter setter (atomScope, (timestamp, attachment))))
+                             (fun attachmentState ->
+                                 Some (hydrateAttachmentState getter setter (atomScope, attachmentState)))
                          |> Set.ofSeq)
                  |> Map.ofSeq)
 
-            Store.scopedSet setter atomScope (Atoms.Task.sessions, taskState.Task.Id, taskState.Sessions)
+            Store.scopedSet setter atomScope (Atoms.Task.sessions, taskState.Task.Id, taskState.SessionList)
         }
 
     let useHydrateTaskState () =
@@ -195,10 +194,10 @@ module Hydrate =
                 |> Seq.map
                     (fun informationState ->
                         let attachmentIdList =
-                            informationState.Attachments
+                            informationState.AttachmentStateList
                             |> List.map
-                                (fun (timestamp, attachment) ->
-                                    hydrateAttachment getter setter (atomScope, (timestamp, attachment)))
+                                (fun attachmentState ->
+                                    hydrateAttachmentState getter setter (atomScope, attachmentState))
 
                         informationState.Information, (attachmentIdList |> Set.ofList))
                 |> Map.ofSeq
@@ -221,27 +220,22 @@ module Hydrate =
                     (fun taskState ->
                         let newTaskState =
                             { taskState with
-                                Attachments =
-                                    taskState.Attachments
+                                AttachmentStateList =
+                                    taskState.AttachmentStateList
                                     |> List.map
-                                        (fun (moment, attachment) ->
-                                            moment,
-                                            match attachment with
-                                            | Attachment.Image fileId -> Attachment.Image newFileIdMap.[fileId]
-                                            | _ -> attachment)
+                                        (fun attachmentState ->
+                                            { attachmentState with
+                                                Attachment =
+                                                    match attachmentState.Attachment with
+                                                    | Attachment.Image fileId -> Attachment.Image newFileIdMap.[fileId]
+                                                    | _ -> attachmentState.Attachment
+                                            })
                             }
 
                         hydrateTaskState getter setter (atomScope, databaseState.Database.Id, newTaskState))
                 |> Promise.Parallel
                 |> Promise.ignore
 
-        //
-//                    Store.set
-//                        setter
-//                        (Atoms.Database.taskIdSet databaseState.Database.Id)
-//                        (databaseState.TaskStateMap
-//                         |> Map.keys
-//                         |> Set.ofSeq)
         }
 
     let hydrateTemplates getter setter =

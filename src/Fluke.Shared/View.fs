@@ -75,8 +75,8 @@ module View =
                                 >==< (dateRangeStart, dateRangeEnd)
 
                             let hasRelevantData =
-                                not cellState.Sessions.IsEmpty
-                                || not cellState.Attachments.IsEmpty
+                                not cellState.SessionList.IsEmpty
+                                || not cellState.AttachmentStateList.IsEmpty
                                 || cellState.Status <> Disabled
 
                             dateInRange && hasRelevantData)
@@ -87,7 +87,7 @@ module View =
                 (function
                 | {
                       Task = { Priority = Some priority }
-                      Sessions = []
+                      SessionList = []
                   } when (Priority.toTag priority) + 1 < 5 -> false
                 | { Task = { Scheduling = Manual _ } } -> true
                 | _ -> false)

@@ -119,16 +119,16 @@ module TaskName =
                                                     (fun _ -> ())
 
                                                 MenuItem.MenuItem
+                                                    Icons.gi.GiHourglass
+                                                    "Start Session"
+                                                    (Some startSession)
+                                                    (fun _ -> ())
+
+                                                MenuItem.MenuItem
                                                     Icons.ri.RiArchiveLine
                                                     $"""{if archived = Some true then "Unarchive" else "Archive"} Task"""
                                                     (Some
                                                         (fun () -> promise { setArchived (archived |> Option.map not) }))
-                                                    (fun _ -> ())
-
-                                                MenuItem.MenuItem
-                                                    Icons.gi.GiHourglass
-                                                    "Start Session"
-                                                    (Some startSession)
                                                     (fun _ -> ())
 
                                                 ConfirmPopover.ConfirmPopover

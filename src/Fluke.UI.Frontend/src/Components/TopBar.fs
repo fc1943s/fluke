@@ -46,7 +46,7 @@ module TopBar =
 
                         //                        let attachment = Store.value getter (Selectors.Attachment.attachment attachmentId)
 
-                        let taskIdAtoms = Store.value getter (Selectors.Database.taskIdAtoms databaseId)
+                        //                        let taskIdAtoms = Store.value getter (Selectors.Database.taskIdAtoms databaseId)
 
                         ()
 
@@ -212,7 +212,7 @@ module TopBar =
                                 ]
 
                         Tooltip.wrap
-                            (str "Toggle Task Archive")
+                            (str "Toggle Archive")
                             [
                                 TransparentIconButton.TransparentIconButton
                                     {|

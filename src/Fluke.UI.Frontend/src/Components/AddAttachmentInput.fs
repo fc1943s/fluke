@@ -103,10 +103,10 @@ module AddAttachmentInput =
 
     [<ReactComponent>]
     let AttachmentThumbnail onDelete onAdd attachmentId =
-        let attachment = Store.useValue (Selectors.Attachment.attachment attachmentId)
+        let attachment = Store.useValue (Atoms.Attachment.attachment attachmentId)
 
         match attachment with
-        | Some (_moment, attachment) ->
+        | Some attachment ->
             match attachment with
             | Attachment.Image fileId -> TempFileThumbnail onDelete onAdd fileId
             | _ -> nothing
@@ -152,6 +152,7 @@ module AddAttachmentInput =
 
     [<ReactComponent>]
     let rec AttachmentsClipboard onAdd =
+        let archive = Store.useValue Atoms.User.archive
         let clipboardVisible = Store.useValue Atoms.User.clipboardVisible
         let clipboardAttachmentIdMap = Store.useValue Atoms.User.clipboardAttachmentIdMap
 
@@ -170,9 +171,11 @@ module AddAttachmentInput =
                 (fun _ setter attachmentId ->
                     promise {
                         Store.change setter Atoms.User.clipboardAttachmentIdMap (Map.remove attachmentId)
+                        Store.set setter (Atoms.Attachment.archived attachmentId) archive
                         do! onAdd attachmentId
                     }),
                 [|
+                    box archive
                     box onAdd
                 |]
             )
@@ -196,8 +199,16 @@ module AddAttachmentInput =
                             (clipboardAttachmentIdMap |> Map.keys |> Seq.toList)
                 ]
 
+    [<RequireQualifiedAccess>]
+    type AttachmentPanelType =
+        | Information
+        | Task
+        | Cell
+
+
     [<ReactComponent>]
-    let rec AddAttachmentInput onAdd =
+    let rec AddAttachmentInput attachmentPanelType onAdd =
+        let archive = Store.useValue Atoms.User.archive
         let ctrlPressed = Store.useValue Atoms.ctrlPressed
         let addAttachmentText, setAddAttachmentText = React.useState ""
 
@@ -206,34 +217,36 @@ module AddAttachmentInput =
 
         let addAttachment =
             Store.useCallback (
-                (fun _ setter _ ->
+                (fun getter setter _ ->
                     promise {
-                        match addAttachmentText with
-                        | String.ValidString _ ->
-                            let attachmentId = AttachmentId.NewId ()
+                        match onAdd, addAttachmentText with
+                        | Some onAdd, String.ValidString _ ->
 
-                            Store.set
-                                setter
-                                (Atoms.Attachment.timestamp attachmentId)
-                                (DateTime.Now |> FlukeDateTime.FromDateTime |> Some)
+                            let attachmentId =
+                                Hydrate.hydrateAttachmentState
+                                    getter
+                                    setter
+                                    (Store.AtomScope.Current,
+                                     {
+                                         Timestamp = DateTime.Now |> FlukeDateTime.FromDateTime
+                                         Archived =
+                                             match attachmentPanelType with
+                                             | AttachmentPanelType.Information -> archive |> Option.defaultValue false
+                                             | _ -> false
+                                         Attachment =
+                                             addAttachmentText
+                                             |> Comment.Comment
+                                             |> Attachment.Comment
+                                     })
 
-                            Store.set
-                                setter
-                                (Atoms.Attachment.attachment attachmentId)
-                                (addAttachmentText
-                                 |> Comment.Comment
-                                 |> Attachment.Comment
-                                 |> Some)
-
-
-                            match onAdd with
-                            | Some onAdd -> do! onAdd attachmentId
-                            | None -> ()
+                            do! onAdd attachmentId
 
                             setAddAttachmentText ""
                         | _ -> ()
                     }),
                 [|
+                    box attachmentPanelType
+                    box archive
                     box onAdd
                     box addAttachmentText
                     box setAddAttachmentText
@@ -294,8 +307,8 @@ module AddAttachmentInput =
                                             Props =
                                                 fun x ->
                                                     UI.setTestId x "Add Attachment"
-                                                    //                                                x.borderBottomLeftRadius <- "0"
-//                                                x.borderTopLeftRadius <- "0"
+                                                    x.borderBottomLeftRadius <- "0"
+                                                    x.borderTopLeftRadius <- "0"
                                                     if onAdd.IsNone then x.disabled <- true
 
                                                     x.onClick <- fun _ -> addAttachment ()
@@ -323,6 +336,8 @@ module AddAttachmentInput =
                                                                     UI.setTestId x "Clipboard"
 
                                                                     if onAdd.IsNone then x.disabled <- true
+                                                                    x.borderBottomLeftRadius <- "0"
+                                                                    x.borderTopLeftRadius <- "0"
 
                                                                     x.onClick <-
                                                                         fun _ ->

@@ -8,19 +8,12 @@ module State =
     open Model
     open UserInteraction
 
-    //    type State =
-//        {
-//            Session: Session
-//        }
-
-    type SessionData =
+    type DatabaseState =
         {
-            //            User: User option
-//            SelectedDatabaseIds: Set<DatabaseState>
-            TaskList: Task list
+            Database: Database
             InformationStateMap: Map<Information, InformationState>
-            TaskStateMap: Map<Task, TaskState>
-            UnfilteredTaskCount: int
+            TaskStateMap: Map<TaskId, TaskState>
+            FileMap: Map<FileId, string>
         }
 
     and Database =
@@ -36,14 +29,6 @@ module State =
 
     and DatabaseName = DatabaseName of name: string
 
-    and DatabaseState =
-        {
-            Database: Database
-            InformationStateMap: Map<Information, InformationState>
-            TaskStateMap: Map<TaskId, TaskState>
-            FileMap: Map<FileId, string>
-        }
-
     and [<RequireQualifiedAccess>] DatabaseAccess =
         | Public
         | Private of accessList: (Username * Access) list
@@ -55,7 +40,7 @@ module State =
     and InformationState =
         {
             Information: Information
-            Attachments: (FlukeDateTime * Attachment) list
+            AttachmentStateList: AttachmentState list
             SortList: (Information option * Information option) list
         }
 
@@ -63,8 +48,8 @@ module State =
         {
             Task: Task
             Archived: bool
-            Sessions: Session list
-            Attachments: (FlukeDateTime * Attachment) list
+            SessionList: Session list
+            AttachmentStateList: AttachmentState list
             SortList: (TaskId option * TaskId option) list
             CellStateMap: Map<DateId, CellState>
         }
@@ -72,8 +57,15 @@ module State =
     and CellState =
         {
             Status: CellStatus
-            Attachments: (FlukeDateTime * Attachment) list
-            Sessions: Session list
+            AttachmentStateList: AttachmentState list
+            SessionList: Session list
+        }
+
+    and AttachmentState =
+        {
+            Timestamp: FlukeDateTime
+            Attachment: Attachment
+            Archived: bool
         }
 
     and CellStatus =
@@ -98,27 +90,6 @@ module State =
     and DatabaseName with
         static member inline Value (DatabaseName name) = name
 
-    and Database with
-        static member inline Default =
-            {
-                Id = DatabaseId Guid.Empty
-                Name = DatabaseName ""
-                Owner = Username ""
-                SharedWith = DatabaseAccess.Private []
-                Position = None
-            }
-
-    and TaskState with
-        static member inline Default =
-            {
-                Task = Task.Default
-                Archived = false
-                Sessions = []
-                Attachments = []
-                SortList = []
-                CellStateMap = Map.empty
-            }
-
     and DatabaseState with
         static member inline Create (name, owner, ?position, ?sharedWith, ?id) =
             {
@@ -135,14 +106,36 @@ module State =
                 FileMap = Map.empty
             }
 
+    and Database with
+        static member inline Default =
+            {
+                Id = DatabaseId Guid.Empty
+                Name = DatabaseName ""
+                Owner = Username ""
+                SharedWith = DatabaseAccess.Private []
+                Position = None
+            }
+
+    and TaskState with
+        static member inline Default =
+            {
+                Task = Task.Default
+                Archived = false
+                SessionList = []
+                AttachmentStateList = []
+                SortList = []
+                CellStateMap = Map.empty
+            }
+
+
     let inline informationListToStateMap informationList =
         informationList
         |> List.map
             (fun information ->
-                let informationState : InformationState =
+                let informationState: InformationState =
                     {
                         Information = information
-                        Attachments = []
+                        AttachmentStateList = []
                         SortList = []
                     }
 
@@ -172,156 +165,124 @@ module State =
         (userInteractionList: UserInteraction list)
         (databaseState: DatabaseState)
         =
-        let newDatabaseState =
-            (databaseState, userInteractionList)
-            ||> List.fold
-                    (fun databaseState (UserInteraction (moment, user, interaction)) ->
-                        match interaction with
-                        | Interaction.Information (information, informationInteraction) ->
-                            let informationState =
-                                databaseState.InformationStateMap
-                                |> Map.tryFind information
-                                |> Option.defaultValue
-                                    {
-                                        Information = information
-                                        Attachments = []
-                                        SortList = []
-                                    }
-
-                            let newInformationState =
-                                match informationInteraction with
-                                | InformationInteraction.Attachment attachment ->
-                                    let attachments =
-                                        (moment, attachment)
-                                        :: informationState.Attachments
-
-                                    { informationState with
-                                        Attachments = attachments
-                                    }
-                                | InformationInteraction.Sort (top, bottom) ->
-                                    let sortList = (top, bottom) :: informationState.SortList
-
-                                    { informationState with
-                                        SortList = sortList
-                                    }
-
-                            let newInformationStateMap =
-                                databaseState.InformationStateMap
-                                |> Map.add information newInformationState
-
-                            { databaseState with
-                                InformationStateMap = newInformationStateMap
-                            }
-
-                        | Interaction.Task (taskId, taskInteraction) ->
-                            let taskState = databaseState.TaskStateMap.[taskId]
-
-                            let newTaskState =
-                                match taskInteraction with
-                                | TaskInteraction.Attachment attachment ->
-                                    let newAttachments = (moment, attachment) :: taskState.Attachments
-
-                                    { taskState with
-                                        Attachments = newAttachments
-                                    }
-
-                                | TaskInteraction.Sort (top, bottom) ->
-                                    let newSortList = (top, bottom) :: taskState.SortList
-
-                                    { taskState with
-                                        SortList = newSortList
-                                    }
-                                | TaskInteraction.Session session ->
-                                    let newSessions = session :: taskState.Sessions
-
-                                    { taskState with
-                                        Sessions = newSessions
-                                    }
-                                //                                    let cellState =
-//                                        taskState.CellStateMap
-//                                        |> Map.tryFind dateId
-//                                        |> Option.defaultValue
-//                                            {
-//                                                Status = Disabled
-//                                                Attachments = []
-//                                                Sessions = []
-//                                            }
-//
-//                                    let newSessions = session :: cellState.Sessions
-//
-//                                    let newCellState =
-//                                        {cellState with Sessions = newSessions}
-//
-//                                    let newCellStateMap =
-//                                        taskState.CellStateMap
-//                                        |> Map.add dateId newCellState
-//
-//                                    { taskState with CellStateMap = newCellStateMap }
-                                | TaskInteraction.Archive -> taskState
-
-                            let newTaskStateMap =
-                                databaseState.TaskStateMap
-                                |> Map.add taskId newTaskState
-
-                            { databaseState with
-                                TaskStateMap = newTaskStateMap
-                            }
-                        | Interaction.Cell (taskId, dateId, cellInteraction) ->
-                            let taskState = databaseState.TaskStateMap.[taskId]
-
-                            let cellState =
-                                taskState.CellStateMap
-                                |> Map.tryFind dateId
-                                |> Option.defaultValue
-                                    {
-                                        Status = CellStatus.Disabled
-                                        Attachments = []
-                                        Sessions = []
-                                    }
-
-
-                            let newCellState =
-                                match cellInteraction with
-                                | CellInteraction.Attachment attachment ->
-                                    let attachments = (moment, attachment) :: cellState.Attachments
-
-                                    let newCellState =
-                                        { cellState with
-                                            Attachments = attachments
-                                        }
-
-                                    newCellState
-                                | CellInteraction.StatusChange cellStatusChange ->
-                                    let manualCellStatus =
-                                        match cellStatusChange with
-                                        | CellStatusChange.Complete -> ManualCellStatus.Completed
-                                        | CellStatusChange.Dismiss -> ManualCellStatus.Dismissed
-                                        | CellStatusChange.Postpone until -> ManualCellStatus.Postponed until
-                                        | CellStatusChange.Schedule -> ManualCellStatus.Scheduled
-
-                                    let newCellState =
-                                        { cellState with
-                                            Status = CellStatus.UserStatus (user, manualCellStatus)
-                                        }
-
-                                    newCellState
-
-                            let newTaskState =
-                                { taskState with
-                                    CellStateMap =
-                                        taskState.CellStateMap
-                                        |> Map.add dateId newCellState
+        (databaseState, userInteractionList)
+        ||> List.fold
+                (fun databaseState (UserInteraction (moment, user, interaction)) ->
+                    match interaction with
+                    | Interaction.Information (information, informationInteraction) ->
+                        let informationState =
+                            databaseState.InformationStateMap
+                            |> Map.tryFind information
+                            |> Option.defaultValue
+                                {
+                                    Information = information
+                                    AttachmentStateList = []
+                                    SortList = []
                                 }
 
-                            let newTaskStateMap =
+                        let newInformationState =
+                            match informationInteraction with
+                            | InformationInteraction.Attachment attachment ->
+                                { informationState with
+                                    AttachmentStateList =
+                                        {
+                                            Timestamp = moment
+                                            Archived = false
+                                            Attachment = attachment
+                                        }
+                                        :: informationState.AttachmentStateList
+                                }
+                            | InformationInteraction.Sort (top, bottom) ->
+                                { informationState with
+                                    SortList = (top, bottom) :: informationState.SortList
+                                }
+
+                        { databaseState with
+                            InformationStateMap =
+                                databaseState.InformationStateMap
+                                |> Map.add information newInformationState
+                        }
+
+                    | Interaction.Task (taskId, taskInteraction) ->
+                        let taskState = databaseState.TaskStateMap.[taskId]
+
+                        let newTaskState =
+                            match taskInteraction with
+                            | TaskInteraction.Attachment attachment ->
+                                { taskState with
+                                    AttachmentStateList =
+                                        {
+                                            Timestamp = moment
+                                            Archived = false
+                                            Attachment = attachment
+                                        }
+                                        :: taskState.AttachmentStateList
+                                }
+
+                            | TaskInteraction.Sort (top, bottom) ->
+                                { taskState with
+                                    SortList = (top, bottom) :: taskState.SortList
+                                }
+                            | TaskInteraction.Session session ->
+                                { taskState with
+                                    SessionList = session :: taskState.SessionList
+                                }
+                            | TaskInteraction.Archive -> taskState
+
+                        { databaseState with
+                            TaskStateMap =
                                 databaseState.TaskStateMap
                                 |> Map.add taskId newTaskState
+                        }
+                    | Interaction.Cell (taskId, dateId, cellInteraction) ->
+                        let taskState = databaseState.TaskStateMap.[taskId]
 
-                            { databaseState with
-                                TaskStateMap = newTaskStateMap
-                            })
+                        let cellState =
+                            taskState.CellStateMap
+                            |> Map.tryFind dateId
+                            |> Option.defaultValue
+                                {
+                                    Status = CellStatus.Disabled
+                                    AttachmentStateList = []
+                                    SessionList = []
+                                }
 
-        newDatabaseState
+                        let newCellState =
+                            match cellInteraction with
+                            | CellInteraction.Attachment attachment ->
+                                { cellState with
+                                    AttachmentStateList =
+                                        {
+                                            Timestamp = moment
+                                            Archived = false
+                                            Attachment = attachment
+                                        }
+                                        :: cellState.AttachmentStateList
+                                }
+                            | CellInteraction.StatusChange cellStatusChange ->
+                                let manualCellStatus =
+                                    match cellStatusChange with
+                                    | CellStatusChange.Complete -> ManualCellStatus.Completed
+                                    | CellStatusChange.Dismiss -> ManualCellStatus.Dismissed
+                                    | CellStatusChange.Postpone until -> ManualCellStatus.Postponed until
+                                    | CellStatusChange.Schedule -> ManualCellStatus.Scheduled
+
+                                { cellState with
+                                    Status = CellStatus.UserStatus (user, manualCellStatus)
+                                }
+
+                        let newTaskState =
+                            { taskState with
+                                CellStateMap =
+                                    taskState.CellStateMap
+                                    |> Map.add dateId newCellState
+                            }
+
+                        { databaseState with
+                            TaskStateMap =
+                                databaseState.TaskStateMap
+                                |> Map.add taskId newTaskState
+                        })
 
     let inline mergeInformationStateMap
         (oldMap: Map<Information, InformationState>)
@@ -331,7 +292,9 @@ module State =
         ||> Map.unionWith
                 (fun oldValue newValue ->
                     { oldValue with
-                        Attachments = oldValue.Attachments @ newValue.Attachments
+                        AttachmentStateList =
+                            oldValue.AttachmentStateList
+                            @ newValue.AttachmentStateList
                         SortList = oldValue.SortList @ newValue.SortList
                     })
 
@@ -340,8 +303,10 @@ module State =
         ||> Map.unionWith
                 (fun oldValue newValue ->
                     { oldValue with
-                        Sessions = oldValue.Sessions @ newValue.Sessions
-                        Attachments = oldValue.Attachments @ newValue.Attachments
+                        SessionList = oldValue.SessionList @ newValue.SessionList
+                        AttachmentStateList =
+                            oldValue.AttachmentStateList
+                            @ newValue.AttachmentStateList
                         Status = newValue.Status
                     })
 
@@ -352,8 +317,10 @@ module State =
         {
             Task = newValue.Task
             Archived = newValue.Archived
-            Sessions = oldValue.Sessions @ newValue.Sessions
-            Attachments = oldValue.Attachments @ newValue.Attachments
+            SessionList = oldValue.SessionList @ newValue.SessionList
+            AttachmentStateList =
+                oldValue.AttachmentStateList
+                @ newValue.AttachmentStateList
             SortList = oldValue.SortList @ newValue.SortList
             CellStateMap = mergeCellStateMap oldValue.CellStateMap newValue.CellStateMap
         }

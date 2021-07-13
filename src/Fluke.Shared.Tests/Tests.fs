@@ -117,7 +117,7 @@ module Tests =
                         |> List.map
                             (fun (date, count) ->
                                 let sessionCount =
-                                    taskState.Sessions
+                                    taskState.SessionList
                                     |> List.filter
                                         (fun (Session start) -> isToday templatesUser.DayStart start (DateId date))
                                     |> List.length

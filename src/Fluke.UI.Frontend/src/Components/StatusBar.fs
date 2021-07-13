@@ -207,23 +207,9 @@ module StatusBar =
 
     [<ReactComponent>]
     let TasksIndicator () =
+        let databaseIdAtoms = Store.useValue Selectors.databaseIdAtoms
+
         let informationSet = Store.useValue Selectors.Session.informationSet
-        let selectedTaskIdList = Store.useValue Selectors.Session.selectedTaskIdList
-
-        let taskAttachments =
-            selectedTaskIdList
-            |> List.toArray
-            |> Array.map Atoms.Task.attachmentIdSet
-            |> Store.waitForAll
-            |> Store.useValue
-            |> Array.collect Set.toArray
-
-        let cellAttachmentIdMapArray =
-            selectedTaskIdList
-            |> List.map Atoms.Task.cellAttachmentIdMap
-            |> List.toArray
-            |> Store.waitForAll
-            |> Store.useValue
 
         let informationAttachmentSet =
             informationSet
@@ -234,26 +220,26 @@ module StatusBar =
             |> Array.collect (Map.values >> Seq.toArray)
             |> Array.fold Set.union Set.empty
 
-        let databaseIdAtoms = Store.useValue Selectors.databaseIdAtoms
-
         let selectedTaskIdAtoms = Store.useValue Selectors.Session.selectedTaskIdAtoms
-        let sortedTaskIdList = Store.useValue Selectors.Session.sortedTaskIdList
 
-        let taskIdArray =
+        let selectedTaskIdArray =
             selectedTaskIdAtoms
             |> Store.waitForAll
             |> Store.useValue
 
-        let taskSessionLength =
-            taskIdArray
-            |> Array.map Atoms.Task.sessions
+        let taskAttachments =
+            selectedTaskIdArray
+            |> Array.map Atoms.Task.attachmentIdSet
             |> Store.waitForAll
             |> Store.useValue
-            |> Seq.collect id
-            |> Seq.length
+            |> Array.collect Set.toArray
+
+        let selectedTaskIdListByArchive = Store.useValue Selectors.Session.selectedTaskIdListByArchive
+
+        let sortedTaskIdList = Store.useValue Selectors.Session.sortedTaskIdList
 
         let cellStateMapArray =
-            taskIdArray
+            selectedTaskIdArray
             |> Array.map Selectors.Task.cellStateMap
             |> Store.waitForAll
             |> Store.useValue
@@ -263,7 +249,6 @@ module StatusBar =
                 (fun () ->
                     let database = databaseIdAtoms.Length
                     let information = informationSet.Count
-                    let tasks = selectedTaskIdList.Length
                     let informationAttachment = informationAttachmentSet.Count
                     let taskAttachment = taskAttachments.Length
 
@@ -279,19 +264,36 @@ module StatusBar =
                         )
                         |> Array.sum
 
+                    let session =
+                        cellStateMapArray
+                        |> Array.map (
+                            Map.values
+                            >> Seq.map (fun cellState -> cellState.SessionList.Length)
+                            >> Seq.sum
+                        )
+                        |> Array.sum
+
                     let cellAttachment =
-                        cellAttachmentIdMapArray
-                        |> Array.map (Map.values >> Seq.map Set.count >> Seq.sum)
+                        cellStateMapArray
+                        |> Array.map (
+                            Map.values
+                            >> Seq.map
+                                (fun cellState ->
+                                    cellState.AttachmentStateList
+                                    |> List.map (fun attachmentState -> attachmentState.Attachment)
+                                    |> List.length)
+                            >> Seq.sum
+                        )
                         |> Array.sum
 
                     let total =
                         database
                         + information
                         + informationAttachment
-                        + tasks
+                        + selectedTaskIdAtoms.Length
                         + taskAttachment
-                        + taskSessionLength
                         + cellStatus
+                        + session
                         + cellAttachment
 
                     let detailsText =
@@ -299,10 +301,9 @@ module StatusBar =
                             $"Database: {database}"
                             $"Information: {information}"
                             $"Information Attachment: {informationAttachment}"
-                            $"Task: {tasks}"
-                            $"Archived Task: ???"
+                            $"Task: {selectedTaskIdAtoms.Length}"
                             $"Task Attachment: {taskAttachment}"
-                            $"Task Session: {taskSessionLength}"
+                            $"Task Session: {session}"
                             $"Cell Status: {cellStatus}"
                             $"Cell Attachment: {cellAttachment}"
                             $"Total: {total}"
@@ -313,13 +314,11 @@ module StatusBar =
 
                     detailsText, total),
                 [|
+                    box selectedTaskIdAtoms
                     box taskAttachments
-                    box selectedTaskIdList
                     box cellStateMapArray
                     box informationAttachmentSet
-                    box cellAttachmentIdMapArray
                     box informationSet
-                    box taskSessionLength
                     box databaseIdAtoms
                 |]
             )
@@ -339,7 +338,8 @@ module StatusBar =
                 Tooltip.wrap
                     detailsText
                     [
-                        str $"Tasks: {sortedTaskIdList.Length} of {selectedTaskIdAtoms.Length} visible (Total: {total})"
+                        str
+                            $"Tasks: {sortedTaskIdList.Length} of {selectedTaskIdListByArchive.Length} visible (Total: {total})"
                     ]
             //                        | _ -> str "Tasks: Loading tasks"
             ]

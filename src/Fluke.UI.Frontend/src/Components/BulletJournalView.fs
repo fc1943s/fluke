@@ -42,8 +42,8 @@ module BulletJournalView =
                                                         cells
                                                         |> List.filter
                                                             (fun cell ->
-                                                                not cell.Sessions.IsEmpty
-                                                                || not cell.Attachments.IsEmpty
+                                                                not cell.SessionList.IsEmpty
+                                                                || not cell.AttachmentStateList.IsEmpty
                                                                 || cell.Status <> State.Disabled)
 
                                                     UI.box

@@ -24,7 +24,7 @@ module DatabaseForm =
             Store.useCallback (
                 (fun getter setter _ ->
                     promise {
-                        let databaseName = Store.getTemp getter (Atoms.Database.name databaseId)
+                        let databaseName = Store.getTempValue getter (Atoms.Database.name databaseId)
                         let username = Store.value getter Store.Atoms.username
 
                         match databaseName with
@@ -54,7 +54,7 @@ module DatabaseForm =
                                 //                                setter.set (Atoms.Events.events eventId, event)
                                 //                                printfn $"event {event}"
 
-                                Store.resetTemp setter (Atoms.Database.name databaseId)
+                                Store.resetTempValue setter (Atoms.Database.name databaseId)
 
                                 Store.set setter (Atoms.User.uiFlag UIFlagType.Database) UIFlag.None
 

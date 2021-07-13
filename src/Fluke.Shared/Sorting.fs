@@ -21,21 +21,21 @@ module Sorting =
                         | _ -> false)
                     |> Seq.length
 
-                let taskAttachmentsCount =
+                let cellAttachmentCount =
                     taskState.CellStateMap
                     |> Map.values
-                    |> Seq.collect (fun cellState -> cellState.Attachments)
+                    |> Seq.collect (fun cellState -> cellState.AttachmentStateList)
                     |> Seq.length
 
-                let taskSessionsCount =
+                let cellSessionCount =
                     taskState.CellStateMap
                     |> Map.values
-                    |> Seq.collect (fun cellState -> cellState.Sessions)
+                    |> Seq.collect (fun cellState -> cellState.SessionList)
                     |> Seq.length
 
                 (disabledCellsCount * 2)
-                - taskSessionsCount
-                - taskAttachmentsCount)
+                - cellSessionCount
+                - cellAttachmentCount)
 
     let sortLanesByIncomingRecurrency dayStart position lanes =
         lanes
@@ -90,7 +90,7 @@ module Sorting =
             let getSessionsTodayCount (cellStateMap: Map<DateId, CellState>) =
                 cellStateMap
                 |> Map.tryFind currentDateId
-                |> Option.map (fun cellState -> cellState.Sessions)
+                |> Option.map (fun cellState -> cellState.SessionList)
                 |> Option.defaultValue []
                 |> fun sessions -> sessions.Length
 

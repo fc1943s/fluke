@@ -21,6 +21,41 @@ module InformationForm =
                 )
             )
 
+        let attachmentIdList =
+            React.useMemo (
+                (fun () ->
+                    attachmentIdMap
+                    |> Map.values
+                    |> Seq.fold Set.union Set.empty
+                    |> Seq.toList),
+                [|
+                    box attachmentIdMap
+                |]
+            )
+
+        let archivedArray =
+            attachmentIdList
+            |> List.map Atoms.Attachment.archived
+            |> List.toArray
+            |> Store.waitForAll
+            |> Store.useValue
+
+        let archive = Store.useValue Atoms.User.archive
+
+        let filteredAttachmentIdList =
+            React.useMemo (
+                (fun () ->
+                    attachmentIdList
+                    |> List.indexed
+                    |> List.filter (fun (i, _) -> archivedArray.[i] = archive)
+                    |> List.map snd),
+                [|
+                    box archive
+                    box archivedArray
+                    box attachmentIdList
+                |]
+            )
+
         let setInformationUIFlag = Store.useSetState (Atoms.User.uiFlag UIFlagType.Information)
 
         let databaseId, setDatabaseId = Store.useState Atoms.User.lastInformationDatabase
@@ -124,12 +159,10 @@ module InformationForm =
                                     x.flex <- "1")
                                 [
                                     AttachmentPanel.AttachmentPanel
+                                        AddAttachmentInput.AttachmentPanelType.Information
                                         (if databaseId.IsSome then Some onAttachmentAdd else None)
                                         onAttachmentDelete
-                                        (attachmentIdMap
-                                         |> Map.values
-                                         |> Seq.fold Set.union Set.empty
-                                         |> Seq.toList)
+                                        filteredAttachmentIdList
                                 ])
                         | _ -> ()
                     ]

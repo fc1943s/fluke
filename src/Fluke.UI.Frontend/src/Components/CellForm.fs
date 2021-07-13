@@ -17,6 +17,14 @@ module CellForm =
 
         let attachmentIdSet = Store.useValue (Selectors.Cell.attachmentIdSet (taskId, dateId))
 
+        let attachmentIdList =
+            React.useMemo (
+                (fun () -> attachmentIdSet |> Set.toList),
+                [|
+                    box attachmentIdSet
+                |]
+            )
+
         let onAttachmentAdd =
             Store.useCallback (
                 (fun _ setter attachmentId ->
@@ -104,9 +112,10 @@ module CellForm =
                                 x.flex <- "1")
                             [
                                 AttachmentPanel.AttachmentPanel
+                                    AddAttachmentInput.AttachmentPanelType.Cell
                                     (Some onAttachmentAdd)
                                     onAttachmentDelete
-                                    (attachmentIdSet |> Set.toList)
+                                    attachmentIdList
                             ])
                     ]
             |}
@@ -115,18 +124,21 @@ module CellForm =
     let CellFormWrapper () =
         let cellUIFlag = Store.useValue (Atoms.User.uiFlag UIFlagType.Cell)
 
-        let selectedTaskIdList = Store.useValue Selectors.Session.selectedTaskIdList
+        let selectedTaskIdListByArchive = Store.useValue Selectors.Session.selectedTaskIdListByArchive
 
         let taskId, dateId =
             React.useMemo (
                 (fun () ->
                     match cellUIFlag with
-                    | UIFlag.Cell (taskId, dateId) when selectedTaskIdList |> List.contains taskId ->
+                    | UIFlag.Cell (taskId, dateId) when
+                        selectedTaskIdListByArchive
+                        |> List.contains taskId
+                        ->
                         Some taskId, Some dateId
                     | _ -> None, None),
                 [|
                     box cellUIFlag
-                    box selectedTaskIdList
+                    box selectedTaskIdListByArchive
                 |]
             )
 

@@ -15,6 +15,7 @@ module ViewTabs =
         let view, setView = Store.useState Atoms.User.view
         let filteredTaskIdSet = Store.useValue Selectors.Session.filteredTaskIdSet
         let sortedTaskIdList = Store.useValue Selectors.Session.sortedTaskIdList
+        let informationSet = Store.useValue Selectors.Session.informationSet
 
         let tabs, tabIndex =
             React.useMemo (
@@ -201,7 +202,10 @@ module ViewTabs =
                                             x.overflow <- "auto")
                                         [
                                             match sortedTaskIdList with
-                                            | [] ->
+                                            | [] when
+                                                (view <> View.View.Information
+                                                 || informationSet.IsEmpty)
+                                                ->
                                                 if filteredTaskIdSet.IsEmpty then
                                                     UI.box
                                                         (fun x ->

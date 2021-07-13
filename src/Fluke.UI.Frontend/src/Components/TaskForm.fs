@@ -378,19 +378,24 @@ module TaskForm =
 
         let taskUIFlag, setTaskUIFlag = Store.useState (Atoms.User.uiFlag UIFlagType.Task)
 
-        let taskDatabaseId =
+        let attachmentIdSet = Store.useValue (Atoms.Task.attachmentIdSet taskId)
+
+        let taskDatabaseId, attachmentIdList =
             React.useMemo (
                 (fun () ->
-                    match taskUIFlag with
-                    | UIFlag.Task (databaseId, taskId') when taskId' = taskId -> databaseId
-                    | _ -> Database.Default.Id),
+                    let taskDatabaseId =
+                        match taskUIFlag with
+                        | UIFlag.Task (databaseId, taskId') when taskId' = taskId -> databaseId
+                        | _ -> Database.Default.Id
+
+                    taskDatabaseId, (attachmentIdSet |> Set.toList)),
                 [|
                     box taskUIFlag
                     box taskId
+                    box attachmentIdSet
                 |]
             )
 
-        let attachmentIdSet = Store.useValue (Atoms.Task.attachmentIdSet taskId)
 
         let cellAttachmentIdMap = Store.useValue (Atoms.Task.cellAttachmentIdMap taskId)
         let statusMap = Store.useValue (Atoms.Task.statusMap taskId)
@@ -427,13 +432,13 @@ module TaskForm =
             Store.useCallback (
                 (fun getter setter _ ->
                     promise {
-                        let taskName = Store.getTemp getter (Atoms.Task.name taskId)
-                        let taskInformation = Store.getTemp getter (Atoms.Task.information taskId)
-                        let taskScheduling = Store.getTemp getter (Atoms.Task.scheduling taskId)
-                        let taskPriority = Store.getTemp getter (Atoms.Task.priority taskId)
-                        let taskDuration = Store.getTemp getter (Atoms.Task.duration taskId)
-                        let taskMissedAfter = Store.getTemp getter (Atoms.Task.missedAfter taskId)
-                        let taskPendingAfter = Store.getTemp getter (Atoms.Task.pendingAfter taskId)
+                        let taskName = Store.getTempValue getter (Atoms.Task.name taskId)
+                        let taskInformation = Store.getTempValue getter (Atoms.Task.information taskId)
+                        let taskScheduling = Store.getTempValue getter (Atoms.Task.scheduling taskId)
+                        let taskPriority = Store.getTempValue getter (Atoms.Task.priority taskId)
+                        let taskDuration = Store.getTempValue getter (Atoms.Task.duration taskId)
+                        let taskMissedAfter = Store.getTempValue getter (Atoms.Task.missedAfter taskId)
+                        let taskPendingAfter = Store.getTempValue getter (Atoms.Task.pendingAfter taskId)
 
                         if taskDatabaseId = Database.Default.Id then
                             toast (fun x -> x.description <- "Invalid database")
@@ -483,13 +488,13 @@ module TaskForm =
                                             }
                                     }
 
-                            Store.resetTemp setter (Atoms.Task.name taskId)
-                            Store.resetTemp setter (Atoms.Task.information taskId)
-                            Store.resetTemp setter (Atoms.Task.scheduling taskId)
-                            Store.resetTemp setter (Atoms.Task.priority taskId)
-                            Store.resetTemp setter (Atoms.Task.duration taskId)
-                            Store.resetTemp setter (Atoms.Task.missedAfter taskId)
-                            Store.resetTemp setter (Atoms.Task.pendingAfter taskId)
+                            Store.resetTempValue setter (Atoms.Task.name taskId)
+                            Store.resetTempValue setter (Atoms.Task.information taskId)
+                            Store.resetTempValue setter (Atoms.Task.scheduling taskId)
+                            Store.resetTempValue setter (Atoms.Task.priority taskId)
+                            Store.resetTempValue setter (Atoms.Task.duration taskId)
+                            Store.resetTempValue setter (Atoms.Task.missedAfter taskId)
+                            Store.resetTempValue setter (Atoms.Task.pendingAfter taskId)
                             Store.set setter (Atoms.User.uiFlag UIFlagType.Task) UIFlag.None
 
                             do! onSave task
@@ -666,9 +671,10 @@ module TaskForm =
                                     x.flex <- "1")
                                 [
                                     AttachmentPanel.AttachmentPanel
+                                        AddAttachmentInput.AttachmentPanelType.Task
                                         (Some onAttachmentAdd)
                                         onAttachmentDelete
-                                        (attachmentIdSet |> Set.toList)
+                                        attachmentIdList
                                 ])
                     ]
             |}
@@ -678,7 +684,7 @@ module TaskForm =
         let hydrateTaskState = Hydrate.useHydrateTaskState ()
         let hydrateTask = Hydrate.useHydrateTask ()
         let archive = Store.useValue Atoms.User.archive
-        let selectedTaskIdList = Store.useValue Selectors.Session.selectedTaskIdList
+        let selectedTaskIdListByArchive = Store.useValue Selectors.Session.selectedTaskIdListByArchive
         let setRightDock = Store.useSetState Atoms.User.rightDock
         let taskUIFlag = Store.useValue (Atoms.User.uiFlag UIFlagType.Task)
 
@@ -691,11 +697,15 @@ module TaskForm =
             React.useMemo (
                 (fun () ->
                     match taskUIFlag with
-                    | UIFlag.Task (_, taskId) when selectedTaskIdList |> List.contains taskId -> taskId
+                    | UIFlag.Task (_, taskId) when
+                        selectedTaskIdListByArchive
+                        |> List.contains taskId
+                        ->
+                        taskId
                     | _ -> Task.Default.Id),
                 [|
                     box taskUIFlag
-                    box selectedTaskIdList
+                    box selectedTaskIdListByArchive
                 |]
             )
 
@@ -709,8 +719,8 @@ module TaskForm =
                                 Task = task
                                 Archived = archive |> Option.defaultValue false
                                 SortList = []
-                                Sessions = []
-                                Attachments = []
+                                SessionList = []
+                                AttachmentStateList = []
                                 CellStateMap = Map.empty
                             }
 

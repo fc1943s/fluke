@@ -92,16 +92,14 @@ module SearchForm =
                         if searchText = "" then
                             setSearchResults []
                         else
-                            let searchAttachments attachments =
-                                attachments
-                                |> List.map snd
+                            let searchAttachments attachmentStateList =
+                                attachmentStateList
                                 |> List.choose
-                                    (fun attachment ->
-                                        match attachment with
-                                        | Attachment.Comment (Comment.Comment comment) -> Some comment
+                                    (fun attachmentState ->
+                                        match attachmentState.Attachment with
+                                        | Attachment.Comment (Comment.Comment comment) when comment.Contains searchText ->
+                                            Some comment
                                         | _ -> None)
-                                |> List.choose
-                                    (fun comment -> if comment.Contains searchText then Some comment else None)
 
                             let selectedDatabaseIdSet = Store.value getter Atoms.User.selectedDatabaseIdSet
 
@@ -139,7 +137,7 @@ module SearchForm =
                                                                     informationName
 
                                                             yield!
-                                                                searchAttachments informationState.Attachments
+                                                                searchAttachments informationState.AttachmentStateList
                                                                 |> List.map
                                                                     (fun attachmentText ->
                                                                         SearchResultType.InformationAttachment
@@ -167,7 +165,7 @@ module SearchForm =
                                                                     taskName
 
                                                             yield!
-                                                                searchAttachments taskState.Attachments
+                                                                searchAttachments taskState.AttachmentStateList
                                                                 |> List.map
                                                                     (fun attachmentText ->
                                                                         SearchResultType.TaskAttachment taskName,
@@ -184,7 +182,8 @@ module SearchForm =
                                                                     (fun (dateId, cellState) ->
                                                                         [
                                                                             yield!
-                                                                                searchAttachments cellState.Attachments
+                                                                                searchAttachments
+                                                                                    cellState.AttachmentStateList
                                                                                 |> List.map
                                                                                     (fun attachmentText ->
                                                                                         SearchResultType.CellAttachment (

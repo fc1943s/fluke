@@ -16,9 +16,9 @@ open Fable.Core
 
 module AttachmentPanel =
     [<ReactComponent>]
-    let AttachmentHeader onDelete onEdit attachmentId =
-        let attachment = Store.useValue (Atoms.Attachment.attachment attachmentId)
-        let timestamp = Store.useValue (Atoms.Attachment.timestamp attachmentId)
+    let AttachmentHeader attachmentPanelType onDelete onEdit attachmentId =
+        let attachmentState = Store.useValue (Selectors.Attachment.attachmentState attachmentId)
+        let setArchived = Store.useSetState (Atoms.Attachment.archived attachmentId)
 
         UI.flex
             (fun x -> x.color <- "whiteAlpha.600")
@@ -26,14 +26,17 @@ module AttachmentPanel =
                 UI.box
                     (fun x -> x.lineHeight <- "16px")
                     [
-                        match timestamp with
-                        | Some timestamp ->
+                        match attachmentState with
+                        | Some attachmentState ->
                             UI.box
                                 (fun x ->
                                     x.userSelect <- "text"
                                     x.display <- "inline")
                                 [
-                                    str (timestamp |> FlukeDateTime.Stringify)
+                                    str (
+                                        attachmentState.Timestamp
+                                        |> FlukeDateTime.Stringify
+                                    )
                                 ]
 
                             Menu.Menu
@@ -51,12 +54,24 @@ module AttachmentPanel =
                                                 x.marginLeft <- "6px")
                                     Body =
                                         [
-                                            match attachment with
-                                            | Some (Attachment.Comment _) ->
+                                            match attachmentState.Attachment with
+                                            | Attachment.Comment _ ->
                                                 MenuItem.MenuItem
                                                     Icons.bs.BsPen
                                                     "Edit Attachment"
                                                     (Some onEdit)
+                                                    (fun _ -> ())
+                                            | _ -> nothing
+
+                                            match attachmentPanelType with
+                                            | AddAttachmentInput.AttachmentPanelType.Information ->
+                                                MenuItem.MenuItem
+                                                    Icons.ri.RiArchiveLine
+                                                    $"""{if attachmentState.Archived = true then "Unarchive" else "Archive"} Attachment"""
+                                                    (Some
+                                                        (fun () ->
+                                                            promise {
+                                                                setArchived (Some (not attachmentState.Archived)) }))
                                                     (fun _ -> ())
                                             | _ -> nothing
 
@@ -185,7 +200,7 @@ module AttachmentPanel =
             ]
 
     [<ReactComponent>]
-    let Attachment onDelete attachmentId =
+    let Attachment attachmentPanelType onDelete attachmentId =
         let attachment = Store.useValue (Atoms.Attachment.attachment attachmentId)
 
         //        let tempAttachment =
@@ -207,7 +222,7 @@ module AttachmentPanel =
             Store.useCallback (
                 (fun _ setter _ ->
                     promise {
-                        Store.resetTemp setter (Atoms.Attachment.attachment attachmentId)
+                        Store.resetTempValue setter (Atoms.Attachment.attachment attachmentId)
                         setEditing false
                     }),
                 [|
@@ -220,7 +235,7 @@ module AttachmentPanel =
             Store.useCallback (
                 (fun getter setter () ->
                     promise {
-                        let attachment = Store.getTemp getter (Atoms.Attachment.attachment attachmentId)
+                        let attachment = Store.getTempValue getter (Atoms.Attachment.attachment attachmentId)
 
                         match attachment with
                         | Some (Attachment.Comment (Comment.Comment (String.ValidString _))) ->
@@ -234,12 +249,17 @@ module AttachmentPanel =
                 |]
             )
 
+
         UI.stack
             (fun x ->
                 x.flex <- "1"
-                x.spacing <- "6px")
+                x.spacing <- "6px"
+                x.paddingTop <- "12px"
+                x.paddingBottom <- "12px"
+                x.borderBottomWidth <- "1px"
+                x.borderBottomColor <- "gray.16")
             [
-                AttachmentHeader onDelete onEdit attachmentId
+                AttachmentHeader attachmentPanelType onDelete onEdit attachmentId
 
                 match attachment with
                 | Some (Attachment.Image fileId) -> AddAttachmentInput.FileThumbnail fileId
@@ -336,15 +356,14 @@ module AttachmentPanel =
                                     match attachment with
                                     | Attachment.Comment (Comment.Comment comment) -> AttachmentComment comment
                                     | _ -> nothing)
-
-                        ]
+                    ]
 
                     nothing
                 | _ -> str "???"
             ]
 
     [<ReactComponent>]
-    let AttachmentPanel onAdd onDelete attachmentIdList =
+    let AttachmentPanel attachmentPanelType onAdd onDelete attachmentIdList =
         //        let onDragEnd = Store.useCallback ((fun _ _ x -> promise { printfn $"x={x}" }), [||])
 //
 //        DragDrop.dragDropContext
@@ -362,15 +381,7 @@ module AttachmentPanel =
                         x.overflowY <- "auto"
                         x.flexBasis <- 0)
                     [
-                        match attachmentIdList with
-                        //                                                | None -> LoadingSpinner.LoadingSpinner ()
-                        | [] ->
-                            UI.box
-                                (fun _ -> ())
-                                [
-                                    str "No attachments found"
-                                ]
-                        | attachmentIdList ->
+                        if attachmentIdList |> List.isEmpty |> not then
                             UI.box
                                 (fun _ -> ())
                                 [
@@ -378,17 +389,18 @@ module AttachmentPanel =
                                         attachmentIdList
                                         |> List.map
                                             (fun attachmentId ->
-                                                UI.box
-                                                    (fun x ->
-                                                        x.paddingTop <- "12px"
-                                                        x.paddingBottom <- "12px"
-                                                        x.borderBottomWidth <- "1px"
-                                                        x.borderBottomColor <- "gray.16")
-                                                    [
-                                                        Attachment (fun () -> onDelete attachmentId) attachmentId
-                                                    ])
+                                                Attachment
+                                                    attachmentPanelType
+                                                    (fun () -> onDelete attachmentId)
+                                                    attachmentId)
+                                ]
+                        else
+                            UI.box
+                                (fun _ -> ())
+                                [
+                                    str "No attachments found"
                                 ]
                     ]
 
-                AddAttachmentInput.AddAttachmentInput onAdd
+                AddAttachmentInput.AddAttachmentInput attachmentPanelType onAdd
             ]

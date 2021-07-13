@@ -471,13 +471,6 @@ module State =
                     databaseIdIdentifier
                 )
 
-            let rec archivedAttachmentIdSet =
-                Store.atomFamilyWithSync (
-                    $"{nameof Database}/{nameof archivedAttachmentIdSet}",
-                    (fun (_databaseId: DatabaseId) -> Set.empty: Set<AttachmentId>),
-                    databaseIdIdentifier
-                )
-
 
         module rec File =
             let fileIdIdentifier (fileId: FileId) =
@@ -513,6 +506,13 @@ module State =
                 Store.atomFamilyWithSync (
                     $"{nameof Attachment}/{nameof timestamp}",
                     (fun (_attachmentId: AttachmentId) -> None: FlukeDateTime option),
+                    attachmentIdIdentifier
+                )
+
+            let rec archived =
+                Store.atomFamilyWithSync (
+                    $"{nameof Attachment}/{nameof archived}",
+                    (fun (_attachmentId: AttachmentId) -> None: bool option),
                     attachmentIdIdentifier
                 )
 
@@ -813,21 +813,6 @@ module State =
 
 
         module Database =
-            //            let rec taskIdSet =
-//                Store.readSelectorFamily (
-//                    $"{nameof Database}/{nameof taskIdSet}",
-//                    (fun (databaseId: DatabaseId) getter ->
-//                        //                        let taskIdSet = getter.get (Atoms.Session.taskIdSet username)
-////
-////                        taskIdSet
-////                        |> Set.filter
-////                            (fun taskId ->
-////                                let databaseId' = getter.get (Atoms.Task.databaseId taskId)
-////                                databaseId' = databaseId)
-//
-//                        Store.value getter (Atoms.Database.taskIdSet databaseId))
-//                )
-
             let rec database =
                 Store.readSelectorFamily (
                     $"{nameof Database}/{nameof database}",
@@ -876,32 +861,73 @@ module State =
                         access = Some Access.ReadWrite)
                 )
 
+            //            let rec taskIdAtoms =
+//                Store.readSelectorFamily (
+//                    $"{nameof Database}/{nameof taskIdAtoms}",
+//                    (fun (databaseId: DatabaseId) getter ->
+//                        let archive = Store.value getter Atoms.User.archive
+//
+//                        match archive with
+//                        | Some archive ->
+//                            asyncTaskIdAtoms
+//                            |> Store.value getter
+//                            |> Array.filter
+//                                (fun taskIdAtom ->
+//                                    let taskId = Store.value getter taskIdAtom
+//                                    let databaseId' = Store.value getter (Atoms.Task.databaseId taskId)
+//                                    let archived = Store.value getter (Atoms.Task.archived taskId)
+//
+//                                    match archived with
+//                                    | Some archived -> databaseId = databaseId' && archived = archive
+//                                    | None -> false)
+//                        | None -> [||])
+//                )
+
             let rec taskIdAtoms =
                 Store.readSelectorFamily (
                     $"{nameof Database}/{nameof taskIdAtoms}",
-                    (fun databaseId getter ->
-                        let archive = Store.value getter Atoms.User.archive
+                    (fun (databaseId: DatabaseId) getter ->
+                        asyncTaskIdAtoms
+                        |> Store.value getter
+                        |> Array.filter
+                            (fun taskIdAtom ->
+                                let taskId = Store.value getter taskIdAtom
+                                let databaseId' = Store.value getter (Atoms.Task.databaseId taskId)
+                                databaseId = databaseId'))
+                )
 
-                        match archive with
-                        | Some archive ->
-                            asyncTaskIdAtoms
-                            |> Store.value getter
-                            |> Array.filter
-                                (fun taskIdAtom ->
-                                    let taskId = Store.value getter taskIdAtom
-                                    let databaseId' = Store.value getter (Atoms.Task.databaseId taskId)
-                                    let archived = Store.value getter (Atoms.Task.archived taskId)
+            let rec unarchivedTaskIdAtoms =
+                Store.readSelectorFamily (
+                    $"{nameof Database}/{nameof unarchivedTaskIdAtoms}",
+                    (fun (databaseId: DatabaseId) getter ->
+                        let taskIdAtoms = Store.value getter (taskIdAtoms databaseId)
 
-                                    match archived with
-                                    | Some archived -> databaseId = databaseId' && archived = archive
-                                    | None -> false)
-                        | None -> [||])
+                        taskIdAtoms
+                        |> Array.filter
+                            (fun taskIdAtom ->
+                                let taskId = Store.value getter taskIdAtom
+                                let archived = Store.value getter (Atoms.Task.archived taskId)
+                                archived = Some false))
+                )
+
+            let rec archivedTaskIdAtoms =
+                Store.readSelectorFamily (
+                    $"{nameof Database}/{nameof archivedTaskIdAtoms}",
+                    (fun (databaseId: DatabaseId) getter ->
+                        let taskIdAtoms = Store.value getter (taskIdAtoms databaseId)
+
+                        taskIdAtoms
+                        |> Array.filter
+                            (fun taskIdAtom ->
+                                let taskId = Store.value getter taskIdAtom
+                                let archived = Store.value getter (Atoms.Task.archived taskId)
+                                archived = Some true))
                 )
 
             let rec databaseState =
                 Store.readSelectorFamily (
                     $"{nameof Database}/{nameof databaseState}",
-                    (fun databaseId getter ->
+                    (fun (databaseId: DatabaseId) getter ->
                         let database = Store.value getter (Selectors.Database.database databaseId)
 
                         let taskIdAtoms = Store.value getter (Selectors.Database.taskIdAtoms databaseId)
@@ -917,10 +943,10 @@ module State =
                             taskStateList
                             |> List.collect
                                 (fun taskState ->
-                                    taskState.Attachments
+                                    taskState.AttachmentStateList
                                     |> List.choose
-                                        (fun (_, attachment) ->
-                                            match attachment with
+                                        (fun attachmentState ->
+                                            match attachmentState.Attachment with
                                             | Attachment.Image fileId -> Some fileId
                                             | _ -> None))
 
@@ -946,10 +972,10 @@ module State =
                                 informationAttachmentIdMap
                                 |> Map.map
                                     (fun information attachmentIdSet ->
-                                        let attachments =
+                                        let attachmentStateList =
                                             attachmentIdSet
                                             |> Set.toArray
-                                            |> Array.map Selectors.Attachment.attachment
+                                            |> Array.map Selectors.Attachment.attachmentState
                                             |> Store.waitForAll
                                             |> Store.value getter
                                             |> Array.toList
@@ -957,12 +983,12 @@ module State =
 
                                         {
                                             Information = information
-                                            Attachments = attachments
+                                            AttachmentStateList = attachmentStateList
                                             SortList = []
                                         })
                                 |> Map.filter
                                     (fun _ informationState ->
-                                        not informationState.Attachments.IsEmpty
+                                        not informationState.AttachmentStateList.IsEmpty
                                         || not informationState.SortList.IsEmpty)
 
                             let taskStateMap =
@@ -1057,15 +1083,22 @@ module State =
 
 
         module Attachment =
-            let rec attachment =
+            let rec attachmentState =
                 Store.readSelectorFamily (
-                    $"{nameof Attachment}/{nameof attachment}",
+                    $"{nameof Attachment}/{nameof attachmentState}",
                     (fun (attachmentId: AttachmentId) getter ->
                         let timestamp = Store.value getter (Atoms.Attachment.timestamp attachmentId)
+                        let archived = Store.value getter (Atoms.Attachment.archived attachmentId)
                         let attachment = Store.value getter (Atoms.Attachment.attachment attachmentId)
 
-                        match timestamp, attachment with
-                        | Some timestamp, Some attachment -> Some (timestamp, attachment)
+                        match timestamp, archived, attachment with
+                        | Some timestamp, archived, Some attachment ->
+                            Some
+                                {
+                                    Timestamp = timestamp
+                                    Archived = archived |> Option.defaultValue false // TODO: , Some archived,
+                                    Attachment = attachment
+                                }
                         | _ -> None)
                 )
 
@@ -1134,20 +1167,23 @@ module State =
                             cellAttachmentIdMap
                             |> Map.mapValues
                                 (fun attachmentIdSet ->
-                                    let attachments =
+                                    let attachmentStateList =
                                         attachmentIdSet
                                         |> Set.toArray
-                                        |> Array.map Attachment.attachment
+                                        |> Array.map Attachment.attachmentState
                                         |> Store.waitForAll
                                         |> Store.value getter
                                         |> Array.toList
                                         |> List.choose id
-                                        |> List.sortByDescending (fst >> FlukeDateTime.DateTime)
+                                        |> List.sortByDescending
+                                            (fun attachmentState ->
+                                                attachmentState.Timestamp
+                                                |> FlukeDateTime.DateTime)
 
                                     {
                                         Status = Disabled
-                                        Sessions = []
-                                        Attachments = attachments
+                                        SessionList = []
+                                        AttachmentStateList = attachmentStateList
                                     })
 
                         let cellStateSessionMap =
@@ -1156,8 +1192,8 @@ module State =
                                 (fun sessions ->
                                     {
                                         Status = Disabled
-                                        Sessions = sessions
-                                        Attachments = []
+                                        SessionList = sessions
+                                        AttachmentStateList = []
                                     })
 
                         let newStatusMap =
@@ -1166,8 +1202,8 @@ module State =
                                 (fun status ->
                                     {
                                         Status = UserStatus status
-                                        Sessions = []
-                                        Attachments = []
+                                        SessionList = []
+                                        AttachmentStateList = []
                                     })
 
                         newStatusMap
@@ -1177,8 +1213,8 @@ module State =
                             (fun _ cellState ->
                                 match cellState with
                                 | { Status = UserStatus _ } -> true
-                                | { Sessions = _ :: _ } -> true
-                                | { Attachments = _ :: _ } -> true
+                                | { SessionList = _ :: _ } -> true
+                                | { AttachmentStateList = _ :: _ } -> true
                                 | _ -> false))
                 )
 
@@ -1199,8 +1235,8 @@ module State =
                                     |> Option.defaultValue
                                         {
                                             Status = Disabled
-                                            Sessions = []
-                                            Attachments = []
+                                            SessionList = []
+                                            AttachmentStateList = []
                                         }
 
                                 dateId, cellState)
@@ -1209,8 +1245,8 @@ module State =
                             (fun _ cellState ->
                                 match cellState with
                                 | { Status = UserStatus _ } -> true
-                                | { Sessions = _ :: _ } -> true
-                                | { Attachments = _ :: _ } -> true
+                                | { SessionList = _ :: _ } -> true
+                                | { AttachmentStateList = _ :: _ } -> true
                                 | _ -> false))
                 )
 
@@ -1225,21 +1261,24 @@ module State =
                         let cellStateMap = Store.value getter (cellStateMap taskId)
                         let attachmentIdSet = Store.value getter (Atoms.Task.attachmentIdSet taskId)
 
-                        let attachments =
+                        let attachmentStateList =
                             attachmentIdSet
                             |> Set.toArray
-                            |> Array.map Attachment.attachment
+                            |> Array.map Attachment.attachmentState
                             |> Store.waitForAll
                             |> Store.value getter
                             |> Array.toList
                             |> List.choose id
-                            |> List.sortByDescending (fst >> FlukeDateTime.DateTime)
+                            |> List.sortByDescending
+                                (fun attachmentState ->
+                                    attachmentState.Timestamp
+                                    |> FlukeDateTime.DateTime)
 
                         {
                             Task = task
                             Archived = archived |> Option.defaultValue false
-                            Sessions = sessions
-                            Attachments = attachments
+                            SessionList = sessions
+                            AttachmentStateList = attachmentStateList
                             SortList = []
                             CellStateMap = cellStateMap
                         })
@@ -1298,7 +1337,7 @@ module State =
                             (fun date ->
                                 cellStateMap
                                 |> Map.tryFind (DateId date)
-                                |> Option.map (fun cellState -> cellState.Sessions)
+                                |> Option.map (fun cellState -> cellState.SessionList)
                                 |> Option.defaultValue []
                                 |> List.sortByDescending (fun (Session start) -> start |> FlukeDateTime.DateTime)
                                 |> List.tryHead))
@@ -1464,13 +1503,24 @@ module State =
                         |> Array.collect id)
                 )
 
-            let rec selectedTaskIdList =
+            let rec selectedTaskIdListByArchive =
                 Store.readSelector (
-                    $"{nameof Session}/{nameof selectedTaskIdList}",
+                    $"{nameof Session}/{nameof selectedTaskIdListByArchive}",
                     (fun getter ->
-                        let selectedTaskIdAtoms = Store.value getter selectedTaskIdAtoms
+                        let archive = Store.value getter Atoms.User.archive
+                        let selectedDatabaseIdSet = Store.value getter Atoms.User.selectedDatabaseIdSet
 
-                        selectedTaskIdAtoms
+                        selectedDatabaseIdSet
+                        |> Set.toArray
+                        |> Array.map (
+                            if archive = Some true then
+                                Database.archivedTaskIdAtoms
+                            else
+                                Database.unarchivedTaskIdAtoms
+                        )
+                        |> Store.waitForAll
+                        |> Store.value getter
+                        |> Array.collect id
                         |> Store.waitForAll
                         |> Store.value getter
                         |> Array.toList)
@@ -1532,11 +1582,9 @@ module State =
                 Store.readSelector (
                     $"{nameof Session}/{nameof activeSessions}",
                     (fun getter ->
-                        let selectedTaskIdAtoms = Store.value getter selectedTaskIdAtoms
-
                         let selectedTaskIdArray =
-                            selectedTaskIdAtoms
-                            |> Array.map (Store.value getter)
+                            Store.value getter selectedTaskIdListByArchive
+                            |> List.toArray
 
                         let durationArray =
                             selectedTaskIdArray
@@ -1570,11 +1618,9 @@ module State =
                         let view = Store.value getter Atoms.User.view
                         let dateSequence = Store.value getter dateSequence
 
-                        let selectedTaskIdAtoms = Store.value getter selectedTaskIdAtoms
-
                         let selectedTaskIdArray =
-                            selectedTaskIdAtoms
-                            |> Array.map (Store.value getter)
+                            Store.value getter selectedTaskIdListByArchive
+                            |> List.toArray
 
                         let selectedTaskList =
                             selectedTaskIdArray
@@ -1858,17 +1904,17 @@ module State =
                                                                 |> Option.defaultValue
                                                                     {
                                                                         Status = CellStatus.Disabled
-                                                                        Attachments = []
-                                                                        Sessions = []
+                                                                        AttachmentStateList = []
+                                                                        SessionList = []
                                                                     }
 
                                                             {|
                                                                 DateId = dateId
                                                                 TaskId = taskId
                                                                 Status = cellState.Status
-                                                                Sessions = cellState.Sessions
+                                                                SessionList = cellState.SessionList
                                                                 IsToday = isToday
-                                                                Attachments = cellState.Attachments
+                                                                AttachmentStateList = cellState.AttachmentStateList
                                                             |}))
                                             |> List.groupBy (fun x -> x.DateId)
                                             |> List.map
@@ -1876,9 +1922,9 @@ module State =
                                                     match dateId with
                                                     | DateId referenceDay as dateId ->
                                                         //                |> Sorting.sortLanesByTimeOfDay input.DayStart input.Position input.TaskOrderList
-                                                        let taskSessions =
+                                                        let taskSessionList =
                                                             cellsMetadata
-                                                            |> List.collect (fun x -> x.Sessions)
+                                                            |> List.collect (fun x -> x.SessionList)
 
                                                         let sortedTasksMap =
                                                             cellsMetadata
@@ -1886,7 +1932,7 @@ module State =
                                                                 (fun cellMetadata ->
                                                                     let taskState =
                                                                         { taskStateMap.[cellMetadata.TaskId] with
-                                                                            Sessions = taskSessions
+                                                                            SessionList = taskSessionList
                                                                         }
 
                                                                     taskState,

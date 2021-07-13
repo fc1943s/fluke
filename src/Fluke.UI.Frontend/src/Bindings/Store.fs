@@ -1183,7 +1183,7 @@ lastUserAtomId={lastUserAtomId} """
         | _ -> { Current = None; Temp = None }
 
 
-    let inline setTemp<'TValue9, 'TKey> (setter: Jotai.SetFn, atom: Jotai.Atom<'TValue9>, value: 'TValue9) =
+    let inline setTempValue<'TValue9, 'TKey> (setter: Jotai.SetFn, atom: Jotai.Atom<'TValue9>, value: 'TValue9) =
         let atomField = getAtomField (Some (InputAtom (AtomReference.Atom atom))) AtomScope.Temp
 
         match atomField.Temp with
@@ -1197,9 +1197,9 @@ lastUserAtomId={lastUserAtomId} """
         =
         match atomScope with
         | AtomScope.Current -> set setter (atom key) value
-        | AtomScope.Temp -> setTemp<'TValue10, 'TKey> (setter, atom key, value)
+        | AtomScope.Temp -> setTempValue<'TValue10, 'TKey> (setter, atom key, value)
 
-    let inline resetTemp<'TValue8, 'TKey> (setter: Jotai.SetFn) (atom: Jotai.Atom<'TValue8>) =
+    let inline resetTempValue<'TValue8, 'TKey> (setter: Jotai.SetFn) (atom: Jotai.Atom<'TValue8>) =
         let atomField = getAtomField (Some (InputAtom (AtomReference.Atom atom))) AtomScope.Temp
 
         match atomField.Temp with
@@ -1208,7 +1208,7 @@ lastUserAtomId={lastUserAtomId} """
 
     let rec ___emptyTempAtom = nameof ___emptyTempAtom
 
-    let inline getTemp<'TValue11, 'TKey> getter (atom: Jotai.Atom<'TValue11>) =
+    let inline getTempValue<'TValue11, 'TKey> getter (atom: Jotai.Atom<'TValue11>) =
         let atomField = getAtomField (Some (InputAtom (AtomReference.Atom atom))) AtomScope.Temp
 
         match atomField.Temp with

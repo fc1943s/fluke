@@ -21,10 +21,15 @@ module PasteListener =
                         JS.log (fun () -> $"pasted image attachment={attachment}")
 
                         let attachmentId =
-                            Hydrate.hydrateAttachment
+                            Hydrate.hydrateAttachmentState
                                 getter
                                 setter
-                                (Store.AtomScope.Current, (FlukeDateTime.FromDateTime DateTime.Now, attachment))
+                                (Store.AtomScope.Current,
+                                 {
+                                     Timestamp = FlukeDateTime.FromDateTime DateTime.Now
+                                     Archived = false
+                                     Attachment = attachment
+                                 })
 
                         Store.change setter Atoms.User.clipboardAttachmentIdMap (Map.add attachmentId false)
                     }),
