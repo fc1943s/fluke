@@ -652,8 +652,7 @@ module TaskForm =
                                                                                      x.marginLeft <- "6px")
                                                                          Body =
                                                                              [
-                                                                                 ConfirmPopover.ConfirmPopover
-                                                                                     ConfirmPopover.ConfirmPopoverType.MenuItem
+                                                                                 Popover.MenuItemConfirmPopover
                                                                                      Icons.bi.BiTrash
                                                                                      "Delete Session"
                                                                                      (fun () -> deleteSession start)

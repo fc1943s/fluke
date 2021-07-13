@@ -131,11 +131,7 @@ module TaskName =
                                                         (fun () -> promise { setArchived (archived |> Option.map not) }))
                                                     (fun _ -> ())
 
-                                                ConfirmPopover.ConfirmPopover
-                                                    ConfirmPopover.ConfirmPopoverType.MenuItem
-                                                    Icons.bi.BiTrash
-                                                    "Delete Task"
-                                                    deleteTask
+                                                Popover.MenuItemConfirmPopover Icons.bi.BiTrash "Delete Task" deleteTask
                                             ]
                                         MenuListProps = fun _ -> ()
                                     |}

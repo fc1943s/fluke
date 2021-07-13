@@ -161,7 +161,15 @@ module Popover =
                                                             Icons.fi.FiCheck |> Icons.render,
                                                             Button.IconPosition.Left
                                                         )
-                                                    Props = fun x -> x.onClick <- onConfirm
+                                                    Props =
+                                                        fun x ->
+                                                            x.onClick <-
+                                                                fun e ->
+                                                                    promise {
+                                                                        e.preventDefault ()
+                                                                        do! onConfirm ()
+                                                                        disclosure.onClose ()
+                                                                    }
                                                     Children =
                                                         [
                                                             str "Confirm"
@@ -171,3 +179,6 @@ module Popover =
                                 ]
                         ]
             |}
+
+    let inline MenuItemConfirmPopover icon label onConfirm =
+        ConfirmPopover (MenuItem.MenuItem icon label None (fun x -> x.closeOnSelect <- false)) onConfirm (fun _ -> [])

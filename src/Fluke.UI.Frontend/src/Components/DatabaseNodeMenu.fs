@@ -76,11 +76,7 @@ module DatabaseNodeMenu =
                             (Some (fun () -> exportDatabase databaseId))
                             (fun _ -> ())
 
-                        ConfirmPopover.ConfirmPopover
-                            ConfirmPopover.ConfirmPopoverType.MenuItem
-                            Icons.bi.BiTrash
-                            "Delete Database"
-                            deleteDatabase
+                        Popover.MenuItemConfirmPopover Icons.bi.BiTrash "Delete Database" deleteDatabase
                     ]
                 MenuListProps = fun _ -> ()
             |}

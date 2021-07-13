@@ -43,6 +43,7 @@
         <Compile Include="src\Components\Tooltip.fs" />
         <Compile Include="src\Components\InputLabelIconButton.fs" />
         <Compile Include="src\Components\Button.fs" />
+        <Compile Include="src\Components\MenuItem.fs" />
         <Compile Include="src\Components\Popover.fs" />
         <Compile Include="src\Components\Hint.fs" />
         <Compile Include="src\Components\InputLabel.fs" />
@@ -86,9 +87,16 @@
         <Compile Include="src\Components\InformationSelector.fs" />
         <Compile Include="src\Components\DatabaseSelector.fs" />
         <Compile Include="src\Components\PasteListener.fs" />
-        <Compile Include="src\Components\MenuItem.fs" />
-        <Compile Include="src\Components\ConfirmPopover.fs" />
+        <Compile Include="src\Components\ImageModal.fs" />
+        <Compile Include="src\Components\FileThumbnail.fs" />
+        <Compile Include="src\Components\TempFileThumbnail.fs" />
+        <Compile Include="src\Components\AttachmentThumbnail.fs" />
+        <Compile Include="src\Components\AttachmentList.fs" />
+        <Compile Include="src\Components\AttachmentsClipboard.fs" />
         <Compile Include="src\Components\AddAttachmentInput.fs" />
+        <Compile Include="src\Components\AttachmentHeader.fs" />
+        <Compile Include="src\Components\AttachmentComment.fs" />
+        <Compile Include="src\Components\Attachment.fs" />
         <Compile Include="src\Components\AttachmentPanel.fs" />
         <Compile Include="src\Components\TaskForm.fs" />
         <Compile Include="src\Components\TaskName.fs" />
