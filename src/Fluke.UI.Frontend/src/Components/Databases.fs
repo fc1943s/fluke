@@ -12,7 +12,6 @@ open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.TempUI
-open Browser.Types
 
 
 module Databases =
@@ -273,57 +272,6 @@ module Databases =
                                         }
                     |}
             ]
-
-    [<ReactComponent>]
-    let ImportDatabase () =
-        let inputRef = React.useRef<HTMLInputElement> null
-        let files, setFiles = React.useState (None: FileList option)
-        let importDatabase = Hydrate.useImportDatabase ()
-
-        UI.stack
-            (fun x -> x.spacing <- "15px")
-            [
-                UI.box
-                    (fun x ->
-                        x.paddingBottom <- "5px"
-                        x.marginRight <- "24px"
-                        x.fontSize <- "1.3rem")
-                    [
-                        str "Import Database"
-                    ]
-
-                UI.input
-                    (fun x ->
-                        x.``type`` <- "file"
-                        x.padding <- "10px"
-                        x.height <- "43px"
-                        x.ref <- inputRef
-                        x.onChange <- fun x -> promise { x?target?files |> Option.ofObj |> setFiles })
-                    []
-
-                UI.box
-                    (fun _ -> ())
-                    [
-                        Button.Button
-                            {|
-                                Hint = None
-                                Icon = Some (Icons.bi.BiImport |> Icons.render, Button.IconPosition.Left)
-                                Props =
-                                    fun x ->
-                                        x.onClick <-
-                                            fun _ ->
-                                                promise {
-                                                    do! importDatabase files
-                                                    inputRef.current.value <- ""
-                                                }
-                                Children =
-                                    [
-                                        str "Confirm"
-                                    ]
-                            |}
-                    ]
-            ]
-
 
     [<ReactComponent>]
     let rec Databases props =

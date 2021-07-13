@@ -14,7 +14,7 @@ module DeleteUserButton =
         let toast = UI.useToast ()
         let passwordField, setPasswordField = React.useState ""
 
-        let confirmClick (disclosure: UI.Disclosure) _ =
+        let confirmClick () =
             promise {
                 match! deleteUser passwordField with
                 | Ok () ->
@@ -25,65 +25,34 @@ module DeleteUserButton =
                             x.description <- "User deleted successfully")
 
                     setPasswordField ""
-
-                    disclosure.onClose ()
-                | Error error -> toast (fun x -> x.description <- error)
+                    return true
+                | Error error ->
+                    toast (fun x -> x.description <- error)
+                    return false
             }
 
-        Popover.Popover
-            {|
-                Trigger =
-                    Button.Button
+        Dropdown.ConfirmDropdown
+            "Delete User"
+            confirmClick
+            (fun onHide ->
+                [
+                    Input.Input
                         {|
-                            Hint = None
-                            Icon = Some (Icons.bi.BiTrash |> Icons.render, Button.IconPosition.Left)
-                            Props = fun _ -> ()
-                            Children =
-                                [
-                                    str "Delete User"
-                                ]
+                            CustomProps =
+                                fun x ->
+                                    x.fixedValue <- Some passwordField
+                                    x.inputFormat <- Some Input.InputFormat.Password
+
+                                    x.onEnterPress <-
+                                        Some
+                                            (fun _ ->
+                                                promise {
+                                                    let! result = confirmClick ()
+                                                    if result then onHide ()
+                                                })
+                            Props =
+                                fun x ->
+                                    x.placeholder <- "Password"
+                                    x.onChange <- (fun (e: KeyboardEvent) -> promise { setPasswordField e.Value })
                         |}
-                Body =
-                    fun (disclosure, initialFocusRef) ->
-                        [
-                            UI.stack
-                                (fun x -> x.spacing <- "10px")
-                                [
-                                    Input.Input
-                                        {|
-                                            CustomProps =
-                                                fun x ->
-                                                    x.fixedValue <- Some passwordField
-                                                    x.inputFormat <- Some Input.InputFormat.Password
-                                                    x.onEnterPress <- Some (confirmClick disclosure)
-                                            Props =
-                                                fun x ->
-                                                    x.ref <- initialFocusRef
-                                                    x.placeholder <- "Password"
-
-                                                    x.onChange <-
-                                                        (fun (e: KeyboardEvent) -> promise { setPasswordField e.Value })
-                                        |}
-
-                                    UI.box
-                                        (fun _ -> ())
-                                        [
-                                            Button.Button
-                                                {|
-                                                    Hint = None
-                                                    Icon =
-                                                        Some (
-                                                            Icons.bi.BiTrash |> Icons.render,
-                                                            Button.IconPosition.Left
-                                                        )
-                                                    Props = fun x -> x.onClick <- confirmClick disclosure
-                                                    Children =
-                                                        [
-                                                            str "Confirm"
-                                                        ]
-                                                |}
-                                        ]
-                                ]
-                        ]
-                Props = fun _ -> ()
-            |}
+                ])

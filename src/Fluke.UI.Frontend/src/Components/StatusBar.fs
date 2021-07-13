@@ -211,7 +211,6 @@ module StatusBar =
                                                                 ])
                                             ]
                                     ]
-                            Props = fun _ -> ()
                         |}
 
             //                        | _ -> str "Sessions: Loading sessions"

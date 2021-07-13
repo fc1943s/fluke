@@ -11,11 +11,8 @@ module ConfirmPopover =
 
     [<ReactComponent>]
     let ConfirmPopover confirmPopoverType icon label fn =
-        Popover.CustomPopover
+        Popover.MenuItemPopover
             {|
-                CloseButton = true
-                Props = fun x -> x.closeOnBlur <- false
-                Padding = None
                 Trigger =
                     match confirmPopoverType with
                     | MenuItem -> MenuItem.MenuItem icon label None (fun x -> x.closeOnSelect <- false)

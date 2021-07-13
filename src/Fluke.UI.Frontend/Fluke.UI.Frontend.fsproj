@@ -101,6 +101,7 @@
         <Compile Include="src\Components\TopBar.fs" />
         <Compile Include="src\Components\DatabaseLeafIcon.fs" />
         <Compile Include="src\Components\DatabaseNodeMenu.fs" />
+        <Compile Include="src\Components\ImportFile.fs" />
         <Compile Include="src\Components\Databases.fs" />
         <Compile Include="src\Components\InputList.fs" />
         <Compile Include="src\Components\ChangeUserPasswordButton.fs" />

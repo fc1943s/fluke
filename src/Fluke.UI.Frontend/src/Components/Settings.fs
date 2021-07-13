@@ -10,61 +10,9 @@ open Fluke.UI.Frontend.State
 open Fluke.Shared.Domain.Model
 open Fluke.Shared
 open Fable.Core
-open Fluke.UI.Frontend.Hooks
-open Browser.Types
 
 
 module Settings =
-    [<ReactComponent>]
-    let ImportUserSettings () =
-        let inputRef = React.useRef<HTMLInputElement> null
-        let files, setFiles = React.useState (None: FileList option)
-        let importUserSettings = Hydrate.useImportUserSettings ()
-
-        UI.stack
-            (fun x -> x.spacing <- "15px")
-            [
-                UI.box
-                    (fun x ->
-                        x.paddingBottom <- "5px"
-                        x.marginRight <- "24px"
-                        x.fontSize <- "1.3rem")
-                    [
-                        str "Import User Settings"
-                    ]
-
-                UI.input
-                    (fun x ->
-                        x.``type`` <- "file"
-                        x.padding <- "10px"
-                        x.height <- "43px"
-                        x.ref <- inputRef
-                        x.onChange <- fun x -> promise { x?target?files |> Option.ofObj |> setFiles })
-                    []
-
-                UI.box
-                    (fun _ -> ())
-                    [
-                        Button.Button
-                            {|
-                                Hint = None
-                                Icon = Some (Icons.bi.BiImport |> Icons.render, Button.IconPosition.Left)
-                                Props =
-                                    fun x ->
-                                        x.onClick <-
-                                            fun _ ->
-                                                promise {
-                                                    do! importUserSettings files
-                                                    inputRef.current.value <- ""
-                                                }
-                                Children =
-                                    [
-                                        str "Confirm"
-                                    ]
-                            |}
-                    ]
-            ]
-
     [<ReactComponent>]
     let rec Settings props =
         let weekStart, setWeekStart = Store.useState Atoms.User.weekStart
@@ -167,6 +115,8 @@ module Settings =
                                     (fun x -> x.label <- str "User Color")
 
                                 ChangeUserPasswordButton.ChangeUserPasswordButton ()
+
+                                // DeleteUserButton.DeleteUserButton ()
                             ])
 
                         "View",

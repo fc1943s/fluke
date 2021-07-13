@@ -266,7 +266,7 @@ module CellMenu =
                                 UI.box
                                     (fun _ -> ())
                                     [
-//                                        str """???"""
+                                    //                                        str """???"""
                                     ]
                             ]
                         |> wrapButtonTooltip Dismissed
@@ -287,91 +287,64 @@ module CellMenu =
                             ]
                         |> wrapButtonTooltip (Postponed None)
 
-                        Popover.Popover
-                            {|
-                                Trigger =
-                                    Tooltip.wrap
-                                        (str $"Postpone until {postponedUntilLabel}")
+                        Popover.ConfirmPopover
+                            (Tooltip.wrap
+                                (str $"Postpone until {postponedUntilLabel}")
+                                [
+                                    wrapButton None (Color.Value cellColorPostponedUntil) None
+                                ])
+                            postponeUntilLater
+                            (fun (_disclosure, initialFocusRef) ->
+                                [
+                                    UI.stack
+                                        (fun x -> x.spacing <- "10px")
                                         [
-                                            wrapButton None (Color.Value cellColorPostponedUntil) None
-                                        ]
-                                Body =
-                                    fun (_disclosure, initialFocusRef) ->
-                                        [
-                                            UI.stack
-                                                (fun x -> x.spacing <- "10px")
+                                            UI.box
+                                                (fun x ->
+                                                    x.paddingBottom <- "5px"
+                                                    x.marginRight <- "24px"
+                                                    x.fontSize <- "1.3rem")
                                                 [
-                                                    UI.box
-                                                        (fun x ->
-                                                            x.paddingBottom <- "5px"
-                                                            x.marginRight <- "24px"
-                                                            x.fontSize <- "1.3rem")
-                                                        [
-                                                            str $"Postpone until {postponedUntilLabel}"
-                                                        ]
-
-                                                    Input.Input
-                                                        {|
-                                                            CustomProps =
-                                                                fun x ->
-                                                                    x.fixedValue <- postponedUntil
-                                                                    x.inputFormat <- Some Input.InputFormat.Time
-                                                                    x.onFormat <- Some FlukeTime.Stringify
-
-                                                                    x.onValidate <-
-                                                                        Some (
-                                                                            fst
-                                                                            >> DateTime.TryParse
-                                                                            >> function
-                                                                                | true, date ->
-                                                                                    date
-                                                                                    |> FlukeTime.FromDateTime
-                                                                                    |> Some
-                                                                                | _ -> None
-                                                                        )
-                                                            Props =
-                                                                fun x ->
-                                                                    x.label <- str "Time"
-                                                                    x.placeholder <- "00:00"
-                                                                    x.ref <- initialFocusRef
-
-                                                                    x.onChange <-
-                                                                        fun (e: Browser.Types.KeyboardEvent) ->
-                                                                            promise {
-                                                                                e.Value
-                                                                                |> DateTime.TryParse
-                                                                                |> function
-                                                                                    | true, date ->
-                                                                                        date
-                                                                                        |> FlukeTime.FromDateTime
-                                                                                        |> Some
-                                                                                    | _ -> None
-                                                                                |> setPostponedUntil
-                                                                            }
-                                                        |}
-
-                                                    UI.box
-                                                        (fun _ -> ())
-                                                        [
-                                                            Button.Button
-                                                                {|
-                                                                    Hint = None
-                                                                    Icon =
-                                                                        Some (
-                                                                            Icons.fi.FiKey |> Icons.render,
-                                                                            Button.IconPosition.Left
-                                                                        )
-                                                                    Props = fun x -> x.onClick <- postponeUntilLater
-                                                                    Children =
-                                                                        [
-                                                                            str "Confirm"
-                                                                        ]
-                                                                |}
-                                                        ]
+                                                    str $"Postpone until {postponedUntilLabel}"
                                                 ]
+
+                                            Input.Input
+                                                {|
+                                                    CustomProps =
+                                                        fun x ->
+                                                            x.fixedValue <- postponedUntil
+                                                            x.inputFormat <- Some Input.InputFormat.Time
+                                                            x.onFormat <- Some FlukeTime.Stringify
+
+                                                            x.onValidate <-
+                                                                Some (
+                                                                    fst
+                                                                    >> DateTime.TryParse
+                                                                    >> function
+                                                                        | true, date ->
+                                                                            date |> FlukeTime.FromDateTime |> Some
+                                                                        | _ -> None
+                                                                )
+                                                    Props =
+                                                        fun x ->
+                                                            x.label <- str "Time"
+                                                            x.placeholder <- "00:00"
+                                                            x.ref <- initialFocusRef
+
+                                                            x.onChange <-
+                                                                fun (e: Browser.Types.KeyboardEvent) ->
+                                                                    promise {
+                                                                        e.Value
+                                                                        |> DateTime.TryParse
+                                                                        |> function
+                                                                            | true, date ->
+                                                                                date |> FlukeTime.FromDateTime |> Some
+                                                                            | _ -> None
+                                                                        |> setPostponedUntil
+                                                                    }
+                                                |}
                                         ]
-                                Props = fun _ -> ()
-                            |}
+                                ])
 
                         UI.box
                             (fun x -> x.padding <- "4px")

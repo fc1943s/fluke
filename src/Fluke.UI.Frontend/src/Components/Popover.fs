@@ -118,11 +118,56 @@ module Popover =
 
     let inline Popover
         (input: {| Trigger: ReactElement
-                   Body: UI.Disclosure * IRefValue<unit> -> ReactElement list
-                   Props: UI.IChakraProps -> unit |})
+                   Body: UI.Disclosure * IRefValue<unit> -> ReactElement list |})
         =
         CustomPopover
             {| input with
                 CloseButton = true
                 Padding = None
+                Props = fun _ -> ()
+            |}
+
+    let inline MenuItemPopover
+        (input: {| Trigger: ReactElement
+                   Body: UI.Disclosure * IRefValue<unit> -> ReactElement list |})
+        =
+        CustomPopover
+            {| input with
+                CloseButton = true
+                Padding = None
+                Props = fun x -> x.closeOnBlur <- false
+            |}
+
+    let inline ConfirmPopover trigger onConfirm children =
+        Popover
+            {|
+                Trigger = trigger
+                Body =
+                    fun (disclosure, initialFocusRef) ->
+                        [
+                            UI.stack
+                                (fun x -> x.spacing <- "10px")
+                                [
+                                    yield! children (disclosure, initialFocusRef)
+
+                                    UI.box
+                                        (fun _ -> ())
+                                        [
+                                            Button.Button
+                                                {|
+                                                    Hint = None
+                                                    Icon =
+                                                        Some (
+                                                            Icons.fi.FiCheck |> Icons.render,
+                                                            Button.IconPosition.Left
+                                                        )
+                                                    Props = fun x -> x.onClick <- onConfirm
+                                                    Children =
+                                                        [
+                                                            str "Confirm"
+                                                        ]
+                                                |}
+                                        ]
+                                ]
+                        ]
             |}

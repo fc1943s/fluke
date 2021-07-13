@@ -18,6 +18,8 @@ module LeftDock =
         let deviceInfo = Store.useValue Selectors.deviceInfo
         let leftDockSize, setLeftDockSize = Store.useState Atoms.User.leftDockSize
         let exportUserSettings = Hydrate.useExportUserSettings ()
+        let importUserSettings = Hydrate.useImportUserSettings ()
+        let importDatabase = Hydrate.useImportDatabase ()
 
         let items, itemsMap =
             React.useMemo (
@@ -40,11 +42,8 @@ module LeftDock =
                                             "Options",
                                             Icons.bs.BsThreeDotsVertical |> Icons.render,
                                             [
-                                                Popover.CustomPopover
+                                                Popover.MenuItemPopover
                                                     {|
-                                                        CloseButton = true
-                                                        Props = fun x -> x.closeOnBlur <- false
-                                                        Padding = None
                                                         Trigger =
                                                             MenuItem.MenuItem
                                                                 Icons.bi.BiImport
@@ -54,7 +53,9 @@ module LeftDock =
                                                         Body =
                                                             fun (_disclosure, _initialFocusRef) ->
                                                                 [
-                                                                    Settings.ImportUserSettings ()
+                                                                    ImportFile.ImportFile
+                                                                        "Import User Settings"
+                                                                        importUserSettings
                                                                 ]
                                                     |}
 
@@ -93,11 +94,8 @@ module LeftDock =
                                                     Atoms.User.hideTemplates
                                                     "Hide Templates"
 
-                                                Popover.CustomPopover
+                                                Popover.MenuItemPopover
                                                     {|
-                                                        CloseButton = true
-                                                        Props = fun x -> x.closeOnBlur <- false
-                                                        Padding = None
                                                         Trigger =
                                                             MenuItem.MenuItem
                                                                 Icons.bi.BiImport
@@ -107,7 +105,9 @@ module LeftDock =
                                                         Body =
                                                             fun (_disclosure, _initialFocusRef) ->
                                                                 [
-                                                                    Databases.ImportDatabase ()
+                                                                    ImportFile.ImportFile
+                                                                        "Import Database"
+                                                                        importDatabase
                                                                 ]
                                                     |}
                                             ]
@@ -120,6 +120,8 @@ module LeftDock =
                     items, itemsMap),
                 [|
                     box exportUserSettings
+                    box importUserSettings
+                    box importDatabase
                 |]
             )
 

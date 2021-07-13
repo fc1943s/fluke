@@ -168,3 +168,70 @@ module Dropdown =
     let ColorDropdownAtom atom props =
         let value, setValue = Store.useState atom
         ColorDropdown value setValue props
+
+    [<ReactComponent>]
+    let CustomConfirmDropdown left onConfirm trigger children =
+        Dropdown
+            {|
+                Tooltip = ""
+                Left = left
+                Trigger = trigger
+                Body =
+                    fun onHide ->
+                        [
+                            UI.stack
+                                (fun x -> x.spacing <- "10px")
+                                [
+                                    yield! children onHide
+
+                                    UI.box
+                                        (fun _ -> ())
+                                        [
+                                            Button.Button
+                                                {|
+                                                    Hint = None
+                                                    Icon =
+                                                        Some (
+                                                            Icons.fi.FiCheck |> Icons.render,
+                                                            Button.IconPosition.Left
+                                                        )
+                                                    Props =
+                                                        fun x ->
+                                                            x.onClick <-
+                                                                fun _ ->
+                                                                    promise {
+                                                                        let! result = onConfirm ()
+                                                                        if result then onHide ()
+                                                                    }
+                                                    Children =
+                                                        [
+                                                            str "Confirm"
+                                                        ]
+                                                |}
+                                        ]
+                                ]
+                        ]
+            |}
+
+    [<ReactComponent>]
+    let ConfirmDropdown label onConfirm children =
+        CustomConfirmDropdown
+            true
+            onConfirm
+            (fun visible setVisible ->
+                Button.Button
+                    {|
+                        Hint = None
+                        Icon =
+                            Some (
+                                (if visible then Icons.fi.FiChevronUp else Icons.fi.FiChevronDown)
+                                |> Icons.render,
+                                Button.IconPosition.Right
+                            )
+                        Props = fun x -> x.onClick <- fun _ -> promise { setVisible (not visible) }
+                        Children =
+                            [
+                                str label
+                            ]
+                    |})
+            children
