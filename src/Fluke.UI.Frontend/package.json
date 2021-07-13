@@ -51,8 +51,8 @@
   "dependencies": {
     "@fontsource/roboto-condensed": "~4.5",
 
-    "react": "18.0.0-alpha-cb8afda18-20210708",
-    "react-dom": "18.0.0-alpha-cb8afda18-20210708",
+    "react": "18.0.0-alpha-bfa50f827-20210712",
+    "react-dom": "18.0.0-alpha-bfa50f827-20210712",
 
     "@pmmmwh/react-refresh-webpack-plugin": "~0.4",
 
@@ -104,7 +104,7 @@
     "fable-loader": "~2.1",
     "fable-compiler": "~2.13",
 
-    "electron": "14.0.0-beta.12",
+    "electron": "14.0.0-beta.13",
     "electron-builder": "~22.11",
     "electronmon": "~2.0",
 
@@ -159,7 +159,7 @@
     "concurrently": "~6.2",
 
     "cordova": "~10.0",
-    "cordova-android": "10.0.0-nightly.2021.7.8.8a9cb8f6",
+    "cordova-android": "10.0.0-nightly.2021.7.13.70a1eff7",
     "cordova-ios": "~6.2",
     "cordova-plugin-whitelist": "~1.3"
   },
