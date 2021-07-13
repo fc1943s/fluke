@@ -144,27 +144,41 @@ module StatusBar =
                                             [
                                                 let sessionInfo = getSessionInfo activeSessions.Head
 
-                                                UI.flex
-                                                    (fun x -> x.color <- sessionInfo.Color)
+                                                UI.stack
+                                                    (fun x ->
+                                                        x.color <- sessionInfo.Color
+                                                        x.direction <- "row"
+                                                        x.spacing <- "0"
+                                                        x.display <- "inline")
                                                     [
-                                                        str
-                                                            $"{sessionInfo.SessionType}: {activeSessions.Length} active ("
+                                                        UI.box
+                                                            (fun x -> x.display <- "inline")
+                                                            [
+                                                                str
+                                                                    $"{sessionInfo.SessionType}: {activeSessions.Length} active ("
+                                                            ]
 
                                                         UI.box
                                                             (fun x ->
-                                                                x.display <- "inline"
+                                                                x.display <- "inline-block"
                                                                 x.textOverflow <- "ellipsis"
                                                                 x.whiteSpace <- "nowrap"
                                                                 x.overflow <- "hidden"
+                                                                x.verticalAlign <- "bottom"
                                                                 x.maxWidth <- "100px")
                                                             [
                                                                 str sessionInfo.TaskName
                                                             ]
-                                                        str
-                                                            $"""). {if sessionInfo.Left < 0 then
-                                                                        $"Starts in {sessionInfo.Duration}m."
-                                                                    else
-                                                                        $"Started {sessionInfo.Duration}m ago ({sessionInfo.Left}m left)"}"""
+
+                                                        UI.box
+                                                            (fun x -> x.display <- "inline")
+                                                            [
+                                                                str
+                                                                    $"""). {if sessionInfo.Left < 0 then
+                                                                                $"Starts in {sessionInfo.Duration}m."
+                                                                            else
+                                                                                $"Started {sessionInfo.Duration}m ago ({sessionInfo.Left}m left)"}"""
+                                                            ]
                                                     ]
                                             ]
                                     ]
@@ -361,7 +375,7 @@ module StatusBar =
                         JS.newObj
                             (fun (x: UI.IBreakpoints<string>) ->
                                 x.``base`` <- "grid"
-                                x.md <- "flex")
+                                x.lg <- "flex")
                     )
 
                 x.borderTopWidth <- "1px"
@@ -370,7 +384,10 @@ module StatusBar =
                 x.justifyContent <- "space-between"
                 x.justifyItems <- "center"
                 x.padding <- "7px"
-                x.spacing <- "6px")
+                x.alignItems <- "center"
+                x.textAlign <- "center"
+                x.spacing <- "12px"
+                x.flexFlow <- "wrap")
             [
                 React.suspense (
                     [

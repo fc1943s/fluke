@@ -193,7 +193,7 @@ module LeftDock =
                                             unbox (
                                                 JS.newObj
                                                     (fun (x: UI.IBreakpoints<string>) ->
-                                                        x.``base`` <- "calc(100vw - 50px)"
+                                                        x.``base`` <- "calc(100vw - 52px)"
                                                         x.md <- "auto")
                                             )
 

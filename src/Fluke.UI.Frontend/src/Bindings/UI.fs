@@ -68,6 +68,7 @@ module UI =
         abstract flex : string with get, set
         abstract flexBasis : int with get, set
         abstract flexDirection : string with get, set
+        abstract flexFlow : string with get, set
         abstract flip : bool with get, set
         abstract fontFamily : string with get, set
         abstract fontSize : string with get, set
@@ -147,6 +148,7 @@ module UI =
         abstract userSelect : string with get, set
         abstract value : obj with get, set
         abstract variant : string with get, set
+        abstract verticalAlign : string with get, set
         abstract visibility : string with get, set
         abstract WebkitAppRegion : string with get, set
         abstract width : string with get, set
