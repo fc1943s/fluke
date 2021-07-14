@@ -12,7 +12,7 @@ module Popover =
         (input: {| Trigger: ReactElement
                    CloseButton: bool
                    Padding: string option
-                   Body: UI.Disclosure * IRefValue<unit> -> ReactElement list
+                   Body: UI.Disclosure * (unit -> IRefValue<unit>) -> ReactElement list
                    Props: UI.IChakraProps -> unit |})
         =
         let disclosure = UI.react.useDisclosure ()
@@ -62,7 +62,14 @@ module Popover =
                                         ]
                                 ]
 
-                            match input.Body (disclosure, initialFocusRef) with
+                            let mutable initialFocusRefFetched = false
+
+                            let fetchInitialFocusRef =
+                                fun () ->
+                                    initialFocusRefFetched <- true
+                                    initialFocusRef
+
+                            match input.Body (disclosure, fetchInitialFocusRef) with
                             | [ x ] when x = nothing -> nothing
                             | content ->
                                 UI.popoverContent
@@ -93,6 +100,8 @@ module Popover =
                                                             x.minWidth <- "20px"
                                                             x.height <- "20px"
 
+                                                            if not initialFocusRefFetched then x.ref <- initialFocusRef
+
                                                             x.onClick <-
                                                                 fun e ->
                                                                     promise {
@@ -118,7 +127,7 @@ module Popover =
 
     let inline Popover
         (input: {| Trigger: ReactElement
-                   Body: UI.Disclosure * IRefValue<unit> -> ReactElement list |})
+                   Body: UI.Disclosure * (unit -> IRefValue<unit>) -> ReactElement list |})
         =
         CustomPopover
             {| input with
@@ -129,7 +138,7 @@ module Popover =
 
     let inline MenuItemPopover
         (input: {| Trigger: ReactElement
-                   Body: UI.Disclosure * IRefValue<unit> -> ReactElement list |})
+                   Body: UI.Disclosure * (unit -> IRefValue<unit>) -> ReactElement list |})
         =
         CustomPopover
             {| input with
@@ -149,13 +158,20 @@ module Popover =
                 CloseButton = closeButton
                 Trigger = trigger
                 Body =
-                    fun (disclosure, initialFocusRef) ->
+                    fun (disclosure, fetchInitialFocusRef) ->
                         [
                             UI.stack
                                 (fun x -> x.spacing <- "10px")
                                 [
+                                    let mutable initialFocusRefFetched = false
+
+                                    let fetchInitialFocusRef2 =
+                                        fun () ->
+                                            initialFocusRefFetched <- true
+                                            fetchInitialFocusRef ()
+
                                     let children =
-                                        children (disclosure, initialFocusRef)
+                                        children (disclosure, fetchInitialFocusRef2)
                                         |> Seq.toList
 
                                     yield! children
@@ -173,7 +189,8 @@ module Popover =
                                                         )
                                                     Props =
                                                         fun x ->
-                                                            if children.IsEmpty then x.ref <- initialFocusRef
+                                                            if children.IsEmpty || not initialFocusRefFetched then
+                                                                x.ref <- fetchInitialFocusRef ()
 
                                                             x.onClick <-
                                                                 fun e ->

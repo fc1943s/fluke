@@ -104,7 +104,14 @@ module TaskName =
                                                     Icons.ri.RiArchiveLine
                                                     $"""{if archived = Some true then "Unarchive" else "Archive"} Task"""
                                                     (Some
-                                                        (fun () -> promise { setArchived (archived |> Option.map not) }))
+                                                        (fun () ->
+                                                            promise {
+                                                                setArchived (
+                                                                    match archived with
+                                                                    | Some archived -> Some (not archived)
+                                                                    | None -> Some false
+                                                                )
+                                                            }))
                                                     (fun _ -> ())
 
                                                 Popover.MenuItemConfirmPopover Icons.bi.BiTrash "Delete Task" deleteTask

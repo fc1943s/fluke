@@ -24,7 +24,7 @@ module DockButton =
             (fun x ->
                 x.height <- "100%"
                 x.borderRadius <- "0"
-                x.backgroundColor <- if atom = Some input.DockType then "gray.10" else "transparent"
+                x.backgroundColor <- if atom = Some input.DockType then "gray.30" else "transparent"
                 x.fontWeight <- "inherit"
                 x.fontSize <- "14px"
                 x.fontFamily <- "inherit"

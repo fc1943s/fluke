@@ -32,6 +32,7 @@ module Theme =
             |}
 
 
+        // https://htmlcolorcodes.com/
         let colors =
             {|
                 heliotrope = "#b586ff"
@@ -40,6 +41,7 @@ module Theme =
                         ``10`` = if input.DarkMode then "#1a1a1a" else "#e5e5e5" // grayDark
                         ``13`` = if input.DarkMode then "#212121" else "#dedede" // grayLight
                         ``16`` = if input.DarkMode then "#292929" else "#d6d6d6" // grayLighter
+                        ``30`` = if input.DarkMode then "#4D4D4D" else "#B3B3B3" // ??
                         ``45`` = if input.DarkMode then "#727272" else "#8d8d8d" // textDark
                         ``77`` = if input.DarkMode then "#b0bec5" else "#4f413a" // textLight
                         ``87`` = if input.DarkMode then "#dddddd" else "#222222" // text

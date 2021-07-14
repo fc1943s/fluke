@@ -17,20 +17,15 @@ module Operators =
 
 [<AutoOpen>]
 module JSMagic =
+    type ClipboardRead =
+        {| getType: string -> JS.Promise<Blob>
+           types: string [] |} []
+
+    [<Emit "$0.read()">]
+    let inline private clipboardRead clipboard = jsNative
+
     type Clipboard with
-
-
-
-
-
-
-
-        [<Emit "$0.read()">]
-        member _.read
-            ()
-            : JS.Promise<{| getType: string -> JS.Promise<Blob>
-                            types: string [] |} []> =
-            jsNative
+        member this.read () : JS.Promise<ClipboardRead> = clipboardRead this
 
 module Promise =
     let ignore (fn: JS.Promise<_>) = Promise.map ignore fn
@@ -58,7 +53,7 @@ module JS =
 
     type DeviceInfo =
         {
-            Brands: {| brand: string; version: string |} []
+            Brands: (string * string) []
             IsMobile: bool
             IsElectron: bool
             IsExtension: bool
@@ -80,18 +75,28 @@ module JS =
         | None -> DeviceInfo.Default
         | Some window ->
             let userAgentData =
-                if window?navigator = None then
-                    {| mobile = false; brands = [||] |}
-                else
-                    window?navigator?userAgentData
-                    |> Option.ofObjUnbox
-                    |> Option.defaultValue {| mobile = false; brands = [||] |}
+                window?navigator
+                |> Option.ofObjUnbox
+                |> Option.bind
+                    (fun navigator ->
+                        navigator?userAgentData
+                        |> Option.ofObjUnbox<{| mobile: bool
+                                                brands: {| brand: string; version: string |} [] |}>)
 
             let deviceInfo =
                 {
-                    Brands = userAgentData.brands
-                    IsMobile = userAgentData.mobile
-                    IsElectron = userAgentData.brands.Length = 0
+                    Brands =
+                        userAgentData
+                        |> Option.map
+                            (fun userAgentData ->
+                                userAgentData.brands
+                                |> Array.map (fun brand -> brand.brand, brand.version))
+                        |> Option.defaultValue [||]
+                    IsMobile =
+                        userAgentData
+                        |> Option.map (fun userAgentData -> userAgentData.mobile)
+                        |> Option.defaultValue false
+                    IsElectron = userAgentData.IsNone
                     IsExtension = window.location.protocol = "chrome-extension:"
                     GitHubPages = window.location.host.EndsWith "github.io"
                     IsTesting = jestWorkerId || window?Cypress <> null

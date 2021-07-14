@@ -274,7 +274,7 @@ module TopBar =
                         |}
                 ])
             onRandom
-            (fun (_disclosure, _initialFocusRef) ->
+            (fun (_disclosure, _fetchInitialFocusRef) ->
                 [
                     UI.stack
                         (fun x -> x.spacing <- "10px")
@@ -485,9 +485,17 @@ module TopBar =
                                                 x.height <- "27px"
                                                 x.fontSize <- "17px"
 
-                                                if archive = Some true then x.backgroundColor <- "gray.45"
+                                                if archive = Some true then x.backgroundColor <- "gray.30"
 
-                                                x.onClick <- fun _ -> promise { setArchive (archive |> Option.map not) }
+                                                x.onClick <-
+                                                    fun _ ->
+                                                        promise {
+                                                            setArchive (
+                                                                match archive with
+                                                                | Some archive -> Some (not archive)
+                                                                | None -> Some false
+                                                            )
+                                                        }
                                     |}
                             ]
 

@@ -304,7 +304,7 @@ module CellMenu =
                                     wrapButton None (Color.Value cellColorPostponedUntil) None
                                 ])
                             postponeUntilLater
-                            (fun (_disclosure, initialFocusRef) ->
+                            (fun (_disclosure, fetchInitialFocusRef) ->
                                 [
                                     UI.stack
                                         (fun x -> x.spacing <- "10px")
@@ -339,7 +339,7 @@ module CellMenu =
                                                         fun x ->
                                                             x.label <- str "Time"
                                                             x.placeholder <- "00:00"
-                                                            x.ref <- initialFocusRef
+                                                            x.ref <- fetchInitialFocusRef ()
 
                                                             x.onChange <-
                                                                 fun (e: Browser.Types.KeyboardEvent) ->

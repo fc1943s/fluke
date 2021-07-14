@@ -1,7 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
 open Fable.React
-open Fable.Core.JsInterop
 open Feliz
 open System
 open Fluke.Shared.Domain
@@ -9,15 +8,12 @@ open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
 open Fluke.Shared.Domain.Model
 open Fluke.Shared
-open Fable.Core
 
 
 module Settings =
     [<ReactComponent>]
     let rec Settings props =
         let weekStart, setWeekStart = Store.useState Atoms.User.weekStart
-        let debug = Store.useValue Atoms.debug
-
         let userColor, setUserColor = Store.useState Atoms.User.userColor
 
         Accordion.Accordion
@@ -116,7 +112,7 @@ module Settings =
 
                                 ChangeUserPasswordButton.ChangeUserPasswordButton ()
 
-                                // DeleteUserButton.DeleteUserButton ()
+                            // DeleteUserButton.DeleteUserButton ()
                             ])
 
                         str "View",
@@ -212,15 +208,7 @@ module Settings =
                                     {|
                                         Atom = Atoms.debug
                                         Label = Some "Show Debug Information"
-                                        Props =
-                                            fun x ->
-                                                x.onClick <-
-                                                    fun _ ->
-                                                        promise {
-                                                            match JS.window id with
-                                                            | None -> ()
-                                                            | Some window -> window?Debug <- not debug
-                                                        }
+                                        Props = fun _ -> ()
                                     |}
                             ])
 

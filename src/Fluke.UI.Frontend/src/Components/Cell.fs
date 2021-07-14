@@ -167,7 +167,7 @@ module Cell =
                     Props = fun x -> x.placement <- "right-start"
                     Trigger = Cell input
                     Body =
-                        fun (disclosure, _initialFocusRef) ->
+                        fun (disclosure, _fetchInitialFocusRef) ->
                             [
                                 if isReadWrite then
                                     CellMenu.CellMenu input.TaskId input.DateId (Some disclosure.onClose) true

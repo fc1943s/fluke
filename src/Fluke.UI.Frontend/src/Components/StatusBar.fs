@@ -183,7 +183,7 @@ module StatusBar =
                                             ]
                                     ]
                             Body =
-                                fun (_disclosure, _initialFocusRef) ->
+                                fun (_disclosure, _fetchInitialFocusRef) ->
                                     [
                                         UI.stack
                                             (fun x -> x.spacing <- "10px")

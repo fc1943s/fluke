@@ -51,7 +51,7 @@ module LeftDock =
                                                                 None
                                                                 (fun x -> x.closeOnSelect <- false)
                                                         Body =
-                                                            fun (_disclosure, _initialFocusRef) ->
+                                                            fun (_disclosure, _fetchInitialFocusRef) ->
                                                                 [
                                                                     ImportFile.ImportFile
                                                                         "Import User Settings"
@@ -103,7 +103,7 @@ module LeftDock =
                                                                 None
                                                                 (fun x -> x.closeOnSelect <- false)
                                                         Body =
-                                                            fun (_disclosure, _initialFocusRef) ->
+                                                            fun (_disclosure, _fetchInitialFocusRef) ->
                                                                 [
                                                                     ImportFile.ImportFile
                                                                         "Import Database"

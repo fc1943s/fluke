@@ -208,9 +208,7 @@ module ViewTabs =
                                                 ->
                                                 if filteredTaskIdSet.IsEmpty then
                                                     UI.box
-                                                        (fun x ->
-                                                            x.padding <- "7px"
-                                                            x.whiteSpace <- "nowrap")
+                                                        (fun x -> x.padding <- "7px")
                                                         [
                                                             str "No tasks found. Add tasks in the Databases panel."
                                                         ]

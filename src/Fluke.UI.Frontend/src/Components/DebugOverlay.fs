@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open Fable.Core.JsInterop
 open Fable.React
 open Feliz
 open Fluke.UI.Frontend.State
@@ -16,27 +17,33 @@ module DebugOverlay =
         let oldJson, setOldJson = React.useState ""
         let debug = Store.useValue Atoms.debug
 
+        let isTesting = Store.useValue Store.Atoms.isTesting
+        let deviceInfo = Store.useValue Selectors.deviceInfo
+
         Scheduling.useScheduling
             Scheduling.Interval
             1000
-            (fun getter _ ->
+            (fun _ _ ->
                 promise {
-                    let isTesting = Store.value getter Store.Atoms.isTesting
+                    match JS.window id with
+                    | None -> ()
+                    | Some window -> if not window?Debug then window?Debug <- debug
 
                     if isTesting || not debug then
                         ()
                     else
                         let json =
                             {|
+                                DeviceInfo = deviceInfo
                                 SortedCallCount =
                                     Profiling.profilingState.CallCount
-                                    |> Seq.map (fun (KeyValue (k, v)) -> k, box <| string v)
+                                    |> Seq.map (fun (KeyValue (k, v)) -> k, v |> string |> box)
                                     |> Seq.sortBy fst
-                                    |> JsInterop.createObj
+                                    |> createObj
                                 CallCount =
                                     Profiling.profilingState.CallCount
-                                    |> Seq.map (fun (KeyValue (k, v)) -> k, box <| string v)
-                                    |> JsInterop.createObj
+                                    |> Seq.map (fun (KeyValue (k, v)) -> k, v |> string |> box)
+                                    |> createObj
                                 Timestamps =
                                     Profiling.profilingState.Timestamps
                                     |> Seq.map (fun (k, v) -> $"{k} = {v}")
