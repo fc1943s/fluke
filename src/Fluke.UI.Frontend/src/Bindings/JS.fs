@@ -83,6 +83,8 @@ module JS =
                         |> Option.ofObjUnbox<{| mobile: bool
                                                 brands: {| brand: string; version: string |} [] |}>)
 
+            let isTesting = jestWorkerId || window?Cypress <> null
+
             let deviceInfo =
                 {
                     Brands =
@@ -96,10 +98,10 @@ module JS =
                         userAgentData
                         |> Option.map (fun userAgentData -> userAgentData.mobile)
                         |> Option.defaultValue false
-                    IsElectron = userAgentData.IsNone
+                    IsElectron = userAgentData.IsNone && not isTesting
                     IsExtension = window.location.protocol = "chrome-extension:"
                     GitHubPages = window.location.host.EndsWith "github.io"
-                    IsTesting = jestWorkerId || window?Cypress <> null
+                    IsTesting = isTesting
                 }
 
             printfn $"deviceInfo={JS.JSON.stringify deviceInfo}"
