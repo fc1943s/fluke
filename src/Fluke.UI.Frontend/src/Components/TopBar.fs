@@ -130,8 +130,9 @@ module TopBar =
                                     let informationAttachmentIdMapByArchive =
                                         informationAttachmentIdMapByArchiveArray.[i]
 
-                                    let getInformationAttachmentArray informationArray =
+                                    let getInformationAttachmentArray filterFn =
                                         informationArray
+                                        |> Array.filter filterFn
                                         |> Array.collect
                                             (fun information ->
                                                 informationAttachmentIdMapByArchive
@@ -150,6 +151,29 @@ module TopBar =
                                     let taskAttachmentIdSetArray = databaseTaskAttachmentIdSetArray.[i]
                                     let cellAttachmentIdMapArray = databaseCellAttachmentIdMapArray.[i]
 
+                                    let getTaskAttachmentArray filterFn =
+                                        taskIdArray
+                                        |> Array.indexed
+                                        |> Array.filter (fun (i, _) -> taskInformationArray.[i] |> filterFn)
+                                        |> Array.map
+                                            (fun (i, taskId) ->
+                                                taskAttachmentIdSetArray.[i]
+                                                |> Set.toArray
+                                                |> Array.map
+                                                    (fun attachmentId ->
+                                                        Navigate.Anchor.TaskAttachment (
+                                                            databaseId,
+                                                            taskId,
+                                                            attachmentId
+                                                        )))
+                                        |> Array.collect id
+
+                                    let getTaskArray filterFn =
+                                        taskIdArray
+                                        |> Array.indexed
+                                        |> Array.filter (fun (i, _) -> taskInformationArray.[i] |> filterFn)
+                                        |> Array.map (fun (_, taskId) -> Navigate.Anchor.Task (databaseId, taskId))
+
                                     selectedRandomTypeArray
                                     |> Array.collect
                                         (fun randomType ->
@@ -159,75 +183,30 @@ module TopBar =
                                                 |> Array.filter Information.isProject
                                                 |> Array.map Navigate.Anchor.Information
                                             | RandomType.ProjectAttachment ->
-                                                informationArray
-                                                |> Array.filter Information.isProject
-                                                |> getInformationAttachmentArray
+                                                getInformationAttachmentArray Information.isProject
                                             | RandomType.Area ->
                                                 informationArray
                                                 |> Array.filter Information.isArea
                                                 |> Array.map Navigate.Anchor.Information
                                             | RandomType.AreaAttachment ->
-                                                informationArray
-                                                |> Array.filter Information.isArea
-                                                |> getInformationAttachmentArray
+                                                getInformationAttachmentArray Information.isArea
                                             | RandomType.Resource ->
                                                 informationArray
                                                 |> Array.filter Information.isResource
                                                 |> Array.map Navigate.Anchor.Information
                                             | RandomType.ResourceAttachment ->
-                                                informationArray
-                                                |> Array.filter Information.isResource
-                                                |> getInformationAttachmentArray
-                                            | RandomType.ProjectTask ->
-                                                taskIdArray
-                                                |> Array.indexed
-                                                |> Array.filter
-                                                    (fun (i, _) -> taskInformationArray.[i] |> Information.isProject)
-                                                |> Array.map
-                                                    (fun (_, taskId) -> Navigate.Anchor.Task (databaseId, taskId))
-                                            | RandomType.AreaTask ->
-                                                taskIdArray
-                                                |> Array.indexed
-                                                |> Array.filter
-                                                    (fun (i, _) -> taskInformationArray.[i] |> Information.isArea)
-                                                |> Array.map
-                                                    (fun (_, taskId) -> Navigate.Anchor.Task (databaseId, taskId))
+                                                getInformationAttachmentArray Information.isResource
+                                            | RandomType.ProjectTask -> getTaskArray Information.isProject
+                                            | RandomType.AreaTask -> getTaskArray Information.isArea
                                             | RandomType.ProjectTaskAttachment ->
-                                                taskIdArray
-                                                |> Array.collect
-                                                    (fun taskId ->
-                                                        taskAttachmentIdSetArray
-                                                        |> Array.collect (
-                                                            Set.toArray
-                                                            >> Array.map
-                                                                (fun attachmentId ->
-                                                                    Navigate.Anchor.TaskAttachment (
-                                                                        databaseId,
-                                                                        taskId,
-                                                                        attachmentId
-                                                                    ))
-                                                        ))
-                                            | RandomType.AreaTaskAttachment ->
-                                                taskIdArray
-                                                |> Array.collect
-                                                    (fun taskId ->
-                                                        taskAttachmentIdSetArray
-                                                        |> Array.collect (
-                                                            Set.toArray
-                                                            >> Array.map
-                                                                (fun attachmentId ->
-                                                                    Navigate.Anchor.TaskAttachment (
-                                                                        databaseId,
-                                                                        taskId,
-                                                                        attachmentId
-                                                                    ))
-                                                        ))
+                                                getTaskAttachmentArray Information.isProject
+                                            | RandomType.AreaTaskAttachment -> getTaskAttachmentArray Information.isArea
                                             | RandomType.CellAttachment ->
                                                 taskIdArray
-                                                |> Array.collect
-                                                    (fun taskId ->
-                                                        cellAttachmentIdMapArray
-                                                        |> Array.collect Map.toArray
+                                                |> Array.mapi
+                                                    (fun i taskId ->
+                                                        cellAttachmentIdMapArray.[i]
+                                                        |> Map.toArray
                                                         |> Array.collect
                                                             (fun (dateId, attachmentIdSet) ->
                                                                 attachmentIdSet
@@ -238,10 +217,9 @@ module TopBar =
                                                                             taskId,
                                                                             dateId,
                                                                             attachmentId
-                                                                        ))))))
+                                                                        ))))
+                                                |> Array.collect id))
                             |> Array.collect id
-
-                        printfn $"anchorArray.Length={anchorArray.Length}"
 
                         if anchorArray.Length = 0 then
                             toast (fun x -> x.description <- "No data found")

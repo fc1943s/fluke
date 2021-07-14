@@ -1143,7 +1143,14 @@ module State =
 
                             let taskStateMap =
                                 taskStateList
-                                |> List.map (fun taskState -> taskState.Task.Id, taskState)
+                                |> List.map
+                                    (fun taskState ->
+                                        taskState.Task.Id,
+                                        { taskState with
+                                            CellStateMap =
+                                                taskState.CellStateMap
+                                                |> Map.map (fun _ cellState -> { cellState with SessionList = [] })
+                                        })
                                 |> Map.ofSeq
 
                             let databaseState =
@@ -1744,13 +1751,14 @@ module State =
 
                         durationArray
                         |> Array.toList
-                        |> List.sortBy id
-                        |> List.mapi
-                            (fun i ->
-                                Option.map
+                        |> List.indexed
+                        |> List.sortBy snd
+                        |> List.choose
+                            (fun (i, duration) ->
+                                duration
+                                |> Option.map
                                     (fun duration ->
-                                        TempUI.ActiveSession (TaskName.Value nameArray.[i], Minute duration)))
-                        |> List.choose id)
+                                        TempUI.ActiveSession (TaskName.Value nameArray.[i], Minute duration))))
                 )
 
             let rec filteredTaskIdSet =
