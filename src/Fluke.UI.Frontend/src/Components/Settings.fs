@@ -23,10 +23,10 @@ module Settings =
         Accordion.Accordion
             {|
                 Props = props
-                Atom = Atoms.User.accordionFlag AccordionType.Settings
+                Atom = Atoms.User.accordionHiddenFlag AccordionType.Settings
                 Items =
                     [
-                        "User",
+                        str "User",
                         (UI.stack
                             (fun x -> x.spacing <- "10px")
                             [
@@ -119,7 +119,7 @@ module Settings =
                                 // DeleteUserButton.DeleteUserButton ()
                             ])
 
-                        "View",
+                        str "View",
                         (UI.stack
                             (fun x -> x.spacing <- "10px")
                             [
@@ -224,7 +224,7 @@ module Settings =
                                     |}
                             ])
 
-                        "Cell Colors",
+                        str "Cell Colors",
                         (UI.stack
                             (fun x -> x.spacing <- "10px")
                             [
@@ -267,7 +267,7 @@ module Settings =
                                     (fun x -> x.label <- str "Scheduled")
                             ])
 
-                        "Connection",
+                        str "Connection",
                         (UI.stack
                             (fun x -> x.spacing <- "10px")
                             [

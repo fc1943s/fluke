@@ -12,7 +12,6 @@ module Accordion =
     let accordionItem title children =
         UI.accordionItem
             (fun x ->
-
                 if children
                    |> Seq.exists
                        (fun cmp ->
@@ -36,7 +35,7 @@ module Accordion =
                         UI.box
                             (fun _ -> ())
                             [
-                                str title
+                                title
                             ]
                         UI.spacer (fun _ -> ()) []
                         UI.accordionIcon (fun _ -> ()) []
@@ -53,11 +52,40 @@ module Accordion =
 
     [<ReactComponent>]
     let Accordion
-        (input: {| Items: (string * ReactElement) list
+        (input: {| Items: (ReactElement * ReactElement) list
                    Atom: Store.Atom<string []>
                    Props: UI.IChakraProps -> unit |})
         =
         let atomValue, setAtomValue = Store.useState input.Atom
+
+        let titleArray =
+            React.useMemo (
+                (fun () ->
+                    input.Items
+                    |> List.map fst
+                    |> List.toArray
+                    |> Array.map
+                        (fun item ->
+                            if jsTypeof item = "string" then
+                                string item
+                            else
+                                item?props
+                                |> Option.ofObjUnbox
+                                |> Option.map
+                                    (fun props ->
+                                        props?children
+                                        |> Option.ofObjUnbox
+                                        |> Option.map
+                                            (fun children ->
+                                                children
+                                                |> Array.tryFind (fun x -> jsTypeof x = "string")
+                                                |> Option.defaultWith (fun () -> failwith $"{item}"))
+                                        |> Option.defaultWith (fun () -> failwith $"{item}"))
+                                |> Option.defaultWith (fun () -> failwith $"{item}"))),
+                [|
+                    box input.Items
+                |]
+            )
 
         UI.accordion
             (fun x ->
@@ -75,12 +103,12 @@ module Accordion =
                     |> Seq.toArray
 
                 x.index <-
-                    atomValue
-                    |> Array.map
-                        (fun title ->
-                            input.Items
-                            |> List.map fst
-                            |> List.findIndex (fun x -> x = title))
+                    let hiddenTitleSet = atomValue |> Set.ofArray
+
+                    titleArray
+                    |> Array.indexed
+                    |> Array.filter (fun (_, title) -> hiddenTitleSet.Contains title |> not)
+                    |> Array.map fst
                     |> function
                         | [||] -> x.defaultIndex
                         | index -> index |> JS.toJsArray
@@ -98,9 +126,18 @@ module Accordion =
                                             n
                                         |]
                                 | _ -> unbox indexes
-                                |> Array.map (fun index -> input.Items.[index] |> fst)
 
-                            if newIndexes.Length > 0 then setAtomValue newIndexes
+                            let visibleTitles =
+                                newIndexes
+                                |> Array.map (fun index -> titleArray.[index])
+
+                            let newHiddenTitles = titleArray |> Array.except visibleTitles
+
+                            let newIndexes =
+                                newIndexes
+                                |> Array.map (fun index -> titleArray.[index])
+
+                            if newIndexes.Length > 0 then setAtomValue newHiddenTitles
                         }
 
                 input.Props x)

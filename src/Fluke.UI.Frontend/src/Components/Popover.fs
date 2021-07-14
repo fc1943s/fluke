@@ -138,9 +138,15 @@ module Popover =
                 Props = fun x -> x.closeOnBlur <- false
             |}
 
-    let inline ConfirmPopover trigger onConfirm children =
-        Popover
+    [<ReactComponent>]
+    let CustomConfirmPopover (props: UI.IChakraProps -> unit) closeButton trigger onConfirm children =
+        let isMounted = React.useIsMounted ()
+
+        CustomPopover
             {|
+                Props = props
+                Padding = None
+                CloseButton = closeButton
                 Trigger = trigger
                 Body =
                     fun (disclosure, initialFocusRef) ->
@@ -148,7 +154,11 @@ module Popover =
                             UI.stack
                                 (fun x -> x.spacing <- "10px")
                                 [
-                                    yield! children (disclosure, initialFocusRef)
+                                    let children =
+                                        children (disclosure, initialFocusRef)
+                                        |> Seq.toList
+
+                                    yield! children
 
                                     UI.box
                                         (fun _ -> ())
@@ -163,13 +173,18 @@ module Popover =
                                                         )
                                                     Props =
                                                         fun x ->
+                                                            if children.IsEmpty then x.ref <- initialFocusRef
+
                                                             x.onClick <-
                                                                 fun e ->
+
                                                                     promise {
                                                                         e.preventDefault ()
 
                                                                         let! result = onConfirm ()
-                                                                        if result then disclosure.onClose ()
+
+                                                                        if result && isMounted.current then
+                                                                            disclosure.onClose ()
                                                                     }
                                                     Children =
                                                         [
@@ -181,5 +196,13 @@ module Popover =
                         ]
             |}
 
+    let inline ConfirmPopover trigger onConfirm children =
+        CustomConfirmPopover (fun _ -> ()) true trigger onConfirm children
+
     let inline MenuItemConfirmPopover icon label onConfirm =
-        ConfirmPopover (MenuItem.MenuItem icon label None (fun x -> x.closeOnSelect <- false)) onConfirm (fun _ -> [])
+        CustomConfirmPopover
+            (fun x -> x.closeOnBlur <- false)
+            false
+            (MenuItem.MenuItem icon label None (fun x -> x.closeOnSelect <- false))
+            onConfirm
+            (fun _ -> [])

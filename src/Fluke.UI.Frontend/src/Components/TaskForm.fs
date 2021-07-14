@@ -17,6 +17,24 @@ open Fluke.Shared
 
 
 module TaskForm =
+    let useStartSession () =
+        Store.useCallback (
+            (fun getter setter taskId ->
+                promise {
+                    let sessions = Store.value getter (Atoms.Task.sessions taskId)
+
+                    Store.set
+                        setter
+                        (Atoms.Task.sessions taskId)
+                        (Session (
+                            (let now = DateTime.Now in if now.Second < 30 then now else now.AddMinutes 1.)
+                            |> FlukeDateTime.FromDateTime
+                         )
+                         :: sessions)
+                }),
+            [||]
+        )
+
     [<ReactComponent>]
     let MissedAfterSelector taskId =
         let dayStart = Store.useValue Atoms.User.dayStart
@@ -360,23 +378,7 @@ module TaskForm =
         let debug = Store.useValue Atoms.debug
         let sessions, setSessions = Store.useState (Atoms.Task.sessions taskId)
 
-        let deleteSession =
-            Store.useCallback (
-                (fun _ _ start ->
-                    promise {
-                        let index =
-                            sessions
-                            |> List.findIndex (fun (Session start') -> start' = start)
-
-                        setSessions (sessions |> List.removeAt index)
-
-                        return true
-                    }),
-                [|
-                    box sessions
-                    box setSessions
-                |]
-            )
+        let isReadWrite = Store.useValue (Selectors.Task.isReadWrite taskId)
 
         let taskUIFlag, setTaskUIFlag = Store.useState (Atoms.User.uiFlag UIFlagType.Task)
 
@@ -511,6 +513,26 @@ module TaskForm =
                 |]
             )
 
+        let startSession = useStartSession ()
+
+        let deleteSession =
+            Store.useCallback (
+                (fun _ _ start ->
+                    promise {
+                        let index =
+                            sessions
+                            |> List.findIndex (fun (Session start') -> start' = start)
+
+                        setSessions (sessions |> List.removeAt index)
+
+                        return true
+                    }),
+                [|
+                    box sessions
+                    box setSessions
+                |]
+            )
+
         Accordion.Accordion
             {|
                 Props =
@@ -518,11 +540,11 @@ module TaskForm =
                         x.flex <- "1"
                         x.overflowY <- "auto"
                         x.flexBasis <- 0
-                Atom = Atoms.User.accordionFlag AccordionType.TaskForm
+                Atom = Atoms.User.accordionHiddenFlag AccordionType.TaskForm
                 Items =
                     [
                         if taskId <> Task.Default.Id then
-                            "Info",
+                            str "Info",
                             (UI.stack
                                 (fun x -> x.spacing <- "15px")
                                 [
@@ -543,7 +565,7 @@ module TaskForm =
                                 ])
 
 
-                        $"""{if taskId = Task.Default.Id then "Add" else "Edit"} Task""",
+                        str $"""{if taskId = Task.Default.Id then "Add" else "Edit"} Task""",
                         (UI.stack
                             (fun x -> x.spacing <- "15px")
                             [
@@ -598,9 +620,9 @@ module TaskForm =
 
                                 DurationSelector taskId
 
-                                MissedAfterSelector taskId
-
                                 PendingAfterSelector taskId
+
+                                MissedAfterSelector taskId
 
                                 Button.Button
                                     {|
@@ -615,7 +637,37 @@ module TaskForm =
                             ])
 
                         if taskId <> Task.Default.Id then
-                            "Sessions",
+                            (UI.box
+                                (fun _ -> ())
+                                [
+                                    str "Sessions"
+
+                                    Menu.Menu
+                                        {|
+                                            Tooltip = ""
+                                            Trigger =
+                                                Menu.FakeMenuButton
+                                                    InputLabelIconButton.InputLabelIconButton
+                                                    (fun x ->
+                                                        x.icon <- Icons.bs.BsThreeDots |> Icons.render
+                                                        x.fontSize <- "11px"
+                                                        x.height <- "15px"
+                                                        x.color <- "whiteAlpha.700"
+                                                        x.display <- if isReadWrite then null else "none"
+                                                        x.marginTop <- "-3px"
+                                                        x.marginLeft <- "6px")
+                                            Body =
+                                                [
+                                                    MenuItem.MenuItem
+                                                        Icons.gi.GiHourglass
+                                                        "Start Session"
+                                                        (Some (fun () -> startSession taskId))
+                                                        (fun _ -> ())
+                                                ]
+                                            MenuListProps = fun _ -> ()
+                                        |}
+
+                                ]),
                             (match sessions with
                              | [] ->
                                  UI.box
@@ -632,7 +684,8 @@ module TaskForm =
                                              |> List.map
                                                  (fun (Session start) ->
                                                      UI.flex
-                                                         (fun _ -> ())
+                                                         (fun x ->
+                                                             x.key <- $"session-{start |> FlukeDateTime.Stringify}")
                                                          [
                                                              UI.box
                                                                  (fun _ -> ())
@@ -669,7 +722,7 @@ module TaskForm =
                                                          ])
                                      ])
 
-                            "Attachments",
+                            str "Attachments",
                             (UI.stack
                                 (fun x ->
                                     x.spacing <- "10px"

@@ -188,6 +188,29 @@ module Theme =
                                         paddingBottom = "7px"
                                     |}
                                 ``.markdown-container a`` = {| textDecoration = "underline" |}
+                                ``.markdown-container blockquote`` =
+                                    {|
+                                        borderLeft = "1px solid #888"
+                                        paddingLeft = "6px"
+                                        marginTop = "6px"
+                                        marginBottom = "6px"
+                                    |}
+                                ``.markdown-container hr`` =
+                                    {|
+                                        borderColor = "#888"
+                                        marginTop = "6px"
+                                        marginBottom = "6px"
+                                    |}
+                                ``.markdown-container p`` =
+                                    {|
+                                        marginTop = "6px"
+                                        marginBottom = "6px"
+                                    |}
+                                ``.markdown-container td, .markdown-container th`` =
+                                    {|
+                                        border = "1px solid #888"
+                                        padding = "6px"
+                                    |}
                                 ``.markdown-container ul`` = {| listStylePosition = "inside" |}
                             |}
                 |}

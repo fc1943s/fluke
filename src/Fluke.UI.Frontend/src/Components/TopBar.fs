@@ -51,6 +51,8 @@ module TopBar =
 
         let randomizeCellAttachment, setRandomizeCellAttachment = Store.useState Atoms.User.randomizeCellAttachment
 
+        let lastResult, setLastResult = React.useState None
+
         let onRandom =
             Store.useCallback (
                 (fun getter setter _ ->
@@ -225,10 +227,13 @@ module TopBar =
                             toast (fun x -> x.description <- "No data found")
                             return false
                         else
+
                             let anchor = anchorArray |> Seq.random
                             do! Navigate.navigateAnchor getter setter anchor
 
                             let title, description = anchor |> Navigate.Anchor.Stringify getter
+
+                            setLastResult (Some (anchorArray.Length, title, description))
 
                             toast
                                 (fun x ->
@@ -251,6 +256,7 @@ module TopBar =
                     box randomizeProjectTaskAttachment
                     box randomizeAreaTaskAttachment
                     box randomizeCellAttachment
+                    box setLastResult
                 |]
             )
 
@@ -273,7 +279,6 @@ module TopBar =
                     UI.stack
                         (fun x -> x.spacing <- "10px")
                         [
-
                             Checkbox.Checkbox
                                 (Some "Project")
                                 (fun x ->
@@ -358,6 +363,17 @@ module TopBar =
 
                                     x.onChange <-
                                         fun _ -> promise { setRandomizeCellAttachment (not randomizeCellAttachment) })
+
+                            match lastResult with
+                            | Some (length, title, description) ->
+                                UI.box
+                                    (fun _ -> ())
+                                    [
+                                        str $"Last result (sample size: {length}):"
+                                        br []
+                                        str $"\t{title}: {description}"
+                                    ]
+                            | None -> nothing
                         ]
                 ])
 
@@ -456,6 +472,8 @@ module TopBar =
                                         |}
                                 ]
 
+                        RandomizeButton ()
+
                         Tooltip.wrap
                             (str "Toggle Archive")
                             [
@@ -472,9 +490,6 @@ module TopBar =
                                                 x.onClick <- fun _ -> promise { setArchive (archive |> Option.map not) }
                                     |}
                             ]
-
-
-                        RandomizeButton ()
 
                         Tooltip.wrap
                             (React.fragment [

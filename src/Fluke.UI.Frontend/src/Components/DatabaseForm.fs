@@ -75,10 +75,10 @@ module DatabaseForm =
                         x.flex <- "1"
                         x.overflowY <- "auto"
                         x.flexBasis <- 0
-                Atom = Atoms.User.accordionFlag AccordionType.DatabaseForm
+                Atom = Atoms.User.accordionHiddenFlag AccordionType.DatabaseForm
                 Items =
                     [
-                        $"""{if databaseId = Database.Default.Id then "Add" else "Edit"} Database""",
+                        str $"""{if databaseId = Database.Default.Id then "Add" else "Edit"} Database""",
                         (UI.stack
                             (fun x -> x.spacing <- "15px")
                             [

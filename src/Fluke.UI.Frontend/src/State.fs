@@ -82,12 +82,12 @@ module State =
 
     let uiFlagDefault = UIFlag.None
     let uiVisibleFlagDefault = false
-    let accordionFlagDefault: string [] = [||]
+    let accordionHiddenFlagDefault: string [] = [||]
 
     type UserState =
         {
             Archive: bool option
-            AccordionFlagMap: Map<AccordionType, string []>
+            AccordionHiddenFlagMap: Map<AccordionType, string []>
             CellColorDisabled: Color
             CellColorSuggested: Color
             CellColorPending: Color
@@ -145,9 +145,9 @@ module State =
         static member inline Default =
             {
                 Archive = None
-                AccordionFlagMap =
+                AccordionHiddenFlagMap =
                     Union.ToList<AccordionType>
-                    |> List.map (fun accordionType -> accordionType, accordionFlagDefault)
+                    |> List.map (fun accordionType -> accordionType, accordionHiddenFlagDefault)
                     |> Map.ofList
                 CellColorDisabled = Color "#595959"
                 CellColorSuggested = Color "#4C664E"
@@ -496,10 +496,10 @@ module State =
                     (string >> List.singleton)
                 )
 
-            let rec accordionFlag =
+            let rec accordionHiddenFlag =
                 Store.atomFamilyWithSync (
-                    $"{nameof User}/{nameof accordionFlag}",
-                    (fun (_accordionType: AccordionType) -> accordionFlagDefault),
+                    $"{nameof User}/{nameof accordionHiddenFlag}",
+                    (fun (_accordionType: AccordionType) -> accordionHiddenFlagDefault),
                     (string >> List.singleton)
                 )
 
@@ -844,11 +844,11 @@ module State =
                     (fun getter ->
                         {
                             Archive = Store.value getter Atoms.User.archive
-                            AccordionFlagMap =
+                            AccordionHiddenFlagMap =
                                 Union.ToList<AccordionType>
                                 |> List.map
                                     (fun accordionType ->
-                                        accordionType, Store.value getter (Atoms.User.accordionFlag accordionType))
+                                        accordionType, Store.value getter (Atoms.User.accordionHiddenFlag accordionType))
                                 |> Map.ofList
                             CellColorDisabled = Store.value getter Atoms.User.cellColorDisabled
                             CellColorSuggested = Store.value getter Atoms.User.cellColorSuggested

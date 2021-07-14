@@ -31,9 +31,8 @@ module MenuItem =
 
                 x.onClick <-
                     fun e ->
+                        e.preventDefault ()
                         promise {
-                            e.preventDefault ()
-
                             match onClick with
                             | Some onClick -> do! onClick ()
                             | None -> ()

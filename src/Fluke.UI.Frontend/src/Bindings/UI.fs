@@ -89,6 +89,7 @@ module UI =
         abstract isReadOnly : bool with get, set
         abstract justifyContent : string with get, set
         abstract justifyItems : string with get, set
+        abstract key : string with get, set
         abstract label : ReactElement with get, set
         abstract left : string with get, set
         abstract lineHeight : string with get, set
@@ -234,6 +235,7 @@ module UI =
                   Textarea: obj
                   Tooltip: obj
                   useDisclosure: unit -> Disclosure
+                  useMenuButton: obj -> IChakraProps
                   useToast: unit -> System.Func<obj, unit> |} =
         jsNative
 

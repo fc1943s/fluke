@@ -1,9 +1,7 @@
 namespace Fluke.UI.Frontend.Components
 
-open System
 open Fable.React
 open Feliz
-open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
@@ -25,25 +23,7 @@ module TaskName =
         let cellSize = Store.useValue Atoms.User.cellSize
         let isReadWrite = Store.useValue (Selectors.Task.isReadWrite taskId)
 
-        let startSession =
-            Store.useCallback (
-                (fun getter setter _ ->
-                    promise {
-                        let sessions = Store.value getter (Atoms.Task.sessions taskId)
-
-                        Store.set
-                            setter
-                            (Atoms.Task.sessions taskId)
-                            (Session (
-                                (let now = DateTime.Now in if now.Second < 30 then now else now.AddMinutes 1.)
-                                |> FlukeDateTime.FromDateTime
-                             )
-                             :: sessions)
-                    }),
-                [|
-                    box taskId
-                |]
-            )
+        let startSession = TaskForm.useStartSession ()
 
         let deleteTask =
             Store.useCallback (
@@ -117,7 +97,7 @@ module TaskName =
                                                 MenuItem.MenuItem
                                                     Icons.gi.GiHourglass
                                                     "Start Session"
-                                                    (Some startSession)
+                                                    (Some (fun () -> startSession taskId))
                                                     (fun _ -> ())
 
                                                 MenuItem.MenuItem

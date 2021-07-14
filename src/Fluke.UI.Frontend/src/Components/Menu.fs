@@ -1,11 +1,40 @@
 namespace Fluke.UI.Frontend.Components
 
+open Fable.Core
 open Fable.React
 open Feliz
 open Fluke.UI.Frontend.Bindings
 
 
 module Menu =
+    [<ReactComponent>]
+    let FakeMenuButton (cmp: (UI.IChakraProps -> unit) -> ReactElement) (props: UI.IChakraProps -> unit) =
+        let menuButtonProps = UI.react.useMenuButton (box {|  |})
+
+        cmp
+            (fun x ->
+                x.``as`` <- UI.react.Box
+                x.tabIndex <- 0
+                x <+ menuButtonProps
+
+                x.onClick <-
+                    fun e ->
+                        menuButtonProps.onClick e |> ignore
+                        e.preventDefault ()
+                        JS.undefined
+
+                x.onKeyDown <-
+                    fun e ->
+                        if e.key = " " then
+                            menuButtonProps.onClick (unbox e) |> ignore
+                        else
+                            menuButtonProps.onKeyDown e |> ignore
+
+                        if e.key = " " || e.key = "Enter" then e.preventDefault ()
+                        JS.undefined
+
+                props x)
+
     [<ReactComponent>]
     let Menu
         (input: {| Tooltip: string

@@ -75,10 +75,10 @@ module CellForm =
         Accordion.Accordion
             {|
                 Props = fun _ -> ()
-                Atom = Atoms.User.accordionFlag AccordionType.CellForm
+                Atom = Atoms.User.accordionHiddenFlag AccordionType.CellForm
                 Items =
                     [
-                        "Info",
+                        str "Info",
                         (UI.stack
                             (fun x -> x.spacing <- "10px")
                             [
@@ -106,7 +106,7 @@ module CellForm =
                                     ]
                             ])
 
-                        "Attachments",
+                        str "Attachments",
                         (UI.stack
                             (fun x ->
                                 x.spacing <- "10px"

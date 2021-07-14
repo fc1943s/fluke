@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open Fable.React
 open Feliz
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.State
@@ -101,10 +102,10 @@ module InformationForm =
                         x.flex <- "1"
                         x.overflowY <- "auto"
                         x.flexBasis <- 0
-                Atom = Atoms.User.accordionFlag AccordionType.InformationForm
+                Atom = Atoms.User.accordionHiddenFlag AccordionType.InformationForm
                 Items =
                     [
-                        "Info",
+                        str "Info",
                         (UI.stack
                             (fun x -> x.spacing <- "15px")
                             [
@@ -130,7 +131,7 @@ module InformationForm =
                             |> String.IsNullOrWhiteSpace
                             |> not
                             ->
-                            "Attachments",
+                            str "Attachments",
                             (UI.stack
                                 (fun x ->
                                     x.spacing <- "10px"

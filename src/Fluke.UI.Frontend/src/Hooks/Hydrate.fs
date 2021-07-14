@@ -68,8 +68,8 @@ module Hydrate =
             set Atoms.User.view userState.View
             set Atoms.User.weekStart userState.WeekStart
 
-            userState.AccordionFlagMap
-            |> Map.iter (Atoms.User.accordionFlag >> set)
+            userState.AccordionHiddenFlagMap
+            |> Map.iter (Atoms.User.accordionHiddenFlag >> set)
 
             userState.UIFlagMap
             |> Map.iter (Atoms.User.uiFlag >> set)

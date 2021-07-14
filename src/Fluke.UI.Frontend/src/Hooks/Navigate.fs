@@ -58,7 +58,7 @@ module Navigate =
                 let attachment = Store.value getter (Atoms.Attachment.attachment attachmentId)
                 let name = Store.value getter (Atoms.Task.name taskId)
 
-                $"Cell Attachment ({name |> TaskName.Value} / {dateId |> DateId.Value |> FlukeDate.Stringify})",
+                $"Cell Attachment (Task: {name |> TaskName.Value} / Date: {dateId |> DateId.Value |> FlukeDate.Stringify})",
                 attachment
                 |> Option.map Attachment.Stringify
                 |> Option.defaultValue "???"
