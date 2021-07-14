@@ -1,6 +1,5 @@
 namespace Fluke.UI.Frontend.Bindings
 
-open System
 open Browser.Types
 open Fable.Core
 open Fable.Core.JsInterop
@@ -19,6 +18,12 @@ module Operators =
 [<AutoOpen>]
 module JSMagic =
     type Clipboard with
+
+
+
+
+
+
 
         [<Emit "$0.read()">]
         member _.read
@@ -53,51 +58,43 @@ module JS =
 
     type DeviceInfo =
         {
-            UserAgent: string
-            IsEdge: bool
+            Brands: {| brand: string; version: string |} []
             IsMobile: bool
             IsElectron: bool
             IsExtension: bool
             GitHubPages: bool
             IsTesting: bool
         }
-
-    let deviceInfo =
-        match window id with
-        | None ->
+        static member inline Default =
             {
-                UserAgent = "window==null"
-                IsEdge = false
+                Brands = [||]
                 IsMobile = false
                 IsElectron = false
                 IsExtension = false
                 GitHubPages = false
                 IsTesting = false
             }
+
+    let deviceInfo =
+        match window id with
+        | None -> DeviceInfo.Default
         | Some window ->
-            let userAgent = if window?navigator = None then "" else window?navigator?userAgent
-
-            let isEdge = (JSe.RegExp @"Edg\/").Test userAgent
-            let isElectron = (JSe.RegExp @"Electron\/").Test userAgent
-
-            let isMobile =
-                JSe
-                    .RegExp("Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop", JSe.RegExpFlag().i)
-                    .Test userAgent
-
-            let isExtension = window.location.protocol = "chrome-extension:"
-            let gitHubPages = window.location.host.EndsWith "github.io"
-            let isTesting = jestWorkerId || window?Cypress <> null
+            let userAgentData =
+                if window?navigator = None then
+                    {| mobile = false; brands = [||] |}
+                else
+                    window?navigator?userAgentData
+                    |> Option.ofObjUnbox
+                    |> Option.defaultValue {| mobile = false; brands = [||] |}
 
             let deviceInfo =
                 {
-                    UserAgent = userAgent
-                    IsEdge = isEdge
-                    IsMobile = isMobile
-                    IsElectron = isElectron
-                    IsExtension = isExtension
-                    GitHubPages = gitHubPages
-                    IsTesting = isTesting
+                    Brands = userAgentData.brands
+                    IsMobile = userAgentData.mobile
+                    IsElectron = userAgentData.brands.Length = 0
+                    IsExtension = window.location.protocol = "chrome-extension:"
+                    GitHubPages = window.location.host.EndsWith "github.io"
+                    IsTesting = jestWorkerId || window?Cypress <> null
                 }
 
             printfn $"deviceInfo={JS.JSON.stringify deviceInfo}"
@@ -292,7 +289,3 @@ module JS =
         a?download <- fileName
         a.click ()
         a.remove ()
-
-    let randomSeq seq =
-        let arr = seq |> Seq.toArray
-        arr.[Random().Next (0, arr.Length - 1)]

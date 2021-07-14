@@ -3,6 +3,7 @@ namespace Fluke.UI.Frontend.Components
 open Fable.React
 open Feliz
 open Fluke.UI.Frontend
+open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared.Domain
@@ -15,17 +16,20 @@ module InformationName =
     let InformationName information =
         let attachmentIdMap = Store.useValue (Selectors.Information.attachmentIdMap information)
         let cellSize = Store.useValue Atoms.User.cellSize
-
         let selectedDatabaseIdSet = Store.useValue Atoms.User.selectedDatabaseIdSet
 
         let detailsClick =
             Store.useCallback (
                 (fun getter setter _ ->
                     promise {
-                        let deviceInfo = Store.value getter Selectors.deviceInfo
-                        if deviceInfo.IsMobile then Store.set setter Atoms.User.leftDock None
-                        Store.set setter Atoms.User.rightDock (Some TempUI.DockType.Information)
-                        Store.set setter (Atoms.User.uiFlag UIFlagType.Information) (information |> UIFlag.Information)
+                        do!
+                            Navigate.navigate
+                                getter
+                                setter
+                                (Navigate.DockPosition.Right,
+                                 Some TempUI.DockType.Information,
+                                 UIFlagType.Information,
+                                 UIFlag.Information information)
 
                         let databaseIdSearch =
                             attachmentIdMap
@@ -63,14 +67,12 @@ module InformationName =
                         x.whiteSpace <- "nowrap"
                         x.color <- TempUI.informationColor information)
                     [
-                        str (
-                            information
-                            |> Information.Name
-                            |> InformationName.Value
-                            |> function
-                            | "" -> "???"
-                            | x -> x
-                        )
+                        information
+                        |> Information.Name
+                        |> InformationName.Value
+                        |> function
+                            | "" -> LoadingSpinner.InlineLoadingSpinner ()
+                            | name -> str name
 
                         InputLabelIconButton.InputLabelIconButton
                             (fun x ->

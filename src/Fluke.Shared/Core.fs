@@ -45,12 +45,15 @@ module Seq =
                 notFirst <- true
         }
 
-
     let inline ofItems items =
         seq {
             for i = 0 to (ListIter.length items) - 1 do
                 yield (ListIter.item items) i
         }
+
+    let random items =
+        let arr = items |> Seq.toArray
+        arr.[Random().Next (0, arr.Length)]
 
 
 module Option =

@@ -8,6 +8,7 @@ open Fluke.Shared.Domain.Model
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared.Domain
+open Fluke.UI.Frontend.Hooks
 
 
 module CellMenu =
@@ -36,7 +37,7 @@ module CellMenu =
             | UserStatus (_, Postponed (Some until)) -> until |> FlukeTime.Stringify
             | _ -> "later"
 
-        let setRightDock = Store.useSetState Atoms.User.rightDock
+        let navigate = Navigate.useNavigate ()
         let cellUIFlag, setCellUIFlag = Store.useState (Atoms.User.uiFlag UIFlagType.Cell)
         let cellColorPostponedUntil = Store.useValue Atoms.User.cellColorPostponedUntil
         let cellColorPostponed = Store.useValue Atoms.User.cellColorPostponed
@@ -88,7 +89,11 @@ module CellMenu =
                             match onClose with
                             | Some onClose -> onClose ()
                             | None -> ()
-                        | _ -> toast (fun x -> x.description <- "Invalid time")
+
+                            return true
+                        | _ ->
+                            toast (fun x -> x.description <- "Invalid time")
+                            return false
                     }),
                 [|
                     box onClose
@@ -106,9 +111,9 @@ module CellMenu =
                         let newMap =
                             if cellSelectionMap.Count = 1 then
                                 cellSelectionMap
-                                |> Map.mapValues (JS.randomSeq >> Set.singleton)
+                                |> Map.mapValues (Seq.random >> Set.singleton)
                             else
-                                let key = cellSelectionMap |> Map.keys |> JS.randomSeq
+                                let key = cellSelectionMap |> Map.keys |> Seq.random
 
                                 cellSelectionMap
                                 |> Map.map (fun key' value -> if key' = key then value else Set.empty)
@@ -129,7 +134,7 @@ module CellMenu =
                                 newMap
                                 |> Map.pick (fun k v -> if v.IsEmpty then None else Some k)
 
-                            setCellUIFlag (UIFlag.Cell (newTaskId, newMap.[newTaskId] |> JS.randomSeq |> DateId))
+                            setCellUIFlag (UIFlag.Cell (newTaskId, newMap.[newTaskId] |> Seq.random |> DateId))
                         | _ -> ()
 
                         newMap
@@ -239,8 +244,13 @@ module CellMenu =
                                         (Some
                                             (fun () ->
                                                 promise {
-                                                    setRightDock (Some TempUI.DockType.Cell)
-                                                    setCellUIFlag (UIFlag.Cell (taskId, dateId))
+                                                    do!
+                                                        navigate (
+                                                            Navigate.DockPosition.Right,
+                                                            Some TempUI.DockType.Cell,
+                                                            UIFlagType.Cell,
+                                                            UIFlag.Cell (taskId, dateId)
+                                                        )
 
                                                     match onClose with
                                                     | Some onClose -> onClose ()

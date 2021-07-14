@@ -369,6 +369,8 @@ module TaskForm =
                             |> List.findIndex (fun (Session start') -> start' = start)
 
                         setSessions (sessions |> List.removeAt index)
+
+                        return true
                     }),
                 [|
                     box sessions
@@ -417,6 +419,7 @@ module TaskForm =
                         Store.change setter (Atoms.Task.attachmentIdSet taskId) (Set.remove attachmentId)
 
                         do! Store.deleteRoot getter (Atoms.Attachment.attachment attachmentId)
+                        return true
                     }),
                 [|
                     box taskId
@@ -495,6 +498,7 @@ module TaskForm =
                             Store.resetTempValue setter (Atoms.Task.duration taskId)
                             Store.resetTempValue setter (Atoms.Task.missedAfter taskId)
                             Store.resetTempValue setter (Atoms.Task.pendingAfter taskId)
+
                             Store.set setter (Atoms.User.uiFlag UIFlagType.Task) UIFlag.None
 
                             do! onSave task
@@ -620,48 +624,50 @@ module TaskForm =
                                          str "No sessions found"
                                      ]
                              | sessions ->
-                                 React.fragment [
-                                     yield!
-                                         sessions
-                                         |> List.map
-                                             (fun (Session start) ->
-                                                 UI.flex
-                                                     (fun _ -> ())
-                                                     [
-                                                         UI.box
-                                                             (fun _ -> ())
-                                                             [
-                                                                 str (start |> FlukeDateTime.Stringify)
+                                 UI.stack
+                                     (fun _ -> ())
+                                     [
+                                         yield!
+                                             sessions
+                                             |> List.map
+                                                 (fun (Session start) ->
+                                                     UI.flex
+                                                         (fun _ -> ())
+                                                         [
+                                                             UI.box
+                                                                 (fun _ -> ())
+                                                                 [
+                                                                     str (start |> FlukeDateTime.Stringify)
 
-                                                                 Menu.Menu
-                                                                     {|
-                                                                         Tooltip = ""
-                                                                         Trigger =
-                                                                             InputLabelIconButton.InputLabelIconButton
-                                                                                 (fun x ->
-                                                                                     x.``as`` <- UI.react.MenuButton
+                                                                     Menu.Menu
+                                                                         {|
+                                                                             Tooltip = ""
+                                                                             Trigger =
+                                                                                 InputLabelIconButton.InputLabelIconButton
+                                                                                     (fun x ->
+                                                                                         x.``as`` <- UI.react.MenuButton
 
-                                                                                     x.icon <-
-                                                                                         Icons.bs.BsThreeDots
-                                                                                         |> Icons.render
+                                                                                         x.icon <-
+                                                                                             Icons.bs.BsThreeDots
+                                                                                             |> Icons.render
 
-                                                                                     x.fontSize <- "11px"
-                                                                                     x.height <- "15px"
-                                                                                     x.color <- "whiteAlpha.700"
-                                                                                     x.marginTop <- "-1px"
-                                                                                     x.marginLeft <- "6px")
-                                                                         Body =
-                                                                             [
-                                                                                 Popover.MenuItemConfirmPopover
-                                                                                     Icons.bi.BiTrash
-                                                                                     "Delete Session"
-                                                                                     (fun () -> deleteSession start)
-                                                                             ]
-                                                                         MenuListProps = fun _ -> ()
-                                                                     |}
-                                                             ]
-                                                     ])
-                                 ])
+                                                                                         x.fontSize <- "11px"
+                                                                                         x.height <- "15px"
+                                                                                         x.color <- "whiteAlpha.700"
+                                                                                         x.marginTop <- "-1px"
+                                                                                         x.marginLeft <- "6px")
+                                                                             Body =
+                                                                                 [
+                                                                                     Popover.MenuItemConfirmPopover
+                                                                                         Icons.bi.BiTrash
+                                                                                         "Delete Session"
+                                                                                         (fun () -> deleteSession start)
+                                                                                 ]
+                                                                             MenuListProps = fun _ -> ()
+                                                                         |}
+                                                                 ]
+                                                         ])
+                                     ])
 
                             "Attachments",
                             (UI.stack

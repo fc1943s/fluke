@@ -33,29 +33,6 @@ module InformationForm =
                 |]
             )
 
-        let archivedArray =
-            attachmentIdList
-            |> List.map Atoms.Attachment.archived
-            |> List.toArray
-            |> Store.waitForAll
-            |> Store.useValue
-
-        let archive = Store.useValue Atoms.User.archive
-
-        let filteredAttachmentIdList =
-            React.useMemo (
-                (fun () ->
-                    attachmentIdList
-                    |> List.indexed
-                    |> List.filter (fun (i, _) -> archivedArray.[i] = archive)
-                    |> List.map snd),
-                [|
-                    box archive
-                    box archivedArray
-                    box attachmentIdList
-                |]
-            )
-
         let setInformationUIFlag = Store.useSetState (Atoms.User.uiFlag UIFlagType.Information)
 
         let databaseId, setDatabaseId = Store.useState Atoms.User.lastInformationDatabase
@@ -108,7 +85,8 @@ module InformationForm =
                                          |> Set.remove attachmentId))
 
                             do! Store.deleteRoot getter (Atoms.Attachment.attachment attachmentId)
-                        | _ -> ()
+                            return true
+                        | _ -> return false
                     }),
                 [|
                     box attachmentIdMap
@@ -162,7 +140,7 @@ module InformationForm =
                                         AddAttachmentInput.AttachmentPanelType.Information
                                         (if databaseId.IsSome then Some onAttachmentAdd else None)
                                         onAttachmentDelete
-                                        filteredAttachmentIdList
+                                        attachmentIdList
                                 ])
                         | _ -> ()
                     ]

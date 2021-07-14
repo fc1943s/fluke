@@ -64,6 +64,7 @@ module CellForm =
                                      |> Set.remove attachmentId))
 
                         do! Store.deleteRoot getter (Atoms.Attachment.attachment attachmentId)
+                        return true
                     }),
                 [|
                     box taskId

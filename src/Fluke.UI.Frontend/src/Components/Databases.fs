@@ -247,10 +247,7 @@ module Databases =
 
     [<ReactComponent>]
     let AddDatabaseButton () =
-        let setLeftDock = Store.useSetState Atoms.User.leftDock
-        let setRightDock = Store.useSetState Atoms.User.rightDock
-        let deviceInfo = Store.useValue Selectors.deviceInfo
-        let setDatabaseUIFlag = Store.useSetState (Atoms.User.uiFlag UIFlagType.Database)
+        let navigate = Navigate.useNavigate ()
 
         Tooltip.wrap
             (str "Add Database")
@@ -265,11 +262,12 @@ module Databases =
 
                                 x.onClick <-
                                     fun _ ->
-                                        promise {
-                                            if deviceInfo.IsMobile then setLeftDock None
-                                            setRightDock (Some DockType.Database)
-                                            setDatabaseUIFlag UIFlag.None
-                                        }
+                                        navigate (
+                                            Navigate.DockPosition.Right,
+                                            Some DockType.Database,
+                                            UIFlagType.Database,
+                                            UIFlag.None
+                                        )
                     |}
             ]
 

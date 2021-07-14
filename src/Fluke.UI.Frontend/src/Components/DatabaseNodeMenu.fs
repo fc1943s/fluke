@@ -11,20 +11,18 @@ open Fluke.UI.Frontend.TempUI
 module DatabaseNodeMenu =
     [<ReactComponent>]
     let DatabaseNodeMenu databaseId disabled =
-        let deviceInfo = Store.useValue Selectors.deviceInfo
         let isReadWrite = Store.useValue (Selectors.Database.isReadWrite databaseId)
-        let setLeftDock = Store.useSetState Atoms.User.leftDock
-        let setRightDock = Store.useSetState Atoms.User.rightDock
-        let setDatabaseUIFlag = Store.useSetState (Atoms.User.uiFlag UIFlagType.Database)
-        let setTaskUIFlag = Store.useSetState (Atoms.User.uiFlag UIFlagType.Task)
-
+        let navigate = Navigate.useNavigate ()
         let exportDatabase = Hydrate.useExportDatabase ()
 
         let deleteDatabase =
             Store.useCallback (
                 (fun getter setter _ ->
-                    Store.change setter Atoms.User.selectedDatabaseIdSet (Set.remove databaseId)
-                    Store.deleteRoot getter (Atoms.Database.name databaseId)),
+                    promise {
+                        Store.change setter Atoms.User.selectedDatabaseIdSet (Set.remove databaseId)
+                        do! Store.deleteRoot getter (Atoms.Database.name databaseId)
+                        return true
+                    }),
                 [|
                     box databaseId
                 |]
@@ -49,11 +47,12 @@ module DatabaseNodeMenu =
                                 "Add Task"
                                 (Some
                                     (fun () ->
-                                        promise {
-                                            if deviceInfo.IsMobile then setLeftDock None
-                                            setRightDock (Some DockType.Task)
-                                            setTaskUIFlag ((databaseId, Task.Default.Id) |> UIFlag.Task)
-                                        }))
+                                        navigate (
+                                            Navigate.DockPosition.Right,
+                                            Some DockType.Task,
+                                            UIFlagType.Task,
+                                            UIFlag.Task (databaseId, Task.Default.Id)
+                                        )))
                                 (fun _ -> ())
 
                             MenuItem.MenuItem
@@ -61,11 +60,12 @@ module DatabaseNodeMenu =
                                 "Edit Database"
                                 (Some
                                     (fun () ->
-                                        promise {
-                                            if deviceInfo.IsMobile then setLeftDock None
-                                            setRightDock (Some DockType.Database)
-                                            setDatabaseUIFlag (databaseId |> UIFlag.Database)
-                                        }))
+                                        navigate (
+                                            Navigate.DockPosition.Right,
+                                            Some DockType.Database,
+                                            UIFlagType.Database,
+                                            UIFlag.Database databaseId
+                                        )))
                                 (fun _ -> ())
 
                         MenuItem.MenuItem Icons.fi.FiCopy "Clone Database" None (fun x -> x.isDisabled <- true)

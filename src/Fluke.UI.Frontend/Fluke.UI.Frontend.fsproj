@@ -39,6 +39,7 @@
         <Compile Include="src\Hooks\Hydrate.fs" />
         <Compile Include="src\Hooks\Setters.fs" />
         <Compile Include="src\Hooks\Auth.fs" />
+        <Compile Include="src\Hooks\Navigate.fs" />
         <Compile Include="src\Components\Empty.fs" />
         <Compile Include="src\Components\Tooltip.fs" />
         <Compile Include="src\Components\InputLabelIconButton.fs" />
@@ -59,6 +60,7 @@
         <Compile Include="src\Components\Modal.fs" />
         <Compile Include="src\Components\ModalFlagTrigger.fs" />
         <Compile Include="src\Components\ModalFlag.fs" />
+        <Compile Include="src\Components\LoadingSpinner.fs" />
         <Compile Include="src\Components\InformationName.fs" />
         <Compile Include="src\Components\TaskInformationName.fs" />
         <Compile Include="src\Components\TaskPriority.fs" />
@@ -67,7 +69,6 @@
         <Compile Include="src\Components\CellSessionIndicator.fs" />
         <Compile Include="src\Components\CellMenu.fs" />
         <Compile Include="src\Components\Cell.fs" />
-        <Compile Include="src\Components\LoadingSpinner.fs" />
         <Compile Include="src\Components\TaskCells.fs" />
         <Compile Include="src\Components\Cells.fs" />
         <Compile Include="src\Components\Radio.fs" />

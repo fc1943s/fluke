@@ -3,12 +3,386 @@ namespace Fluke.UI.Frontend.Components
 open Feliz
 open Fable.Core.JsInterop
 open Fable.React
+open Fluke.Shared.Domain
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Hooks
+open Fluke.Shared
 open Fluke.UI.Frontend.Bindings
 
 
 module TopBar =
+    [<RequireQualifiedAccess>]
+    type RandomType =
+        | Project
+        | ProjectAttachment
+        | Area
+        | AreaAttachment
+        | Resource
+        | ResourceAttachment
+        | ProjectTask
+        | ProjectTaskAttachment
+        | AreaTask
+        | AreaTaskAttachment
+        | CellAttachment
+
+    [<ReactComponent>]
+    let RandomizeButton () =
+        let toast = UI.useToast ()
+        let randomizeProject, setRandomizeProject = Store.useState Atoms.User.randomizeProject
+
+        let randomizeProjectAttachment, setRandomizeProjectAttachment =
+            Store.useState Atoms.User.randomizeProjectAttachment
+
+        let randomizeArea, setRandomizeArea = Store.useState Atoms.User.randomizeArea
+        let randomizeAreaAttachment, setRandomizeAreaAttachment = Store.useState Atoms.User.randomizeAreaAttachment
+        let randomizeResource, setRandomizeResource = Store.useState Atoms.User.randomizeResource
+
+        let randomizeResourceAttachment, setRandomizeResourceAttachment =
+            Store.useState Atoms.User.randomizeResourceAttachment
+
+        let randomizeProjectTask, setRandomizeProjectTask = Store.useState Atoms.User.randomizeProjectTask
+        let randomizeAreaTask, setRandomizeAreaTask = Store.useState Atoms.User.randomizeAreaTask
+
+        let randomizeProjectTaskAttachment, setRandomizeProjectTaskAttachment =
+            Store.useState Atoms.User.randomizeProjectTaskAttachment
+
+        let randomizeAreaTaskAttachment, setRandomizeAreaTaskAttachment =
+            Store.useState Atoms.User.randomizeAreaTaskAttachment
+
+        let randomizeCellAttachment, setRandomizeCellAttachment = Store.useState Atoms.User.randomizeCellAttachment
+
+        let onRandom =
+            Store.useCallback (
+                (fun getter setter _ ->
+                    promise {
+                        let selectedRandomTypeArray =
+                            [|
+                                if randomizeProject then yield RandomType.Project
+                                if randomizeProjectAttachment then yield RandomType.ProjectAttachment
+                                if randomizeArea then yield RandomType.Area
+                                if randomizeAreaAttachment then yield RandomType.AreaAttachment
+                                if randomizeResource then yield RandomType.Resource
+                                if randomizeResourceAttachment then
+                                    yield RandomType.ResourceAttachment
+                                if randomizeProjectTask then yield RandomType.ProjectTask
+                                if randomizeAreaTask then yield RandomType.AreaTask
+                                if randomizeProjectTaskAttachment then
+                                    yield RandomType.ProjectTaskAttachment
+                                if randomizeAreaTaskAttachment then
+                                    yield RandomType.AreaTaskAttachment
+                                if randomizeCellAttachment then yield RandomType.CellAttachment
+                            |]
+
+                        let selectedDatabaseIdSet = Store.value getter Atoms.User.selectedDatabaseIdSet
+
+                        let selectedDatabaseIdArray = selectedDatabaseIdSet |> Set.toArray
+
+                        let informationSet = Store.value getter Selectors.Session.informationSet
+
+                        let informationArray = informationSet |> Set.toArray
+
+                        let informationAttachmentIdMapByArchiveArray =
+                            selectedDatabaseIdArray
+                            |> Array.map Selectors.Database.informationAttachmentIdMapByArchive
+                            |> Store.waitForAll
+                            |> Store.value getter
+
+                        let databaseTaskIdArray =
+                            selectedDatabaseIdArray
+                            |> Array.map Selectors.Database.taskIdAtomsByArchive
+                            |> Store.waitForAll
+                            |> Store.value getter
+                            |> Array.map Store.waitForAll
+                            |> Store.waitForAll
+                            |> Store.value getter
+
+                        let databaseTaskInformationArray =
+                            databaseTaskIdArray
+                            |> Array.map
+                                (fun taskIdArray ->
+                                    taskIdArray
+                                    |> Array.map Atoms.Task.information
+                                    |> Store.waitForAll
+                                    |> Store.value getter)
+
+                        let databaseTaskAttachmentIdSetArray =
+                            databaseTaskIdArray
+                            |> Array.map
+                                (fun taskIdArray ->
+                                    taskIdArray
+                                    |> Array.map Atoms.Task.attachmentIdSet
+                                    |> Store.waitForAll
+                                    |> Store.value getter)
+
+                        let databaseCellAttachmentIdMapArray =
+                            databaseTaskIdArray
+                            |> Array.map
+                                (fun taskIdArray ->
+                                    taskIdArray
+                                    |> Array.map Atoms.Task.cellAttachmentIdMap
+                                    |> Store.waitForAll
+                                    |> Store.value getter)
+
+                        let anchorArray =
+                            selectedDatabaseIdArray
+                            |> Array.mapi
+                                (fun i databaseId ->
+                                    let informationAttachmentIdMapByArchive =
+                                        informationAttachmentIdMapByArchiveArray.[i]
+
+                                    let getInformationAttachmentArray informationArray =
+                                        informationArray
+                                        |> Array.collect
+                                            (fun information ->
+                                                informationAttachmentIdMapByArchive
+                                                |> Map.tryFind information
+                                                |> Option.defaultValue Set.empty
+                                                |> Set.toArray
+                                                |> Array.map
+                                                    (fun attachmentId ->
+                                                        Navigate.Anchor.InformationAttachment (
+                                                            information,
+                                                            attachmentId
+                                                        )))
+
+                                    let taskIdArray = databaseTaskIdArray.[i]
+                                    let taskInformationArray = databaseTaskInformationArray.[i]
+                                    let taskAttachmentIdSetArray = databaseTaskAttachmentIdSetArray.[i]
+                                    let cellAttachmentIdMapArray = databaseCellAttachmentIdMapArray.[i]
+
+                                    selectedRandomTypeArray
+                                    |> Array.collect
+                                        (fun randomType ->
+                                            match randomType with
+                                            | RandomType.Project ->
+                                                informationArray
+                                                |> Array.filter Information.isProject
+                                                |> Array.map Navigate.Anchor.Information
+                                            | RandomType.ProjectAttachment ->
+                                                informationArray
+                                                |> Array.filter Information.isProject
+                                                |> getInformationAttachmentArray
+                                            | RandomType.Area ->
+                                                informationArray
+                                                |> Array.filter Information.isArea
+                                                |> Array.map Navigate.Anchor.Information
+                                            | RandomType.AreaAttachment ->
+                                                informationArray
+                                                |> Array.filter Information.isArea
+                                                |> getInformationAttachmentArray
+                                            | RandomType.Resource ->
+                                                informationArray
+                                                |> Array.filter Information.isResource
+                                                |> Array.map Navigate.Anchor.Information
+                                            | RandomType.ResourceAttachment ->
+                                                informationArray
+                                                |> Array.filter Information.isResource
+                                                |> getInformationAttachmentArray
+                                            | RandomType.ProjectTask ->
+                                                taskIdArray
+                                                |> Array.indexed
+                                                |> Array.filter
+                                                    (fun (i, _) -> taskInformationArray.[i] |> Information.isProject)
+                                                |> Array.map
+                                                    (fun (_, taskId) -> Navigate.Anchor.Task (databaseId, taskId))
+                                            | RandomType.AreaTask ->
+                                                taskIdArray
+                                                |> Array.indexed
+                                                |> Array.filter
+                                                    (fun (i, _) -> taskInformationArray.[i] |> Information.isArea)
+                                                |> Array.map
+                                                    (fun (_, taskId) -> Navigate.Anchor.Task (databaseId, taskId))
+                                            | RandomType.ProjectTaskAttachment ->
+                                                taskIdArray
+                                                |> Array.collect
+                                                    (fun taskId ->
+                                                        taskAttachmentIdSetArray
+                                                        |> Array.collect (
+                                                            Set.toArray
+                                                            >> Array.map
+                                                                (fun attachmentId ->
+                                                                    Navigate.Anchor.TaskAttachment (
+                                                                        databaseId,
+                                                                        taskId,
+                                                                        attachmentId
+                                                                    ))
+                                                        ))
+                                            | RandomType.AreaTaskAttachment ->
+                                                taskIdArray
+                                                |> Array.collect
+                                                    (fun taskId ->
+                                                        taskAttachmentIdSetArray
+                                                        |> Array.collect (
+                                                            Set.toArray
+                                                            >> Array.map
+                                                                (fun attachmentId ->
+                                                                    Navigate.Anchor.TaskAttachment (
+                                                                        databaseId,
+                                                                        taskId,
+                                                                        attachmentId
+                                                                    ))
+                                                        ))
+                                            | RandomType.CellAttachment ->
+                                                taskIdArray
+                                                |> Array.collect
+                                                    (fun taskId ->
+                                                        cellAttachmentIdMapArray
+                                                        |> Array.collect Map.toArray
+                                                        |> Array.collect
+                                                            (fun (dateId, attachmentIdSet) ->
+                                                                attachmentIdSet
+                                                                |> Set.toArray
+                                                                |> Array.map
+                                                                    (fun attachmentId ->
+                                                                        Navigate.Anchor.CellAttachment (
+                                                                            taskId,
+                                                                            dateId,
+                                                                            attachmentId
+                                                                        ))))))
+                            |> Array.collect id
+
+                        printfn $"anchorArray.Length={anchorArray.Length}"
+
+                        if anchorArray.Length = 0 then
+                            toast (fun x -> x.description <- "No data found")
+                            return false
+                        else
+                            let anchor = anchorArray |> Seq.random
+                            do! Navigate.navigateAnchor getter setter anchor
+
+                            let title, description = anchor |> Navigate.Anchor.Stringify getter
+
+                            toast
+                                (fun x ->
+                                    x.title <- title
+                                    x.status <- "success"
+                                    x.description <- description)
+
+                            return true
+                    }),
+                [|
+                    box toast
+                    box randomizeProject
+                    box randomizeProjectAttachment
+                    box randomizeArea
+                    box randomizeAreaAttachment
+                    box randomizeResource
+                    box randomizeResourceAttachment
+                    box randomizeProjectTask
+                    box randomizeAreaTask
+                    box randomizeProjectTaskAttachment
+                    box randomizeAreaTaskAttachment
+                    box randomizeCellAttachment
+                |]
+            )
+
+        Popover.ConfirmPopover
+            (Tooltip.wrap
+                (str "Randomize")
+                [
+                    TransparentIconButton.TransparentIconButton
+                        {|
+                            Props =
+                                fun x ->
+                                    x.icon <- Icons.bi.BiShuffle |> Icons.render
+                                    x.height <- "27px"
+                                    x.fontSize <- "17px"
+                        |}
+                ])
+            onRandom
+            (fun (_disclosure, _initialFocusRef) ->
+                [
+                    UI.stack
+                        (fun x -> x.spacing <- "10px")
+                        [
+
+                            Checkbox.Checkbox
+                                (Some "Project")
+                                (fun x ->
+                                    x.isChecked <- randomizeProject
+                                    x.onChange <- fun _ -> promise { setRandomizeProject (not randomizeProject) })
+
+                            Checkbox.Checkbox
+                                (Some "Project Attachment")
+                                (fun x ->
+                                    x.isChecked <- randomizeProjectAttachment
+
+                                    x.onChange <-
+                                        fun _ ->
+                                            promise { setRandomizeProjectAttachment (not randomizeProjectAttachment) })
+
+                            Checkbox.Checkbox
+                                (Some "Area")
+                                (fun x ->
+                                    x.isChecked <- randomizeArea
+                                    x.onChange <- fun _ -> promise { setRandomizeArea (not randomizeArea) })
+
+                            Checkbox.Checkbox
+                                (Some "Area Attachment")
+                                (fun x ->
+                                    x.isChecked <- randomizeAreaAttachment
+
+                                    x.onChange <-
+                                        fun _ -> promise { setRandomizeAreaAttachment (not randomizeAreaAttachment) })
+
+                            Checkbox.Checkbox
+                                (Some "Resource")
+                                (fun x ->
+                                    x.isChecked <- randomizeResource
+                                    x.onChange <- fun _ -> promise { setRandomizeResource (not randomizeResource) })
+
+                            Checkbox.Checkbox
+                                (Some "Resource Attachment")
+                                (fun x ->
+                                    x.isChecked <- randomizeResourceAttachment
+
+                                    x.onChange <-
+                                        fun _ ->
+                                            promise { setRandomizeResourceAttachment (not randomizeResourceAttachment) })
+
+                            Checkbox.Checkbox
+                                (Some "Project Task")
+                                (fun x ->
+                                    x.isChecked <- randomizeProjectTask
+
+                                    x.onChange <-
+                                        fun _ -> promise { setRandomizeProjectTask (not randomizeProjectTask) })
+
+                            Checkbox.Checkbox
+                                (Some "Area Task")
+                                (fun x ->
+                                    x.isChecked <- randomizeAreaTask
+                                    x.onChange <- fun _ -> promise { setRandomizeAreaTask (not randomizeAreaTask) })
+
+                            Checkbox.Checkbox
+                                (Some "Project Task Attachment")
+                                (fun x ->
+                                    x.isChecked <- randomizeProjectTaskAttachment
+
+                                    x.onChange <-
+                                        fun _ ->
+                                            promise {
+                                                setRandomizeProjectTaskAttachment (not randomizeProjectTaskAttachment) })
+
+                            Checkbox.Checkbox
+                                (Some "Area Task Attachment")
+                                (fun x ->
+                                    x.isChecked <- randomizeAreaTaskAttachment
+
+                                    x.onChange <-
+                                        fun _ ->
+                                            promise { setRandomizeAreaTaskAttachment (not randomizeAreaTaskAttachment) })
+
+                            Checkbox.Checkbox
+                                (Some "Cell Attachment")
+                                (fun x ->
+                                    x.isChecked <- randomizeCellAttachment
+
+                                    x.onChange <-
+                                        fun _ -> promise { setRandomizeCellAttachment (not randomizeCellAttachment) })
+                        ]
+                ])
+
     [<ReactComponent>]
     let TopBar () =
         let deviceInfo = Store.useValue Selectors.deviceInfo
@@ -27,119 +401,12 @@ module TopBar =
 
         let archive, setArchive = Store.useState Atoms.User.archive
 
-        let onRandom =
-            Store.useCallback (
-                (fun getter setter _ ->
-                    promise {
-
-                        let selectedDatabaseIdSet = Store.value getter Atoms.User.selectedDatabaseIdSet
-
-                        let databaseId = selectedDatabaseIdSet |> JS.randomSeq
-
-                        let informationSet = Store.value getter Selectors.Session.informationSet
-
-                        let information = informationSet |> JS.randomSeq
-
-                        let attachmentIdMap = Store.value getter (Selectors.Information.attachmentIdMap information)
-
-                        //                        let attachmentId = attachmentIdSet |> JS.randomSeq
-
-                        //                        let attachment = Store.value getter (Selectors.Attachment.attachment attachmentId)
-
-                        //                        let taskIdAtoms = Store.value getter (Selectors.Database.taskIdAtoms databaseId)
-
-                        ()
-
-                    //                    let taskIdAtoms = Store.value getter (Selectors.Database.taskIdAtoms databaseId)
-//
-//                    let taskStateList =
-//                        taskIdAtoms
-//                        |> Array.toList
-//                        |> List.map (Store.value getter)
-//                        |> List.map Selectors.Task.taskState
-//                        |> List.map (Store.value getter)
-//
-//                    let fileIdList =
-//                        taskStateList
-//                        |> List.collect
-//                            (fun taskState ->
-//                                taskState.Attachments
-//                                |> List.choose
-//                                    (fun (_, attachment) ->
-//                                        match attachment with
-//                                        | Attachment.Image fileId -> Some fileId
-//                                        | _ -> None))
-//
-//                    let hexStringList =
-//                        fileIdList
-//                        |> List.map Selectors.File.hexString
-//                        |> List.toArray
-//                        |> Store.waitForAll
-//                        |> Store.value getter
-//
-//                    if hexStringList |> Array.contains None then
-//                        toast (fun x -> x.description <- "Invalid files present")
-//                    else
-//                        let fileMap =
-//                            fileIdList
-//                            |> List.mapi (fun i fileId -> fileId, hexStringList.[i].Value)
-//                            |> Map.ofList
-//
-//                        let informationSet = Store.value getter Selectors.Session.informationSet
-//
-//                        let informationStateMap =
-//                            informationSet
-//                            |> Set.toList
-//                            |> List.map
-//                                (fun information ->
-//                                    let attachmentIdSet =
-//                                        Store.value getter (Selectors.Information.attachmentIdSet information)
-//
-//                                    let attachments =
-//                                        attachmentIdSet
-//                                        |> Set.toArray
-//                                        |> Array.map Selectors.Attachment.attachment
-//                                        |> Store.waitForAll
-//                                        |> Store.value getter
-//                                        |> Array.toList
-//                                        |> List.choose id
-//
-//                                    information,
-//                                    {
-//                                        Information = information
-//                                        Attachments = attachments
-//                                        SortList = []
-//                                    })
-//                            |> Map.ofSeq
-//
-//                        let taskStateMap =
-//                            taskStateList
-//                            |> List.map (fun taskState -> taskState.Task.Id, taskState)
-//                            |> Map.ofSeq
-
-                    //                        let databaseState =
-//                            {
-//                                Database = database
-//                                InformationStateMap = informationStateMap
-//                                TaskStateMap = taskStateMap
-//                                FileMap = fileMap
-//                            }
-                    }),
-                [||]
-            )
-
         UI.flex
             (fun x ->
                 x.height <- "29px"
                 x.alignItems <- "center"
-                x.backgroundColor <- "gray.10"
-                //                x.paddingTop <- "7px"
-//                x.paddingRight <- "1px"
-//                x.paddingBottom <- "8px"
-//                x.paddingLeft <- "7px"
-                )
+                x.backgroundColor <- "gray.10")
             [
-
                 UI.flex
                     (fun x ->
                         x.cursor <- "pointer"
@@ -228,20 +495,8 @@ module TopBar =
                                     |}
                             ]
 
-                        Tooltip.wrap
-                            (str "Randomize")
-                            [
-                                TransparentIconButton.TransparentIconButton
-                                    {|
-                                        Props =
-                                            fun x ->
-                                                x.icon <- Icons.bi.BiShuffle |> Icons.render
-                                                x.height <- "27px"
-                                                x.fontSize <- "17px"
 
-                                                x.onClick <- fun _ -> onRandom ()
-                                    |}
-                            ]
+                        RandomizeButton ()
 
                         Tooltip.wrap
                             (React.fragment [

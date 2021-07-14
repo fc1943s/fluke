@@ -116,6 +116,17 @@ module State =
             LastInformationDatabase: DatabaseId option
             LeftDock: TempUI.DockType option
             LeftDockSize: int
+            RandomizeProject: bool
+            RandomizeProjectAttachment: bool
+            RandomizeArea: bool
+            RandomizeAreaAttachment: bool
+            RandomizeResource: bool
+            RandomizeResourceAttachment: bool
+            RandomizeProjectTask: bool
+            RandomizeAreaTask: bool
+            RandomizeProjectTaskAttachment: bool
+            RandomizeAreaTaskAttachment: bool
+            RandomizeCellAttachment: bool
             RightDock: TempUI.DockType option
             RightDockSize: int
             SearchText: string
@@ -166,6 +177,17 @@ module State =
                 LastInformationDatabase = None
                 LeftDock = None
                 LeftDockSize = 300
+                RandomizeProject = true
+                RandomizeProjectAttachment = true
+                RandomizeArea = true
+                RandomizeAreaAttachment = true
+                RandomizeResource = true
+                RandomizeResourceAttachment = true
+                RandomizeProjectTask = true
+                RandomizeAreaTask = true
+                RandomizeProjectTaskAttachment = true
+                RandomizeAreaTaskAttachment = true
+                RandomizeCellAttachment = false
                 RightDock = None
                 RightDockSize = 300
                 SearchText = ""
@@ -354,6 +376,75 @@ module State =
 
             let rec leftDockSize =
                 Store.atomWithSync ($"{nameof User}/{nameof leftDockSize}", UserState.Default.LeftDockSize, [])
+
+            let rec randomizeProject =
+                Store.atomWithSync ($"{nameof User}/{nameof randomizeProject}", UserState.Default.RandomizeProject, [])
+
+            let rec randomizeProjectAttachment =
+                Store.atomWithSync (
+                    $"{nameof User}/{nameof randomizeProjectAttachment}",
+                    UserState.Default.RandomizeProjectAttachment,
+                    []
+                )
+
+            let rec randomizeArea =
+                Store.atomWithSync ($"{nameof User}/{nameof randomizeArea}", UserState.Default.RandomizeArea, [])
+
+            let rec randomizeAreaAttachment =
+                Store.atomWithSync (
+                    $"{nameof User}/{nameof randomizeAreaAttachment}",
+                    UserState.Default.RandomizeAreaAttachment,
+                    []
+                )
+
+            let rec randomizeResource =
+                Store.atomWithSync (
+                    $"{nameof User}/{nameof randomizeResource}",
+                    UserState.Default.RandomizeResource,
+                    []
+                )
+
+            let rec randomizeResourceAttachment =
+                Store.atomWithSync (
+                    $"{nameof User}/{nameof randomizeResourceAttachment}",
+                    UserState.Default.RandomizeResourceAttachment,
+                    []
+                )
+
+            let rec randomizeProjectTask =
+                Store.atomWithSync (
+                    $"{nameof User}/{nameof randomizeProjectTask}",
+                    UserState.Default.RandomizeProjectTask,
+                    []
+                )
+
+            let rec randomizeAreaTask =
+                Store.atomWithSync (
+                    $"{nameof User}/{nameof randomizeAreaTask}",
+                    UserState.Default.RandomizeAreaTask,
+                    []
+                )
+
+            let rec randomizeProjectTaskAttachment =
+                Store.atomWithSync (
+                    $"{nameof User}/{nameof randomizeProjectTaskAttachment}",
+                    UserState.Default.RandomizeProjectTaskAttachment,
+                    []
+                )
+
+            let rec randomizeAreaTaskAttachment =
+                Store.atomWithSync (
+                    $"{nameof User}/{nameof randomizeAreaTaskAttachment}",
+                    UserState.Default.RandomizeAreaTaskAttachment,
+                    []
+                )
+
+            let rec randomizeCellAttachment =
+                Store.atomWithSync (
+                    $"{nameof User}/{nameof randomizeCellAttachment}",
+                    UserState.Default.RandomizeCellAttachment,
+                    []
+                )
 
             let rec rightDock =
                 Store.atomWithSync ($"{nameof User}/{nameof rightDock}", UserState.Default.RightDock, [])
@@ -787,6 +878,18 @@ module State =
                             LastInformationDatabase = Store.value getter Atoms.User.lastInformationDatabase
                             LeftDock = Store.value getter Atoms.User.leftDock
                             LeftDockSize = Store.value getter Atoms.User.leftDockSize
+                            RandomizeProject = Store.value getter Atoms.User.randomizeProject
+                            RandomizeProjectAttachment = Store.value getter Atoms.User.randomizeProjectAttachment
+                            RandomizeArea = Store.value getter Atoms.User.randomizeArea
+                            RandomizeAreaAttachment = Store.value getter Atoms.User.randomizeAreaAttachment
+                            RandomizeResource = Store.value getter Atoms.User.randomizeResource
+                            RandomizeResourceAttachment = Store.value getter Atoms.User.randomizeResourceAttachment
+                            RandomizeProjectTask = Store.value getter Atoms.User.randomizeProjectTask
+                            RandomizeAreaTask = Store.value getter Atoms.User.randomizeAreaTask
+                            RandomizeProjectTaskAttachment =
+                                Store.value getter Atoms.User.randomizeProjectTaskAttachment
+                            RandomizeAreaTaskAttachment = Store.value getter Atoms.User.randomizeAreaTaskAttachment
+                            RandomizeCellAttachment = Store.value getter Atoms.User.randomizeCellAttachment
                             RightDock = Store.value getter Atoms.User.rightDock
                             RightDockSize = Store.value getter Atoms.User.rightDockSize
                             SearchText = Store.value getter Atoms.User.searchText
@@ -922,6 +1025,53 @@ module State =
                                 let taskId = Store.value getter taskIdAtom
                                 let archived = Store.value getter (Atoms.Task.archived taskId)
                                 archived = Some true))
+                )
+
+            let rec taskIdAtomsByArchive =
+                Store.readSelectorFamily (
+                    $"{nameof Database}/{nameof taskIdAtomsByArchive}",
+                    (fun (databaseId: DatabaseId) getter ->
+                        let archive = Store.value getter Atoms.User.archive
+
+                        databaseId
+                        |> (if archive = Some true then
+                                Database.archivedTaskIdAtoms
+                            else
+                                Database.unarchivedTaskIdAtoms)
+                        |> Store.value getter)
+                )
+
+            let rec informationAttachmentIdMapByArchive =
+                Store.readSelectorFamily (
+                    $"{nameof Database}/{nameof informationAttachmentIdMapByArchive}",
+                    (fun (databaseId: DatabaseId) getter ->
+                        let archive = Store.value getter Atoms.User.archive
+
+                        let informationAttachmentIdMap =
+                            Store.value getter (Atoms.Database.informationAttachmentIdMap databaseId)
+
+                        let attachmentIdArray =
+                            informationAttachmentIdMap
+                            |> Map.values
+                            |> Seq.fold Set.union Set.empty
+                            |> Seq.toArray
+
+                        let archivedArray =
+                            attachmentIdArray
+                            |> Array.map Atoms.Attachment.archived
+                            |> Store.waitForAll
+                            |> Store.value getter
+
+                        let archivedMap =
+                            archivedArray
+                            |> Array.zip attachmentIdArray
+                            |> Map.ofArray
+
+                        informationAttachmentIdMap
+                        |> Map.map
+                            (fun _ attachmentIdSet ->
+                                attachmentIdSet
+                                |> Set.filter (fun attachmentId -> archivedMap.[attachmentId] = archive)))
                 )
 
             let rec databaseState =
@@ -1092,11 +1242,11 @@ module State =
                         let attachment = Store.value getter (Atoms.Attachment.attachment attachmentId)
 
                         match timestamp, archived, attachment with
-                        | Some timestamp, archived, Some attachment ->
+                        | Some timestamp, Some archived, Some attachment ->
                             Some
                                 {
                                     Timestamp = timestamp
-                                    Archived = archived |> Option.defaultValue false // TODO: , Some archived,
+                                    Archived = archived
                                     Attachment = attachment
                                 }
                         | _ -> None)
@@ -1112,17 +1262,17 @@ module State =
                             Store.value getter Atoms.User.selectedDatabaseIdSet
                             |> Set.toArray
 
-                        let informationAttachmentIdMapArray =
+                        let informationAttachmentIdMapByArchiveArray =
                             selectedDatabaseIdArray
-                            |> Array.map Atoms.Database.informationAttachmentIdMap
+                            |> Array.map Selectors.Database.informationAttachmentIdMapByArchive
                             |> Store.waitForAll
                             |> Store.value getter
 
-                        informationAttachmentIdMapArray
+                        informationAttachmentIdMapByArchiveArray
                         |> Array.mapi
-                            (fun i informationAttachmentIdMap ->
+                            (fun i informationAttachmentIdMapByArchive ->
                                 selectedDatabaseIdArray.[i],
-                                informationAttachmentIdMap
+                                informationAttachmentIdMapByArchive
                                 |> Map.tryFind information
                                 |> Option.defaultValue Set.empty)
                         |> Map.ofSeq)
@@ -1507,17 +1657,11 @@ module State =
                 Store.readSelector (
                     $"{nameof Session}/{nameof selectedTaskIdListByArchive}",
                     (fun getter ->
-                        let archive = Store.value getter Atoms.User.archive
                         let selectedDatabaseIdSet = Store.value getter Atoms.User.selectedDatabaseIdSet
 
                         selectedDatabaseIdSet
                         |> Set.toArray
-                        |> Array.map (
-                            if archive = Some true then
-                                Database.archivedTaskIdAtoms
-                            else
-                                Database.unarchivedTaskIdAtoms
-                        )
+                        |> Array.map Database.taskIdAtomsByArchive
                         |> Store.waitForAll
                         |> Store.value getter
                         |> Array.collect id

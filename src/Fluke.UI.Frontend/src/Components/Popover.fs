@@ -167,8 +167,9 @@ module Popover =
                                                                 fun e ->
                                                                     promise {
                                                                         e.preventDefault ()
-                                                                        do! onConfirm ()
-                                                                        disclosure.onClose ()
+
+                                                                        let! result = onConfirm ()
+                                                                        if result then disclosure.onClose ()
                                                                     }
                                                     Children =
                                                         [

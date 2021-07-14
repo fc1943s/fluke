@@ -218,6 +218,16 @@ module UserInteraction =
         static member inline FromDateTime (date: DateTime) : FlukeDateTime =
             FlukeDateTime.Create (FlukeDate.FromDateTime date, FlukeTime.FromDateTime date, Second date.Second)
 
+    and Attachment with
+        static member inline Stringify attachment =
+            match attachment with
+            | Attachment.Comment (Comment.Comment comment) ->
+                if comment.Length > 60 then
+                    $"{comment.Substring (0, 60)}..."
+                else
+                    comment
+            | Attachment.Image fileId -> $"Image ID: {fileId |> FileId.Value}"
+            | attachment -> $"<attachment {attachment}>"
 
     let inline (|BeforeToday|Today|AfterToday|) (dayStart: FlukeTime, position: FlukeDateTime, DateId referenceDay) =
         let dateStart =

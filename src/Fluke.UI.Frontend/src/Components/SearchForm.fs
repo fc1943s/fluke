@@ -6,10 +6,10 @@ open Fable.React
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.State
 open Fluke.Shared.Domain.UserInteraction
-open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
+open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
 
 
@@ -22,21 +22,10 @@ module SearchForm =
         | TaskAttachment of task: string
         | CellAttachment of task: string * date: string
 
-    [<RequireQualifiedAccess>]
-    type SearchResult =
-        | Information of information: Information
-        | InformationAttachment of information: Information
-        | Task of databaseId: DatabaseId * taskId: TaskId
-        | TaskAttachment of databaseId: DatabaseId * taskId: TaskId
-        | CellAttachment of taskId: TaskId * dateId: DateId
-
 
     [<ReactComponent>]
-    let SearchResultItem searchResult searchResultText =
-        let setTaskUIFlag = Store.useSetState (Atoms.User.uiFlag UIFlagType.Task)
-        let setInformationUIFlag = Store.useSetState (Atoms.User.uiFlag UIFlagType.Information)
-        let setCellUIFlag = Store.useSetState (Atoms.User.uiFlag UIFlagType.Cell)
-        let setRightDock = Store.useSetState Atoms.User.rightDock
+    let SearchResultItem anchor searchResultText =
+        let navigateAnchor = Navigate.useNavigateAnchor ()
 
         UI.box
             (fun x ->
@@ -56,26 +45,7 @@ module SearchForm =
                         x.marginTop <- "-1px"
                         x.marginLeft <- "6px"
 
-                        x.onClick <-
-                            fun _ ->
-                                promise {
-                                    match searchResult with
-                                    | SearchResult.Task (databaseId, taskId) ->
-                                        setTaskUIFlag (UIFlag.Task (databaseId, taskId))
-                                        setRightDock (Some TempUI.DockType.Task)
-                                    | SearchResult.Information information ->
-                                        setInformationUIFlag (UIFlag.Information information)
-                                        setRightDock (Some TempUI.DockType.Information)
-                                    | SearchResult.InformationAttachment information ->
-                                        setInformationUIFlag (UIFlag.Information information)
-                                        setRightDock (Some TempUI.DockType.Information)
-                                    | SearchResult.TaskAttachment (databaseId, taskId) ->
-                                        setTaskUIFlag (UIFlag.Task (databaseId, taskId))
-                                        setRightDock (Some TempUI.DockType.Task)
-                                    | SearchResult.CellAttachment (taskId, dateId) ->
-                                        setCellUIFlag (UIFlag.Cell (taskId, dateId))
-                                        setRightDock (Some TempUI.DockType.Cell)
-                                })
+                        x.onClick <- fun _ -> navigateAnchor anchor)
             ]
 
     [<ReactComponent>]
@@ -132,7 +102,7 @@ module SearchForm =
                                                             if informationName.Contains searchText then
                                                                 yield
                                                                     SearchResultType.Information informationName,
-                                                                    SearchResult.Information
+                                                                    Navigate.Anchor.Information
                                                                         informationState.Information,
                                                                     informationName
 
@@ -142,8 +112,11 @@ module SearchForm =
                                                                     (fun attachmentText ->
                                                                         SearchResultType.InformationAttachment
                                                                             informationName,
-                                                                        SearchResult.InformationAttachment
+                                                                        Navigate.Anchor.InformationAttachment (
                                                                             informationState.Information,
+                                                                            AttachmentId System.Guid.Empty
+                                                                        ),
+
                                                                         attachmentText)
                                                         ])
 
@@ -158,7 +131,7 @@ module SearchForm =
                                                             if taskName.Contains searchText then
                                                                 yield
                                                                     SearchResultType.Task taskName,
-                                                                    SearchResult.Task (
+                                                                    Navigate.Anchor.Task (
                                                                         databaseState.Database.Id,
                                                                         taskId
                                                                     ),
@@ -169,9 +142,10 @@ module SearchForm =
                                                                 |> List.map
                                                                     (fun attachmentText ->
                                                                         SearchResultType.TaskAttachment taskName,
-                                                                        SearchResult.TaskAttachment (
+                                                                        Navigate.Anchor.TaskAttachment (
                                                                             databaseState.Database.Id,
-                                                                            taskId
+                                                                            taskId,
+                                                                            AttachmentId System.Guid.Empty
                                                                         ),
                                                                         attachmentText)
 
@@ -192,9 +166,11 @@ module SearchForm =
                                                                                             |> DateId.Value
                                                                                             |> FlukeDate.Stringify
                                                                                         ),
-                                                                                        SearchResult.CellAttachment (
+                                                                                        Navigate.Anchor.CellAttachment (
                                                                                             taskId,
-                                                                                            dateId
+                                                                                            dateId,
+                                                                                            AttachmentId
+                                                                                                System.Guid.Empty
                                                                                         ),
                                                                                         attachmentText)
                                                                         ])

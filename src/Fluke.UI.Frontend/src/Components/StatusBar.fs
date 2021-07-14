@@ -220,16 +220,18 @@ module StatusBar =
 
     [<ReactComponent>]
     let TasksIndicator () =
-        let informationSet = Store.useValue Selectors.Session.informationSet
+        let selectedDatabaseIdSet = Store.useValue Atoms.User.selectedDatabaseIdSet
 
-        let informationAttachmentSet =
-            informationSet
+        let informationAttachmentIdSet =
+            selectedDatabaseIdSet
             |> Set.toArray
-            |> Array.map Selectors.Information.attachmentIdMap
+            |> Array.map Atoms.Database.informationAttachmentIdMap
             |> Store.waitForAll
             |> Store.useValue
             |> Array.collect (Map.values >> Seq.toArray)
             |> Array.fold Set.union Set.empty
+
+        let informationSet = Store.useValue Selectors.Session.informationSet
 
         let selectedTaskIdAtoms = Store.useValue Selectors.Session.selectedTaskIdAtoms
 
@@ -238,7 +240,7 @@ module StatusBar =
             |> Store.waitForAll
             |> Store.useValue
 
-        let taskAttachments =
+        let taskAttachmentIdArray =
             selectedTaskIdArray
             |> Array.map Atoms.Task.attachmentIdSet
             |> Store.waitForAll
@@ -259,8 +261,8 @@ module StatusBar =
             React.useMemo (
                 (fun () ->
                     let information = informationSet.Count
-                    let informationAttachment = informationAttachmentSet.Count
-                    let taskAttachment = taskAttachments.Length
+                    let informationAttachment = informationAttachmentIdSet.Count
+                    let taskAttachment = taskAttachmentIdArray.Length
 
                     let cellStatus =
                         cellStateMapArray
@@ -323,9 +325,9 @@ module StatusBar =
                     detailsText, total),
                 [|
                     box selectedTaskIdAtoms
-                    box taskAttachments
+                    box taskAttachmentIdArray
                     box cellStateMapArray
-                    box informationAttachmentSet
+                    box informationAttachmentIdSet
                     box informationSet
                 |]
             )
@@ -368,7 +370,7 @@ module StatusBar =
                         JS.newObj
                             (fun (x: UI.IBreakpoints<string>) ->
                                 x.``base`` <- "grid"
-                                x.lg <- "flex")
+                                x.md <- "flex")
                     )
 
                 x.borderTopWidth <- "1px"

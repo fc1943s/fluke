@@ -157,8 +157,7 @@ module Cell =
         =
         let enableCellPopover = Store.useValue Atoms.User.enableCellPopover
         let isReadWrite = Store.useValue (Selectors.Task.isReadWrite input.TaskId)
-        let setRightDock = Store.useSetState Atoms.User.rightDock
-        let setCellUIFlag = Store.useSetState (Atoms.User.uiFlag UIFlagType.Cell)
+        let navigate = Navigate.useNavigate ()
 
         if enableCellPopover then
             Popover.CustomPopover
@@ -182,8 +181,13 @@ module Cell =
                     x.onClick <-
                         fun _ ->
                             promise {
-                                setRightDock (Some TempUI.DockType.Cell)
-                                setCellUIFlag (UIFlag.Cell (input.TaskId, input.DateId))
+                                do!
+                                    navigate (
+                                        Navigate.DockPosition.Right,
+                                        Some TempUI.DockType.Cell,
+                                        UIFlagType.Cell,
+                                        UIFlag.Cell (input.TaskId, input.DateId)
+                                    )
                             })
                 [
                     Cell input

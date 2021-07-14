@@ -4,10 +4,11 @@ open System
 open Fable.React
 open Feliz
 open Fluke.Shared.Domain.UserInteraction
-open Fluke.UI.Frontend
+open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
+open Fluke.UI.Frontend.TempUI
 
 
 module TaskName =
@@ -15,30 +16,14 @@ module TaskName =
 
     [<ReactComponent>]
     let TaskName taskId =
-        //        let ref = React.useElementRef ()
-//        let hovered = Listener.useElementHover ref
+        let navigate = Navigate.useNavigate ()
         let hasSelection = Store.useValue (Selectors.Task.hasSelection taskId)
-
+        let databaseId = Store.useValue (Atoms.Task.databaseId taskId)
         let name = Store.useValue (Atoms.Task.name taskId)
         let archived, setArchived = Store.useState (Atoms.Task.archived taskId)
         let attachmentIdSet = Store.useValue (Atoms.Task.attachmentIdSet taskId)
         let cellSize = Store.useValue Atoms.User.cellSize
         let isReadWrite = Store.useValue (Selectors.Task.isReadWrite taskId)
-
-        let editTask =
-            Store.useCallback (
-                (fun getter setter _ ->
-                    promise {
-                        let deviceInfo = Store.value getter Selectors.deviceInfo
-                        if deviceInfo.IsMobile then Store.set setter Atoms.User.leftDock None
-                        Store.set setter Atoms.User.rightDock (Some TempUI.DockType.Task)
-                        let databaseId = Store.value getter (Atoms.Task.databaseId taskId)
-                        Store.set setter (Atoms.User.uiFlag UIFlagType.Task) (UIFlag.Task (databaseId, taskId))
-                    }),
-                [|
-                    box taskId
-                |]
-            )
 
         let startSession =
             Store.useCallback (
@@ -62,7 +47,11 @@ module TaskName =
 
         let deleteTask =
             Store.useCallback (
-                (fun getter _ _ -> Store.deleteRoot getter (Atoms.Task.databaseId taskId)),
+                (fun getter _ _ ->
+                    promise {
+                        do! Store.deleteRoot getter (Atoms.Task.databaseId taskId)
+                        return true
+                    }),
                 [|
                     box taskId
                 |]
@@ -115,7 +104,14 @@ module TaskName =
                                                 MenuItem.MenuItem
                                                     Icons.bs.BsPen
                                                     "Edit Task"
-                                                    (Some editTask)
+                                                    (Some
+                                                        (fun () ->
+                                                            navigate (
+                                                                Navigate.DockPosition.Right,
+                                                                Some DockType.Task,
+                                                                UIFlagType.Task,
+                                                                UIFlag.Task (databaseId, taskId)
+                                                            )))
                                                     (fun _ -> ())
 
                                                 MenuItem.MenuItem

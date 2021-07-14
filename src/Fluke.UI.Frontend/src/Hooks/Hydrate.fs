@@ -47,6 +47,17 @@ module Hydrate =
             set Atoms.User.lastInformationDatabase userState.LastInformationDatabase
             set Atoms.User.leftDock userState.LeftDock
             set Atoms.User.leftDockSize userState.LeftDockSize
+            set Atoms.User.randomizeProject userState.RandomizeProject
+            set Atoms.User.randomizeProjectAttachment userState.RandomizeProjectAttachment
+            set Atoms.User.randomizeArea userState.RandomizeArea
+            set Atoms.User.randomizeAreaAttachment userState.RandomizeAreaAttachment
+            set Atoms.User.randomizeResource userState.RandomizeResource
+            set Atoms.User.randomizeResourceAttachment userState.RandomizeResourceAttachment
+            set Atoms.User.randomizeProjectTask userState.RandomizeProjectTask
+            set Atoms.User.randomizeAreaTask userState.RandomizeAreaTask
+            set Atoms.User.randomizeProjectTaskAttachment userState.RandomizeProjectTaskAttachment
+            set Atoms.User.randomizeAreaTaskAttachment userState.RandomizeAreaTaskAttachment
+            set Atoms.User.randomizeCellAttachment userState.RandomizeCellAttachment
             set Atoms.User.rightDock userState.RightDock
             set Atoms.User.rightDockSize userState.RightDockSize
             set Atoms.User.searchText userState.SearchText
@@ -188,7 +199,7 @@ module Hydrate =
         promise {
             do! hydrateDatabase getter setter (atomScope, databaseState.Database)
 
-            let informationAttachmentIdMap =
+            let newInformationAttachmentIdMap =
                 databaseState.InformationStateMap
                 |> Map.values
                 |> Seq.map
@@ -205,7 +216,7 @@ module Hydrate =
             Store.scopedSet
                 setter
                 atomScope
-                (Atoms.Database.informationAttachmentIdMap, databaseState.Database.Id, informationAttachmentIdMap)
+                (Atoms.Database.informationAttachmentIdMap, databaseState.Database.Id, newInformationAttachmentIdMap)
 
             let newFileIdMap =
                 databaseState.FileMap
