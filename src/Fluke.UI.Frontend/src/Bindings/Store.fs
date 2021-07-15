@@ -99,7 +99,7 @@ module Store =
     let inline selectAtomFamily (atomPath, atom, selector) =
         jotaiUtils.atomFamily (fun param -> selectAtom (atomPath, atom, selector param)) DeepEqual.compare
 
-    let atomWithStorage (atomPath, defaultValue, map: _ -> _) =
+    let atomWithStorage (atomPath, defaultValue) =
         let internalAtom = jotaiUtils.atomWithStorage atomPath defaultValue
 
         jotai.atom (
@@ -111,16 +111,14 @@ module Store =
                         | "function" -> (argFn |> box |> unbox) () |> unbox
                         | _ -> argFn
 
-                    set setter internalAtom (map arg))
+                    set setter internalAtom arg)
         )
         |> registerAtom atomPath None
         |> fst
 
 
     module Atoms =
-        let rec gunPeers =
-            atomWithStorage ($"{nameof gunPeers}", ([||]: string []), Array.filter (String.IsNullOrWhiteSpace >> not))
-
+        let rec gunPeers = atomWithStorage ($"{nameof gunPeers}", ([||]: string []))
         let rec isTesting = atom ($"{nameof isTesting}", JS.deviceInfo.IsTesting)
         let rec username = atom ($"{nameof username}", (None: Username option))
         let rec gunKeys = atom ($"{nameof gunKeys}", Gun.GunKeys.Default)
@@ -134,6 +132,10 @@ module Store =
                     let isTesting = value getter Atoms.isTesting
                     let gunPeers = value getter Atoms.gunPeers
 
+                    let peers =
+                        gunPeers
+                        |> Array.filter (String.IsNullOrWhiteSpace >> not)
+
                     let gun =
                         if isTesting then
                             Gun.gun
@@ -146,13 +148,13 @@ module Store =
                         else
                             Gun.gun
                                 {
-                                    Gun.GunProps.peers = Some gunPeers
+                                    Gun.GunProps.peers = Some peers
                                     Gun.GunProps.radisk = Some true
                                     Gun.GunProps.localStorage = Some false
                                     Gun.GunProps.multicast = None
                                 }
 
-                    printfn $"jotai gun selector. peers={gunPeers}. gun={gun} returning gun..."
+                    printfn $"Gun selector. peers={peers}. gun={gun} returning..."
 
                     gun)
             )
@@ -919,8 +921,8 @@ lastUserAtomId={lastUserAtomId} """
             (fun param -> atomWithSync (atomPath, defaultValueFn param, persist param))
             DeepEqual.compare
 
-    let inline atomWithStorageSync<'TKey, 'TValue> (atomPath, defaultValue, map: _ -> _) =
-        let storageAtom = atomWithStorage (atomPath, defaultValue, map)
+    let inline atomWithStorageSync<'TKey, 'TValue> (atomPath, defaultValue) =
+        let storageAtom = atomWithStorage (atomPath, defaultValue)
         let syncAtom = atomWithSync<'TKey, 'TValue> (atomPath, defaultValue, [])
 
         let mutable lastSetAtom = None

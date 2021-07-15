@@ -57,6 +57,7 @@ module GunPeers =
                     [
                         let projectDir = "Fluke.GunPeer"
                         "package.json", (File.ReadAllBytes $"../{projectDir}/package.json")
+                        "yarn.lock", (File.ReadAllBytes $"../{projectDir}/yarn.lock")
                         "server.js", (File.ReadAllBytes $"../{projectDir}/server.js")
 
                         "cert.pem",

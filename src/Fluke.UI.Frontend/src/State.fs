@@ -230,8 +230,7 @@ module State =
 //                    (fun (_eventId: EventId) -> Event.NoOp)
 //                )
 
-        let rec debug = Store.atomWithStorageSync ($"{nameof debug}", JS.isDebug (), id)
-
+        let rec debug = Store.atomWithStorageSync ($"{nameof debug}", JS.isDebug ())
         let rec sessionRestored = Store.atom ($"{nameof sessionRestored}", false)
         let rec initialPeerSkipped = Store.atom ($"{nameof initialPeerSkipped}", false)
         let rec position = Store.atom ($"{nameof position}", None)
@@ -316,7 +315,7 @@ module State =
                 Store.atomWithSync ($"{nameof User}/{nameof clipboardVisible}", UserState.Default.ClipboardVisible, [])
 
             let rec darkMode =
-                Store.atomWithStorageSync ($"{nameof User}/{nameof darkMode}", UserState.Default.DarkMode, id)
+                Store.atomWithStorageSync ($"{nameof User}/{nameof darkMode}", UserState.Default.DarkMode)
 
             let rec daysAfter =
                 Store.atomWithSync ($"{nameof User}/{nameof daysAfter}", UserState.Default.DaysAfter, [])
@@ -351,7 +350,7 @@ module State =
                 Store.atomWithSync ($"{nameof User}/{nameof filterTasksText}", UserState.Default.FilterTasksText, [])
 
             let rec fontSize =
-                Store.atomWithStorageSync ($"{nameof User}/{nameof fontSize}", UserState.Default.FontSize, id)
+                Store.atomWithStorageSync ($"{nameof User}/{nameof fontSize}", UserState.Default.FontSize)
 
             let rec hideSchedulingOverlay =
                 Store.atomWithSync (
@@ -473,7 +472,7 @@ module State =
                 Store.atomWithSync ($"{nameof User}/{nameof sessionDuration}", UserState.Default.SessionDuration, [])
 
             let rec systemUiFont =
-                Store.atomWithStorageSync ($"{nameof User}/{nameof systemUiFont}", UserState.Default.SystemUiFont, id)
+                Store.atomWithStorageSync ($"{nameof User}/{nameof systemUiFont}", UserState.Default.SystemUiFont)
 
             let rec userColor = Store.atomWithSync ($"{nameof User}/{nameof userColor}", (None: Color option), [])
 

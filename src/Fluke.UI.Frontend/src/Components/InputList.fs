@@ -1,6 +1,7 @@
 namespace Fluke.UI.Frontend.Components
 
 open Fable.Core
+open Fable.Core.JsInterop
 open Feliz
 open Fable.React
 open Fluke.UI.Frontend.Bindings
@@ -53,8 +54,16 @@ module InputList =
                                                         x.onClick <-
                                                             fun _ ->
                                                                 promise {
+                                                                    let initialArray =
+                                                                        [|
+                                                                            Unchecked.defaultof<'TValue>
+                                                                        |]
+
                                                                     tempAtom.SetValue (
-                                                                        tempAtom.Value |> Array.append [| unbox "" |]
+                                                                        match tempAtom.Value with
+                                                                        | [||] -> initialArray
+                                                                        | currentValue -> currentValue
+                                                                        |> Array.append initialArray
                                                                     )
                                                                 })
                                             ]

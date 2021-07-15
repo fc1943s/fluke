@@ -282,7 +282,7 @@ module Hydrate =
 
                             match databaseState with
                             | _ when attemptsLeft = attempts ->
-                                do! Promise.sleep 2000
+                                do! Promise.sleep 4000
                                 return! loop (attemptsLeft - 1)
                             | Ok databaseState -> return Ok databaseState
                             | Error error ->
@@ -291,7 +291,7 @@ module Hydrate =
                                 if attemptsLeft = 0 then
                                     return Error error
                                 else
-                                    do! Promise.sleep 2000
+                                    do! Promise.sleep 4000
                                     return! loop (attemptsLeft - 1)
                         }
 

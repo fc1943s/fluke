@@ -4,6 +4,9 @@ open Feliz
 open Fable.React
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
+open Fable.Core
+open System
+open Fluke.Shared
 
 
 module Content =
@@ -122,8 +125,12 @@ module Content =
                 | true ->
                     match username with
                     | None ->
-                        match gunPeers, initialPeerSkipped with
-                        | [||], false -> InitialPeers.InitialPeers ()
-                        | _ -> LoginScreen.LoginScreen ()
+                        if not initialPeerSkipped
+                           && gunPeers
+                              |> Array.filter (String.IsNullOrWhiteSpace >> not)
+                              |> Array.isEmpty then
+                            InitialPeers.InitialPeers ()
+                        else
+                            LoginScreen.LoginScreen ()
                     | Some _ -> LoggedContent ()
             ]
