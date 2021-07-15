@@ -51,12 +51,12 @@
   "dependencies": {
     "@fontsource/roboto-condensed": "~4.5",
 
-    "react": "18.0.0-alpha-bfa50f827-20210712",
-    "react-dom": "18.0.0-alpha-bfa50f827-20210712",
+    "react": "18.0.0-alpha-81346764b-20210714",
+    "react-dom": "18.0.0-alpha-81346764b-20210714",
 
     "@pmmmwh/react-refresh-webpack-plugin": "~0.4",
 
-    "jotai": "~1.1",
+    "jotai": "~1.2",
 
     "gun": "amark/gun.git#a362460b0fb0b59543a997c051fd8cb1b863e8a1",
 

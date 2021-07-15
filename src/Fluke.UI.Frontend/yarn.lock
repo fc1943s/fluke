@@ -3968,7 +3968,7 @@
     "@types/node" "*"
     form-data "^3.0.0"
 
-"@types/node@*", "@types/node@~16.3":
+"@types/node@*":
   version "16.3.1"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-16.3.1.tgz#24691fa2b0c3ec8c0d34bfcfd495edac5593ebb4"
   integrity sha512-N87VuQi7HEeRJkhzovao/JviiqKjDKMVKxKMfUvSKw+MbkbW8R0nA3fi/MQhhlxV2fQ+2ReM+/Nt4efdrJx3zA==
@@ -3982,6 +3982,11 @@
   version "8.10.66"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-8.10.66.tgz#dd035d409df322acc83dff62a602f12a5783bbb3"
   integrity sha512-tktOkFUA4kXx2hhhrB8bIFb5TbwzS4uOhKEmwiD+NoiL0qtP2OQ9mFldbgD4dV1djrlBYP6eBuQZiWjuHUpqFw==
+
+"@types/node@~16.3.2":
+  version "16.3.2"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-16.3.2.tgz#655432817f83b51ac869c2d51dd8305fb8342e16"
+  integrity sha512-jJs9ErFLP403I+hMLGnqDRWT0RYKSvArxuBVh2veudHV7ifEC1WAmjJADacZ7mRbA2nWgHtn8xyECMAot0SkAw==
 
 "@types/normalize-package-data@^2.4.0":
   version "2.4.1"
@@ -13172,10 +13177,10 @@ joi@^17.2.1, joi@^17.4.0:
     "@sideway/formula" "^3.0.0"
     "@sideway/pinpoint" "^2.0.0"
 
-jotai@~1.1:
-  version "1.1.3"
-  resolved "https://registry.yarnpkg.com/jotai/-/jotai-1.1.3.tgz#bf80b317562024117606b0cf9841db0b4bfd5e09"
-  integrity sha512-7PZs8gHe8Y+7BkC6m32NbfeNGa8ybFMUoy2DbH542YVYrFEJPxqIE4Es/SXaII7f8r/UZGzg29XWNEDq+iCITg==
+jotai@~1.2:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/jotai/-/jotai-1.2.0.tgz#07f87fd975e5a82a043fd54bb799cfbc0b244907"
+  integrity sha512-gLN8Ac7LIljWkQpe9RayFFlBotKoxAAI2lHYfDKDcqYEr27ESi6lui5wj9Fj5V5XIyauchSV9Hv9P4PriopcbQ==
 
 "js-tokens@^3.0.0 || ^4.0.0", js-tokens@^4.0.0:
   version "4.0.0"
@@ -17549,14 +17554,14 @@ react-dev-utils@^11.0.3:
     strip-ansi "6.0.0"
     text-table "0.2.0"
 
-react-dom@18.0.0-alpha-bfa50f827-20210712:
-  version "18.0.0-alpha-bfa50f827-20210712"
-  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-18.0.0-alpha-bfa50f827-20210712.tgz#0c9cba53bfd18b2dcfb1713607bcc48a9b8d0537"
-  integrity sha512-mjbjLnv2Mi6chQlZsn28MSBtR2kTwBbIQ0qYIg2lt3S5G2ABHO/PDotwi+66tumUDeV3l3couQlQ7h00swB6qA==
+react-dom@18.0.0-alpha-81346764b-20210714:
+  version "18.0.0-alpha-81346764b-20210714"
+  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-18.0.0-alpha-81346764b-20210714.tgz#b8755c63f438da4c6c1ee9bc20b3b33bcd86fcd4"
+  integrity sha512-gN8bMWEtdKyQXh1eXINA3mYuPkRlTeDJIhQvTrbDOYNHe0GzMne793xGtETlLPDnpv928fEwK6dz/prUsDPjzA==
   dependencies:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
-    scheduler "0.21.0-alpha-bfa50f827-20210712"
+    scheduler "0.21.0-alpha-81346764b-20210714"
 
 react-error-overlay@^6.0.9:
   version "6.0.9"
@@ -17747,10 +17752,10 @@ react-vim-wasm@~0.1:
   dependencies:
     vim-wasm "~0.0.13"
 
-react@18.0.0-alpha-bfa50f827-20210712:
-  version "18.0.0-alpha-bfa50f827-20210712"
-  resolved "https://registry.yarnpkg.com/react/-/react-18.0.0-alpha-bfa50f827-20210712.tgz#d9b17795a7c619f2503dfc622aab6edef4fd395b"
-  integrity sha512-sEXy9MmlDc9dV7LiaDiA79EUVeskZOFob5g12F4YZXVD+ay9BPj4faTgKPnLPUBiYtkFOXAZ7vGfcaPTgqGiSg==
+react@18.0.0-alpha-81346764b-20210714:
+  version "18.0.0-alpha-81346764b-20210714"
+  resolved "https://registry.yarnpkg.com/react/-/react-18.0.0-alpha-81346764b-20210714.tgz#f3b8f051283875ec07c5e94c2e7a86e1246e68cb"
+  integrity sha512-PSAHq+djJ8TV5CNtIRon5QIMnHyXlENmdYd4fGzRQtqplzaUNZFkJzyEPfaWz1X7IAvguynJaFn0SCmdfLG+eA==
   dependencies:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
@@ -18559,10 +18564,10 @@ saxes@^5.0.1:
   dependencies:
     xmlchars "^2.2.0"
 
-scheduler@0.21.0-alpha-bfa50f827-20210712:
-  version "0.21.0-alpha-bfa50f827-20210712"
-  resolved "https://registry.yarnpkg.com/scheduler/-/scheduler-0.21.0-alpha-bfa50f827-20210712.tgz#4c872a0d37d3169da9af1c3bf127378ea5facbe8"
-  integrity sha512-bvOZFhGLP/Aj7rdZE0nvhpIEUSUtXQ9B0m0wS0x2SlYd0D4bRf98E0OfocWks9eEjGgbl/Q66UInnMtdYMLMqA==
+scheduler@0.21.0-alpha-81346764b-20210714:
+  version "0.21.0-alpha-81346764b-20210714"
+  resolved "https://registry.yarnpkg.com/scheduler/-/scheduler-0.21.0-alpha-81346764b-20210714.tgz#6fe30e0444ee3b59baa3de0aeca0685dfb7d0c53"
+  integrity sha512-mDRAm1qH6zPlqgJRWuHjcn5igkPVnTSu3tuFcn576pvdQBuI8V9qBNn8aCci9xG2LH0lCrlJ2r+EvACqS9Sq2w==
   dependencies:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
