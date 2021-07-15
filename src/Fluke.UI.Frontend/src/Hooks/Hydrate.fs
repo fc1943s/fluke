@@ -274,13 +274,28 @@ module Hydrate =
                             x.title <- "Loading"
                             x.status <- "warning")
 
-                    let _firstFetch = Store.value getter (Selectors.Database.databaseState databaseId)
+                    let attempts = 5
 
-                    do! Promise.sleep 4000
+                    let rec loop attemptsLeft =
+                        promise {
+                            let databaseState = Store.value getter (Selectors.Database.databaseState databaseId)
 
-                    let secondFetch = Store.value getter (Selectors.Database.databaseState databaseId)
+                            match databaseState with
+                            | _ when attemptsLeft = attempts ->
+                                do! Promise.sleep 2000
+                                return! loop (attemptsLeft - 1)
+                            | Ok databaseState -> return Ok databaseState
+                            | Error error ->
+                                printfn $"attemptsLeft={attemptsLeft} error={error}"
 
-                    match secondFetch with
+                                if attemptsLeft = 0 then
+                                    return Error error
+                                else
+                                    do! Promise.sleep 2000
+                                    return! loop (attemptsLeft - 1)
+                        }
+
+                    match! loop attempts with
                     | Ok databaseState ->
                         let json = databaseState |> Json.encodeFormatted
 

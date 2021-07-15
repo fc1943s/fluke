@@ -103,23 +103,15 @@ module AttachmentComment =
                                 youtubeImgList
                                 |> List.map
                                     (fun url ->
-                                        UI.flex
-                                            (fun x ->
-                                                x.width <- "75px"
-                                                x.height <- "75px"
-                                                x.justifyContent <- "center"
-                                                x.borderWidth <- "1px"
-                                                x.borderColor <- "gray.16"
-                                                x.alignItems <- "center")
-                                            [
-                                                ImageModal.ImageModal
-                                                    State.UIFlagType.RawImage
-                                                    (State.UIFlag.RawImage url)
-                                                    (youtubeMetadataMap
-                                                     |> Map.tryFind url
-                                                     |> Option.map (fun metadata -> metadata.title)
-                                                     |> Option.defaultValue "")
-                                                    url
-                                            ])
+                                        FileThumbnail.ImageThumbnail [
+                                            ImageModal.ImageModal
+                                                State.UIFlagType.RawImage
+                                                (State.UIFlag.RawImage url)
+                                                (youtubeMetadataMap
+                                                 |> Map.tryFind url
+                                                 |> Option.map (fun metadata -> metadata.title)
+                                                 |> Option.defaultValue "")
+                                                url
+                                        ])
                         ]
             ]

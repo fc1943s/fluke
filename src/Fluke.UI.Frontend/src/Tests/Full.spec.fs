@@ -249,9 +249,10 @@ module Full =
                     Cy.wait 6000
 
                     Cy2.clickSelectorChildFromText
-                        (DateTime.Now
-                         |> FlukeDate.FromDateTime
-                         |> FlukeDate.Stringify)
+                        ((DateTime.Now
+                          |> FlukeDate.FromDateTime
+                          |> FlukeDate.Stringify)
+                            .Substring (0, 9))
                         ".chakra-button"
 
                     Cy2.clickText "Delete Session"

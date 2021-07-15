@@ -83,7 +83,7 @@ module DebugOverlay =
                     x.bottom <- "0"
                     x.fontSize <- "9px"
                     x.backgroundColor <- "#44444455"
-                    x.zIndex <- 1
+                    x.zIndex <- 3
                     x.overflow <- if debug then "scroll" else "initial")
                 [
                     if debug then

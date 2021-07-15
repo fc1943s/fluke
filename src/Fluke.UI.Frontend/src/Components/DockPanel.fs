@@ -86,6 +86,7 @@ module DockPanel =
                 UI.flex
                     (fun x ->
                         x.flexDirection <- "column"
+                        x.zIndex <- 2
                         x.flex <- "1 1 0"
                         x.overflow <- "auto")
                     [

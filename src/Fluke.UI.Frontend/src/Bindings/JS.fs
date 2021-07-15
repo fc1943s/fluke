@@ -22,7 +22,7 @@ module JSMagic =
            types: string [] |} []
 
     [<Emit "$0.read()">]
-    let inline private clipboardRead clipboard = jsNative
+    let inline private clipboardRead _clipboard = jsNative
 
     type Clipboard with
         member this.read () : JS.Promise<ClipboardRead> = clipboardRead this
@@ -83,25 +83,40 @@ module JS =
                         |> Option.ofObjUnbox<{| mobile: bool
                                                 brands: {| brand: string; version: string |} [] |}>)
 
-            let isTesting = jestWorkerId || window?Cypress <> null
+            let brands =
+                userAgentData
+                |> Option.map
+                    (fun userAgentData ->
+                        userAgentData.brands
+                        |> Array.map (fun brand -> brand.brand, brand.version))
+                |> Option.defaultValue [||]
+
+            let userAgentDataMobile =
+                userAgentData
+                |> Option.map (fun userAgentData -> userAgentData.mobile)
+                |> Option.defaultValue false
 
             let deviceInfo =
                 {
-                    Brands =
-                        userAgentData
-                        |> Option.map
-                            (fun userAgentData ->
-                                userAgentData.brands
-                                |> Array.map (fun brand -> brand.brand, brand.version))
-                        |> Option.defaultValue [||]
+                    Brands = brands
                     IsMobile =
-                        userAgentData
-                        |> Option.map (fun userAgentData -> userAgentData.mobile)
-                        |> Option.defaultValue false
-                    IsElectron = userAgentData.IsNone && not isTesting
+                        if userAgentDataMobile then
+                            true
+                        elif brands.Length > 0 then
+                            false
+                        else
+                            let userAgent = if window?navigator = None then "" else window?navigator?userAgent
+
+                            JSe
+                                .RegExp(
+                                    "Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop",
+                                    JSe.RegExpFlag().i
+                                )
+                                .Test userAgent
+                    IsElectron = jsTypeof window?api = "object"
                     IsExtension = window.location.protocol = "chrome-extension:"
                     GitHubPages = window.location.host.EndsWith "github.io"
-                    IsTesting = isTesting
+                    IsTesting = jestWorkerId || window?Cypress <> null
                 }
 
             printfn $"deviceInfo={JS.JSON.stringify deviceInfo}"

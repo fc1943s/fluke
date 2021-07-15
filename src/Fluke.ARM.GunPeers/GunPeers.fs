@@ -77,7 +77,7 @@ module GunPeers =
             add_instances [
                 containerInstance {
                     name (nameof containerInstance)
-                    image "node:16.2-alpine"
+                    image "node:16.5-alpine"
 
                     env_vars [
                         "GUN_FILE", $"/data/{fileShareId}/{containerId}-radata"
@@ -106,7 +106,7 @@ module GunPeers =
                         "/bin/sh"
                         "-c"
                         // We will need to do a retry loop since we can't have a depends_on for the deploymentScript to finish.
-                        "cd /app; yarn install; while true; do yarn start && break; sleep 30; done"
+                        "cd /app; apk add --no-cache git; yarn install; while true; do yarn start && break; sleep 30; done"
                         //                        $"cd /data/{shareName}; while true; do java -Djava.net.preferIPv4Stack=true -Xms1G -Xmx3G -jar server.jar nogui && break; sleep 30; done"
                         ]
                 }
@@ -123,7 +123,7 @@ module GunPeers =
                 gunstorage1 fileShareId
                 //                deploymentScript1 shareName
                 gunPeer (ContainerId (Environment.GetEnvironmentVariable "FLUKE_GUN_PEER_CONTAINER_ID_1")) fileShareId
-//                gunPeer (ContainerId (Environment.GetEnvironmentVariable "FLUKE_GUN_PEER_CONTAINER_ID_2")) fileShareId
+                gunPeer (ContainerId (Environment.GetEnvironmentVariable "FLUKE_GUN_PEER_CONTAINER_ID_2")) fileShareId
 //                gunPeer (ContainerId "flukegunpeer-test") fileShareId
             ]
         }
