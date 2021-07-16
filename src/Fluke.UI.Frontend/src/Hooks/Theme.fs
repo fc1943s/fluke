@@ -213,6 +213,9 @@ module Theme =
                                         border = "1px solid #888"
                                         padding = "6px"
                                     |}
+                                ``.markdown-container li ul`` = {| marginLeft = "17px" |}
+                                ``.markdown-container li + li`` = {| marginTop = "8px" |}
+                                ``.markdown-container ul + p`` = {| marginTop = "20px" |}
                                 ``.markdown-container ul`` = {| listStylePosition = "inside" |}
                             |}
                 |}
