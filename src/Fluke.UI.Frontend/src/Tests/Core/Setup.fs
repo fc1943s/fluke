@@ -24,7 +24,7 @@ module RTL =
 module Setup =
     import "jest" "@jest/globals"
 
-    let handlePromise promise = promise
+    let inline handlePromise promise = promise
     //        |> Promise.catch (fun ex -> Fable.Core.JS.console.error (box ex))
 
     Jest.afterAll (
@@ -38,7 +38,7 @@ module Setup =
     )
 
 
-    let render (cmp: ReactElement) =
+    let inline render (cmp: ReactElement) =
         promise {
             //            let mutable peekFn : (CallbackMethods -> JS.Promise<unit>) -> JS.Promise<unit> =
 //                fun _ -> failwith "called empty callback"

@@ -21,7 +21,7 @@ open State
 module CellSelectionSetup =
     let maxTimeout = 5 * 60 * 1000
 
-    let getCellMap (subject: Bindings.render<_, _>) (getFn: Store.GetFn) =
+    let inline getCellMap (subject: Bindings.render<_, _>) (getFn: Store.GetFn) =
         let dateIdArray = Store.value getFn Selectors.dateIdArray
         let sortedTaskIdArray = Store.value getFn Selectors.Session.sortedTaskIdArray
 
@@ -50,7 +50,7 @@ module CellSelectionSetup =
 
         cellMap
 
-    let expectSelection (getFn: Store.GetFn) expected =
+    let inline expectSelection (getFn: Store.GetFn) expected =
         let toString map =
             map
             |> Map.toList
@@ -81,7 +81,7 @@ module CellSelectionSetup =
             do! RTL.waitFor (fun () -> RTL.fireEvent.click el)
         }
 
-    let getCell (cellMapGetter, taskName, date) =
+    let inline getCell (cellMapGetter, taskName, date) =
         fun () ->
             promise {
                 let cellMap = cellMapGetter ()
@@ -93,7 +93,7 @@ module CellSelectionSetup =
                             if taskName = taskName' && date = date' then Some el else None)
             }
 
-    let taskIdByName cellMapGetter taskName =
+    let inline taskIdByName cellMapGetter taskName =
         promise {
             let cellMap = cellMapGetter ()
 
@@ -103,7 +103,7 @@ module CellSelectionSetup =
                     (fun ((taskId, TaskName taskName'), _) _ -> if taskName = taskName' then Some taskId else None)
         }
 
-    let initialSetter (getter: Store.GetFn) (setter: Store.SetFn) =
+    let inline initialSetter (getter: Store.GetFn) (setter: Store.SetFn) =
         promise {
             let dslTemplate =
                 {
@@ -171,7 +171,7 @@ module CellSelectionSetup =
             Store.set setter Atoms.position (Some dslTemplate.Position)
         }
 
-    let getApp () =
+    let inline getApp () =
         React.fragment [
             (React.memo
                 (fun () ->
@@ -208,7 +208,7 @@ module CellSelectionSetup =
                 ())
         ]
 
-    let initialize () =
+    let inline initialize () =
         promise {
             let! subject, (getFn, setFn) = getApp () |> Setup.render
 
