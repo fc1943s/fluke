@@ -485,7 +485,9 @@ module TopBar =
                                                 x.height <- "27px"
                                                 x.fontSize <- "17px"
 
-                                                if archive = Some true then x.backgroundColor <- "gray.30"
+                                                if archive = Some true then
+                                                    x._active <- JS.newObj (fun x -> x.backgroundColor <- "gray.30")
+                                                    x.backgroundColor <- "gray.30"
 
                                                 x.onClick <-
                                                     fun _ ->

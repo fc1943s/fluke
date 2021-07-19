@@ -519,13 +519,6 @@ module State =
                 |> string
                 |> List.singleton
 
-            //            let rec taskIdSet =
-//                Store.atomFamilyWithSync (
-//                    $"{nameof Database}/{nameof taskIdSet}",
-//                    (fun (_databaseId: DatabaseId) -> Set.empty: Set<TaskId>),
-//                    databaseIdIdentifier
-//                )
-
             let rec name =
                 Store.atomFamilyWithSync (
                     $"{nameof Database}/{nameof name}",
@@ -717,21 +710,6 @@ module State =
                 )
 
 
-
-        //
-//            let rec taskIdSet =
-//                Store.atomFamilyWithSync (
-//                    $"{nameof Session}/{nameof taskIdSet}",
-//                    (fun (_username: Username) -> Set.empty: Set<TaskId>),
-//                    (fun (username: Username) ->
-//                        [
-//                            Store.gunKeyEffect
-//                                (Store.InputAtom.AtomFamily (username, Task.name, (username, Task.Default.Id)))
-//                                (Recoil.parseValidGuid TaskId)
-//                        ])
-//                )
-
-
         module rec Cell =
             let cellIdentifier (taskId: TaskId) (dateId: DateId) =
                 [
@@ -741,9 +719,9 @@ module State =
 
 
     module rec Selectors =
-        let rec dateSequence =
+        let rec dateIdArray =
             Store.readSelector (
-                $"{nameof dateSequence}",
+                $"{nameof dateIdArray}",
                 (fun getter ->
                     let position = Store.value getter Atoms.position
 
@@ -758,24 +736,32 @@ module State =
                         referenceDay
                         |> List.singleton
                         |> Rendering.getDateSequence (daysBefore, daysAfter)
-                    | _ -> [])
+                        |> List.map DateId
+                        |> List.toArray
+                    | _ -> [||])
             )
 
-        //        let rec taskIdMap =
-//            Store.readSelector (
-//                $"{nameof taskIdMap}",
-//                (fun getter ->
-//                    let databaseIdArray =
-//                        Store.value getter Atoms.databaseIdSet
-//                        |> Set.toArray
-//
-//                    databaseIdArray
-//                    |> Array.map Atoms.Database.taskIdSet
-//                    |> Store.waitForAll
-//                    |> Store.value getter
-//                    |> Array.mapi (fun i taskIdSet -> databaseIdArray.[i], taskIdSet)
-//                    |> Map.ofArray)
-//            )
+        let rec dateIdAtoms =
+            Store.readSelector (
+                $"{nameof dateIdAtoms}",
+                (fun getter ->
+                    dateIdArray
+                    |> Jotai.jotaiUtils.splitAtom
+                    |> Store.value getter)
+            )
+
+        let rec dateIdAtomsByMonth =
+            Store.readSelector (
+                $"{nameof dateIdAtomsByMonth}",
+                (fun getter ->
+                    let dateIdArray = Store.value getter dateIdArray
+                    let dateIdAtoms = Store.value getter dateIdAtoms
+
+                    dateIdArray
+                    |> Array.indexed
+                    |> Array.groupBy (fun (_, dateId) -> dateId |> DateId.Value |> fun date -> date.Month)
+                    |> Array.map (fun (_, dates) -> dates |> Array.map (fun (i, _) -> dateIdAtoms.[i])))
+            )
 
         let rec deviceInfo = Store.readSelector ($"{nameof deviceInfo}", (fun _ -> JS.deviceInfo))
 
@@ -962,28 +948,6 @@ module State =
 
                         access = Some Access.ReadWrite)
                 )
-
-            //            let rec taskIdAtoms =
-//                Store.readSelectorFamily (
-//                    $"{nameof Database}/{nameof taskIdAtoms}",
-//                    (fun (databaseId: DatabaseId) getter ->
-//                        let archive = Store.value getter Atoms.User.archive
-//
-//                        match archive with
-//                        | Some archive ->
-//                            asyncTaskIdAtoms
-//                            |> Store.value getter
-//                            |> Array.filter
-//                                (fun taskIdAtom ->
-//                                    let taskId = Store.value getter taskIdAtom
-//                                    let databaseId' = Store.value getter (Atoms.Task.databaseId taskId)
-//                                    let archived = Store.value getter (Atoms.Task.archived taskId)
-//
-//                                    match archived with
-//                                    | Some archived -> databaseId = databaseId' && archived = archive
-//                                    | None -> false)
-//                        | None -> [||])
-//                )
 
             let rec taskIdAtoms =
                 Store.readSelectorFamily (
@@ -1286,6 +1250,8 @@ module State =
 
 
         module Task =
+            open Rendering
+
             let rec task =
                 Store.readSelectorFamily (
                     $"{nameof Task}/{nameof task}",
@@ -1378,12 +1344,11 @@ module State =
                 Store.readSelectorFamily (
                     $"{nameof Task}/{nameof filteredCellStateMap}",
                     (fun (taskId: TaskId) getter ->
-                        let dateSequence = Store.value getter dateSequence
+                        let dateIdArray = Store.value getter dateIdArray
                         let cellStateMap = Store.value getter (cellStateMap taskId)
 
-                        dateSequence
-                        |> List.map DateId
-                        |> List.map
+                        dateIdArray
+                        |> Array.map
                             (fun dateId ->
                                 let cellState =
                                     cellStateMap
@@ -1440,37 +1405,58 @@ module State =
                         })
                 )
 
-            let rec statusMap =
+            let rec cellStatusMap =
                 Store.readSelectorFamily (
-                    $"{nameof Task}/{nameof statusMap}",
+                    $"{nameof Task}/{nameof cellStatusMap}",
                     (fun (taskId: TaskId) getter ->
-                        let position = Store.value getter Atoms.position
                         let taskState = Store.value getter (taskState taskId)
-                        let dateSequence = Store.value getter dateSequence
+                        let dateIdArray = Store.value getter dateIdArray
                         let dayStart = Store.value getter Atoms.User.dayStart
 
-                        match position with
-                        | Some position when not dateSequence.IsEmpty ->
-                            Rendering.renderTaskStatusMap dayStart position dateSequence taskState
-                        | _ -> Map.empty)
-                )
+                        match dateIdArray with
+                        | [||] -> Map.empty
+                        | _ ->
+                            let dateSequence =
+                                dateIdArray
+                                |> Array.map DateId.Value
+                                |> Array.toList
 
-            //            let rec databaseId =
-//                Store.selectAtomFamily (
-//                    $"{nameof Task}/{nameof databaseId}",
-//                    taskIdMap,
-//                    (fun (taskId: TaskId) taskIdMap ->
-//                        let databaseIdList =
-//                            taskIdMap
-//                            |> Map.filter (fun _ taskIdSet -> taskIdSet.Contains taskId)
-//                            |> Map.keys
-//                            |> Seq.toList
-//
-//                        match databaseIdList with
-//                        | [] -> Database.Default.Id
-//                        | [ databaseId ] -> databaseId
-//                        | _ -> failwith $"Error: task {taskId} exists in two databases ({databaseIdList})")
-//                )
+                            let firstDateRange, lastDateRange, taskStateDateSequence =
+                                taskStateDateSequence dayStart dateSequence taskState
+
+                            let position = Store.value getter Atoms.position
+
+                            let rec loop renderState =
+                                function
+                                | moment :: tail ->
+                                    //                                    let result =
+//                                        Store.value
+//                                            getter
+//                                            (Cell.internalSessionStatus (taskId, dateId dayStart moment, renderState))
+
+                                    let result =
+                                        match position with
+                                        | Some position ->
+                                            Some (
+                                                internalSessionStatus
+                                                    dayStart
+                                                    position
+                                                    taskState
+                                                    (dateId dayStart moment)
+                                                    renderState
+                                            )
+                                        | None -> None
+
+                                    match result with
+                                    | Some (status, renderState) -> (moment, status) :: loop renderState tail
+                                    | None -> (moment, Disabled) :: loop renderState tail
+                                | [] -> []
+
+                            loop WaitingFirstEvent taskStateDateSequence
+                            |> List.filter (fun (moment, _) -> moment >==< (firstDateRange, lastDateRange))
+                            |> List.map (fun (moment, cellStatus) -> dateId dayStart moment, cellStatus)
+                            |> Map.ofSeq)
+                )
 
             let rec isReadWrite =
                 Store.readSelectorFamily (
@@ -1484,15 +1470,15 @@ module State =
                 Store.readSelectorFamily (
                     $"{nameof Task}/{nameof lastSession}",
                     (fun (taskId: TaskId) getter ->
-                        let dateSequence = Store.value getter dateSequence
+                        let dateIdArray = Store.value getter dateIdArray
                         let cellStateMap = Store.value getter (cellStateMap taskId)
 
-                        dateSequence
-                        |> List.rev
-                        |> List.tryPick
-                            (fun date ->
+                        dateIdArray
+                        |> Seq.rev
+                        |> Seq.tryPick
+                            (fun dateId ->
                                 cellStateMap
-                                |> Map.tryFind (DateId date)
+                                |> Map.tryFind dateId
                                 |> Option.map (fun cellState -> cellState.SessionList)
                                 |> Option.defaultValue []
                                 |> List.sortByDescending (fun (Session start) -> start |> FlukeDateTime.DateTime)
@@ -1552,15 +1538,32 @@ module State =
                 Store.readSelectorFamily (
                     $"{nameof Task}/{nameof hasSelection}",
                     (fun (taskId: TaskId) getter ->
-                        let dateSequence = Store.value getter dateSequence
+                        let dateIdArray = Store.value getter dateIdArray
                         let selectionSet = Store.value getter (Atoms.Task.selectionSet taskId)
-
-                        dateSequence
-                        |> List.exists (DateId >> selectionSet.Contains))
+                        dateIdArray |> Array.exists selectionSet.Contains)
                 )
 
 
         module Cell =
+            open Rendering
+
+            let rec internalSessionStatus =
+                Store.readSelectorFamily (
+                    $"{nameof Cell}/{nameof internalSessionStatus}",
+                    (fun (taskId: TaskId, dateId: DateId, renderState: LaneCellRenderState) getter ->
+                        let dayStart = Store.value getter Atoms.User.dayStart
+                        let position = Store.value getter Atoms.position
+                        let taskState = Store.value getter (Task.taskState taskId)
+
+                        match position with
+                        | Some position ->
+                            let status, renderState =
+                                Rendering.internalSessionStatus dayStart position taskState dateId renderState
+
+                            Some (status, renderState)
+                        | None -> None)
+                )
+
             let rec sessionStatus =
                 Store.selectorFamily (
                     $"{nameof Cell}/{nameof sessionStatus}",
@@ -1573,18 +1576,17 @@ module State =
                             |> Option.map UserStatus
                             |> Option.defaultValue Disabled
                         else
-                            Store.value getter (Task.statusMap taskId)
+                            Store.value getter (Task.cellStatusMap taskId)
                             |> Map.tryFind dateId
                             |> Option.defaultValue Disabled),
-                    (fun (taskId: TaskId, dateId: DateId) getter setter newValue ->
-                        let statusMap = Store.value getter (Atoms.Task.statusMap taskId)
-
-                        Store.set
+                    (fun (taskId: TaskId, dateId: DateId) _getter setter newValue ->
+                        Store.change
                             setter
                             (Atoms.Task.statusMap taskId)
-                            (match newValue with
-                             | UserStatus (username, status) -> statusMap |> Map.add dateId (username, status)
-                             | _ -> statusMap |> Map.remove dateId))
+                            (fun statusMap ->
+                                match newValue with
+                                | UserStatus (username, status) -> statusMap |> Map.add dateId (username, status)
+                                | _ -> statusMap |> Map.remove dateId))
                 )
 
             let rec selected =
@@ -1609,6 +1611,14 @@ module State =
 
                         sessions
                         |> List.filter (fun (Session start) -> isToday dayStart start dateId))
+                )
+
+            let rec sessionCount =
+                Store.readSelectorFamily (
+                    $"{nameof Cell}/{nameof sessionCount}",
+                    (fun (taskId: TaskId, dateId: DateId) getter ->
+                        let sessions = Store.value getter (sessions (taskId, dateId))
+                        sessions.Length)
                 )
 
             let rec attachmentIdSet =
@@ -1767,7 +1777,7 @@ module State =
                         let filterTasksByView = Store.value getter Atoms.User.filterTasksByView
                         let filterTasksText = Store.value getter Atoms.User.filterTasksText
                         let view = Store.value getter Atoms.User.view
-                        let dateSequence = Store.value getter dateSequence
+                        let dateIdArray = Store.value getter dateIdArray
 
                         let selectedTaskIdArray =
                             Store.value getter selectedTaskIdListByArchive
@@ -1797,6 +1807,11 @@ module State =
 
                         let filteredTaskList =
                             if filterTasksByView then
+                                let dateSequence =
+                                    dateIdArray
+                                    |> Array.map DateId.Value
+                                    |> Array.toList
+
                                 selectedTaskListSearch
                                 |> List.map (fun task -> Task.taskState task.Id)
                                 |> List.toArray
@@ -1818,9 +1833,17 @@ module State =
                         |> Set.ofSeq)
                 )
 
-            let rec sortedTaskIdList =
+            let rec filteredTaskIdCount =
                 Store.readSelector (
-                    $"{nameof Session}/{nameof sortedTaskIdList}",
+                    $"{nameof Session}/{nameof filteredTaskIdCount}",
+                    (fun getter ->
+                        let filteredTaskIdSet = Store.value getter filteredTaskIdSet
+                        filteredTaskIdSet.Count)
+                )
+
+            let rec sortedTaskIdArray =
+                Store.readSelector (
+                    $"{nameof Session}/{nameof sortedTaskIdArray}",
                     (fun getter ->
                         let position = Store.value getter Atoms.position
 
@@ -1828,13 +1851,13 @@ module State =
                         | Some position ->
                             let filteredTaskIdSet = Store.value getter filteredTaskIdSet
 
-                            JS.log (fun () -> $"sortedTaskIdList. filteredTaskIdSet.Count={filteredTaskIdSet.Count}")
+                            JS.log (fun () -> $"sortedTaskIdArray. filteredTaskIdSet.Count={filteredTaskIdSet.Count}")
 
                             let filteredTaskIdArray = filteredTaskIdSet |> Set.toArray
 
                             let statusMapArray =
                                 filteredTaskIdArray
-                                |> Array.map Task.statusMap
+                                |> Array.map Task.cellStatusMap
                                 |> Store.waitForAll
                                 |> Store.value getter
 
@@ -1863,74 +1886,122 @@ module State =
                                         Lanes = lanes
                                     |}
 
-                            JS.log (fun () -> $"sortedTaskIdList. result.Length={result.Length}")
+                            JS.log (fun () -> $"sortedTaskIdArray. result.Length={result.Length}")
 
                             result
                             |> List.map (fun (taskState, _) -> taskState.Task.Id)
-                        | _ -> [])
+                            |> List.toArray
+                        | _ -> [||])
                 )
 
-            let rec tasksByInformationKind =
+            let rec sortedTaskIdAtoms =
                 Store.readSelector (
-                    $"{nameof Session}/{nameof tasksByInformationKind}",
+                    $"{nameof Session}/{nameof sortedTaskIdAtoms}",
                     (fun getter ->
-                        let sortedTaskIdList = Store.value getter sortedTaskIdList
+                        sortedTaskIdArray
+                        |> Jotai.jotaiUtils.splitAtom
+                        |> Store.value getter)
+                )
+
+            let rec sortedTaskIdCount =
+                Store.readSelector (
+                    $"{nameof Session}/{nameof sortedTaskIdCount}",
+                    (fun getter ->
+                        let sortedTaskIdAtoms = Store.value getter sortedTaskIdAtoms
+                        sortedTaskIdAtoms.Length)
+                )
+
+            let rec informationTaskIdArray =
+                Store.readSelector (
+                    $"{nameof Session}/{nameof informationTaskIdArray}",
+                    (fun getter ->
+                        let sortedTaskIdAtoms = Store.value getter sortedTaskIdAtoms
 
                         let informationSet = Store.value getter informationSet
 
                         let taskInformationArray =
-                            sortedTaskIdList
-                            |> List.toArray
+                            sortedTaskIdAtoms
+                            |> Store.waitForAll
+                            |> Store.value getter
                             |> Array.map Atoms.Task.information
                             |> Store.waitForAll
                             |> Store.value getter
 
                         let taskMap =
-                            sortedTaskIdList
-                            |> List.mapi (fun i taskId -> taskInformationArray.[i], taskId)
-                            |> List.groupBy fst
-                            |> List.map (fun (information, tasks) -> information, tasks |> List.map snd)
-                            |> Map.ofList
+                            sortedTaskIdAtoms
+                            |> Array.mapi (fun i taskIdAtom -> taskInformationArray.[i], taskIdAtom)
+                            |> Array.groupBy fst
+                            |> Array.map (fun (information, taskIdAtoms) -> information, taskIdAtoms |> Array.map snd)
+                            |> Map.ofSeq
 
                         informationSet
-                        |> Set.toList
-                        |> List.map
+                        |> Set.toArray
+                        |> Array.map
                             (fun information ->
-                                let tasks =
+                                let taskIdAtoms =
                                     taskMap
                                     |> Map.tryFind information
-                                    |> Option.defaultValue []
+                                    |> Option.defaultValue [||]
 
-                                information, tasks)
-                        |> List.sortBy (fun (information, _) -> information |> Information.Name)
-                        |> List.groupBy (fun (information, _) -> Information.toString information)
-                        |> List.sortBy (
-                            snd
-                            >> List.tryHead
-                            >> Option.map (
-                                fst
-                                >> fun information ->
-                                    if informationSet.Contains information then
-                                        information |> Information.toTag
-                                    else
-                                        -1
-                            )
-                            >> Option.defaultValue -1
+                                information, taskIdAtoms)
+                        |> Array.sortBy (fst >> Information.Name)
+                        |> Array.sortBy (
+                            fst
+                            >> Option.ofObjUnbox
+                            >> Option.map Information.toTag
                         ))
+                )
+
+            let rec informationTaskIdAtoms =
+                Store.readSelector (
+                    $"{nameof Session}/{nameof informationTaskIdAtoms}",
+                    (fun getter ->
+                        informationTaskIdArray
+                        |> Jotai.jotaiUtils.splitAtom
+                        |> Store.value getter)
+                )
+
+            let rec informationTaskIdArrayByKind =
+                Store.readSelector (
+                    $"{nameof Session}/{nameof informationTaskIdArrayByKind}",
+                    (fun getter ->
+                        let informationTaskIdAtoms = Store.value getter Selectors.Session.informationTaskIdAtoms
+                        //                         let informationTaskIdArray = Store.value getter Selectors.Session.informationTaskIdArray
+                        let informationTaskIdArray =
+                            informationTaskIdAtoms
+                            |> Store.waitForAll
+                            |> Store.value getter
+
+                        informationTaskIdArray
+                        |> Array.indexed
+                        |> Array.groupBy (fun (_, (information, _)) -> Information.toString information)
+                        |> Array.map
+                            (fun (informationKindName, groups) ->
+                                informationKindName,
+                                groups
+                                |> Array.map (fun (i, _) -> informationTaskIdAtoms.[i])))
+                )
+
+            let rec informationTaskIdAtomsByKind =
+                Store.readSelector (
+                    $"{nameof Session}/{nameof informationTaskIdAtomsByKind}",
+                    (fun getter ->
+                        informationTaskIdArrayByKind
+                        |> Jotai.jotaiUtils.splitAtom
+                        |> Store.value getter)
                 )
 
             let rec selectionSetMap =
                 Store.readSelector (
                     $"{nameof Session}/{nameof selectionSetMap}",
                     (fun getter ->
-                        let sortedTaskIdList = Store.value getter sortedTaskIdList
+                        let sortedTaskIdArray = Store.value getter sortedTaskIdArray
 
-                        sortedTaskIdList
-                        |> List.toArray
+                        sortedTaskIdArray
                         |> Array.map Atoms.Task.selectionSet
                         |> Store.waitForAll
                         |> Store.value getter
-                        |> Array.mapi (fun i dates -> sortedTaskIdList.[i], dates)
+                        |> Array.mapi (fun i dates -> sortedTaskIdArray.[i], dates)
                         |> Map.ofArray)
                 )
 
@@ -1939,17 +2010,17 @@ module State =
                     $"{nameof Session}/{nameof cellSelectionMap}",
                     (fun getter ->
                         let selectionSetMap = Store.value getter selectionSetMap
-                        let dateSequence = Store.value getter dateSequence
+                        let dateIdArray = Store.value getter dateIdArray
 
                         selectionSetMap
                         |> Map.keys
                         |> Seq.map
                             (fun taskId ->
                                 let dates =
-                                    dateSequence
-                                    |> List.map (fun date -> date, selectionSetMap.[taskId].Contains (DateId date))
-                                    |> List.filter snd
-                                    |> List.map fst
+                                    dateIdArray
+                                    |> Array.map (fun dateId -> dateId, selectionSetMap.[taskId].Contains dateId)
+                                    |> Array.filter snd
+                                    |> Array.map fst
                                     |> Set.ofSeq
 
                                 taskId, dates)
@@ -1958,30 +2029,30 @@ module State =
                 )
 
 
-        module FlukeDate =
+        module DateId =
             let isToday =
                 Store.readSelectorFamily (
                     $"{nameof FlukeDate}/{nameof isToday}",
-                    (fun (date: FlukeDate) getter ->
+                    (fun (dateId: DateId) getter ->
                         let position = Store.value getter Atoms.position
 
                         match position with
                         | Some position ->
                             let dayStart = Store.value getter Atoms.User.dayStart
 
-                            Domain.UserInteraction.isToday dayStart position (DateId date)
+                            Domain.UserInteraction.isToday dayStart position dateId
                         | _ -> false)
                 )
 
             let rec hasCellSelection =
                 Store.readSelectorFamily (
                     $"{nameof FlukeDate}/{nameof hasCellSelection}",
-                    (fun (date: FlukeDate) getter ->
+                    (fun (dateId: DateId) getter ->
                         let cellSelectionMap = Store.value getter Session.cellSelectionMap
 
                         cellSelectionMap
                         |> Map.values
-                        |> Seq.exists (Set.contains date))
+                        |> Seq.exists (Set.contains dateId))
                 )
 
 
@@ -1991,18 +2062,27 @@ module State =
                     $"{nameof BulletJournalView}/{nameof weekCellsMap}",
                     (fun getter ->
                         let position = Store.value getter Atoms.position
-                        let sortedTaskIdList = Store.value getter Session.sortedTaskIdList
+                        let sortedTaskIdAtoms = Store.value getter Session.sortedTaskIdAtoms
+
+                        let sortedTaskIdArray =
+                            sortedTaskIdAtoms
+                            |> Store.waitForAll
+                            |> Store.value getter
 
                         let taskStateArray =
-                            sortedTaskIdList
-                            |> List.map Task.taskState
-                            |> List.toArray
+                            sortedTaskIdArray
+                            |> Array.map Task.taskState
                             |> Store.waitForAll
                             |> Store.value getter
 
                         let taskStateMap =
-                            sortedTaskIdList
-                            |> List.mapi (fun i taskId -> taskId, taskStateArray.[i])
+                            sortedTaskIdArray
+                            |> Array.mapi (fun i taskId -> taskId, taskStateArray.[i])
+                            |> Map.ofSeq
+
+                        let taskIdAtomMap =
+                            sortedTaskIdArray
+                            |> Array.mapi (fun i taskId -> taskId, sortedTaskIdAtoms.[i])
                             |> Map.ofSeq
 
                         match position with
@@ -2038,8 +2118,8 @@ module State =
                                             |> List.map (dateId dayStart)
 
                                         let result =
-                                            sortedTaskIdList
-                                            |> List.collect
+                                            sortedTaskIdArray
+                                            |> Array.collect
                                                 (fun taskId ->
                                                     dateIdSequence
                                                     |> List.map
@@ -2062,24 +2142,28 @@ module State =
                                                             {|
                                                                 DateId = dateId
                                                                 TaskId = taskId
+                                                                DateIdAtom = Jotai.jotai.atom dateId
+                                                                TaskIdAtom = taskIdAtomMap.[taskId]
                                                                 Status = cellState.Status
                                                                 SessionList = cellState.SessionList
                                                                 IsToday = isToday
                                                                 AttachmentStateList = cellState.AttachmentStateList
-                                                            |}))
-                                            |> List.groupBy (fun x -> x.DateId)
-                                            |> List.map
+                                                            |})
+                                                    |> List.toArray)
+                                            |> Array.groupBy (fun x -> x.DateId)
+                                            |> Array.map
                                                 (fun (dateId, cellsMetadata) ->
                                                     match dateId with
                                                     | DateId referenceDay as dateId ->
                                                         //                |> Sorting.sortLanesByTimeOfDay input.DayStart input.Position input.TaskOrderList
                                                         let taskSessionList =
                                                             cellsMetadata
+                                                            |> Array.toList
                                                             |> List.collect (fun x -> x.SessionList)
 
                                                         let sortedTasksMap =
                                                             cellsMetadata
-                                                            |> List.map
+                                                            |> Array.map
                                                                 (fun cellMetadata ->
                                                                     let taskState =
                                                                         { taskStateMap.[cellMetadata.TaskId] with
@@ -2091,6 +2175,7 @@ module State =
                                                                         dateId, cellMetadata.Status
                                                                     ]
                                                                     |> Map.ofSeq)
+                                                            |> Array.toList
                                                             |> Sorting.sortLanesByTimeOfDay
                                                                 dayStart
                                                                 (FlukeDateTime.Create (referenceDay, dayStart, Second 0))
@@ -2101,7 +2186,7 @@ module State =
 
                                                         let newCells =
                                                             cellsMetadata
-                                                            |> List.sortBy
+                                                            |> Array.sortBy
                                                                 (fun cell ->
                                                                     sortedTasksMap
                                                                     |> Map.tryFind cell.TaskId

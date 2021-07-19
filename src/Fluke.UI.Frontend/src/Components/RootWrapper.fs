@@ -28,15 +28,9 @@ module RootWrapper =
     [<ReactComponent>]
     let RootWrapper children =
         React.strictMode [
-            Store.provider [
-                //                React.ReactErrorBoundary.renderCatchFn
-//                    (fun (error, info) -> printfn $"ReactErrorBoundary Error: {info.componentStack} {error}")
-//                    (Html.div [
-//                        prop.classes [ "static" ]
-//                        prop.children [
-//                            str "Unhandled Exception. Check the console log."
-//                        ]
-//                     ])
-                (ThemeLoader children)
+            React.ErrorBoundary [
+                Store.provider [
+                    ThemeLoader [ yield! children ]
+                ]
             ]
         ]

@@ -56,10 +56,11 @@ module InformationName =
                 |]
             )
 
-        UI.box
+        UI.flex
             (fun x ->
                 x.position <- "relative"
                 x.height <- $"{cellSize}px"
+                x.alignItems <- "center"
                 x.lineHeight <- $"{cellSize}px")
             [
                 UI.box
@@ -72,17 +73,20 @@ module InformationName =
                         |> InformationName.Value
                         |> function
                             | "" -> LoadingSpinner.InlineLoadingSpinner ()
-                            | name -> str name
+                            | name ->
+                                React.fragment [
+                                    str name
 
-                        InputLabelIconButton.InputLabelIconButton
-                            (fun x ->
-                                x.icon <- Icons.fi.FiArrowRight |> Icons.render
-                                x.fontSize <- "11px"
-                                x.height <- "15px"
-                                x.color <- "whiteAlpha.700"
-                                x.marginTop <- "-1px"
-                                x.marginLeft <- "6px"
-                                x.onClick <- detailsClick)
+                                    InputLabelIconButton.InputLabelIconButton
+                                        (fun x ->
+                                            x.icon <- Icons.fi.FiArrowRight |> Icons.render
+                                            x.fontSize <- "11px"
+                                            x.height <- "15px"
+                                            x.color <- "whiteAlpha.700"
+                                            x.marginTop <- "-1px"
+                                            x.marginLeft <- "6px"
+                                            x.onClick <- detailsClick)
+                                ]
                     ]
 
                 if attachmentIdMap

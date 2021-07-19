@@ -45,6 +45,12 @@ module Attachment =
                 |]
             )
 
+        Listener.useKeyPress
+            [|
+                "Escape"
+            |]
+            (fun _ _ e -> promise { if e.key = "Escape" && e.``type`` = "keydown" then do! reset () })
+
         let onSave =
             Store.useCallback (
                 (fun getter setter () ->

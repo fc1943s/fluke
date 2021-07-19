@@ -13,8 +13,8 @@ module ViewTabs =
     [<ReactComponent>]
     let ViewTabs () =
         let view, setView = Store.useState Atoms.User.view
-        let filteredTaskIdSet = Store.useValue Selectors.Session.filteredTaskIdSet
-        let sortedTaskIdList = Store.useValue Selectors.Session.sortedTaskIdList
+        let filteredTaskIdCount = Store.useValue Selectors.Session.filteredTaskIdCount
+        let sortedTaskIdCount = Store.useValue Selectors.Session.sortedTaskIdCount
         let informationSet = Store.useValue Selectors.Session.informationSet
 
         let tabs, tabIndex =
@@ -201,12 +201,10 @@ module ViewTabs =
                                             x.flex <- "1"
                                             x.overflow <- "auto")
                                         [
-                                            match sortedTaskIdList with
-                                            | [] when
-                                                (view <> View.View.Information
-                                                 || informationSet.IsEmpty)
-                                                ->
-                                                if filteredTaskIdSet.IsEmpty then
+                                            if sortedTaskIdCount = 0
+                                               && (view <> View.View.Information
+                                                   || informationSet.IsEmpty) then
+                                                if filteredTaskIdCount = 0 then
                                                     UI.box
                                                         (fun x -> x.padding <- "7px")
                                                         [
@@ -218,7 +216,8 @@ module ViewTabs =
                                                         [
                                                             LoadingSpinner.LoadingSpinner ()
                                                         ]
-                                            | _ -> tab.Content
+                                            else
+                                                tab.Content
                                         ])
                     ]
             ]

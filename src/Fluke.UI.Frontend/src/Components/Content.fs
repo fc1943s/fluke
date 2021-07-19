@@ -66,9 +66,7 @@ module Content =
                             LoadingSpinner.LoadingSpinner ()
                         else
                             UI.flex
-                                (fun x ->
-                                    x.flex <- "1"
-                                    x.overflow <- "auto")
+                                (fun x -> x.flex <- "1")
                                 [
                                     React.suspense (
                                         [

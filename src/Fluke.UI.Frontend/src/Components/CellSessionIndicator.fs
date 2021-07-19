@@ -4,26 +4,29 @@ open Fable.React
 open Feliz
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
+open Fluke.UI.Frontend.State
 
 
 module CellSessionIndicator =
-    open Domain.UserInteraction
     open Domain.State
 
     [<ReactComponent>]
-    let CellSessionIndicator (status: CellStatus) (sessions: Session list) =
+    let CellSessionIndicator taskIdAtom dateIdAtom =
+        let taskId = Store.useValue taskIdAtom
+        let dateId = Store.useValue dateIdAtom
+        let sessionStatus = Store.useValue (Selectors.Cell.sessionStatus (taskId, dateId))
+        let sessionCount = Store.useValue (Selectors.Cell.sessionCount (taskId, dateId))
+
         UI.box
             (fun x ->
                 x.fontSize <- "11px"
 
                 x.color <-
-                    match status with
+                    match sessionStatus with
                     | UserStatus (_, Completed) -> "#ccc"
                     | _ -> "#999"
 
                 x.textShadow <- "0 0 2px #000")
             [
-                match sessions.Length with
-                | x when x > 0 -> str (string x)
-                | _ -> nothing
+                if sessionCount > 0 then str (string sessionCount) else nothing
             ]

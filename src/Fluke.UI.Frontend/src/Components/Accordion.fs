@@ -25,6 +25,9 @@ module Accordion =
                 x.borderColor <- "gray.45"
                 x.borderBottomWidth <- "0 !important"
                 x.flexDirection <- "column"
+                //                x.flex <- "1"
+//                x.overflow <- "auto"
+//                x.flexBasis <- unbox "auto"
                 x.display <- "flex")
             [
                 UI.accordionButton
@@ -46,6 +49,8 @@ module Accordion =
                         x.flex <- "1"
                         x.flexDirection <- "column"
                         x.display <- "flex"
+                        //                        x.overflow <- "auto"
+//                        x.flexBasis <- 0
                         x.paddingTop <- "10px")
                     children
             ]
@@ -77,9 +82,12 @@ module Accordion =
                                         |> Option.ofObjUnbox
                                         |> Option.map
                                             (fun children ->
-                                                children
-                                                |> Array.tryFind (fun x -> jsTypeof x = "string")
-                                                |> Option.defaultWith (fun () -> failwith $"{item}"))
+                                                if jsTypeof children = "string" then
+                                                    string children
+                                                else
+                                                    children
+                                                    |> Array.tryFind (fun x -> jsTypeof x = "string")
+                                                    |> Option.defaultWith (fun () -> failwith $"{item}"))
                                         |> Option.defaultWith (fun () -> failwith $"{item}"))
                                 |> Option.defaultWith (fun () -> failwith $"{item}"))),
                 [|
@@ -91,16 +99,12 @@ module Accordion =
             (fun x ->
                 x.allowMultiple <- true
                 x.reduceMotion <- true
-
                 x.display <- "flex"
                 x.flexDirection <- "column"
                 x.flex <- "1"
-
-                x.defaultIndex <-
-                    input.Items
-                    |> Seq.indexed
-                    |> Seq.map fst
-                    |> Seq.toArray
+                x.overflow <- "auto"
+                x.flexBasis <- 0
+                x.defaultIndex <- [||]
 
                 x.index <-
                     let hiddenTitleSet = atomValue |> Set.ofArray

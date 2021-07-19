@@ -10,10 +10,10 @@ open Fluke.Shared
 [<AutoOpen>]
 module Operators =
     [<Emit("Object.assign({}, $0, $1)")>]
-    let (++) _o1 _o2 : obj = jsNative
+    let inline (++) _o1 _o2 : obj = jsNative
 
     [<Emit("Object.assign($0, $1)")>]
-    let (<+) _o1 _o2 : unit = jsNative
+    let inline (<+) _o1 _o2 : unit = jsNative
 
 [<AutoOpen>]
 module JSMagic =
@@ -28,7 +28,7 @@ module JSMagic =
         member this.read () : JS.Promise<ClipboardRead> = clipboardRead this
 
 module Promise =
-    let ignore (fn: JS.Promise<_>) = Promise.map ignore fn
+    let inline ignore (fn: JS.Promise<_>) = Promise.map ignore fn
 
 module Json =
     let inline encodeFormatted<'T> obj =
@@ -44,7 +44,7 @@ module JS =
     [<Emit "process.env.JEST_WORKER_ID">]
     let jestWorkerId: bool = jsNative
 
-    let window fn =
+    let inline window fn =
         if jsTypeof Browser.Dom.window <> "undefined" then
             Some (fn Browser.Dom.window)
         else
@@ -122,7 +122,7 @@ module JS =
             printfn $"deviceInfo={JS.JSON.stringify deviceInfo}"
             deviceInfo
 
-    let private isDebugStatic =
+    let isDebugStatic =
         not deviceInfo.GitHubPages
         && not deviceInfo.IsExtension
         && not deviceInfo.IsElectron
@@ -132,7 +132,7 @@ module JS =
     | None -> ()
     | Some window -> window?Debug <- false
 
-    let isDebug () =
+    let inline isDebug () =
         let debug =
             match window id with
             | None -> false
@@ -148,7 +148,7 @@ module JS =
     let inline consoleLog x = Browser.Dom.console.log x
 
     [<Emit "(w => $0 instanceof w[$1])(window)">]
-    let instanceof (_obj: obj, _typeName: string) : bool = jsNative
+    let inline instanceof (_obj: obj, _typeName: string) : bool = jsNative
 
 
     [<Emit "(() => { var audio = new Audio($1); audio.volume = $0 || 1; return audio; })().play();">]
@@ -163,14 +163,14 @@ module JS =
     let inline invoke fn p =
         emitJsExpr (fn, p) "((...p) => $0(...p))($1)"
 
-    let newObj<'T> fn = jsOptions<'T> fn
-    let cloneDeep<'T> (_: 'T) : 'T = importDefault "lodash.clonedeep"
+    let inline newObj<'T> fn = jsOptions<'T> fn
+    let inline cloneDeep<'T> (_: 'T) : 'T = importDefault "lodash.clonedeep"
     let debounce<'T, 'U> (_: 'T -> 'U) (_: int) : 'T -> 'U = importDefault "lodash.debounce"
 
-    let blobToUint8Array (_blob: Blob) : JS.Promise<JSe.Uint8Array> =
+    let inline blobToUint8Array (_blob: Blob) : JS.Promise<JSe.Uint8Array> =
         import "blobToUint8Array" "binconv/dist/src/blobToUint8Array"
 
-    let uint8ArrayToBlob (_arr: JSe.Uint8Array) (_type: string) : Blob =
+    let inline uint8ArrayToBlob (_arr: JSe.Uint8Array) (_type: string) : Blob =
         //        let x = JSe.Uint8Array(_arr)
 //        new Blob([new Uint8Array(BYTEARRAY)], { type: 'video/mp4' })
         import "uint8ArrayToBlob" "binconv/dist/src/uint8ArrayToBlob"
@@ -186,16 +186,16 @@ module JS =
 //    let uint8ArrayToBase64 (_arr: int []) : string =
 //        import "uint8ArrayToBase64" "binconv/dist/src/uint8ArrayToBase64"
 
-    let byteArrayToHexString byteArray =
+    let inline byteArrayToHexString byteArray =
         byteArray
         |> Array.map (fun b -> ("0" + (b &&& 0xFFuy)?toString 16).Substring -2)
         |> String.concat ""
 
 
     [<Emit "parseInt($0, $1)">]
-    let parseInt (_a: string) (_n: int) : int = jsNative
+    let inline parseInt (_a: string) (_n: int) : int = jsNative
 
-    let hexStringToByteArray (text: string) =
+    let inline hexStringToByteArray (text: string) =
         let rec loop acc =
             function
             | a :: b :: tail -> loop (parseInt $"{a}{b}" 16 :: acc) tail
@@ -209,17 +209,17 @@ module JS =
         |> List.rev
         |> List.toArray
 
-    let chunkString (_str: string) (_options: {| size: int; unicodeAware: bool |}) : string [] =
+    let inline chunkString (_str: string) (_options: {| size: int; unicodeAware: bool |}) : string [] =
         importDefault "@shelf/fast-chunk-string"
 
     //    let cloneObj<'T> (obj: 'T) (fn: 'T -> 'T) = fn (cloneDeep obj)
-    let toJsArray a = a |> Array.toList |> List.toArray
+    let inline toJsArray a = a |> Array.toList |> List.toArray
 
     let inline sleep (ms: int) = Async.Sleep ms
     //        Promise.sleep ms |> Async.AwaitPromise
 //        Async.FromContinuations (fun (res, _, _) -> JS.setTimeout res ms |> ignore)
 
-    let exited () =
+    let inline exited () =
         if not deviceInfo.IsTesting then
             false
         else
@@ -276,7 +276,7 @@ module JS =
                     return! waitForSome fn
         }
 
-    let ofNonEmptyObj obj =
+    let inline ofNonEmptyObj obj =
         obj
         |> Option.ofObjUnbox
         |> Option.bind

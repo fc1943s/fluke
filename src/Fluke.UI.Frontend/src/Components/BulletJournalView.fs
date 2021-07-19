@@ -40,7 +40,7 @@ module BulletJournalView =
 
                                                     let visibleCells =
                                                         cells
-                                                        |> List.filter
+                                                        |> Array.filter
                                                             (fun cell ->
                                                                 not cell.SessionList.IsEmpty
                                                                 || not cell.AttachmentStateList.IsEmpty
@@ -55,7 +55,7 @@ module BulletJournalView =
                                                             UI.box
                                                                 (fun x ->
                                                                     x.visibility <-
-                                                                        if visibleCells.IsEmpty then
+                                                                        if visibleCells.Length = 0 then
                                                                             "hidden"
                                                                         else
                                                                             "visible"
@@ -67,7 +67,7 @@ module BulletJournalView =
                                                                     x.lineHeight <- "14px"
 
                                                                     x.color <-
-                                                                        if cells |> List.forall (fun x -> x.IsToday) then
+                                                                        if cells |> Array.forall (fun x -> x.IsToday) then
                                                                             "gray.45"
                                                                         else
                                                                             "")
@@ -80,21 +80,22 @@ module BulletJournalView =
 
                                                             yield!
                                                                 visibleCells
-                                                                |> List.map
+                                                                |> Array.map
                                                                     (fun cell ->
                                                                         UI.flex
                                                                             (fun _ -> ())
                                                                             [
                                                                                 Cell.Cell
                                                                                     {|
-                                                                                        DateId = dateId
-                                                                                        TaskId = cell.TaskId
+                                                                                        TaskIdAtom = cell.TaskIdAtom
+                                                                                        DateIdAtom = cell.DateIdAtom
                                                                                         SemiTransparent = false
                                                                                     |}
                                                                                 UI.box
                                                                                     (fun x -> x.paddingLeft <- "4px")
                                                                                     [
-                                                                                        TaskName.TaskName cell.TaskId
+                                                                                        TaskName.TaskName
+                                                                                            cell.TaskIdAtom
                                                                                     ]
                                                                             ])
                                                         ])

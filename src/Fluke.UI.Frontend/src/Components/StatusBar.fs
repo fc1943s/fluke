@@ -249,7 +249,7 @@ module StatusBar =
 
         let selectedTaskIdListByArchive = Store.useValue Selectors.Session.selectedTaskIdListByArchive
 
-        let sortedTaskIdList = Store.useValue Selectors.Session.sortedTaskIdList
+        let sortedTaskIdAtoms = Store.useValue Selectors.Session.sortedTaskIdAtoms
 
         let cellStateMapArray =
             selectedTaskIdArray
@@ -348,13 +348,13 @@ module StatusBar =
                     detailsText
                     [
                         str
-                            $"Tasks: {sortedTaskIdList.Length} of {selectedTaskIdListByArchive.Length} visible (Total: {total})"
+                            $"Tasks: {sortedTaskIdAtoms.Length} of {selectedTaskIdListByArchive.Length} visible (Total: {total})"
                     ]
             //                        | _ -> str "Tasks: Loading tasks"
             ]
 
     [<ReactComponent>]
-    let StatusBar () =
+    let PositionIndicator () =
         let position = Store.useValue Atoms.position
 
         Scheduling.useScheduling
@@ -363,6 +363,29 @@ module StatusBar =
             (fun _ setter ->
                 promise { Store.set setter (Atoms.Device.devicePing deviceId) (Ping (string DateTime.Now.Ticks)) })
 
+        match position with
+        | Some position ->
+            React.fragment [
+                UI.flex
+                    (fun _ -> ())
+                    [
+                        UI.icon
+                            (fun x ->
+                                x.``as`` <- Icons.fa.FaRegClock
+                                x.marginRight <- "4px")
+                            []
+
+                        Tooltip.wrap
+                            (NowIndicator ())
+                            [
+                                str $"Position: {(position |> FlukeDateTime.Stringify).[0..-4]}"
+                            ]
+                    ]
+            ]
+        | None -> str "Position: No databases selected"
+
+    [<ReactComponent>]
+    let StatusBar () =
         UI.simpleGrid
             (fun x ->
                 x.display <-
@@ -405,24 +428,5 @@ module StatusBar =
                     LoadingSpinner.InlineLoadingSpinner ()
                 )
 
-                match position with
-                | Some position ->
-                    React.fragment [
-                        UI.flex
-                            (fun _ -> ())
-                            [
-                                UI.icon
-                                    (fun x ->
-                                        x.``as`` <- Icons.fa.FaRegClock
-                                        x.marginRight <- "4px")
-                                    []
-
-                                Tooltip.wrap
-                                    (NowIndicator ())
-                                    [
-                                        str $"Position: {(position |> FlukeDateTime.Stringify).[0..-4]}"
-                                    ]
-                            ]
-                    ]
-                | None -> str "Position: No databases selected"
+                PositionIndicator ()
             ]

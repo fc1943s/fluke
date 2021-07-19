@@ -32,23 +32,11 @@ module Setup =
             printfn "after all"
             Browser.Dom.window?exit <- true
 
-//            JS.setTimeout (fun () -> emitJsExpr () "process.exit()") 1000
+        //            JS.setTimeout (fun () -> emitJsExpr () "process.exit()") 1000
 //            |> ignore
         }
     )
 
-    [<ReactComponent>]
-    let RootWrapper cmp =
-        React.strictMode [
-            //            Recoil.root [
-//                root.children [
-            React.ReactErrorBoundary.renderCatchFn
-                (fun (error, info) -> printfn $"ReactErrorBoundary Error: {info.componentStack} {error}")
-                (str "error")
-                cmp
-            //                ]
-//            ]
-            ]
 
     let render (cmp: ReactElement) =
         promise {
@@ -69,7 +57,7 @@ module Setup =
 
             let subject =
                 RTL.render (
-                    RootWrapper (
+                    React.ErrorBoundary [
                         React.fragment [
                             (React.memo
                                 (fun () ->
@@ -91,7 +79,7 @@ module Setup =
                                 ())
                             cmp
                         ]
-                    )
+                    ]
                 )
 
             //            RTL.act (fun () -> Jest.runAllTimers())

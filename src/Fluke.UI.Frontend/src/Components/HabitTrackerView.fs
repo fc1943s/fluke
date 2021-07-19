@@ -8,10 +8,17 @@ open Fluke.Shared
 
 
 module HabitTrackerView =
+
+    [<ReactComponent>]
+    let InformationNameWrapper informationTaskIdAtom =
+        let information, _taskIdAtoms = Store.useValue informationTaskIdAtom
+        InformationName.InformationName information
+
     [<ReactComponent>]
     let HabitTrackerView () =
-        let sortedTaskIdList = Store.useValue Selectors.Session.sortedTaskIdList
+        let sortedTaskIdAtoms = Store.useValue Selectors.Session.sortedTaskIdAtoms
         let cellSize = Store.useValue Atoms.User.cellSize
+        let informationTaskIdAtoms = Store.useValue Selectors.Session.informationTaskIdAtoms
 
         UI.flex
             (fun x -> x.flex <- "1")
@@ -33,13 +40,12 @@ module HabitTrackerView =
                                     (fun x -> x.paddingRight <- "10px")
                                     [
                                         yield!
-                                            sortedTaskIdList
-                                            |> List.map
-                                                (fun taskId ->
-
+                                            sortedTaskIdAtoms
+                                            |> Array.map
+                                                (fun taskIdAtom ->
                                                     React.suspense (
                                                         [
-                                                            TaskInformationName.TaskInformationName taskId
+                                                            TaskInformationName.TaskInformationName taskIdAtom
                                                         ],
                                                         nothing
                                                     ))
@@ -51,13 +57,12 @@ module HabitTrackerView =
                                         x.textAlign <- "center")
                                     [
                                         yield!
-                                            sortedTaskIdList
-                                            |> List.map
-                                                (fun taskId ->
-
+                                            sortedTaskIdAtoms
+                                            |> Array.map
+                                                (fun taskIdAtom ->
                                                     React.suspense (
                                                         [
-                                                            TaskPriority.TaskPriority taskId
+                                                            TaskPriority.TaskPriority taskIdAtom
                                                         ],
                                                         nothing
                                                     ))
@@ -67,21 +72,33 @@ module HabitTrackerView =
                                     (fun x -> x.flex <- "1")
                                     [
                                         yield!
-                                            sortedTaskIdList
-                                            |> List.map
-                                                (fun taskId ->
+                                            sortedTaskIdAtoms
+                                            |> Array.map
+                                                (fun taskIdAtom ->
                                                     UI.box
                                                         (fun x -> x.height <- $"{cellSize}px")
                                                         [
                                                             React.suspense (
                                                                 [
-                                                                    TaskName.TaskName taskId
+                                                                    TaskName.TaskName taskIdAtom
                                                                 ],
                                                                 LoadingSpinner.InlineLoadingSpinner ()
                                                             )
                                                         ])
                                     ]
                             ]
+
+                        yield!
+                            informationTaskIdAtoms
+                            |> Array.map
+                                (fun informationTaskIdAtom ->
+                                    UI.flex
+                                        (fun x ->
+                                            x.direction <- "column"
+                                            x.flex <- "1")
+                                        [
+                                            InformationNameWrapper informationTaskIdAtom
+                                        ])
                     ]
 
                 UI.box
@@ -90,7 +107,7 @@ module HabitTrackerView =
                         GridHeader.GridHeader ()
                         React.suspense (
                             [
-                                Cells.Cells sortedTaskIdList
+                                Cells.Cells sortedTaskIdAtoms
                             ],
                             nothing
                         )

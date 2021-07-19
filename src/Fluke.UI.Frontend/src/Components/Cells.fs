@@ -1,15 +1,14 @@
 namespace Fluke.UI.Frontend.Components
 
-open Fluke.Shared.Domain.Model
 open Feliz
 open Fluke.UI.Frontend.Bindings
 
 
 module Cells =
     [<ReactComponent>]
-    let Cells (taskIdList: TaskId list) =
+    let Cells taskIdAtoms =
         UI.box
             (fun _ -> ())
             [
-                yield! taskIdList |> List.mapi TaskCells.TaskCells
+                yield! taskIdAtoms |> Array.mapi TaskCells.TaskCells
             ]

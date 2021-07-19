@@ -14,4 +14,4 @@ module Dom =
     let set key value = domRefs.[key] <- value
 
     [<Emit "new Event($0, $1)">]
-    let createEvent _eventType _props = jsNative
+    let inline createEvent _eventType _props = jsNative

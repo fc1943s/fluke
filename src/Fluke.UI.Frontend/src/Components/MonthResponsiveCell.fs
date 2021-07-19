@@ -2,8 +2,8 @@ namespace Fluke.UI.Frontend.Components
 
 open Fable.React
 open Feliz
-open Fable.DateFunctions
 open Fluke.Shared
+open Fluke.UI.Frontend.TempUI
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
 
@@ -12,11 +12,10 @@ module MonthResponsiveCell =
     open Domain.UserInteraction
 
     [<ReactComponent>]
-    let MonthResponsiveCell (date: FlukeDate) (props: UI.IChakraProps -> unit) =
+    let MonthResponsiveCell (dateIdAtom: Store.Atom<DateId>) (props: UI.IChakraProps -> unit) =
+        let dateId = Store.useValue dateIdAtom
         let weekStart = Store.useValue Atoms.User.weekStart
         let cellSize = Store.useValue Atoms.User.cellSize
-
-        let month = (date |> FlukeDate.DateTime).Format "MMM"
 
         UI.box
             (fun x ->
@@ -26,16 +25,17 @@ module MonthResponsiveCell =
                 x.lineHeight <- $"{cellSize}px"
 
                 x.borderLeftWidth <-
-                    match (weekStart, date) with
+                    match (weekStart, dateId) with
                     | StartOfMonth -> "1px"
                     | _ -> null
 
                 x.borderLeftColor <-
-                    match (weekStart, date) with
+                    match (weekStart, dateId) with
                     | StartOfMonth -> "#ffffff3d"
                     | _ -> null
 
                 props x)
             [
-                str month
+
+                dateId |> DateId.Format DateIdFormat.Month |> str
             ]

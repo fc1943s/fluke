@@ -9,7 +9,8 @@ open Fluke.Shared.Domain
 
 module TaskPriority =
     [<ReactComponent>]
-    let TaskPriority taskId =
+    let TaskPriority taskIdAtom =
+        let taskId = Store.useValue taskIdAtom
         let priority = Store.useValue (Atoms.Task.priority taskId)
         let cellSize = Store.useValue Atoms.User.cellSize
 

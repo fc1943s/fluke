@@ -1,7 +1,15 @@
 const path = require('path');
+const webpack = require('webpack');
 const fs = require('fs');
 // const { addReactRefresh } = require('customize-cra-react-refresh');
-const { override, babelInclude, removeModuleScopePlugin, useBabelRc, getBabelLoader } = require('customize-cra');
+const {
+  override,
+  babelInclude,
+  removeModuleScopePlugin,
+  useBabelRc,
+  getBabelLoader,
+  addWebpackPlugin
+} = require('customize-cra');
 
 const wdyrFn = ((config) => {
   const options = getBabelLoader(config).options;
@@ -24,6 +32,15 @@ module.exports = (config, env) => Object.assign(
       path.resolve('./src'),
       fs.realpathSync('./public'),
     ]),
+    addWebpackPlugin(
+      new webpack.ContextReplacementPlugin(
+        /gun/,
+        (data) => {
+          delete data.dependencies[0].critical;
+          return data;
+        },
+      ),
+    ),
     // addReactRefresh(),
     removeModuleScopePlugin(),
   )(config, env),

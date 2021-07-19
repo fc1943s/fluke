@@ -1,6 +1,8 @@
 namespace Fluke.UI.Frontend
 
 open Fluke.Shared.Domain
+open Fluke.Shared.Domain.UserInteraction
+open Fable.DateFunctions
 
 
 module TempUI =
@@ -31,6 +33,20 @@ module TempUI =
         | Area _ -> "#666"
         | Resource _ -> "#333"
 
+
+    type DateId with
+        static member inline Value (DateId referenceDay) = referenceDay
+
+        static member inline Format dateIdFormat dateId =
+            match dateId |> DateId.Value, dateIdFormat with
+            | { Day = Day day }, DateIdFormat.Day -> day.ToString "D2"
+            | date, DateIdFormat.DayOfWeek -> (date |> FlukeDate.DateTime).Format "EEEEEE"
+            | date, DateIdFormat.Month -> (date |> FlukeDate.DateTime).Format "MMM"
+
+    and [<RequireQualifiedAccess>] DateIdFormat =
+        | Day
+        | DayOfWeek
+        | Month
 
 //    let manualCellStatusColor =
 //        function

@@ -1085,7 +1085,7 @@ lastUserAtomId={lastUserAtomId} """
         useCallback ((fun getter setter () -> promise { return (getter, setter) }), [||])
 
 
-    let useState = jotai.useAtom
+    let inline useState atom = jotai.useAtom atom
 
     let inline useSetState atom = jotaiUtils.useUpdateAtom atom
 

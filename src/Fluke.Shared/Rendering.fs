@@ -48,24 +48,141 @@ module Rendering =
         | StatusCell of CellStatus
         | TodayCell
 
-    let renderTaskStatusMap dayStart position dateSequence taskState =
+    let internalSessionStatus
+        dayStart
+        position
+        (taskState: TaskState)
+        (dateId: DateId)
+        (renderState: LaneCellRenderState)
+        =
+        let cellState = taskState.CellStateMap |> Map.tryFind dateId
+
+        let group = dayStart, position, dateId
+
+        let tempStatus, renderState =
+            match cellState with
+            | Some {
+                       Status = UserStatus (_user, manualCellStatus) as userStatus
+                   } ->
+                let renderState =
+                    match manualCellStatus, group with
+                    | Postponed (Some _), BeforeToday -> renderState
+                    | (Postponed None
+                      | Scheduled),
+                      BeforeToday -> WaitingEvent
+                    | Postponed None, Today -> DayMatch
+                    | _ -> Counting 1
+
+                let cellStatus =
+                    match manualCellStatus, group with
+                    | Postponed (Some until), Today when
+                        position
+                        |> FlukeDateTime.GreaterEqualThan dayStart dateId until
+                        ->
+                        Pending
+                    | _ -> userStatus
+
+                StatusCell cellStatus, renderState
+
+            | _ ->
+                let getStatus renderState =
+                    match renderState, group with
+                    | WaitingFirstEvent, BeforeToday -> EmptyCell, WaitingFirstEvent
+                    | DayMatch, BeforeToday -> StatusCell Missed, WaitingEvent
+                    | WaitingEvent, BeforeToday -> StatusCell Missed, WaitingEvent
+
+                    | WaitingFirstEvent, Today -> TodayCell, Counting 1
+                    | DayMatch, Today -> TodayCell, Counting 1
+                    | WaitingEvent, Today -> TodayCell, Counting 1
+
+                    | WaitingFirstEvent, AfterToday -> EmptyCell, WaitingFirstEvent
+                    | DayMatch, AfterToday -> StatusCell Pending, Counting 1
+                    | WaitingEvent, AfterToday -> StatusCell Pending, Counting 1
+
+                    | Counting count, _ -> EmptyCell, Counting (count + 1)
+
+                match taskState.Task.Scheduling with
+                | Recurrency (Offset offset) ->
+                    let days = RecurrencyOffset.DayCount offset
+
+                    let renderState =
+                        match renderState with
+                        | Counting count when count = days -> DayMatch
+                        | _ -> renderState
+
+                    getStatus renderState
+
+                | Recurrency (Fixed recurrencyList) ->
+                    let isDateMatched =
+                        recurrencyList
+                        |> List.map
+                            (function
+                            | Weekly dayOfWeek ->
+                                dayOfWeek = (dateId |> DateId.Value |> FlukeDate.DateTime)
+                                    .DayOfWeek
+                            | Monthly day -> day = (dateId |> DateId.Value).Day
+                            | Yearly (day, month) ->
+                                day = (dateId |> DateId.Value).Day
+                                && month = (dateId |> DateId.Value).Month)
+                        |> List.exists id
+
+                    match renderState, group with
+                    | WaitingFirstEvent, BeforeToday -> EmptyCell, WaitingFirstEvent
+                    | _, Today when isDateMatched -> TodayCell, Counting 1
+                    | WaitingFirstEvent, Today -> EmptyCell, Counting 1
+                    | _, _ when isDateMatched -> getStatus WaitingEvent
+                    | _, _ -> getStatus renderState
+
+                | Manual suggestion ->
+                    match renderState, group, suggestion with
+                    | WaitingFirstEvent, Today, WithSuggestion when taskState.Task.PendingAfter = None ->
+                        StatusCell Suggested, Counting 1
+                    | WaitingFirstEvent, Today, WithSuggestion -> TodayCell, Counting 1
+                    | WaitingFirstEvent, Today, _ -> StatusCell Suggested, Counting 1
+                    | _ ->
+                        let status, renderState = getStatus renderState
+
+                        let status =
+                            match status, suggestion with
+                            | EmptyCell, WithSuggestion -> StatusCell Suggested
+                            | TodayCell, _ -> StatusCell Pending
+                            | status, _ -> status
+
+                        status, renderState
+
+        let status =
+            match tempStatus with
+            | EmptyCell -> Disabled
+            | StatusCell status -> status
+            | TodayCell ->
+                match taskState.Task.MissedAfter, taskState.Task.PendingAfter with
+                | Some missedAfter, _ when
+                    position
+                    |> FlukeDateTime.GreaterEqualThan dayStart dateId missedAfter
+                    ->
+                    MissedToday
+                | _, Some pendingAfter when
+                    position
+                    |> FlukeDateTime.GreaterEqualThan dayStart dateId pendingAfter
+                    ->
+                    Pending
+                | _, None -> Pending
+                | _ -> Suggested
+
+        status, renderState
+
+    let taskStateDateSequence dayStart dateSequence taskState =
         let firstDateRange = FlukeDateTime.Create (dateSequence |> List.head, dayStart, Second 0)
         let lastDateRange = FlukeDateTime.Create (dateSequence |> List.last, dayStart, Second 0)
 
-        //        printfn $"renderTaskStatusMap
-//        dayStart={dayStart|>FlukeTime.Stringify}
-//        dateSequence={dateSequence|>List.map FlukeDate.Stringify}
-//        taskState={taskState}
-//        "
-//
-        let dateSequenceWithEntries =
-            let dates =
-                taskState.CellStateMap
-                |> Map.keys
-                |> Seq.map (DateId.Value >> FlukeDate.DateTime)
-                |> Seq.sort
-                |> Seq.toArray
+        let dates =
+            taskState.CellStateMap
+            |> Map.keys
+            |> Seq.map (DateId.Value >> FlukeDate.DateTime)
+            |> Seq.sort
+            |> Seq.toArray
 
+        let result =
             match dates with
             | [||] -> dateSequence
             | dates ->
@@ -89,132 +206,21 @@ module Rendering =
                     ]
             |> List.map (fun date -> FlukeDateTime.Create (date, dayStart, Second 0))
 
+        firstDateRange, lastDateRange, result
+
+    let renderTaskStatusMap dayStart position dateSequence taskState =
+        let firstDateRange, lastDateRange, taskStateDateSequence = taskStateDateSequence dayStart dateSequence taskState
+
         let rec loop renderState =
             function
             | moment :: tail ->
-                let DateId referenceDay as dateId = dateId dayStart moment
-
-                let cellState = taskState.CellStateMap |> Map.tryFind dateId
-
-                let group = dayStart, position, dateId
-
-                let tempStatus, renderState =
-                    match cellState with
-                    | Some {
-                               Status = UserStatus (_user, manualCellStatus) as userStatus
-                           } ->
-                        let renderState =
-                            match manualCellStatus, group with
-                            | Postponed (Some _), BeforeToday -> renderState
-                            | (Postponed None
-                              | Scheduled),
-                              BeforeToday -> WaitingEvent
-                            | Postponed None, Today -> DayMatch
-                            | _ -> Counting 1
-
-                        let cellStatus =
-                            match manualCellStatus, group with
-                            | Postponed (Some until), Today when
-                                position
-                                |> FlukeDateTime.GreaterEqualThan dayStart dateId until
-                                ->
-                                Pending
-                            | _ -> userStatus
-
-                        StatusCell cellStatus, renderState
-
-                    | _ ->
-                        let getStatus renderState =
-                            match renderState, group with
-                            | WaitingFirstEvent, BeforeToday -> EmptyCell, WaitingFirstEvent
-                            | DayMatch, BeforeToday -> StatusCell Missed, WaitingEvent
-                            | WaitingEvent, BeforeToday -> StatusCell Missed, WaitingEvent
-
-                            | WaitingFirstEvent, Today -> TodayCell, Counting 1
-                            | DayMatch, Today -> TodayCell, Counting 1
-                            | WaitingEvent, Today -> TodayCell, Counting 1
-
-                            | WaitingFirstEvent, AfterToday -> EmptyCell, WaitingFirstEvent
-                            | DayMatch, AfterToday -> StatusCell Pending, Counting 1
-                            | WaitingEvent, AfterToday -> StatusCell Pending, Counting 1
-
-                            | Counting count, _ -> EmptyCell, Counting (count + 1)
-
-                        match taskState.Task.Scheduling with
-                        | Recurrency (Offset offset) ->
-                            let days = RecurrencyOffset.DayCount offset
-
-                            let renderState =
-                                match renderState with
-                                | Counting count when count = days -> DayMatch
-                                | _ -> renderState
-
-                            getStatus renderState
-
-                        | Recurrency (Fixed recurrencyList) ->
-                            let isDateMatched =
-                                recurrencyList
-                                |> List.map
-                                    (function
-                                    | Weekly dayOfWeek -> dayOfWeek = (referenceDay |> FlukeDate.DateTime).DayOfWeek
-                                    | Monthly day -> day = referenceDay.Day
-                                    | Yearly (day, month) ->
-                                        day = referenceDay.Day
-                                        && month = referenceDay.Month)
-                                |> List.exists id
-
-                            match renderState, group with
-                            | WaitingFirstEvent, BeforeToday -> EmptyCell, WaitingFirstEvent
-                            | _, Today when isDateMatched -> TodayCell, Counting 1
-                            | WaitingFirstEvent, Today -> EmptyCell, Counting 1
-                            | _, _ when isDateMatched -> getStatus WaitingEvent
-                            | _, _ -> getStatus renderState
-
-                        | Manual suggestion ->
-                            match renderState, group, suggestion with
-                            | WaitingFirstEvent, Today, WithSuggestion when taskState.Task.PendingAfter = None ->
-                                StatusCell Suggested, Counting 1
-                            | WaitingFirstEvent, Today, WithSuggestion -> TodayCell, Counting 1
-                            | WaitingFirstEvent, Today, _ -> StatusCell Suggested, Counting 1
-                            | _ ->
-                                let status, renderState = getStatus renderState
-
-                                let status =
-                                    match status, suggestion with
-                                    | EmptyCell, WithSuggestion -> StatusCell Suggested
-                                    | TodayCell, _ -> StatusCell Pending
-                                    | status, _ -> status
-
-                                status, renderState
-
-                let status =
-                    match tempStatus with
-                    | EmptyCell -> Disabled
-                    | StatusCell status -> status
-                    | TodayCell ->
-                        match taskState.Task.MissedAfter, taskState.Task.PendingAfter with
-                        | Some missedAfter, _ when
-                            position
-                            |> FlukeDateTime.GreaterEqualThan dayStart dateId missedAfter
-                            ->
-                            MissedToday
-                        | _, Some pendingAfter when
-                            position
-                            |> FlukeDateTime.GreaterEqualThan dayStart dateId pendingAfter
-                            ->
-                            Pending
-                        | _, None -> Pending
-                        | _ -> Suggested
-
-                //                printfn
-//                    $"dateId={referenceDay |> FlukeDate.Stringify} moment={moment |> FlukeDateTime.Stringify} status={
-//                                                                                                                          status
-//                    }"
+                let status, renderState =
+                    internalSessionStatus dayStart position taskState (DateId moment.Date) renderState
 
                 (moment, status) :: loop renderState tail
             | [] -> []
 
-        loop WaitingFirstEvent dateSequenceWithEntries
+        loop WaitingFirstEvent taskStateDateSequence
         |> List.filter (fun (moment, _) -> moment >==< (firstDateRange, lastDateRange))
         |> List.map (fun (moment, cellStatus) -> dateId dayStart moment, cellStatus)
         |> Map.ofSeq

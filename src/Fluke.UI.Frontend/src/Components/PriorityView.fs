@@ -7,10 +7,17 @@ open Fluke.Shared
 
 
 module PriorityView =
+
+    [<ReactComponent>]
+    let InformationNameWrapper informationTaskIdAtom =
+        let information, _taskIdAtoms = Store.useValue informationTaskIdAtom
+        InformationName.InformationName information
+
     [<ReactComponent>]
     let PriorityView () =
-        let sortedTaskIdList = Store.useValue Selectors.Session.sortedTaskIdList
+        let sortedTaskIdAtoms = Store.useValue Selectors.Session.sortedTaskIdAtoms
         let cellSize = Store.useValue Atoms.User.cellSize
+        let informationTaskIdAtoms = Store.useValue Selectors.Session.informationTaskIdAtoms
 
         UI.flex
             (fun x -> x.flex <- "1")
@@ -34,8 +41,8 @@ module PriorityView =
                                     (fun x -> x.paddingRight <- "10px")
                                     [
                                         yield!
-                                            sortedTaskIdList
-                                            |> List.map TaskInformationName.TaskInformationName
+                                            sortedTaskIdAtoms
+                                            |> Array.map TaskInformationName.TaskInformationName
                                     ]
                                 // Column: Priority
                                 UI.box
@@ -44,22 +51,34 @@ module PriorityView =
                                         x.textAlign <- "center")
                                     [
                                         yield!
-                                            sortedTaskIdList
-                                            |> List.map TaskPriority.TaskPriority
+                                            sortedTaskIdAtoms
+                                            |> Array.map TaskPriority.TaskPriority
                                     ]
                                 // Column: Task Name
                                 UI.box
                                     (fun x -> x.flex <- "1")
                                     [
-                                        yield! sortedTaskIdList |> List.map TaskName.TaskName
+                                        yield! sortedTaskIdAtoms |> Array.map TaskName.TaskName
                                     ]
                             ]
+
+                        yield!
+                            informationTaskIdAtoms
+                            |> Array.map
+                                (fun informationTaskIdAtom ->
+                                    UI.flex
+                                        (fun x ->
+                                            x.direction <- "column"
+                                            x.flex <- "1")
+                                        [
+                                            InformationNameWrapper informationTaskIdAtom
+                                        ])
                     ]
 
                 UI.box
                     (fun _ -> ())
                     [
                         GridHeader.GridHeader ()
-                        Cells.Cells sortedTaskIdList
+                        Cells.Cells sortedTaskIdAtoms
                     ]
             ]

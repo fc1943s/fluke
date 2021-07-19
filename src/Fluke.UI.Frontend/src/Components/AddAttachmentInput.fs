@@ -1,7 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
 open System
-open Browser.Types
 open Fable.React
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Components
@@ -25,7 +24,13 @@ module AddAttachmentInput =
     let rec AddAttachmentInput attachmentPanelType onAdd =
         let archive = Store.useValue Atoms.User.archive
         let ctrlPressed = Store.useValue Atoms.ctrlPressed
-        let addAttachmentText, setAddAttachmentText = React.useState ""
+
+        let tempAttachment =
+            Store.Hooks.useTempAtom
+                (Some (
+                    Store.InputAtom (Store.AtomReference.Atom (Atoms.Attachment.attachment (AttachmentId Guid.Empty)))
+                ))
+                (Some (Store.InputScope.Temp Gun.defaultSerializer))
 
         let clipboardVisible, setClipboardVisible = Store.useState Atoms.User.clipboardVisible
         let clipboardAttachmentIdMap = Store.useValue Atoms.User.clipboardAttachmentIdMap
@@ -34,8 +39,8 @@ module AddAttachmentInput =
             Store.useCallback (
                 (fun getter setter _ ->
                     promise {
-                        match onAdd, addAttachmentText with
-                        | Some onAdd, String.ValidString _ ->
+                        match onAdd, tempAttachment.Value with
+                        | Some onAdd, Some (Attachment.Comment (Comment.Comment (String.ValidString _)) as attachment) ->
 
                             let attachmentId =
                                 Hydrate.hydrateAttachmentState
@@ -48,23 +53,20 @@ module AddAttachmentInput =
                                              match attachmentPanelType with
                                              | AttachmentPanelType.Information -> archive |> Option.defaultValue false
                                              | _ -> false
-                                         Attachment =
-                                             addAttachmentText
-                                             |> Comment.Comment
-                                             |> Attachment.Comment
+                                         Attachment = attachment
                                      })
 
                             do! onAdd attachmentId
 
-                            setAddAttachmentText ""
+                            // Store.resetTempValue setter (Atoms.Attachment.attachment (AttachmentId Guid.Empty))
+                            tempAttachment.SetValue (Some (Attachment.Comment (Comment.Comment "")))
                         | _ -> ()
                     }),
                 [|
                     box attachmentPanelType
                     box archive
                     box onAdd
-                    box addAttachmentText
-                    box setAddAttachmentText
+                    box tempAttachment
                 |]
             )
 
@@ -85,7 +87,19 @@ module AddAttachmentInput =
                                             CustomProps =
                                                 fun x ->
                                                     x.textarea <- true
-                                                    x.fixedValue <- Some addAttachmentText
+
+                                                    x.atom <-
+                                                        Some (
+                                                            Store.InputAtom (
+                                                                Store.AtomReference.Atom (
+                                                                    Atoms.Attachment.attachment (
+                                                                        AttachmentId Guid.Empty
+                                                                    )
+                                                                )
+                                                            )
+                                                        )
+
+                                                    x.inputScope <- Some (Store.InputScope.Temp Gun.defaultSerializer)
                                                     x.autoFocusOnAllMounts <- true
                                                     x.variableHeight <- true
 
@@ -93,6 +107,23 @@ module AddAttachmentInput =
                                                         Some
                                                             (fun _ ->
                                                                 promise { if ctrlPressed then do! addAttachment () })
+
+                                                    x.onFormat <-
+                                                        Some
+                                                            (fun attachment ->
+                                                                match attachment with
+                                                                | Some (Attachment.Comment (Comment.Comment comment)) ->
+                                                                    comment
+                                                                | attachment -> $"{attachment}")
+
+                                                    x.onValidate <-
+                                                        Some (
+                                                            fst
+                                                            >> Comment.Comment
+                                                            >> Attachment.Comment
+                                                            >> Some
+                                                            >> Some
+                                                        )
                                             Props =
                                                 fun x ->
                                                     x.placeholder <- "Add Attachment"
@@ -102,10 +133,6 @@ module AddAttachmentInput =
                                                     x.borderTopRightRadius <- "0"
 
                                                     if onAdd.IsNone then x.disabled <- true
-
-                                                    x.onChange <-
-                                                        (fun (e: KeyboardEvent) ->
-                                                            promise { setAddAttachmentText e.Value })
                                         |}
                                 ]
 

@@ -3,6 +3,7 @@ namespace Fluke.UI.Frontend.Bindings
 open Fable.Core
 open Fable.React
 open Browser.Types
+open Feliz
 
 module React =
     module ReactErrorBoundary =
@@ -29,7 +30,16 @@ module React =
                 x.setState (fun state _props -> { state with HasErrors = true })
 
             override x.render () =
-                if x.state.HasErrors then x.props.ErrorComponent else x.props.Inner
+                if x.state.HasErrors then
+                    (Html.div [
+                        Html.button [
+                            prop.onClick (fun _e -> x.setState (fun state _props -> { state with HasErrors = false }))
+                            prop.children [ str "Retry" ]
+                        ]
+                        x.props.ErrorComponent
+                     ])
+                else
+                    x.props.Inner
 
         let inline renderCatchSimple errorElement element =
             ofType<ErrorBoundary, _, _>
@@ -48,6 +58,24 @@ module React =
                     OnError = onError
                 }
                 []
+
+    [<ReactComponent>]
+    let ErrorBoundary cmp =
+        React.strictMode [
+            //            Recoil.root [
+//                root.children [
+            ReactErrorBoundary.renderCatchFn
+                (fun (error, info) -> printfn $"ReactErrorBoundary.renderCatchFn Error: {info.componentStack} {error}")
+                (Html.div [
+                    prop.classes [ "static" ]
+                    prop.children [
+                        str "Unhandled Exception. Check the console log."
+                    ]
+                 ])
+                (React.fragment cmp)
+            //                ]
+//            ]
+            ]
 
     [<ImportAll "react">]
     let react: {| StrictMode: obj -> ReactElement |} = jsNative

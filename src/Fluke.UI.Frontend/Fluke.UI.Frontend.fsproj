@@ -99,6 +99,7 @@
         <Compile Include="src\Components\AttachmentComment.fs" />
         <Compile Include="src\Components\Attachment.fs" />
         <Compile Include="src\Components\AttachmentPanel.fs" />
+        <Compile Include="src\Components\TransparentIconButton.fs" />
         <Compile Include="src\Components\TaskForm.fs" />
         <Compile Include="src\Components\TaskName.fs" />
         <Compile Include="src\Components\HabitTrackerView.fs" />
@@ -106,7 +107,6 @@
         <Compile Include="src\Components\BulletJournalView.fs" />
         <Compile Include="src\Components\InformationView.fs" />
         <Compile Include="src\Components\DeleteUserButton.fs" />
-        <Compile Include="src\Components\TransparentIconButton.fs" />
         <Compile Include="src\Components\TopBar.fs" />
         <Compile Include="src\Components\DatabaseLeafIcon.fs" />
         <Compile Include="src\Components\DatabaseNodeMenu.fs" />

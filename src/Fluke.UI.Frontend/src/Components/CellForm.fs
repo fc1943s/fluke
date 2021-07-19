@@ -12,7 +12,9 @@ open Fluke.UI.Frontend.State
 
 module CellForm =
     [<ReactComponent>]
-    let rec CellForm (taskId: TaskId) (dateId: DateId) =
+    let rec CellForm taskIdAtom dateIdAtom =
+        let taskId = Store.useValue taskIdAtom
+        let dateId = Store.useValue dateIdAtom
         let (TaskName taskName) = Store.useValue (Atoms.Task.name taskId)
 
         let attachmentIdSet = Store.useValue (Selectors.Cell.attachmentIdSet (taskId, dateId))
@@ -74,7 +76,7 @@ module CellForm =
 
         Accordion.Accordion
             {|
-                Props = fun _ -> ()
+                Props = fun x -> x.flex <- "1"
                 Atom = Atoms.User.accordionHiddenFlag AccordionType.CellForm
                 Items =
                     [
@@ -102,7 +104,7 @@ module CellForm =
                                             [
                                                 str "Status: "
                                             ]
-                                        CellMenu.CellMenu taskId dateId None false
+                                        CellMenu.CellMenu taskIdAtom dateIdAtom None false
                                     ]
                             ])
 
@@ -127,7 +129,7 @@ module CellForm =
 
         let selectedTaskIdListByArchive = Store.useValue Selectors.Session.selectedTaskIdListByArchive
 
-        let taskId, dateId =
+        let taskIdAtom, dateIdAtom =
             React.useMemo (
                 (fun () ->
                     match cellUIFlag with
@@ -135,7 +137,7 @@ module CellForm =
                         selectedTaskIdListByArchive
                         |> List.contains taskId
                         ->
-                        Some taskId, Some dateId
+                        Some (Jotai.jotai.atom taskId), Some (Jotai.jotai.atom dateId)
                     | _ -> None, None),
                 [|
                     box cellUIFlag
@@ -143,8 +145,8 @@ module CellForm =
                 |]
             )
 
-        match taskId, dateId with
-        | Some taskId, Some dateId -> CellForm taskId dateId
+        match taskIdAtom, dateIdAtom with
+        | Some taskIdAtom, Some dateIdAtom -> CellForm taskIdAtom dateIdAtom
         | _ ->
             UI.box
                 (fun x -> x.padding <- "15px")

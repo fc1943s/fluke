@@ -87,8 +87,7 @@ module DockPanel =
                     (fun x ->
                         x.flexDirection <- "column"
                         x.zIndex <- 2
-                        x.flex <- "1 1 0"
-                        x.overflow <- "auto")
+                        x.flex <- "1 1 0")
                     [
                         yield! input.children
                     ]

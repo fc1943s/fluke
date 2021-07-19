@@ -1,6 +1,5 @@
 namespace Fluke.UI.Frontend.Components
 
-open Fluke.Shared.Domain.UserInteraction
 open Feliz
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
@@ -8,8 +7,8 @@ open Fluke.UI.Frontend.Bindings
 
 module TaskCells =
     [<ReactComponent>]
-    let TaskCells index taskId =
-        let dateSequence = Store.useValue Selectors.dateSequence
+    let TaskCells index taskIdAtom =
+        let dateIdAtoms = Store.useValue Selectors.dateIdAtoms
 
         UI.flex
             (fun x -> x.backgroundColor <- "#212121")
@@ -17,13 +16,13 @@ module TaskCells =
                 React.suspense (
                     [
                         yield!
-                            dateSequence
-                            |> List.map
-                                (fun date ->
+                            dateIdAtoms
+                            |> Array.map
+                                (fun dateIdAtom ->
                                     Cell.CellWrapper
                                         {|
-                                            TaskId = taskId
-                                            DateId = DateId date
+                                            TaskIdAtom = taskIdAtom
+                                            DateIdAtom = dateIdAtom
                                             SemiTransparent = index % 2 <> 0
                                         |})
                     ],

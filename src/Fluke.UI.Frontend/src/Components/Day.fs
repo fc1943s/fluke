@@ -2,6 +2,7 @@ namespace Fluke.UI.Frontend.Components
 
 open Fable.React
 open Feliz
+open Fluke.UI.Frontend.TempUI
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
@@ -9,10 +10,12 @@ open Fluke.Shared
 module Day =
     open Domain.UserInteraction
 
+
     [<ReactComponent>]
-    let Day (date: FlukeDate) (label: string) =
-        let isToday = Store.useValue (Selectors.FlukeDate.isToday date)
-        let hasCellSelection = Store.useValue (Selectors.FlukeDate.hasCellSelection date)
+    let Day dayFormat dateIdAtom =
+        let dateId = Store.useValue dateIdAtom
+        let isToday = Store.useValue (Selectors.DateId.isToday dateId)
+        let hasCellSelection = Store.useValue (Selectors.DateId.hasCellSelection dateId)
         let weekStart = Store.useValue Atoms.User.weekStart
         let cellSize = Store.useValue Atoms.User.cellSize
 
@@ -24,13 +27,13 @@ module Day =
                     else null
 
                 x.borderLeftWidth <-
-                    match (weekStart, date) with
+                    match (weekStart, dateId) with
                     | StartOfMonth
                     | StartOfWeek -> "1px"
                     | _ -> null
 
                 x.borderLeftColor <-
-                    match (weekStart, date) with
+                    match (weekStart, dateId) with
                     | StartOfMonth -> "#ffffff3d"
                     | StartOfWeek -> "#222"
                     | _ -> null
@@ -41,5 +44,8 @@ module Day =
                 x.lineHeight <- $"{cellSize}px"
                 x.textAlign <- "center")
             [
-                str (String.toLower label)
+                dateId
+                |> DateId.Format dayFormat
+                |> String.toLower
+                |> str
             ]

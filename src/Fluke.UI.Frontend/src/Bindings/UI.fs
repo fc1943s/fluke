@@ -242,23 +242,36 @@ module UI =
     [<ImportAll "@chakra-ui/theme-tools">]
     let themeTools: {| mode: string * string -> obj -> obj |} = jsNative
 
-    let chakraMemo =
-        React.memo
-            (fun (input: {| Props: IChakraProps
-                            Component: obj
-                            Children: seq<ReactElement> |}) ->
-                renderComponent input.Component input.Props input.Children)
+    //    let chakraMemo =
+//        React.memo
+//            (fun (input: {| Props: IChakraProps
+//                            Component: obj
+//                            Children: seq<ReactElement> |}) ->
+//                renderComponent input.Component input.Props input.Children)
 
-    let inline renderChakraComponent (cmp: obj) (props: IChakraProps -> unit) (children: seq<ReactElement>) =
+    [<ReactComponent>]
+    let MemoChakraComponent (cmp: obj) (props: IChakraProps -> unit) (children: seq<ReactElement>) =
+        let newProps, children =
+            React.useMemo (
+                (fun () -> JS.newObj props, children),
+                [|
+                    box props
+                    box children
+                |]
+            )
+
+        renderComponent cmp newProps children
+
+    let renderChakraComponent (cmp: obj) (props: IChakraProps -> unit) (children: seq<ReactElement>) =
         let newProps = JS.newObj props
+        renderComponent cmp newProps children
 
-        //        chakraMemo
+    //        chakraMemo
 //            {|
 //                Props = newProps
 //                Component = cmp
 //                Children = children
 //            |}
-        renderComponent cmp newProps children
 
     type ChakraInput<'T> = 'T -> unit
 

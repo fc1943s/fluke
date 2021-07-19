@@ -76,9 +76,9 @@ module SelectionListener =
             |]
             (fun getter setter e ->
                 promise {
-                    let cellSelectionMap = Store.value getter Selectors.Session.cellSelectionMap
-
                     if e.key = "Escape" && e.``type`` = "keydown" then
+                        let cellSelectionMap = Store.value getter Selectors.Session.cellSelectionMap
+
                         if not cellSelectionMap.IsEmpty then
                             cellSelectionMap
                             |> Map.keys

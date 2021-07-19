@@ -14,6 +14,7 @@ open Fable.Core
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
 open Fluke.Shared
+open Fluke.UI.Frontend.TempUI
 
 
 module TaskForm =
@@ -372,17 +373,66 @@ module TaskForm =
                     ]
             ]
 
+    let useDeleteTask () =
+        Store.useCallback (
+            (fun getter _ taskId ->
+                promise {
+                    do! Store.deleteRoot getter (Atoms.Task.databaseId taskId)
+                    return true
+                }),
+            [||]
+        )
+
+    [<ReactComponent>]
+    let AddTaskButton () =
+        let navigate = Navigate.useNavigate ()
+        let taskUIFlag = Store.useValue (Atoms.User.uiFlag UIFlagType.Task)
+
+        let databaseId =
+            React.useMemo (
+                (fun () ->
+                    match taskUIFlag with
+                    | UIFlag.Task (databaseId, _) -> databaseId
+                    | _ -> Database.Default.Id),
+                [|
+                    box taskUIFlag
+                |]
+            )
+
+        Tooltip.wrap
+            (str "Add Task")
+            [
+                TransparentIconButton.TransparentIconButton
+                    {|
+                        Props =
+                            fun x ->
+                                UI.setTestId x "Add Task"
+                                x.icon <- Icons.fi.FiPlus |> Icons.render
+                                x.fontSize <- "17px"
+
+                                x.onClick <-
+                                    fun _ ->
+                                        navigate (
+                                            Navigate.DockPosition.Right,
+                                            Some DockType.Task,
+                                            UIFlagType.Task,
+                                            UIFlag.Task (databaseId, Task.Default.Id)
+                                        )
+                    |}
+            ]
+
     [<ReactComponent>]
     let rec TaskForm (taskId: TaskId) (onSave: Task -> JS.Promise<unit>) =
         let toast = UI.useToast ()
         let debug = Store.useValue Atoms.debug
+        let startSession = useStartSession ()
+        let deleteTask = useDeleteTask ()
         let sessions, setSessions = Store.useState (Atoms.Task.sessions taskId)
-
         let isReadWrite = Store.useValue (Selectors.Task.isReadWrite taskId)
-
         let taskUIFlag, setTaskUIFlag = Store.useState (Atoms.User.uiFlag UIFlagType.Task)
-
         let attachmentIdSet = Store.useValue (Atoms.Task.attachmentIdSet taskId)
+        let cellAttachmentIdMap = Store.useValue (Atoms.Task.cellAttachmentIdMap taskId)
+        let statusMap = Store.useValue (Atoms.Task.statusMap taskId)
 
         let taskDatabaseId, attachmentIdList =
             React.useMemo (
@@ -399,10 +449,6 @@ module TaskForm =
                     box attachmentIdSet
                 |]
             )
-
-
-        let cellAttachmentIdMap = Store.useValue (Atoms.Task.cellAttachmentIdMap taskId)
-        let statusMap = Store.useValue (Atoms.Task.statusMap taskId)
 
         let onAttachmentAdd =
             Store.useCallback (
@@ -513,8 +559,6 @@ module TaskForm =
                 |]
             )
 
-        let startSession = useStartSession ()
-
         let deleteSession =
             Store.useCallback (
                 (fun _ _ start ->
@@ -535,11 +579,7 @@ module TaskForm =
 
         Accordion.Accordion
             {|
-                Props =
-                    fun x ->
-                        x.flex <- "1"
-                        x.overflowY <- "auto"
-                        x.flexBasis <- 0
+                Props = fun x -> x.flex <- "1"
                 Atom = Atoms.User.accordionHiddenFlag AccordionType.TaskForm
                 Items =
                     [
@@ -564,8 +604,37 @@ module TaskForm =
                                         ]
                                 ])
 
+                        (UI.box
+                            (fun _ -> ())
+                            [
+                                str $"""{if taskId = Task.Default.Id then "Add" else "Edit"} Task"""
 
-                        str $"""{if taskId = Task.Default.Id then "Add" else "Edit"} Task""",
+                                if taskId <> Task.Default.Id then
+                                    Menu.Menu
+                                        {|
+                                            Tooltip = ""
+                                            Trigger =
+                                                Menu.FakeMenuButton
+                                                    InputLabelIconButton.InputLabelIconButton
+                                                    (fun x ->
+                                                        x.icon <- Icons.bs.BsThreeDots |> Icons.render
+                                                        x.fontSize <- "11px"
+                                                        x.height <- "15px"
+                                                        x.color <- "whiteAlpha.700"
+                                                        x.display <- if isReadWrite then null else "none"
+                                                        x.marginTop <- "-3px"
+                                                        x.marginLeft <- "6px")
+                                            Body =
+                                                [
+                                                    Popover.MenuItemConfirmPopover
+                                                        Icons.bi.BiTrash
+                                                        "Delete Task"
+                                                        (fun () -> deleteTask taskId)
+                                                ]
+                                            MenuListProps = fun _ -> ()
+                                        |}
+
+                            ]),
                         (UI.stack
                             (fun x -> x.spacing <- "15px")
                             [
@@ -603,8 +672,8 @@ module TaskForm =
 
                                                 x.inputScope <- Some (Store.InputScope.Temp Gun.defaultSerializer)
 
-                                                x.onFormat <- Some (fun (TaskName name) -> name)
                                                 x.onEnterPress <- Some onSave
+                                                x.onFormat <- Some (fun (TaskName name) -> name)
                                                 x.onValidate <- Some (fst >> TaskName >> Some)
                                         Props =
                                             fun x ->

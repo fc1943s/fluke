@@ -2,7 +2,6 @@ namespace Fluke.Shared.Domain
 
 open System
 open Fluke.Shared
-open Myriad.Plugins
 
 module UserInteraction =
 #if !FABLE_COMPILER
@@ -241,8 +240,8 @@ module UserInteraction =
         | position when dateStart < position -> BeforeToday
         | _ -> AfterToday
 
-    let inline (|StartOfMonth|StartOfWeek|NormalDay|) (weekStart, date) =
-        match date with
+    let inline (|StartOfMonth|StartOfWeek|NormalDay|) (weekStart, dateId) =
+        match dateId |> DateId.Value with
         | { Day = Day 1 } -> StartOfMonth
         | date when (date |> FlukeDate.DateTime).DayOfWeek = weekStart -> StartOfWeek
         | _ -> NormalDay

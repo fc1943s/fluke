@@ -16,11 +16,29 @@ module CellMenu =
     open State
 
     [<ReactComponent>]
-    let CellMenu (taskId: TaskId) (dateId: DateId) (onClose: (unit -> unit) option) (floating: bool) =
+    let PostponeTooltipText dateIdAtom =
+        let position = Store.useValue Atoms.position
+        let dateId = Store.useValue dateIdAtom
+        let cellSelectionMap = Store.useValue Selectors.Session.cellSelectionMap
+
+        str
+            $"""Postpone{match position, dateId with
+                         | Some position, dateId when
+                             position.Date = (dateId |> DateId.Value)
+                             && cellSelectionMap
+                                |> Map.values
+                                |> Seq.forall ((=) (Set.singleton dateId))
+                             ->
+                             " until tomorrow"
+                         | _ -> ""}"""
+
+    [<ReactComponent>]
+    let CellMenu taskIdAtom dateIdAtom (onClose: (unit -> unit) option) (floating: bool) =
+        let taskId = Store.useValue taskIdAtom
+        let dateId = Store.useValue dateIdAtom
         let username = Store.useValue Store.Atoms.username
         let toast = UI.useToast ()
         let cellSize = Store.useValue Atoms.User.cellSize
-        let position = Store.useValue Atoms.position
         let sessionStatus, setSessionStatus = Store.useState (Selectors.Cell.sessionStatus (taskId, dateId))
         let cellSelectionMap = Store.useValue Selectors.Session.cellSelectionMap
         let darkMode = Store.useValue Atoms.User.darkMode
@@ -51,14 +69,11 @@ module CellMenu =
                     promise {
                         cellSelectionMap
                         |> Map.iter
-                            (fun taskId dates ->
-                                dates
+                            (fun taskId dateIdSet ->
+                                dateIdSet
                                 |> Set.iter
-                                    (fun date ->
-                                        Store.set
-                                            setter
-                                            (Selectors.Cell.sessionStatus (taskId, DateId date))
-                                            onClickStatus))
+                                    (fun dateId ->
+                                        Store.set setter (Selectors.Cell.sessionStatus (taskId, dateId)) onClickStatus))
 
                         Store.set setter (Selectors.Cell.sessionStatus (taskId, dateId)) onClickStatus
 
@@ -123,24 +138,19 @@ module CellMenu =
                             cellSelectionMap
                             |> Map.keys
                             |> Seq.contains taskId
-                            && cellSelectionMap.[taskId]
-                               |> Set.contains (dateId |> DateId.Value)
+                            && cellSelectionMap.[taskId] |> Set.contains dateId
                             && (newMap |> Map.keys |> Seq.contains taskId |> not
-                                || newMap.[taskId]
-                                   |> Set.contains (dateId |> DateId.Value)
-                                   |> not)
+                                || newMap.[taskId] |> Set.contains dateId |> not)
                             ->
                             let newTaskId =
                                 newMap
                                 |> Map.pick (fun k v -> if v.IsEmpty then None else Some k)
 
-                            setCellUIFlag (UIFlag.Cell (newTaskId, newMap.[newTaskId] |> Seq.random |> DateId))
+                            setCellUIFlag (UIFlag.Cell (newTaskId, newMap.[newTaskId] |> Seq.random))
                         | _ -> ()
 
                         newMap
-                        |> Map.iter
-                            (fun taskId dates ->
-                                Store.set setter (Atoms.Task.selectionSet taskId) (dates |> Set.map DateId))
+                        |> Map.iter (Atoms.Task.selectionSet >> Store.set setter)
 
                         match onClose with
                         | Some onClose when
@@ -284,16 +294,7 @@ module CellMenu =
                         UI.box
                             (fun _ -> ())
                             [
-                                str
-                                    $"""Postpone{match position, dateId |> DateId.Value with
-                                                 | Some position, date when
-                                                     position.Date = date
-                                                     && cellSelectionMap
-                                                        |> Map.values
-                                                        |> Seq.forall ((=) (Set.singleton date))
-                                                     ->
-                                                     " until tomorrow"
-                                                 | _ -> ""}"""
+                                PostponeTooltipText dateIdAtom
                             ]
                         |> wrapButtonTooltip (Postponed None)
 
@@ -383,7 +384,7 @@ overriding any other behavior.
                                && cellSelectionMap
                                   |> Map.tryFind taskId
                                   |> Option.defaultValue Set.empty
-                                  |> Set.contains (dateId |> DateId.Value)
+                                  |> Set.contains dateId
                                   |> not) then
                             nothing
                         else

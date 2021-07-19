@@ -2,7 +2,6 @@ namespace Fluke.UI.Frontend.Components
 
 open Fable.React
 open Feliz
-open Fluke.Shared.Domain.Model
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
@@ -12,12 +11,14 @@ module CellBorder =
     open Domain.UserInteraction
 
     [<ReactComponent>]
-    let CellBorder (taskId: TaskId) (date: FlukeDate) =
+    let CellBorder taskIdAtom dateIdAtom =
+        let taskId = Store.useValue taskIdAtom
+        let dateId = Store.useValue dateIdAtom
         let weekStart = Store.useValue Atoms.User.weekStart
         let cellSize = Store.useValue Atoms.User.cellSize
         let isReadWrite = Store.useValue (Selectors.Task.isReadWrite taskId)
 
-        match (weekStart, date) with
+        match (weekStart, dateId) with
         | StartOfMonth -> Some ("1px", "#ffffff3d")
         | StartOfWeek -> Some ("1px", "#222")
         | _ -> None

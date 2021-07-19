@@ -14,12 +14,12 @@ module Setters =
         Store.useCallback (
             (fun getter setter newSelection ->
                 promise {
-                    let sortedTaskIdList = Store.value getter Selectors.Session.sortedTaskIdList
+                    let sortedTaskIdArray = Store.value getter Selectors.Session.sortedTaskIdArray
                     let cellSelectionMap = Store.value getter Selectors.Session.cellSelectionMap
 
                     let operations =
-                        sortedTaskIdList
-                        |> List.collect
+                        sortedTaskIdArray
+                        |> Array.collect
                             (fun taskId ->
                                 let dates =
                                     cellSelectionMap
@@ -34,21 +34,21 @@ module Setters =
                                 let deselect =
                                     newDates
                                     |> Set.difference dates
-                                    |> Set.toList
-                                    |> List.map (fun date -> taskId, date, false)
+                                    |> Set.toArray
+                                    |> Array.map (fun date -> taskId, date, false)
 
                                 let select =
                                     dates
                                     |> Set.difference newDates
-                                    |> Set.toList
-                                    |> List.map (fun date -> taskId, date, true)
+                                    |> Set.toArray
+                                    |> Array.map (fun date -> taskId, date, true)
 
-                                deselect @ select)
+                                select |> Array.append deselect)
 
                     operations
-                    |> List.iter
-                        (fun (taskId, date, selected) ->
-                            Store.set setter (Selectors.Cell.selected (taskId, DateId date)) selected)
+                    |> Array.iter
+                        (fun (taskId, dateId, selected) ->
+                            Store.set setter (Selectors.Cell.selected (taskId, dateId)) selected)
                 }),
             [||]
         )
@@ -65,8 +65,7 @@ module Setters =
                     let! newCellSelectionMap =
                         match shiftPressed, ctrlPressed with
                         | false, false ->
-                            let newTaskSelection =
-                                if newValue then Set.singleton (dateId |> DateId.Value) else Set.empty
+                            let newTaskSelection = if newValue then Set.singleton dateId else Set.empty
 
                             [
                                 taskId, newTaskSelection
@@ -75,7 +74,7 @@ module Setters =
                             |> Promise.lift
                         | false, true ->
                             promise {
-                                let swapSelection oldSelection taskId date =
+                                let swapSelection oldSelection taskId dateId =
                                     let oldSet =
                                         oldSelection
                                         |> Map.tryFind taskId
@@ -84,18 +83,17 @@ module Setters =
                                     let newSet =
                                         let fn = if newValue then Set.add else Set.remove
 
-                                        fn date oldSet
+                                        fn dateId oldSet
 
                                     oldSelection |> Map.add taskId newSet
 
                                 let oldSelection = Store.value getter Selectors.Session.cellSelectionMap
 
-                                return swapSelection oldSelection taskId (dateId |> DateId.Value)
+                                return swapSelection oldSelection taskId dateId
                             }
                         | true, _ ->
                             promise {
-                                let sortedTaskIdList = Store.value getter Selectors.Session.sortedTaskIdList
-
+                                let sortedTaskIdArray = Store.value getter Selectors.Session.sortedTaskIdArray
                                 let oldCellSelectionMap = Store.value getter Selectors.Session.cellSelectionMap
 
                                 let initialTaskIdSet =
@@ -106,18 +104,18 @@ module Setters =
                                     |> Set.ofSeq
                                     |> Set.add taskId
 
-                                let newTaskIdList =
-                                    sortedTaskIdList
-                                    |> List.skipWhile (initialTaskIdSet.Contains >> not)
-                                    |> List.rev
-                                    |> List.skipWhile (initialTaskIdSet.Contains >> not)
-                                    |> List.rev
+                                let newTaskIdArray =
+                                    sortedTaskIdArray
+                                    |> Array.skipWhile (initialTaskIdSet.Contains >> not)
+                                    |> Array.rev
+                                    |> Array.skipWhile (initialTaskIdSet.Contains >> not)
+                                    |> Array.rev
 
                                 let initialDateList =
                                     oldCellSelectionMap
                                     |> Map.values
                                     |> Set.unionMany
-                                    |> Set.add (dateId |> DateId.Value)
+                                    |> Set.add dateId
                                     |> Set.toList
                                     |> List.sort
 
@@ -129,12 +127,14 @@ module Setters =
                                             dateList.Head
                                             dateList |> List.last
                                         ]
+                                        |> List.map DateId.Value
                                         |> Rendering.getDateSequence (0, 0)
+                                        |> List.map DateId
                                     |> Set.ofSeq
 
                                 let newMap =
-                                    newTaskIdList
-                                    |> List.map (fun taskId -> taskId, dateSet)
+                                    newTaskIdArray
+                                    |> Array.map (fun taskId -> taskId, dateSet)
                                     |> Map.ofSeq
 
                                 return newMap

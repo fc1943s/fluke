@@ -13,7 +13,8 @@ module TaskName =
     open Domain.Model
 
     [<ReactComponent>]
-    let TaskName taskId =
+    let TaskName taskIdAtom =
+        let taskId = Store.useValue taskIdAtom
         let navigate = Navigate.useNavigate ()
         let hasSelection = Store.useValue (Selectors.Task.hasSelection taskId)
         let databaseId = Store.useValue (Atoms.Task.databaseId taskId)
@@ -22,20 +23,8 @@ module TaskName =
         let attachmentIdSet = Store.useValue (Atoms.Task.attachmentIdSet taskId)
         let cellSize = Store.useValue Atoms.User.cellSize
         let isReadWrite = Store.useValue (Selectors.Task.isReadWrite taskId)
-
         let startSession = TaskForm.useStartSession ()
-
-        let deleteTask =
-            Store.useCallback (
-                (fun getter _ _ ->
-                    promise {
-                        do! Store.deleteRoot getter (Atoms.Task.databaseId taskId)
-                        return true
-                    }),
-                [|
-                    box taskId
-                |]
-            )
+        let deleteTask = TaskForm.useDeleteTask ()
 
         UI.flex
             (fun x ->
@@ -114,7 +103,10 @@ module TaskName =
                                                             }))
                                                     (fun _ -> ())
 
-                                                Popover.MenuItemConfirmPopover Icons.bi.BiTrash "Delete Task" deleteTask
+                                                Popover.MenuItemConfirmPopover
+                                                    Icons.bi.BiTrash
+                                                    "Delete Task"
+                                                    (fun () -> deleteTask taskId)
                                             ]
                                         MenuListProps = fun _ -> ()
                                     |}

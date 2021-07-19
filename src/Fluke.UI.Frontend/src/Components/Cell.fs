@@ -15,23 +15,22 @@ module Cell =
     open UserInteraction
     open State
 
-
     [<ReactComponent>]
     let Cell
-        (input: {| TaskId: TaskId
-                   DateId: DateId
+        (input: {| TaskIdAtom: Store.Atom<TaskId>
+                   DateIdAtom: Store.Atom<DateId>
                    SemiTransparent: bool |})
         =
         Profiling.addCount "- CellComponent.render"
 
+        let taskId = Store.useValue input.TaskIdAtom
+        let dateId = Store.useValue input.DateIdAtom
         let cellSize = Store.useValue Atoms.User.cellSize
-        let showUser = Store.useValue (Selectors.Task.showUser input.TaskId)
-        let isReadWrite = Store.useValue (Selectors.Task.isReadWrite input.TaskId)
-        let sessionStatus = Store.useValue (Selectors.Cell.sessionStatus (input.TaskId, input.DateId))
-        let sessions = Store.useValue (Selectors.Cell.sessions (input.TaskId, input.DateId))
-        let attachmentIdSet = Store.useValue (Selectors.Cell.attachmentIdSet (input.TaskId, input.DateId))
-        let isToday = Store.useValue (Selectors.FlukeDate.isToday (input.DateId |> DateId.Value))
-        let selected = Store.useValue (Selectors.Cell.selected (input.TaskId, input.DateId))
+        let isReadWrite = Store.useValue (Selectors.Task.isReadWrite taskId)
+        let sessionStatus = Store.useValue (Selectors.Cell.sessionStatus (taskId, dateId))
+        let attachmentIdSet = Store.useValue (Selectors.Cell.attachmentIdSet (taskId, dateId))
+        let isToday = Store.useValue (Selectors.DateId.isToday dateId)
+        let selected = Store.useValue (Selectors.Cell.selected (taskId, dateId))
         let setSelected = Setters.useSetSelected ()
         let cellUIFlag = Store.useValue (Atoms.User.uiFlag UIFlagType.Cell)
         let rightDock = Store.useValue Atoms.User.rightDock
@@ -58,21 +57,21 @@ module Cell =
 
                             let newSelected =
                                 if ctrlPressed || shiftPressed then
-                                    input.TaskId, input.DateId, not selected
+                                    taskId, dateId, not selected
                                 else
-                                    input.TaskId, input.DateId, false
+                                    taskId, dateId, false
 
                             do! setSelected newSelected
                         else
                             let newSelected = if e.ctrlKey || e.shiftKey then not selected else false
 
                             if selected <> newSelected then
-                                do! setSelected (input.TaskId, input.DateId, newSelected)
+                                do! setSelected (taskId, dateId, newSelected)
                     }),
                 [|
                     box deviceInfo
-                    box input.TaskId
-                    box input.DateId
+                    box taskId
+                    box dateId
                     box selected
                     box setSelected
                 |]
@@ -82,8 +81,8 @@ module Cell =
             (fun x ->
                 UI.setTestId
                     x
-                    $"cell-{input.TaskId}-{(input.DateId |> DateId.Value |> FlukeDate.DateTime)
-                                               .ToShortDateString ()}"
+                    $"cell-{taskId}-{(dateId |> DateId.Value |> FlukeDate.DateTime)
+                                         .ToShortDateString ()}"
 
                 if isReadWrite then x.onClick <- onCellClick
                 x.width <- $"{cellSize}px"
@@ -111,19 +110,16 @@ module Cell =
 
                 x.textAlign <- "center"
 
-                x.borderColor <- if selected then "#ffffffAA" else "transparent"
-
                 x.borderWidth <- "1px"
 
-                if isReadWrite then
-                    x.cursor <- "pointer"
-                    x._hover <- JS.newObj (fun x -> x.borderColor <- "#ffffff55"))
-            [
+                x.borderColor <- if selected then "#ffffffAA" else "transparent"
 
+                if isReadWrite then
+                    x._hover <- JS.newObj (fun x -> x.borderColor <- "#ffffff55")
+                    x.cursor <- "pointer")
+            [
                 match rightDock, cellUIFlag with
-                | Some TempUI.DockType.Cell, UIFlag.Cell (taskId, dateId) when
-                    taskId = input.TaskId && dateId = input.DateId
-                    ->
+                | Some TempUI.DockType.Cell, UIFlag.Cell (taskId', dateId') when taskId' = taskId && dateId' = dateId ->
                     UI.icon
                         (fun x ->
                             x.``as`` <- Icons.ti.TiPin
@@ -132,16 +128,14 @@ module Cell =
                         []
                 | _ -> nothing
 
-                CellSessionIndicator.CellSessionIndicator sessionStatus sessions
+                CellSessionIndicator.CellSessionIndicator input.TaskIdAtom input.DateIdAtom
 
                 if selected then
                     nothing
                 else
-                    CellBorder.CellBorder input.TaskId (input.DateId |> DateId.Value)
+                    CellBorder.CellBorder input.TaskIdAtom input.DateIdAtom
 
-                match showUser, sessionStatus with
-                | true, UserStatus (_username, _manualCellStatus) -> CellStatusUserIndicator.CellStatusUserIndicator ()
-                | _ -> nothing
+                CellStatusUserIndicator.CellStatusUserIndicator input.TaskIdAtom input.DateIdAtom
 
                 if not attachmentIdSet.IsEmpty then
                     AttachmentIndicator.AttachmentIndicator ()
@@ -151,31 +145,37 @@ module Cell =
 
     [<ReactComponent>]
     let CellWrapper
-        (input: {| TaskId: TaskId
-                   DateId: DateId
+        (input: {| TaskIdAtom: Store.Atom<TaskId>
+                   DateIdAtom: Store.Atom<DateId>
                    SemiTransparent: bool |})
         =
+        let taskId = Store.useValue input.TaskIdAtom
+        let dateId = Store.useValue input.DateIdAtom
         let enableCellPopover = Store.useValue Atoms.User.enableCellPopover
-        let isReadWrite = Store.useValue (Selectors.Task.isReadWrite input.TaskId)
+        let isReadWrite = Store.useValue (Selectors.Task.isReadWrite taskId) //
         let navigate = Navigate.useNavigate ()
 
         if enableCellPopover then
-            Popover.CustomPopover
+            Popover.CustomPopover //
                 {|
-                    CloseButton = false
-                    Padding = Some "3px"
-                    Props = fun x -> x.placement <- "right-start"
+                    CloseButton = false //
+                    Padding = Some "3px" //
+                    Props = fun x -> x.placement <- "right-start" //
                     Trigger = Cell input
                     Body =
                         fun (disclosure, _fetchInitialFocusRef) ->
-                            [
-                                if isReadWrite then
-                                    CellMenu.CellMenu input.TaskId input.DateId (Some disclosure.onClose) true
-                                else
-                                    nothing
-                            ]
-                |}
-        else
+                            [ //
+                                if isReadWrite then //
+                                    CellMenu.CellMenu
+                                        input.TaskIdAtom
+                                        input.DateIdAtom
+                                        (Some disclosure.onClose) // None
+                                        true
+                                else //
+                                    nothing //
+                            ] //
+                |} //
+        else //
             UI.box
                 (fun x ->
                     x.onClick <-
@@ -186,7 +186,7 @@ module Cell =
                                         Navigate.DockPosition.Right,
                                         Some TempUI.DockType.Cell,
                                         UIFlagType.Cell,
-                                        UIFlag.Cell (input.TaskId, input.DateId)
+                                        UIFlag.Cell (taskId, dateId)
                                     )
                             })
                 [

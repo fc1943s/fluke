@@ -46,7 +46,10 @@ module RightDock =
                             Name = "Task"
                             Icon = Icons.bs.BsListTask
                             Content = TaskForm.TaskFormWrapper
-                            RightIcons = []
+                            RightIcons =
+                                [
+                                    DockPanel.DockPanelIcon.Component (TaskForm.AddTaskButton ())
+                                ]
                         |}
 
                         TempUI.DockType.Cell,
@@ -71,7 +74,7 @@ module RightDock =
         let itemsMap = items |> Map.ofSeq
 
         UI.flex
-            (fun x -> x.overflow <- "auto")
+            (fun _ -> ())
             [
                 match rightDock with
                 | None -> nothing

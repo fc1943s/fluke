@@ -22,20 +22,22 @@ module CellSelectionSetup =
     let maxTimeout = 5 * 60 * 1000
 
     let getCellMap (subject: Bindings.render<_, _>) (getFn: Store.GetFn) =
-        let dateSequence = Store.value getFn Selectors.dateSequence
-        let sortedTaskIdList = Store.value getFn Selectors.Session.sortedTaskIdList
+        let dateIdArray = Store.value getFn Selectors.dateIdArray
+        let sortedTaskIdArray = Store.value getFn Selectors.Session.sortedTaskIdArray
 
-        printfn $"sortedTaskIdList ={sortedTaskIdList}"
+        printfn $"sortedTaskIdArray={sortedTaskIdArray}"
 
         let cellMap =
-            sortedTaskIdList
-            |> List.collect
+            sortedTaskIdArray
+            |> Array.collect
                 (fun taskId ->
                     let taskName = Store.value getFn (Atoms.Task.name taskId)
 
-                    dateSequence
-                    |> List.map
-                        (fun date ->
+                    dateIdArray
+                    |> Array.map
+                        (fun dateId ->
+                            let date = dateId |> DateId.Value
+
                             let el =
                                 subject.queryByTestId
                                     $"cell-{taskId}-{(date |> FlukeDate.DateTime).ToShortDateString ()}"
@@ -63,7 +65,9 @@ module CellSelectionSetup =
         promise {
             do! RTL.waitFor id
 
-            let cellSelectionMap = Store.value getFn Selectors.Session.cellSelectionMap
+            let cellSelectionMap =
+                Store.value getFn Selectors.Session.cellSelectionMap
+                |> Map.map (fun _ dateIdSet -> dateIdSet |> Set.map DateId.Value)
 
             Jest
                 .expect(toString cellSelectionMap)
@@ -218,16 +222,16 @@ module CellSelectionSetup =
 
             do! RTL.waitFor (initialSetter getFn setFn)
 
-            let! sortedTaskIdList =
+            let! sortedTaskIdArray =
                 JS.waitForSome
                     (fun () ->
                         async {
-                            let sortedTaskIdList = Store.value getFn Selectors.Session.sortedTaskIdList
-                            return if sortedTaskIdList.Length = 4 then Some sortedTaskIdList else None
+                            let sortedTaskIdArray = Store.value getFn Selectors.Session.sortedTaskIdArray
+                            return if sortedTaskIdArray.Length = 4 then Some sortedTaskIdArray else None
                         })
                 |> Async.StartAsPromise
 
-            printfn $"! sortedTaskIdList={sortedTaskIdList}"
+            printfn $"! sortedTaskIdArray={sortedTaskIdArray}"
 
             let cellMapGetter = fun () -> getCellMap subject getFn
 
