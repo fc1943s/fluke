@@ -29,7 +29,7 @@ nuget Fable.Promise ~> 2.2
 // Testing
 nuget altcover ~> 8.2
 nuget Microsoft.NET.Test.Sdk ~> 16.11 prerelease
-nuget YoloDev.Expecto.TestSdk ~> 0.9
+nuget YoloDev.Expecto.TestSdk ~> 0.12
 
 // Build
 nuget Fake.Core.Target ~> 5.20 prerelease

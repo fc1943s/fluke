@@ -19,20 +19,21 @@ jobs:
         with:
           node-version: 16
 
-      - run: cd ./src/Fluke.UI.Frontend && yarn build:fable
+      - run: npm install -g pnpm
+      - run: cd ./src/Fluke.UI.Frontend && pnpm build:fable
       - run: cd ./src/Fluke.Shared.Tests && dotnet run
-      - run: cd ./src/Fluke.UI.Frontend && yarn install
-      - run: cd ./src/Fluke.UI.Frontend && yarn test
-      - run: cd ./src/Fluke.UI.Frontend && yarn build:react
-      - run: cd ./src/Fluke.UI.Frontend && yarn cypress-install
+      - run: cd ./src/Fluke.UI.Frontend && pnpm install
+      - run: cd ./src/Fluke.UI.Frontend && pnpm test
+      - run: cd ./src/Fluke.UI.Frontend && pnpm build:react
+      - run: cd ./src/Fluke.UI.Frontend && pnpm cypress-install
       - run: sudo apt-get install libnss3-tools
 
       - uses: cypress-io/github-action@v2
         with:
           working-directory: ./src/Fluke.UI.Frontend
           build: npx cypress info
-          start: yarn frontend-serve
-          command: yarn cypress-run
+          start: pnpm frontend-serve
+          command: pnpm cypress-run
 
       - uses: actions/upload-artifact@v2
         with:
