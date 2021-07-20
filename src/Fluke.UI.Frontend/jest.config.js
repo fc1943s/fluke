@@ -1,6 +1,7 @@
 module.exports = {
   testEnvironment: 'jsdom',
   // preset: 'ts-jest/presets/js-with-babel',
+  "preset": "ts-jest",
   verbose: true,
   testMatch: ["**/*.test.fs.js"],
   transform: {
@@ -11,8 +12,7 @@ module.exports = {
     "\\.(css|less|scss|sss|styl)$": "<rootDir>/node_modules/jest-css-modules"
   },
   "transformIgnorePatterns": [
-    "node_modules/(?!(react-color|react-vim-wasm|vim-wasm))"
-  ]
-  // transform: {'.*?\.fs\.js': "babel-jest"},
+    // "(?!(react-color|react-vim-wasm|vim-wasm))"
+  ],
   // maxConcurrency: 1,
 };
