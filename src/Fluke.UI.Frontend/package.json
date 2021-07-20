@@ -48,6 +48,8 @@
     "run-android": "cordova run android --device"
   },
   "dependencies": {
+    "https-localhost": "~4.6",
+
     "@fontsource/roboto-condensed": "~4.5",
 
     "lodash.debounce": "~4.0",
@@ -62,6 +64,8 @@
 
     "gun": "amark/gun.git#8c8b51371656ff346166e93d57e115676d0aa7c1",
     "@peculiar/asn1-schema": "~2.0",
+
+    "rxdb": "~10.0",
 
     "react": "18.0.0-alpha-9b76d2d7b-20210719",
     "react-dom": "18.0.0-alpha-9b76d2d7b-20210719",
@@ -90,8 +94,6 @@
     "devtron": "~1.4"
   },
   "devDependencies": {
-    "https-localhost": "~4.6",
-
     "@types/react": "~17.0",
 
     "typescript": "~4.3",
