@@ -32,7 +32,7 @@ specifiers:
   binconv: ~0.2
   concurrently: ~6.2
   cordova: ~10.0
-  cordova-android: 10.0.0-nightly.2021.7.13.70a1eff7
+  cordova-android: ~10.0
   cordova-ios: ~6.2
   cordova-plugin-whitelist: ~1.3
   cra-build-watch: 4.0.0-beta.1
@@ -83,7 +83,6 @@ specifiers:
   react-markdown: ~6.0
   react-refresh: ~0.10
   react-scripts: ~4.0
-  react-vim-wasm: ~0.1
   remark-gfm: ~1.0
   rooks: ~5.2
   ts-jest: ~27.0
@@ -122,7 +121,6 @@ dependencies:
   react-dom: 18.0.0-alpha-9b76d2d7b-20210719_5f225135193f99876adcf360ddc3425c
   react-icons: 4.2.0_5f225135193f99876adcf360ddc3425c
   react-markdown: 6.0.2_2facaf45afa590a95ade33497768a983
-  react-vim-wasm: 0.1.4_73f22d7d663d5912e0cc10327469e70c
   remark-gfm: 1.0.0
   rooks: 5.2.0
 
@@ -146,7 +144,7 @@ devDependencies:
   babel-loader: 8.2.2_@babel+core@7.14.6
   concurrently: 6.2.0
   cordova: 10.0.0
-  cordova-android: 10.0.0-nightly.2021.7.13.70a1eff7
+  cordova-android: 10.0.0
   cordova-ios: 6.2.0
   cordova-plugin-whitelist: 1.3.5
   cra-build-watch: 4.0.0-beta.1_react-scripts@4.0.3
@@ -8682,19 +8680,20 @@ packages:
       yargs: 16.2.0
     dev: true
 
-  /cordova-android/10.0.0-nightly.2021.7.13.70a1eff7:
-    resolution: {integrity: sha512-ZXYA/PRr80mfzZNXG969E00AwH++3Ok8/o+xgtMGcrFSuPYS8WFybIiUCiCFXudvRFZSO4OcpM44U5kfcOV+rg==}
-    engines: {node: '>=10.10.0'}
+  /cordova-android/10.0.0:
+    resolution: {integrity: sha512-EJyJxiBPRl8n8s9feUWT6y/qLLUyOtUj0aNfWCbDk6Qy88EZnGsTq6orE5kplmNMlF7cTpr0/ylrdxp3xHJE8w==}
+    engines: {node: '>=12.0.0'}
     dependencies:
       android-versions: 1.7.0
-      cordova-common: 4.0.3-nightly.2021.7.13.3c9b9ffb
+      cordova-common: 4.0.2
       execa: 5.1.1
       fast-glob: 3.2.7
-      fs-extra: 9.1.0
+      fs-extra: 10.0.0
       is-path-inside: 3.0.3
       nopt: 5.0.0
       properties-parser: 0.3.1
       semver: 7.3.5
+      untildify: 4.0.0
       which: 2.0.2
     dev: true
 
@@ -8704,26 +8703,6 @@ packages:
 
   /cordova-common/4.0.2:
     resolution: {integrity: sha512-od7aNShyuBajzPY83mUEO8tERwwWdFklXETHiXP5Ft87CWeo/tSuwNPFztyTy8XYc74yXdogXKPTJeUHuVzB8Q==}
-    engines: {node: '>=10.0.0'}
-    dependencies:
-      '@netflix/nerror': 1.1.3
-      ansi: 0.3.1
-      bplist-parser: 0.2.0
-      cross-spawn: 7.0.3
-      elementtree: 0.1.7
-      endent: 1.4.1
-      fast-glob: 3.2.7
-      fs-extra: 9.1.0
-      glob: 7.1.7
-      plist: 3.0.2
-      q: 1.5.1
-      read-chunk: 3.2.0
-      strip-bom: 4.0.0
-      underscore: 1.13.1
-    dev: true
-
-  /cordova-common/4.0.3-nightly.2021.7.13.3c9b9ffb:
-    resolution: {integrity: sha512-Z+6fTy5KSwZwD1jx6dkhIgGw+rIkVNzn8JsS9CvEjCnVvjXcxhxHgDa5u+VE0T4qHnpuVkmJSV/BHurrAkU0Sw==}
     engines: {node: '>=10.0.0'}
     dependencies:
       '@netflix/nerror': 1.1.3
@@ -19866,17 +19845,6 @@ packages:
       tslib: 1.14.1
     dev: false
 
-  /react-vim-wasm/0.1.4_73f22d7d663d5912e0cc10327469e70c:
-    resolution: {integrity: sha512-Ly0AZHLrKqLsKNczP7gR5cDtQvC5v5bPs0/i9Wrbf/OCl1oWRxY9wW2V+ejRfMZ8huLlZoHNt9iAx6UDblwlUQ==}
-    peerDependencies:
-      react: ^16.8.0
-      react-dom: ^16.8.0
-    dependencies:
-      react: 18.0.0-alpha-9b76d2d7b-20210719
-      react-dom: 18.0.0-alpha-9b76d2d7b-20210719_5f225135193f99876adcf360ddc3425c
-      vim-wasm: 0.0.13
-    dev: false
-
   /react/18.0.0-alpha-9b76d2d7b-20210719:
     resolution: {integrity: sha512-vg8Lx21abJrYkDnhXVHm6c0Gg+l5BFoLgDxbc1RLf/+rjjICCiWW/PBPeCm22CO1P4VKZOpAyKOo1gl4QOGHkw==}
     engines: {node: '>=0.10.0'}
@@ -23083,10 +23051,6 @@ packages:
       is-buffer: 2.0.5
       unist-util-stringify-position: 2.0.3
       vfile-message: 2.0.4
-
-  /vim-wasm/0.0.13:
-    resolution: {integrity: sha512-2EkJ4OfMgvA/bURJeu43wqIQ4tpCJymst++Y4R/AKuQlnrvdI4hTpG2jf0yL5TrLt1ui12leLRghrwPOybyu8w==}
-    dev: false
 
   /vm-browserify/1.1.2:
     resolution: {integrity: sha512-2ham8XPWTONajOR0ohOKOHXkm3+gaBmGut3SRuu75xLd/RRaY6vqgh8NBYYk7+RW3u5AtzPQZG8F10LHkl0lAQ==}

@@ -159,7 +159,7 @@
     "concurrently": "~6.2",
 
     "cordova": "~10.0",
-    "cordova-android": "10.0.0-nightly.2021.7.13.70a1eff7",
+    "cordova-android": "~10.0",
     "cordova-ios": "~6.2",
     "cordova-plugin-whitelist": "~1.3"
   },
