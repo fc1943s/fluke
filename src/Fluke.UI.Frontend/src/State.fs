@@ -1052,11 +1052,53 @@ module State =
                             |> List.map Selectors.Task.taskState
                             |> List.map (Store.value getter)
 
+                        let informationAttachmentIdMap =
+                            Store.value getter (Atoms.Database.informationAttachmentIdMap databaseId)
+
+                        let informationStateMap =
+                            informationAttachmentIdMap
+                            |> Map.map
+                                (fun information attachmentIdSet ->
+                                    let attachmentStateList =
+                                        attachmentIdSet
+                                        |> Set.toArray
+                                        |> Array.map Selectors.Attachment.attachmentState
+                                        |> Store.waitForAll
+                                        |> Store.value getter
+                                        |> Array.toList
+                                        |> List.choose id
+
+                                    {
+                                        Information = information
+                                        AttachmentStateList = attachmentStateList
+                                        SortList = []
+                                    })
+                            |> Map.filter
+                                (fun _ informationState ->
+                                    not informationState.AttachmentStateList.IsEmpty
+                                    || not informationState.SortList.IsEmpty)
+
                         let fileIdList =
                             taskStateList
+                            |> List.map (fun taskState -> taskState.AttachmentStateList)
+                            |> List.append (
+                                informationStateMap
+                                |> Map.values
+                                |> Seq.toList
+                                |> List.map (fun informationState -> informationState.AttachmentStateList)
+                            )
+                            |> List.append (
+                                taskStateList
+                                |> List.collect
+                                    (fun taskState ->
+                                        taskState.CellStateMap
+                                        |> Map.values
+                                        |> Seq.toList
+                                        |> List.map (fun cellState -> cellState.AttachmentStateList))
+                            )
                             |> List.collect
-                                (fun taskState ->
-                                    taskState.AttachmentStateList
+                                (fun attachmentStateList ->
+                                    attachmentStateList
                                     |> List.choose
                                         (fun attachmentState ->
                                             match attachmentState.Attachment with
@@ -1077,32 +1119,6 @@ module State =
                                 fileIdList
                                 |> List.mapi (fun i fileId -> fileId, hexStringList.[i].Value)
                                 |> Map.ofList
-
-                            let informationAttachmentIdMap =
-                                Store.value getter (Atoms.Database.informationAttachmentIdMap databaseId)
-
-                            let informationStateMap =
-                                informationAttachmentIdMap
-                                |> Map.map
-                                    (fun information attachmentIdSet ->
-                                        let attachmentStateList =
-                                            attachmentIdSet
-                                            |> Set.toArray
-                                            |> Array.map Selectors.Attachment.attachmentState
-                                            |> Store.waitForAll
-                                            |> Store.value getter
-                                            |> Array.toList
-                                            |> List.choose id
-
-                                        {
-                                            Information = information
-                                            AttachmentStateList = attachmentStateList
-                                            SortList = []
-                                        })
-                                |> Map.filter
-                                    (fun _ informationState ->
-                                        not informationState.AttachmentStateList.IsEmpty
-                                        || not informationState.SortList.IsEmpty)
 
                             let taskStateMap =
                                 taskStateList

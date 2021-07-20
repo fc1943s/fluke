@@ -70,145 +70,130 @@ module AddAttachmentInput =
                 |]
             )
 
-        if true then
-            UI.stack
-                (fun x -> x.spacing <- "0")
-                [
-                    UI.flex
-                        (fun _ -> ())
-                        [
+        UI.stack
+            (fun x -> x.spacing <- "0")
+            [
+                UI.flex
+                    (fun _ -> ())
+                    [
 
-                            Tooltip.wrap
-                                (if onAdd.IsNone then str "No database selected" else nothing)
-                                [
-                                    Input.LeftIconInput
-                                        {|
-                                            Icon = Icons.fi.FiPaperclip |> Icons.render
-                                            CustomProps =
-                                                fun x ->
-                                                    x.textarea <- true
+                        Tooltip.wrap
+                            (if onAdd.IsNone then str "No database selected" else nothing)
+                            [
+                                Input.LeftIconInput
+                                    {|
+                                        Icon = Icons.fi.FiPaperclip |> Icons.render
+                                        CustomProps =
+                                            fun x ->
+                                                x.textarea <- true
 
-                                                    x.atom <-
-                                                        Some (
-                                                            Store.InputAtom (
-                                                                Store.AtomReference.Atom (
-                                                                    Atoms.Attachment.attachment (
-                                                                        AttachmentId Guid.Empty
-                                                                    )
-                                                                )
+                                                x.atom <-
+                                                    Some (
+                                                        Store.InputAtom (
+                                                            Store.AtomReference.Atom (
+                                                                Atoms.Attachment.attachment (AttachmentId Guid.Empty)
                                                             )
                                                         )
+                                                    )
 
-                                                    x.inputScope <- Some (Store.InputScope.Temp Gun.defaultSerializer)
-                                                    x.autoFocusOnAllMounts <- true
-                                                    x.variableHeight <- true
+                                                x.inputScope <- Some (Store.InputScope.Temp Gun.defaultSerializer)
+                                                x.autoFocusOnAllMounts <- true
+                                                x.variableHeight <- true
 
-                                                    x.onEnterPress <-
-                                                        Some
-                                                            (fun _ ->
-                                                                promise { if ctrlPressed then do! addAttachment () })
+                                                x.onEnterPress <-
+                                                    Some (fun _ -> promise { if ctrlPressed then do! addAttachment () })
 
-                                                    x.onFormat <-
-                                                        Some
-                                                            (fun attachment ->
-                                                                match attachment with
-                                                                | Some (Attachment.Comment (Comment.Comment comment)) ->
-                                                                    comment
-                                                                | attachment -> $"{attachment}")
+                                                x.onFormat <-
+                                                    Some
+                                                        (fun attachment ->
+                                                            match attachment with
+                                                            | Some (Attachment.Comment (Comment.Comment comment)) ->
+                                                                comment
+                                                            | attachment -> $"{attachment}")
 
-                                                    x.onValidate <-
-                                                        Some (
-                                                            fst
-                                                            >> Comment.Comment
-                                                            >> Attachment.Comment
-                                                            >> Some
-                                                            >> Some
-                                                        )
-                                            Props =
-                                                fun x ->
-                                                    x.placeholder <- "Add Attachment"
-                                                    x.autoFocus <- true
-                                                    x.maxHeight <- "200px"
-                                                    x.borderBottomRightRadius <- "0"
-                                                    x.borderTopRightRadius <- "0"
+                                                x.onValidate <-
+                                                    Some (
+                                                        fst
+                                                        >> Comment.Comment
+                                                        >> Attachment.Comment
+                                                        >> Some
+                                                        >> Some
+                                                    )
+                                        Props =
+                                            fun x ->
+                                                x.placeholder <- "Add Attachment"
+                                                x.autoFocus <- true
+                                                x.maxHeight <- "200px"
+                                                x.borderBottomRightRadius <- "0"
+                                                x.borderTopRightRadius <- "0"
 
-                                                    if onAdd.IsNone then x.disabled <- true
-                                        |}
-                                ]
+                                                if onAdd.IsNone then x.disabled <- true
+                                    |}
+                            ]
 
-                            UI.stack
-                                (fun x ->
-                                    x.spacing <- "0"
-                                    x.paddingTop <- "1px"
-                                    x.paddingBottom <- "1px")
-                                [
-                                    Button.Button
-                                        {|
-                                            Hint = None
-                                            Icon = Some (Icons.fa.FaPlus |> Icons.render, Button.IconPosition.Left)
-                                            Props =
-                                                fun x ->
-                                                    UI.setTestId x "Add Attachment"
-                                                    x.borderBottomLeftRadius <- "0"
-                                                    x.borderTopLeftRadius <- "0"
-                                                    if onAdd.IsNone then x.disabled <- true
+                        UI.stack
+                            (fun x ->
+                                x.spacing <- "0"
+                                x.paddingTop <- "1px"
+                                x.paddingBottom <- "1px")
+                            [
+                                Button.Button
+                                    {|
+                                        Hint = None
+                                        Icon = Some (Icons.fa.FaPlus |> Icons.render, Button.IconPosition.Left)
+                                        Props =
+                                            fun x ->
+                                                UI.setTestId x "Add Attachment"
+                                                x.borderBottomLeftRadius <- "0"
+                                                x.borderTopLeftRadius <- "0"
+                                                if onAdd.IsNone then x.disabled <- true
 
-                                                    x.onClick <- fun _ -> addAttachment ()
-                                            Children = []
-                                        |}
+                                                x.onClick <- fun _ -> addAttachment ()
+                                        Children = []
+                                    |}
 
-                                    UI.spacer (fun _ -> ()) []
+                                UI.spacer (fun _ -> ()) []
 
-                                    Tooltip.wrap
-                                        (str "Clipboard")
-                                        [
-                                            UI.box
-                                                (fun _ -> ())
-                                                [
-                                                    Button.Button
-                                                        {|
-                                                            Hint = None
-                                                            Icon =
-                                                                Some (
-                                                                    Icons.io5.IoDocumentAttachOutline |> Icons.render,
-                                                                    Button.IconPosition.Left
-                                                                )
-                                                            Props =
-                                                                fun x ->
-                                                                    UI.setTestId x "Clipboard"
+                                Tooltip.wrap
+                                    (str "Clipboard")
+                                    [
+                                        UI.box
+                                            (fun _ -> ())
+                                            [
+                                                Button.Button
+                                                    {|
+                                                        Hint = None
+                                                        Icon =
+                                                            Some (
+                                                                Icons.io5.IoDocumentAttachOutline |> Icons.render,
+                                                                Button.IconPosition.Left
+                                                            )
+                                                        Props =
+                                                            fun x ->
+                                                                UI.setTestId x "Clipboard"
 
-                                                                    if onAdd.IsNone then x.disabled <- true
-                                                                    x.borderBottomLeftRadius <- "0"
-                                                                    x.borderTopLeftRadius <- "0"
+                                                                if onAdd.IsNone then x.disabled <- true
+                                                                x.borderBottomLeftRadius <- "0"
+                                                                x.borderTopLeftRadius <- "0"
 
-                                                                    x.onClick <-
-                                                                        fun _ ->
-                                                                            promise {
-                                                                                setClipboardVisible (
-                                                                                    not clipboardVisible
-                                                                                )
-                                                                            }
-                                                            Children =
-                                                                [
-                                                                    UI.box
-                                                                        (fun _ -> ())
-                                                                        [
-                                                                            str (string clipboardAttachmentIdMap.Count)
-                                                                        ]
-                                                                ]
-                                                        |}
-                                                ]
-                                        ]
-                                ]
-                        ]
-                    match onAdd with
-                    | Some onAdd -> AttachmentsClipboard.AttachmentsClipboard onAdd
-                    | None -> nothing
-                ]
-        else
-            Vim.render
-                {|
-                    OnVimCreated = fun vim -> printfn $"vim {vim}"
-                    Props = fun x -> x.height <- "150px"
-                    Fallback = fun () -> str "wasm error"
-                |}
+                                                                x.onClick <-
+                                                                    fun _ ->
+                                                                        promise {
+                                                                            setClipboardVisible (not clipboardVisible) }
+                                                        Children =
+                                                            [
+                                                                UI.box
+                                                                    (fun _ -> ())
+                                                                    [
+                                                                        str (string clipboardAttachmentIdMap.Count)
+                                                                    ]
+                                                            ]
+                                                    |}
+                                            ]
+                                    ]
+                            ]
+                    ]
+                match onAdd with
+                | Some onAdd -> AttachmentsClipboard.AttachmentsClipboard onAdd
+                | None -> nothing
+            ]
