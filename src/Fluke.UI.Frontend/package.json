@@ -13,7 +13,7 @@
   "private": true,
   "scripts": {
     "build:fable": "dotnet tool restore && dotnet paket install && dotnet fable",
-    "build:react": "rm -rf build && cross-env CI= INLINE_RUNTIME_CHUNK=false EXTEND_ESLINT=true SKIP_PREFLIGHT_CHECK=true react-app-rewired build && rm -rf cra_output && mv build cra_output && cp -var node_modules/vim-wasm/small cra_output/static/js/vim-wasm",
+    "build:react": "rm -rf build && cross-env CI= INLINE_RUNTIME_CHUNK=false EXTEND_ESLINT=true SKIP_PREFLIGHT_CHECK=true react-app-rewired build && rm -rf cra_output && mv build cra_output",
     "parcel-build:react": "parcel build static/index.html --detailed-report && cp -r static/manifest.json static/404.html static/sounds static/icons parcel_output",
     "watch:frontend-build": "dotnet fable watch",
     "watch:frontend": "cross-env HTTPS=true EXTEND_ESLINT=true BROWSER=none FAST_REFRESH=true PORT=33922 SKIP_PREFLIGHT_CHECK=true react-app-rewired start",
