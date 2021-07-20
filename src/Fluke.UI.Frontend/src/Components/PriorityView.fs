@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open Fable.React
 open Feliz
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
@@ -58,7 +59,20 @@ module PriorityView =
                                 UI.box
                                     (fun x -> x.flex <- "1")
                                     [
-                                        yield! sortedTaskIdAtoms |> Array.map TaskName.TaskName
+                                        yield!
+                                            sortedTaskIdAtoms
+                                            |> Array.map
+                                                (fun taskIdAtom ->
+                                                    UI.box
+                                                        (fun x -> x.height <- $"{cellSize}px")
+                                                        [
+                                                            React.suspense (
+                                                                [
+                                                                    TaskName.TaskName taskIdAtom
+                                                                ],
+                                                                LoadingSpinner.InlineLoadingSpinner ()
+                                                            )
+                                                        ])
                                     ]
                             ]
 
@@ -79,6 +93,11 @@ module PriorityView =
                     (fun _ -> ())
                     [
                         GridHeader.GridHeader ()
-                        Cells.Cells sortedTaskIdAtoms
+                        React.suspense (
+                            [
+                                Cells.Cells sortedTaskIdAtoms
+                            ],
+                            nothing
+                        )
                     ]
             ]

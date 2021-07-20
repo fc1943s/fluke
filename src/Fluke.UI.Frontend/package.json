@@ -50,15 +50,23 @@
   "dependencies": {
     "@fontsource/roboto-condensed": "~4.5",
 
-    "react": "18.0.0-alpha-9b76d2d7b-20210719",
-    "react-dom": "18.0.0-alpha-9b76d2d7b-20210719",
+    "lodash.debounce": "~4.0",
+    "batcher-js": "~1.0",
+    "rooks": "~5.2",
+    "binconv": "~0.2",
+    "@shelf/fast-chunk-string": "~1.1",
+    "date-fns": "~2.22",
+    "jssha": "~3.2",
 
     "@pmmmwh/react-refresh-webpack-plugin": "~0.4",
 
-    "jotai": "~1.2",
-
     "gun": "amark/gun.git#8c8b51371656ff346166e93d57e115676d0aa7c1",
     "@peculiar/asn1-schema": "~2.0",
+
+    "react": "18.0.0-alpha-9b76d2d7b-20210719",
+    "react-dom": "18.0.0-alpha-9b76d2d7b-20210719",
+
+    "jotai": "~1.2",
 
     "@chakra-ui/react": "~1.6",
     "@chakra-ui/system": "~1.7",
@@ -69,29 +77,22 @@
     "framer-motion": "~4.1",
     "react-icons": "~4.2",
 
+    "react-checkbox-tree": "~1.7",
+    "react-beautiful-dnd": "~13.1",
+    "re-resizable": "~6.9",
+    "react-vim-wasm": "~0.1",
+    "react-color": "3.0.0-beta.3",
+    "react-markdown": "~6.0",
+    "remark-gfm": "~1.0",
+
     "electron-is-dev": "~2.0",
     "electron-window-state": "~5.0",
     "electron-devtools-installer": "~3.2",
-    "devtron": "~1.4",
-    "https-localhost": "~4.6",
-
-    "react-checkbox-tree": "~1.7",
-
-    "batcher-js": "~1.0",
-    "react-vim-wasm": "~0.1",
-
-    "react-beautiful-dnd": "~13.1",
-    "rooks": "~5.2",
-    "react-color": "3.0.0-beta.3",
-    "react-markdown": "~6.0",
-    "binconv": "~0.2",
-    "remark-gfm": "~1.0",
-    "@shelf/fast-chunk-string": "~1.1",
-    "re-resizable": "~6.9",
-    "date-fns": "~2.22",
-    "jssha": "~3.2"
+    "devtron": "~1.4"
   },
   "devDependencies": {
+    "https-localhost": "~4.6",
+
     "@types/react": "~17.0",
 
     "typescript": "~4.3",
@@ -137,7 +138,7 @@
     "file-loader": "~6.2",
     "babel-jest": "~27.0",
 
-    "cypress": "~7.7",
+    "cypress": "~8.0",
     "cypress-terminal-report": "~3.2",
 
     "patch-package": "~6.4",
