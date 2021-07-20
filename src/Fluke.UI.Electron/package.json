@@ -1,0 +1,76 @@
+{
+  "name": "fluke",
+  "displayName": "Fluke",
+  "version": "0.0.1",
+  "description": "Opinionated Information manager to tackle decision fatigue",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fc1943s/fluke.git"
+  },
+  "author": "fc1943s",
+  "license": "MIT",
+  "homepage": ".",
+  "private": true,
+  "scripts": {
+    "electron-watch": "npm run electronmon .",
+    "electron-build": "rm -rf cra_output && cp -r ../Fluke.UI.Frontend/cra_output cra_output && cp src/electron.js src/electron-preload.js cra_output && electron-builder --publish=onTag",
+    "electron-build-dir": "npm run electron-build -- --dir"
+  },
+  "dependencies": {
+    "https-localhost": "~4.6"
+  },
+  "devDependencies": {
+    "electron": "14.0.0-beta.13",
+    "electron-builder": "~22.11"
+  },
+  "build": {
+    "appId": "fluke",
+    "productName": "Fluke",
+    "directories": {
+      "output": "electron_output",
+      "buildResources": "./cra_output",
+      "app": "."
+    },
+    "files": [
+      "./cra_output/**/*"
+    ],
+    "extraMetadata": {
+      "main": "cra_output/electron.js"
+    },
+    "win": {
+      "icon": "./cra_output/icons/512x512.png",
+      "target": [ "nsis", "zip" ]
+    },
+    "mac": {
+      "icon": "./cra_output/icons/512x512.png",
+      "category": "public.app-category.utilities",
+      "target": [ "zip", "dmg" ]
+    },
+    "linux": {
+      "icon": "./cra_output/icons/512x512.png",
+      "category": "Utility",
+      "target": [ "AppImage", "snap" ]
+    },
+    "asar": "false",
+    "nsis": {
+      "oneClick": "false",
+      "allowToChangeInstallationDirectory": "true",
+      "installerIcon": "cra_output/favicon.ico",
+      "installerHeaderIcon": "cra_output/favicon.ico",
+      "deleteAppDataOnUninstall": false
+    }
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "proxy": "https://localhost:33921"
+}

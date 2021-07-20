@@ -6,8 +6,10 @@
         <OutputType>Exe</OutputType>
     </PropertyGroup>
     <ItemGroup>
+        <Content Include=".farmer/farmer-deploy.json" />
         <Compile Include="GunPeers.fs" />
         <Compile Include="Program.fs" />
+        <Content Include=".gitignore" />
         <Content Include="paket.references" />
     </ItemGroup>
     <Import Project="..\..\.paket\Paket.Restore.targets" />

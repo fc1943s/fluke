@@ -21,6 +21,7 @@
         <Compile Include="View.fs" />
         <Compile Include="Templates.fs" />
         <Compile Include="TempData.fs" />
+        <Content Include=".gitignore" />
         <Content Include="paket.references" />
         <Content Include="myriad.toml" />
     </ItemGroup>

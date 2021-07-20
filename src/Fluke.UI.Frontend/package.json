@@ -13,7 +13,7 @@
   "private": true,
   "scripts": {
     "build:fable": "dotnet tool restore && dotnet paket install && dotnet fable",
-    "build:react": "rm -rf build && cross-env CI= INLINE_RUNTIME_CHUNK=false EXTEND_ESLINT=true SKIP_PREFLIGHT_CHECK=true react-app-rewired build && rm -rf cra_output && mv build cra_output",
+    "build:react": "rm -rf build && cross-env CI= INLINE_RUNTIME_CHUNK=false GENERATE_SOURCEMAP=false EXTEND_ESLINT=true SKIP_PREFLIGHT_CHECK=true react-app-rewired build && rm -rf cra_output && mv build cra_output",
     "parcel-build:react": "parcel build static/index.html --detailed-report && cp -r static/manifest.json static/404.html static/sounds static/icons parcel_output",
     "watch:frontend-build": "dotnet fable watch",
     "watch:frontend": "cross-env HTTPS=true EXTEND_ESLINT=true BROWSER=none FAST_REFRESH=true PORT=33922 SKIP_PREFLIGHT_CHECK=true react-app-rewired start",
@@ -37,10 +37,6 @@
     "test-build-watch": "concurrently \"pnpm:watch:frontend-build\" \"pnpm:test-watch\"",
     "postinstall": "patch-package",
 
-    "electron-watch": "pnpm electronmon .",
-    "electron-build": "cp src/electron.js src/electron-preload.js cra_output && pnpm electron-builder --publish=onTag",
-    "electron-build-dir": "pnpm electron-build -- --dir",
-
     "cordova-requirements": "cordova requirements",
     "emulate-android": "cordova emulate android",
     "build-android": "pnpm build && rm -rf www && cp -r cra_output www && cordova build android --prod --release -- --keystore ~/.android/debug.keystore",
@@ -48,8 +44,6 @@
     "run-android": "cordova run android --device"
   },
   "dependencies": {
-    "https-localhost": "~4.6",
-
     "@fontsource/roboto-condensed": "~4.5",
 
     "lodash.debounce": "~4.0",
@@ -67,8 +61,8 @@
 
     "rxdb": "~10.0",
 
-    "react": "18.0.0-alpha-9b76d2d7b-20210719",
-    "react-dom": "18.0.0-alpha-9b76d2d7b-20210719",
+    "react": "18.0.0-alpha-3f62dec84-20210719",
+    "react-dom": "18.0.0-alpha-3f62dec84-20210719",
 
     "jotai": "~1.2",
 
@@ -94,6 +88,8 @@
     "devtron": "~1.4"
   },
   "devDependencies": {
+    "https-localhost": "~4.6",
+
     "@types/react": "~17.0",
 
     "typescript": "~4.3",
@@ -105,10 +101,6 @@
 
     "fable-loader": "~2.1",
     "fable-compiler": "~2.13",
-
-    "electron": "14.0.0-beta.13",
-    "electron-builder": "~22.11",
-    "electronmon": "~2.0",
 
     "@typescript-eslint/eslint-plugin": "~4.28",
     "@typescript-eslint/parser": "~4.28",
@@ -166,43 +158,6 @@
     "cordova-plugin-whitelist": "~1.3"
   },
   "resolutions": {
-  },
-  "build": {
-    "appId": "fluke",
-    "productName": "Fluke",
-    "directories": {
-      "output": "electron_output",
-      "buildResources": "cra_output",
-      "app": "."
-    },
-    "files": [
-      "./cra_output/**/*"
-    ],
-    "extraMetadata": {
-      "main": "cra_output/electron.js"
-    },
-    "win": {
-      "icon": "./cra_output/icons/512x512.png",
-      "target": [ "nsis", "zip" ]
-    },
-    "mac": {
-      "icon": "./cra_output/icons/512x512.png",
-      "category": "public.app-category.utilities",
-      "target": [ "zip", "dmg" ]
-    },
-    "linux": {
-      "icon": "./cra_output/icons/512x512.png",
-      "category": "Utility",
-      "target": [ "AppImage", "snap" ]
-    },
-    "asar": "false",
-    "nsis": {
-      "oneClick": "false",
-      "allowToChangeInstallationDirectory": "true",
-      "installerIcon": "cra_output/favicon.ico",
-      "installerHeaderIcon": "cra_output/favicon.ico",
-      "deleteAppDataOnUninstall": false
-    }
   },
   "keywords": [
     "ecosystem:cordova"

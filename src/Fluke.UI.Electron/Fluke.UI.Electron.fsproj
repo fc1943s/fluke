@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+    </PropertyGroup>
+    <ItemGroup>
+		<Compile Include="src/electron.js" />
+		<Compile Include="src/electron-preload.js" />
+        <Content Include="package.json" />
+    </ItemGroup>
+</Project>
