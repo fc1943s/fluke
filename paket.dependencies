@@ -10,6 +10,12 @@ nuget Myriad.Core ~> 0.5
 nuget Myriad.Plugins ~> 0.5
 nuget Myriad.Sdk ~> 0.5
 
+// Fluke.UI.Backend
+// nuget Saturn ~> 0.15
+nuget Fable.SignalR.Saturn ~> 0.11
+nuget FSharp.Control.AsyncSeq ~> 3.0
+nuget Fumble ~> 0.7
+
 // Fluke.UI.Frontend
 nuget Fable.Core ~> 3.2
 nuget Fable.DateFunctions ~> 3.6
@@ -21,6 +27,7 @@ nuget Feliz ~> 1.47
 nuget Feliz.Router ~> 3.8
 nuget Sutil.Shoelace ~> 2.0 prerelease
 nuget Thoth.Json ~> 6.0
+nuget Fable.SignalR ~> 0.11
 
 // Fluke.UI.Electron.Main
 nuget Fable.Electron ~> 6.0

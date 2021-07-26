@@ -8,6 +8,7 @@ open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Hooks
 open Fluke.Shared
 open Fluke.UI.Frontend.Bindings
+open Fluke.UI.Frontend.State.State
 
 
 module TopBar =
@@ -379,7 +380,7 @@ module TopBar =
 
     [<ReactComponent>]
     let TopBar () =
-        let deviceInfo = Store.useValue Selectors.deviceInfo
+        let deviceInfo = Store.useValue Selectors.Selectors.deviceInfo
         let logout = Auth.useLogout ()
 
         let onLogoClick =

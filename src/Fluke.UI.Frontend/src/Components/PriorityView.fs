@@ -26,10 +26,8 @@ module PriorityView =
                 UI.flex
                     (fun x ->
                         x.direction <- "column"
-                        x.flex <- "1"
                         x.paddingRight <- "10px"
-                        x.paddingLeft <- "4px"
-                        x.maxWidth <- "400px")
+                        x.paddingLeft <- "4px")
                     [
                         yield!
                             UI.box (fun x -> x.minHeight <- $"{cellSize}px") []
@@ -81,9 +79,7 @@ module PriorityView =
                             |> Array.map
                                 (fun informationTaskIdAtom ->
                                     UI.flex
-                                        (fun x ->
-                                            x.direction <- "column"
-                                            x.flex <- "1")
+                                        (fun x -> x.direction <- "column")
                                         [
                                             InformationNameWrapper informationTaskIdAtom
                                         ])

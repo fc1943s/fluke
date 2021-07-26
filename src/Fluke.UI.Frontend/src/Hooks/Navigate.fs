@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Hooks
 
+open Fluke.UI.Frontend.State.State
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared.Domain.Model
@@ -66,7 +67,7 @@ module Navigate =
     let navigate =
         fun getter setter (dockPosition, dockType, uiFlagType, uiFlag) ->
             promise {
-                let deviceInfo = Store.value getter Selectors.deviceInfo
+                let deviceInfo = Store.value getter Selectors.Selectors.deviceInfo
 
                 match dockPosition with
                 | DockPosition.Left

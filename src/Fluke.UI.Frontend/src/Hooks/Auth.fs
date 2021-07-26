@@ -6,7 +6,7 @@ open Fable.Core
 open Fluke.Shared
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Bindings
-open Fluke.UI.Frontend.State
+open Fluke.UI.Frontend.State.State
 open Fluke.UI.Frontend.Hooks
 
 
@@ -15,8 +15,9 @@ module Auth =
         Store.useCallback (
             (fun getter setter () ->
                 promise {
-                    let gunNamespace = Store.value getter Store.Selectors.gunNamespace
                     printfn "before leave"
+                    Store.change setter Store.Atoms.gunTrigger ((+) 1)
+                    let gunNamespace = Store.value getter Store.Selectors.gunNamespace
                     gunNamespace.leave ()
                     Store.set setter Store.Atoms.username None
                     Store.set setter Store.Atoms.gunKeys Gun.GunKeys.Default
@@ -28,6 +29,7 @@ module Auth =
         Store.useCallback (
             (fun getter setter username ->
                 promise {
+                    Store.change setter Store.Atoms.gunTrigger ((+) 1)
                     let gunNamespace = Store.value getter Store.Selectors.gunNamespace
                     let keys = gunNamespace.__.sea
 
@@ -48,6 +50,7 @@ module Auth =
             (fun getter _ (username, password) ->
                 promise {
                     let gunNamespace = Store.value getter Store.Selectors.gunNamespace
+
                     let! ack = Gun.authUser gunNamespace username password
 
                     match ack with
@@ -61,19 +64,21 @@ module Auth =
 
     let useChangePassword () =
         Store.useCallback (
-            (fun getter _ (password, newPassword) ->
+            (fun getter setter (password, newPassword) ->
                 promise {
                     let username = Store.value getter Store.Atoms.username
+                    let gunNamespace = Store.value getter Store.Selectors.gunNamespace
 
                     match username with
                     | Some (Username username) ->
-                        let gunNamespace = Store.value getter Store.Selectors.gunNamespace
                         let! ack = Gun.changeUserPassword gunNamespace username password newPassword
 
                         return!
                             promise {
                                 match ack with
-                                | { ok = Some 1; err = None } -> return Ok ()
+                                | { ok = Some 1; err = None } ->
+                                    Store.change setter Store.Atoms.gunTrigger ((+) 1)
+                                    return Ok ()
                                 | { err = Some error } -> return Error error
                                 | _ -> return Error $"invalid ack {JS.JSON.stringify ack}"
                             }
@@ -93,6 +98,7 @@ module Auth =
                     match username with
                     | Some (Username username) ->
                         let gunNamespace = Store.value getter Store.Selectors.gunNamespace
+
                         let! ack = Gun.deleteUser gunNamespace username password
                         printfn $"ack={JS.JSON.stringify ack}"
 

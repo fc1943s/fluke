@@ -21,7 +21,7 @@ module CtrlListener =
                     //                    let ctrlPressed = Store.value getter Atoms.ctrlPressed
 //
 //                    if e.ctrlKey <> ctrlPressed then
-                    Store.set setter Atoms.ctrlPressed e.ctrlKey
+                    Store.set setter Atoms.Session.ctrlPressed e.ctrlKey
                 })
 
         nothing
@@ -39,7 +39,7 @@ module ShiftListener =
                     //                    let shiftPressed = Store.value getter Atoms.shiftPressed
 //
 //                    if e.shiftKey <> shiftPressed then
-                    Store.set setter Atoms.shiftPressed e.shiftKey
+                    Store.set setter Atoms.Session.shiftPressed e.shiftKey
                 })
 
         Listener.useKeyPress

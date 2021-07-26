@@ -161,27 +161,6 @@ module ViewTabs =
                             ]
                     ]
 
-                UI.stack
-                    (fun x ->
-                        x.paddingTop <- "4px"
-                        x.paddingRight <- "10px"
-                        x.paddingBottom <- "4px"
-                        x.paddingLeft <- "10px")
-                    [
-                        Input.LeftIconInput
-                            {|
-                                Icon = Icons.bs.BsSearch |> Icons.render
-                                CustomProps =
-                                    fun x ->
-                                        x.atom <-
-                                            Some (Store.InputAtom (Store.AtomReference.Atom Atoms.User.filterTasksText))
-                                Props =
-                                    fun x ->
-                                        x.autoFocus <- true
-                                        x.placeholder <- "Filter Tasks"
-                            |}
-                    ]
-
                 UI.tabPanels
                     (fun x ->
                         x.flex <- "1"

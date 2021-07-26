@@ -29,7 +29,7 @@ module RouterObserver =
             [||]
         )
 
-        let setSessionRestored = Store.useSetState Atoms.sessionRestored
+        let setSessionRestored = Store.useSetState Atoms.Session.sessionRestored
 
         React.useEffect (
             (fun () -> setSessionRestored true),

@@ -30,7 +30,7 @@ module PositionUpdater =
                         |> List.choose id
                         |> List.tryHead
 
-                    let position = Store.value getter Atoms.position
+                    let position = Store.value getter Atoms.Session.position
 
                     let newPosition =
                         match selectedDatabasePositions, pausedPosition with
@@ -42,7 +42,7 @@ module PositionUpdater =
                                 }
 
                             let isTesting = Store.value getter Store.Atoms.isTesting
-                            let position = Store.value getter Atoms.position
+                            let position = Store.value getter Atoms.Session.position
 
                             if (not isTesting || position.IsNone)
                                && Some newPosition <> position then
@@ -61,7 +61,7 @@ module PositionUpdater =
 
                     if position <> newPosition then
                         printfn $"Updating position newPosition={newPosition |> Option.map FlukeDateTime.Stringify}"
-                        Store.set setter Atoms.position newPosition
+                        Store.set setter Atoms.Session.position newPosition
                 })
 
         nothing

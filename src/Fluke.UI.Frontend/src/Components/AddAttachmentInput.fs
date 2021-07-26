@@ -23,7 +23,7 @@ module AddAttachmentInput =
     [<ReactComponent>]
     let rec AddAttachmentInput attachmentPanelType onAdd =
         let archive = Store.useValue Atoms.User.archive
-        let ctrlPressed = Store.useValue Atoms.ctrlPressed
+        let ctrlPressed = Store.useValue Atoms.Session.ctrlPressed
 
         let tempAttachment =
             Store.Hooks.useTempAtom

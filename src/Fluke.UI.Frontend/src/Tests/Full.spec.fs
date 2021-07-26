@@ -4,7 +4,7 @@ open Fable.Core.JsInterop
 open System
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Bindings
-open Fluke.UI.Frontend.State
+open Fluke.UI.Frontend.State.State
 
 
 module Full =

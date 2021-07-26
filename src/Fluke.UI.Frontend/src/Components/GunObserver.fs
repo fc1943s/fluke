@@ -12,7 +12,8 @@ module GunObserver =
 
     [<ReactComponent>]
     let GunObserver () =
-        let gun = Store.useValue Store.Selectors.gun
+        let gunPeers = Store.useValue Store.Atoms.gunPeers
+        let gun = Store.useValue (Store.Selectors.gun (gunPeers |> Option.defaultValue [||]))
         let gunNamespace = Store.useValue Store.Selectors.gunNamespace
         //        let appKeys = Gun.gunHooks.useGunKeys Browser.Dom.window?SEA (fun () -> null) false
         let gunKeys, setGunKeys = Store.useState Store.Atoms.gunKeys
@@ -38,7 +39,7 @@ module GunObserver =
 
         //        let setUsername = Recoil.useSetState Atoms.username
 
-        let setSessionRestored = Store.useSetState Atoms.sessionRestored
+        let setSessionRestored = Store.useSetState Atoms.Session.sessionRestored
 
         printfn "GunObserver.render: Constructor"
 
@@ -106,7 +107,7 @@ module GunObserver =
                                 | None -> failwith $"No keys found for user {gunNamespace.is}"
 
                             //                                gunState.put ({| username = username |} |> toPlainJsObj)
-//                                |> Promise.start
+                            //                                |> Promise.start
                             //                                setUsername (Some (UserInteraction.Username username))
                             | _ -> printfn $"GunObserver.render: Auth occurred without username: {gunNamespace.is}"
                         else
@@ -114,7 +115,7 @@ module GunObserver =
                 )),
             [|
             //                box gun
-//                box gunNamespace
+            //                box gunNamespace
             |]
         )
 

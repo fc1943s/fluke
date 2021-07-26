@@ -3,6 +3,7 @@ namespace Fluke.UI.Frontend
 open Fluke.Shared.Domain
 open Fluke.Shared.Domain.UserInteraction
 open Fable.DateFunctions
+open Fluke.Shared
 
 
 module TempUI =
@@ -24,6 +25,7 @@ module TempUI =
         | Task
         | Cell
         | Search
+        | Filter
 
     type ActiveSession = ActiveSession of taskName: string * duration: Minute
 
@@ -38,10 +40,16 @@ module TempUI =
         static member inline Value (DateId referenceDay) = referenceDay
 
         static member inline Format dateIdFormat dateId =
-            match dateId |> DateId.Value, dateIdFormat with
-            | { Day = Day day }, DateIdFormat.Day -> day.ToString "D2"
-            | date, DateIdFormat.DayOfWeek -> (date |> FlukeDate.DateTime).Format "EEEEEE"
-            | date, DateIdFormat.Month -> (date |> FlukeDate.DateTime).Format "MMM"
+            printfn $"dateId.Format dateIdFormat='{dateIdFormat}' dateId='{dateId}'"
+
+            match dateId
+                  |> Option.ofObjUnbox
+                  |> Option.map DateId.Value,
+                  dateIdFormat with
+            | Some { Day = Day day }, DateIdFormat.Day -> day.ToString "D2"
+            | Some date, DateIdFormat.DayOfWeek -> (date |> FlukeDate.DateTime).Format "EEEEEE"
+            | Some date, DateIdFormat.Month -> (date |> FlukeDate.DateTime).Format "MMM"
+            | _ -> "??"
 
     and [<RequireQualifiedAccess>] DateIdFormat =
         | Day

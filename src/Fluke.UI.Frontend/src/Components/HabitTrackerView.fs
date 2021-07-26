@@ -93,9 +93,7 @@ module HabitTrackerView =
                             |> Array.map
                                 (fun informationTaskIdAtom ->
                                     UI.flex
-                                        (fun x ->
-                                            x.direction <- "column"
-                                            x.flex <- "1")
+                                        (fun x -> x.direction <- "column")
                                         [
                                             InformationNameWrapper informationTaskIdAtom
                                         ])

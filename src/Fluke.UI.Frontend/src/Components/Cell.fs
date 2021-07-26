@@ -9,6 +9,8 @@ open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared.Domain
 open Fluke.UI.Frontend.Hooks
+open Fluke.UI.Frontend.State.State
+open Fluke.UI.Frontend.State
 
 
 module Cell =
@@ -26,7 +28,8 @@ module Cell =
         let taskId = Store.useValue input.TaskIdAtom
         let dateId = Store.useValue input.DateIdAtom
         let cellSize = Store.useValue Atoms.User.cellSize
-        let isReadWrite = Store.useValue (Selectors.Task.isReadWrite taskId)
+        let databaseId = Store.useValue (Atoms.Task.databaseId taskId)
+        let isReadWrite = Store.useValue (Selectors.Database.isReadWrite databaseId)
         let sessionStatus = Store.useValue (Selectors.Cell.sessionStatus (taskId, dateId))
         let attachmentIdSet = Store.useValue (Selectors.Cell.attachmentIdSet (taskId, dateId))
         let isToday = Store.useValue (Selectors.DateId.isToday dateId)
@@ -34,7 +37,7 @@ module Cell =
         let setSelected = Setters.useSetSelected ()
         let cellUIFlag = Store.useValue (Atoms.User.uiFlag UIFlagType.Cell)
         let rightDock = Store.useValue Atoms.User.rightDock
-        let deviceInfo = Store.useValue Selectors.deviceInfo
+        let deviceInfo = Store.useValue Selectors.Selectors.deviceInfo
 
         let cellColorDisabled = Store.useValue Atoms.User.cellColorDisabled
         let cellColorSuggested = Store.useValue Atoms.User.cellColorSuggested
@@ -52,8 +55,8 @@ module Cell =
                 (fun getter _ (e: MouseEvent) ->
                     promise {
                         if deviceInfo.IsTesting then
-                            let ctrlPressed = Store.value getter Atoms.ctrlPressed
-                            let shiftPressed = Store.value getter Atoms.shiftPressed
+                            let ctrlPressed = Store.value getter Atoms.Session.ctrlPressed
+                            let shiftPressed = Store.value getter Atoms.Session.shiftPressed
 
                             let newSelected =
                                 if ctrlPressed || shiftPressed then
@@ -152,7 +155,8 @@ module Cell =
         let taskId = Store.useValue input.TaskIdAtom
         let dateId = Store.useValue input.DateIdAtom
         let enableCellPopover = Store.useValue Atoms.User.enableCellPopover
-        let isReadWrite = Store.useValue (Selectors.Task.isReadWrite taskId) //
+        let databaseId = Store.useValue (Atoms.Task.databaseId taskId)
+        let isReadWrite = Store.useValue (Selectors.Database.isReadWrite databaseId) //
         let navigate = Navigate.useNavigate ()
 
         if enableCellPopover then

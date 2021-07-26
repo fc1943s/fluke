@@ -7,6 +7,7 @@ open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 open Fluke.UI.Frontend.TempUI
+open Fluke.UI.Frontend.State.State
 
 
 module TaskName =
@@ -17,12 +18,12 @@ module TaskName =
         let taskId = Store.useValue taskIdAtom
         let navigate = Navigate.useNavigate ()
         let hasSelection = Store.useValue (Selectors.Task.hasSelection taskId)
-        let databaseId = Store.useValue (Atoms.Task.databaseId taskId)
         let name = Store.useValue (Atoms.Task.name taskId)
         let archived, setArchived = Store.useState (Atoms.Task.archived taskId)
         let attachmentIdSet = Store.useValue (Atoms.Task.attachmentIdSet taskId)
         let cellSize = Store.useValue Atoms.User.cellSize
-        let isReadWrite = Store.useValue (Selectors.Task.isReadWrite taskId)
+        let databaseId = Store.useValue (Atoms.Task.databaseId taskId)
+        let isReadWrite = Store.useValue (Selectors.Database.isReadWrite databaseId)
         let startSession = TaskForm.useStartSession ()
         let deleteTask = TaskForm.useDeleteTask ()
 

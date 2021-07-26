@@ -5,6 +5,7 @@ open Fable.Core
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
 open Fable.React
+open Fluke.UI.Frontend.State.State
 
 
 module ModalFlag =

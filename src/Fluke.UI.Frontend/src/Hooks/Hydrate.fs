@@ -2,6 +2,7 @@ namespace Fluke.UI.Frontend.Hooks
 
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.State
+open Fluke.UI.Frontend.State.State
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend
@@ -38,13 +39,12 @@ module Hydrate =
             set Atoms.User.dayStart userState.DayStart
             set Atoms.User.enableCellPopover userState.EnableCellPopover
             set Atoms.User.expandedDatabaseIdSet userState.ExpandedDatabaseIdSet
-            set Atoms.User.filterTasksByView userState.FilterTasksByView
-            set Atoms.User.filterTasksText userState.FilterTasksText
+            set Atoms.User.filter userState.Filter
             set Atoms.User.fontSize userState.FontSize
             set Atoms.User.hideSchedulingOverlay userState.HideSchedulingOverlay
             set Atoms.User.hideTemplates userState.HideTemplates
             set Atoms.User.language userState.Language
-            set Atoms.User.lastInformationDatabase userState.LastInformationDatabase
+            set Atoms.User.lastDatabaseSelected userState.LastDatabaseSelected
             set Atoms.User.leftDock userState.LeftDock
             set Atoms.User.leftDockSize userState.LeftDockSize
             set Atoms.User.randomizeProject userState.RandomizeProject
@@ -114,7 +114,7 @@ module Hydrate =
         attachmentId
 
     let hydrateFile _getter setter (atomScope: Store.AtomScope, hexString: string) =
-        let chunkSize = 16000
+        let chunkSize = 1000
         let chunkCount = int (Math.Ceiling (float hexString.Length / float chunkSize))
 
         let chunks =
@@ -142,7 +142,7 @@ module Hydrate =
         fileId
 
 
-    let hydrateTaskState getter setter (atomScope, databaseId, taskState) =
+    let hydrateTaskState getter setter (atomScope, databaseId, taskState: TaskState) =
         promise {
             do! hydrateTask getter setter (atomScope, databaseId, taskState.Task)
 
@@ -195,9 +195,29 @@ module Hydrate =
     let useHydrateTaskState () =
         Store.useCallback (hydrateTaskState, [||])
 
-    let hydrateDatabaseState getter setter (atomScope, databaseState) =
+    let hydrateDatabaseState getter setter (atomScope, databaseState: DatabaseState) =
         promise {
             do! hydrateDatabase getter setter (atomScope, databaseState.Database)
+
+            let newFileIdMap =
+                databaseState.FileMap
+                |> Map.toList
+                |> List.map
+                    (fun (fileId, hexString) ->
+                        let newFileId = hydrateFile getter setter (atomScope, hexString)
+                        fileId, newFileId)
+                |> Map.ofList
+
+            let changeFileIds attachmentStateList =
+                attachmentStateList
+                |> List.map
+                    (fun attachmentState ->
+                        { attachmentState with
+                            Attachment =
+                                match attachmentState.Attachment with
+                                | Attachment.Image fileId -> Attachment.Image newFileIdMap.[fileId]
+                                | _ -> attachmentState.Attachment
+                        })
 
             let newInformationAttachmentIdMap =
                 databaseState.InformationStateMap
@@ -206,6 +226,7 @@ module Hydrate =
                     (fun informationState ->
                         let attachmentIdList =
                             informationState.AttachmentStateList
+                            |> changeFileIds
                             |> List.map
                                 (fun attachmentState ->
                                     hydrateAttachmentState getter setter (atomScope, attachmentState))
@@ -218,11 +239,6 @@ module Hydrate =
                 atomScope
                 (Atoms.Database.informationAttachmentIdMap, databaseState.Database.Id, newInformationAttachmentIdMap)
 
-            let newFileIdMap =
-                databaseState.FileMap
-                |> Map.toList
-                |> List.map (fun (fileId, hexString) -> fileId, hydrateFile getter setter (atomScope, hexString))
-                |> Map.ofList
 
             do!
                 databaseState.TaskStateMap
@@ -231,22 +247,19 @@ module Hydrate =
                     (fun taskState ->
                         let newTaskState =
                             { taskState with
-                                AttachmentStateList =
-                                    taskState.AttachmentStateList
-                                    |> List.map
-                                        (fun attachmentState ->
-                                            { attachmentState with
-                                                Attachment =
-                                                    match attachmentState.Attachment with
-                                                    | Attachment.Image fileId -> Attachment.Image newFileIdMap.[fileId]
-                                                    | _ -> attachmentState.Attachment
+                                CellStateMap =
+                                    taskState.CellStateMap
+                                    |> Map.map
+                                        (fun _ cellState ->
+                                            { cellState with
+                                                AttachmentStateList = cellState.AttachmentStateList |> changeFileIds
                                             })
+                                AttachmentStateList = taskState.AttachmentStateList |> changeFileIds
                             }
 
                         hydrateTaskState getter setter (atomScope, databaseState.Database.Id, newTaskState))
                 |> Promise.Parallel
                 |> Promise.ignore
-
         }
 
     let hydrateTemplates getter setter =

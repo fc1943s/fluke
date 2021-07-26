@@ -115,6 +115,7 @@ module UserInteraction =
 
     and Color with
         static member inline Value (Color hex) = hex
+        static member inline Default = Color "#000000"
 
     and FlukeDate with
         static member inline DateTime

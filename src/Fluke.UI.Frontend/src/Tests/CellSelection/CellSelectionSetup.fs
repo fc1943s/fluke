@@ -22,7 +22,7 @@ module CellSelectionSetup =
     let maxTimeout = 5 * 60 * 1000
 
     let inline getCellMap (subject: Bindings.render<_, _>) (getFn: Store.GetFn) =
-        let dateIdArray = Store.value getFn Selectors.dateIdArray
+        let dateIdArray = Store.value getFn Selectors.Selectors.dateIdArray
         let sortedTaskIdArray = Store.value getFn Selectors.Session.sortedTaskIdArray
 
         printfn $"sortedTaskIdArray={sortedTaskIdArray}"
@@ -168,7 +168,7 @@ module CellSelectionSetup =
                 |> Promise.ignore
 
             Store.set setter Atoms.User.selectedDatabaseIdSet (Set.singleton databaseId)
-            Store.set setter Atoms.position (Some dslTemplate.Position)
+            Store.set setter Atoms.Session.position (Some dslTemplate.Position)
         }
 
     let inline getApp () =

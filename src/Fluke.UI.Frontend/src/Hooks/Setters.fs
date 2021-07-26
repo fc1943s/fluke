@@ -59,8 +59,8 @@ module Setters =
         Store.useCallback (
             (fun getter _ (taskId, dateId, newValue) ->
                 promise {
-                    let ctrlPressed = Store.value getter Atoms.ctrlPressed
-                    let shiftPressed = Store.value getter Atoms.shiftPressed
+                    let ctrlPressed = Store.value getter Atoms.Session.ctrlPressed
+                    let shiftPressed = Store.value getter Atoms.Session.shiftPressed
 
                     let! newCellSelectionMap =
                         match shiftPressed, ctrlPressed with

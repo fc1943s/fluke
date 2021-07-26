@@ -12,6 +12,7 @@ open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.TempUI
+open Fluke.UI.Frontend.State.State
 
 
 module Databases =
@@ -273,7 +274,7 @@ module Databases =
 
     [<ReactComponent>]
     let rec Databases props =
-        let databaseIdAtoms = Store.useValue Selectors.databaseIdAtoms
+        let databaseIdAtoms = Store.useValue Selectors.Session.databaseIdAtoms
 
         let databaseIdArray =
             databaseIdAtoms

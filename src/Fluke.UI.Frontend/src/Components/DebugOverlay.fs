@@ -15,10 +15,10 @@ module DebugOverlay =
     let DebugOverlay () =
         let text, setText = React.useState ""
         let oldJson, setOldJson = React.useState ""
-        let debug = Store.useValue Atoms.debug
+        let debug = Store.useValue Atoms.Session.debug
 
         let isTesting = Store.useValue Store.Atoms.isTesting
-        let deviceInfo = Store.useValue Selectors.deviceInfo
+        let deviceInfo = Store.useValue Selectors.Selectors.deviceInfo
 
         Scheduling.useScheduling
             Scheduling.Interval

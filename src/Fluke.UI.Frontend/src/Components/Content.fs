@@ -5,8 +5,6 @@ open Fable.React
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
 open Fable.Core
-open System
-open Fluke.Shared
 
 
 module Content =
@@ -105,10 +103,8 @@ module Content =
     let Content () =
         Profiling.addTimestamp "mainComponent.render"
 
-        let sessionRestored = Store.useValue Atoms.sessionRestored
-        let initialPeerSkipped = Store.useValue Atoms.initialPeerSkipped
-        let gunPeers = Store.useValue Store.Atoms.gunPeers
-        let deviceInfo = Store.useValue Selectors.deviceInfo
+        let sessionRestored = Store.useValue Atoms.Session.sessionRestored
+        let deviceInfo = Store.useValue Selectors.Selectors.deviceInfo
         let username = Store.useValue Store.Atoms.username
 
         UI.flex
@@ -122,13 +118,6 @@ module Content =
                 | false -> LoadingSpinner.LoadingSpinner ()
                 | true ->
                     match username with
-                    | None ->
-                        if not initialPeerSkipped
-                           && gunPeers
-                              |> Array.filter (String.IsNullOrWhiteSpace >> not)
-                              |> Array.isEmpty then
-                            InitialPeers.InitialPeers ()
-                        else
-                            LoginScreen.LoginScreen ()
+                    | None -> LoginScreen.LoginScreen ()
                     | Some _ -> LoggedContent ()
             ]

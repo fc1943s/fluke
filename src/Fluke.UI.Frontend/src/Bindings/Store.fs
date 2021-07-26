@@ -1,9 +1,9 @@
 namespace Fluke.UI.Frontend.Bindings
 
-
 #nowarn "40"
 
 
+open Fable.SignalR
 open System.Collections.Generic
 open Fable.Extras
 open Fluke.Shared.Domain.UserInteraction
@@ -102,35 +102,134 @@ module Store =
     let atomWithStorage (atomPath, defaultValue) =
         let internalAtom = jotaiUtils.atomWithStorage atomPath defaultValue
 
-        jotai.atom (
-            (fun getter -> value getter internalAtom),
-            Some
-                (fun _ setter argFn ->
-                    let arg =
-                        match jsTypeof argFn with
-                        | "function" -> (argFn |> box |> unbox) () |> unbox
-                        | _ -> argFn
+        let wrapper =
+            jotai.atom (
+                (fun getter -> value getter internalAtom),
+                Some
+                    (fun _ setter argFn ->
+                        let arg =
+                            match jsTypeof argFn with
+                            | "function" -> (argFn |> box |> unbox) () |> unbox
+                            | _ -> argFn
 
-                    set setter internalAtom arg)
+                        set setter internalAtom arg)
+            )
+
+        wrapper |> registerAtom atomPath (Some []) |> fst
+
+
+    let inline asyncSelector<'TValue>
+        (
+            atomPath,
+            keyIdentifier,
+            getFn: GetFn -> JS.Promise<'TValue>,
+            setFn: GetFn -> SetFn -> 'TValue -> JS.Promise<unit>
+        ) =
+        jotai.atom (
+            (fun getter ->
+                promise {
+                    Profiling.addCount $"{atomPath}"
+                    let a = getFn getter
+                    return! a
+                }),
+            Some
+                (fun getter setter newValue ->
+                    promise {
+                        Profiling.addCount $"{atomPath} set"
+                        do! setFn getter setter newValue
+                    })
         )
-        |> registerAtom atomPath None
+        |> registerAtom atomPath keyIdentifier
         |> fst
+
+    let inline asyncReadSelector<'TValue> (atomPath, getFn: GetFn -> JS.Promise<'TValue>) =
+        asyncSelector (
+            atomPath,
+            None,
+            getFn,
+            (fun _ _ _newValue -> promise { failwith $"readonly selector {atomPath}" })
+        )
+
+    let inline selectorFamily<'TKey, 'TValue>
+        (
+            atomPath,
+            getFn: 'TKey -> GetFn -> 'TValue,
+            setFn: 'TKey -> GetFn -> SetFn -> 'TValue -> unit
+        ) =
+        jotaiUtils.atomFamily (fun param -> selector (atomPath, None, getFn param, setFn param)) DeepEqual.compare
+
+
+    let inline asyncSelectorFamily<'TKey, 'TValue>
+        (
+            atomPath,
+            getFn: 'TKey -> GetFn -> JS.Promise<'TValue>,
+            setFn: 'TKey -> GetFn -> SetFn -> 'TValue -> JS.Promise<unit>
+        ) =
+        jotaiUtils.atomFamily
+            (fun param ->
+                asyncSelector (
+                    (atomPath,
+                     None,
+                     (getFn param),
+                     (fun getter setter newValue -> promise { do! setFn param getter setter newValue }))
+                ))
+            DeepEqual.compare
+
+    let inline asyncReadSelectorFamily<'TKey, 'TValue> (atomPath, getFn: 'TKey -> GetFn -> JS.Promise<'TValue>) =
+        asyncSelectorFamily (
+            atomPath,
+            getFn,
+            (fun _key _ _ _newValue -> promise { failwith $"readonly selector family {atomPath}" })
+        )
 
 
     module Atoms =
-        let rec gunPeers = atomWithStorage ($"{nameof gunPeers}", ([||]: string []))
+        let rec gunTrigger = atom ($"{nameof gunTrigger}", 0)
+        let rec gunPeers = atomWithStorage ($"{nameof gunPeers}", (Some [||]: string [] option))
+        let rec apiUrl = atomWithStorage ($"{nameof apiUrl}", (None: string option))
         let rec isTesting = atom ($"{nameof isTesting}", JS.deviceInfo.IsTesting)
         let rec username = atom ($"{nameof username}", (None: Username option))
         let rec gunKeys = atom ($"{nameof gunKeys}", Gun.GunKeys.Default)
 
 
     module Selectors =
-        let rec gun =
+        let rec hub =
             readSelector (
-                $"{nameof gun}",
+                $"{nameof hub}",
                 (fun getter ->
+                    let apiUrl = value getter Atoms.apiUrl
+
+                    match apiUrl with
+                    | Some (String.ValidString apiUrl) ->
+                        let hub =
+                            SignalR.connect<Api.Action, Api.Action, obj, Api.Response, Api.Response>
+                                (fun hub ->
+                                    hub
+                                        .withUrl($"{apiUrl}{Api.endpoint}")
+                                        .withAutomaticReconnect()
+                                        .configureLogging(LogLevel.Debug)
+//                                        .useMessagePack()
+                                        .onMessage (
+                                            function
+                                            | Api.Response.ConnectResult -> printfn $"Api.Response.ConnectResult"
+                                            | Api.Response.GetResult value ->
+                                                printfn $"Api.Response.GetResult value={value}"
+                                            | Api.Response.SetResult result ->
+                                                printfn $"Api.Response.SetResult result={result}"
+                                            | Api.Response.FilterResult keys ->
+                                                printfn $"Api.Response.FilterResult keys={keys}"
+                                        ))
+
+                        hub.startNow ()
+                        Some hub
+                    | _ -> None)
+            )
+
+        let rec gun =
+            readSelectorFamily (
+                $"{nameof gun}",
+                (fun gunPeers getter ->
                     let isTesting = value getter Atoms.isTesting
-                    let gunPeers = value getter Atoms.gunPeers
 
                     let peers =
                         gunPeers
@@ -160,13 +259,22 @@ module Store =
             )
 
         let rec gunNamespace =
-            selectAtom (
+            readSelector (
                 $"{nameof gunNamespace}",
-                gun,
-                fun gun ->
+                fun getter ->
+                    let gunPeers = value getter Atoms.gunPeers
+                    let _gunTrigger = value getter Atoms.gunTrigger
+                    let gun = value getter (gun (gunPeers |> Option.defaultValue [||]))
                     let user = gun.user ()
 
-                    printfn $"gunNamespace selector. user.is={JS.JSON.stringify user.is} keys={user.__.sea}..."
+                    printfn
+                        $"gunNamespace selector.
+                        gunPeers={gunPeers}
+                        user.is.keys={JS.Constructors.Object.keys (
+                                          user.is
+                                          |> Option.defaultValue (createObj [] |> unbox)
+                                      )}
+                        keys={user.__.sea}..."
 
                     user
             )
@@ -192,9 +300,9 @@ module Store =
                     | _ ->
                         JS.log
                             (fun () ->
-                                $"Invalid username.
-                                                                                atomPath={atomPath}
-                                                                                user.is={JS.JSON.stringify gunNamespace.is}")
+                                $"gunAtomNode. Invalid username.
+                                      atomPath={atomPath}
+                                      user.is={JS.JSON.stringify gunNamespace.is}")
 
                         None)
             )
@@ -221,10 +329,10 @@ module Store =
         | _match :: root :: guid :: _key -> Some (root, guid)
         | _ -> None
 
-
     // https://i.imgur.com/GB8trpT.png        :~ still trash
     let inline atomWithSync<'TKey, 'TValue> (atomPath, defaultValue: 'TValue, keyIdentifier: string list) =
         let mutable lastGunAtomNode = None
+        let mutable lastHub = None
         let mutable lastValue = None
         let mutable lastGunValue = None
         let mutable lastAtomPath = None
@@ -236,15 +344,21 @@ module Store =
             if lastAtomPath.IsNone then
                 lastAtomPath <- queryAtomPath (AtomReference.Atom (unbox atom))
 
+
             JS.log
                 (fun () ->
                     match lastAtomPath with
                     | Some (AtomPath atomPath) when atomPath.Contains "devicePing" |> not ->
-                        $"assignLastGunAtomNode atom={atom} lastAtomPath={atomPath}"
+                        $"assignLastGunAtomNode lastAtomPath={atomPath} atom={atom}"
                     | _ -> null)
 
             let username = value getter Atoms.username
             lastGunAtomNode <- gunAtomNodeFromAtomPath getter username lastAtomPath
+
+            match lastAtomPath, lastGunAtomNode with
+            | Some _atomPath, Some _ -> lastHub <- value getter Selectors.hub
+            | _ -> ()
+
             username
 
 
@@ -278,8 +392,8 @@ lastUserAtomId={lastUserAtomId} """
                 JS.log
                     (fun () ->
                         $"[wrapper.off()]
-                                                    {baseInfo ()}
-                                                    skipping unsubscribe. jotai resubscribe glitch.")
+{baseInfo ()}
+skipping unsubscribe. jotai resubscribe glitch.")
             | Some _ ->
                 match lastGunAtomNode with
                 | Some (key, gunAtomNode) ->
@@ -289,8 +403,8 @@ lastUserAtomId={lastUserAtomId} """
                     JS.log
                         (fun () ->
                             $"[atomFamily.unsubscribe()]
-                                {key}
-                                {baseInfo ()} (######## actually skipped) ")
+{key}
+{baseInfo ()} (######## actually skipped) ")
 
                     if false then
                         gunAtomNode.off () |> ignore
@@ -299,8 +413,8 @@ lastUserAtomId={lastUserAtomId} """
                     JS.log
                         (fun () ->
                             $"[wrapper.off()]
-                                {baseInfo ()}
-                                skipping unsubscribe, no gun atom node.")
+{baseInfo ()}
+skipping unsubscribe, no gun atom node.")
             | None ->
                 JS.log
                     (fun () ->
@@ -308,7 +422,7 @@ lastUserAtomId={lastUserAtomId} """
                                 {baseInfo ()}
                                 skipping unsubscribe. no last subscription found.")
 
-        let setInternalFromGun gunAtomNode setAtom =
+        let setInternalFromGun gunKeys setAtom =
             JS.debounce
                 (fun (ticks, data) ->
                     promise {
@@ -316,7 +430,20 @@ lastUserAtomId={lastUserAtomId} """
                             let! newValue =
                                 match box data with
                                 | null -> unbox null |> Promise.lift
-                                | _ -> Gun.userDecode<'TValue> gunAtomNode data
+                                | _ -> Gun.userDecode<'TValue> gunKeys data
+
+                            JS.log
+                                (fun () ->
+                                    if (string newValue).StartsWith "Ping " then
+                                        null
+                                    else
+                                        $"gun.on() value. start.
+data={data}
+newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
+lastValue={lastValue}
+ticks={ticks}
+{baseInfo ()}                               ")
+
 
                             lastGunValue <- newValue
 
@@ -328,15 +455,17 @@ lastUserAtomId={lastUserAtomId} """
                                             null
                                         else
                                             $"gun.on() value. skipping. Sync paused.
-                                                    jsTypeof-newValue={jsTypeof newValue}
-                                                    newValue={newValue}
-                                                    lastValue={lastValue}
-                                                    ticks={ticks}
-                                                    {baseInfo ()} ")
+newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
+lastValue={lastValue}
+ticks={ticks}
+{baseInfo ()}                                       ")
                             | _, Some (lastValueTicks, lastValue) when
                                 lastValueTicks > ticks
                                 || lastValue |> DeepEqual.compare (unbox newValue)
                                 || (unbox lastValue = null && unbox newValue = null)
+                                || (match lastValue |> Option.ofObjUnbox, newValue |> Option.ofObjUnbox with
+                                    | Some _, None -> true
+                                    | _ -> false)
                                 ->
 
                                 Profiling.addCount $"{gunNodePath} on() skip"
@@ -347,11 +476,10 @@ lastUserAtomId={lastUserAtomId} """
                                             null
                                         else
                                             $"gun.on() value. skipping.
-                                                    jsTypeof-newValue={jsTypeof newValue}
-                                                    newValue={newValue}
-                                                    lastValue={lastValue}
-                                                    ticks={ticks}
-                                                    {baseInfo ()} ")
+newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
+lastValue={lastValue}
+ticks={ticks}
+{baseInfo ()}                                   ")
                             | _ ->
                                 Profiling.addCount $"{gunNodePath} on() assign"
 
@@ -363,85 +491,169 @@ lastUserAtomId={lastUserAtomId} """
                                             | _ -> null
 
                                         if string _lastValue = string newValue then
-                                            Browser.Dom.console.error
+                                            (JS.consoleError
                                                 $"should have skipped assign
-                                        lastValue={lastValue}
-                                        typeof _lastValue={jsTypeof _lastValue}
-                                        newValue={newValue}
-                                        typeof newValue={jsTypeof newValue}
-                                        ticks={ticks}
-                                        {baseInfo ()} "
+lastValue={lastValue} typeof _lastValue={jsTypeof _lastValue}
+newValue={newValue} typeof newValue={jsTypeof newValue}
+ticks={ticks}
+{baseInfo ()}                                      ")
 
                                         if (string newValue).StartsWith "Ping " then
                                             null
                                         else
-                                            $"gun.on() value. triggering.
-                                lastValue={lastValue}
-                                typeof _lastValue={jsTypeof _lastValue}
-                                newValue={newValue}
-                                typeof newValue={jsTypeof newValue}
-                                ticks={ticks}
-                                {baseInfo ()} ")
+                                            $"gun.on() value. triggering. ##
+lastValue={lastValue} typeof _lastValue={jsTypeof _lastValue}
+newValue={newValue} typeof newValue={jsTypeof newValue}
+ticks={ticks}
+{baseInfo ()}                                        ")
 
                                 //                        Browser.Dom.window?atomPath <- atomPath
-//                        Browser.Dom.window?lastValue <- _lastValue
-//                        Browser.Dom.window?newValue <- newValue
-//                        Browser.Dom.window?deepEqual <- DeepEqual.compare
+                                //                        Browser.Dom.window?lastValue <- _lastValue
+                                //                        Browser.Dom.window?newValue <- newValue
+                                //                        Browser.Dom.window?deepEqual <- DeepEqual.compare
 
                                 // setAtom internalAtom
 
-                                setAtom newValue
+                                if unbox newValue = JS.undefined then
+                                    JS.log
+                                        (fun () ->
+                                            if (string newValue).StartsWith "Ping " then
+                                                null
+                                            else
+                                                $"gun.on() value. skipping. newValue=undefined
+newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
+lastValue={lastValue}
+ticks={ticks}
+{baseInfo ()}                                       ")
+                                else
+                                    setAtom newValue
                         with
                         | ex ->
-                            Browser.Dom.console.error ("[exception1]", ex)
+                            JS.consoleError ("[exception1]", ex, data)
                             lastSubscription <- None
                     })
                 500
 
+        let mutable lastApiSubscription = None
+
         let subscribe =
-            JS.debounce
-                (fun setAtom ->
-                    lastWrapperSet <- Some setAtom
+            //            JS.debounce
+            (fun setAtom ->
+                lastWrapperSet <- Some setAtom
 
-                    match lastGunAtomNode, lastSubscription with
-                    | _, Some _ ->
+                match lastGunAtomNode, lastSubscription with
+                | _, Some _ ->
+                    JS.log
+                        (fun () ->
+                            $"[wrapper.on() subscribe]
+{baseInfo ()}
+skipping subscribe, lastSubscription is set.")
+                | Some (key, gunAtomNode), None ->
+                    let gunKeys =
+                        let user = gunAtomNode.user ()
+                        user.__.sea
+
+                    Profiling.addCount $"{gunNodePath} subscribe"
+
+                    JS.log
+                        (fun () ->
+                            $"[wrapper.on() subscribe] batch subscribing.
+{baseInfo ()}
+key={key}               ")
+
+                    //                    gunAtomNode.off () |> ignore
+
+                    match gunKeys with
+                    | Some gunKeys ->
+                        match lastHub with
+                        | Some hub ->
+                            promise {
+                                try
+                                    match lastApiSubscription with
+                                    | Some _ -> JS.consoleError "sub already present"
+                                    | None ->
+                                        let! stream =
+                                            hub.streamFrom (Api.Action.Get atomPath)
+                                            |> Async.StartAsPromise
+
+                                        let subscription =
+                                            stream.subscribe
+                                                {
+                                                    next =
+                                                        fun (msg: Api.Response) ->
+                                                            JS.log
+                                                                (fun () ->
+                                                                    $"[wrapper.next() HUB stream subscribe]
+                                                                {baseInfo ()}
+                                                                msg={msg}")
+
+                                                            match msg with
+                                                            | Api.Response.GetResult result ->
+                                                                setInternalFromGun
+                                                                    gunKeys
+                                                                    setAtom
+                                                                    (DateTime.Now.Ticks,
+                                                                     result |> Option.defaultValue null)
+                                                                |> ignore
+                                                            | _ -> ()
+                                                    complete =
+                                                        fun () ->
+                                                            JS.log
+                                                                (fun () ->
+                                                                    $"[wrapper.complete() HUB stream subscription]
+                                                                {baseInfo ()} ")
+                                                    error =
+                                                        fun err ->
+                                                            JS.consoleError (
+                                                                $"[wrapper.error() HUB stream subscription]
+                                                                {baseInfo ()} ",
+                                                                err
+                                                            )
+                                                }
+
+                                        lastApiSubscription <- Some subscription
+                                with
+                                | ex -> JS.consoleError $"api.get, setInternalFromGun, error={ex.Message}"
+                            }
+                            |> Promise.start
+                        | None ->
+                            JS.log
+                                (fun () ->
+                                    $"[wrapper.on() API subscribe]
+{baseInfo ()}
+skipping.                                   ")
+
+                        match lastAtomPath with
+                        | Some (AtomPath _atomPath) ->
+                            Gun.batchSubscribe
+                                {|
+                                    GunAtomNode = gunAtomNode
+                                    Fn = setInternalFromGun gunKeys setAtom
+                                |}
+
+                            lastSubscription <- Some DateTime.Now.Ticks
+                        | _ ->
+                            JS.log
+                                (fun () ->
+                                    $"[wrapper.on() Gun subscribe]
+{baseInfo ()}
+skipping.                               ")
+                    | _ ->
                         JS.log
                             (fun () ->
                                 $"[wrapper.on() subscribe]
-                                {baseInfo ()}
-                             skipping subscribe, lastSubscription is set.")
-                    | Some (key, gunAtomNode), None ->
+{baseInfo ()}
+skipping. gun keys empty")
 
-                        Profiling.addCount $"{gunNodePath} subscribe"
 
-                        JS.log
-                            (fun () ->
-                                $"[wrapper.on() subscribe] batch subscribing.
-                        atomPath={atomPath} {key}")
 
-                        //                    gunAtomNode.off () |> ignore
-
-                        Gun.batchSubscribe
-                            {|
-                                GunAtomNode = gunAtomNode
-                                Fn = setInternalFromGun gunAtomNode setAtom
-                            |}
-
-                        //                        Gun.subscribe
-//                            gunAtomNode
-//                            (fun data ->
-//                                setInternalFromGun gunAtomNode setAtom (DateTime.Now.Ticks, data)
-//                                |> Promise.start)
-
-                        lastSubscription <- Some DateTime.Now.Ticks
-
-                    | None, _ ->
-                        JS.log
-                            (fun () ->
-                                $"[wrapper.on() subscribe]
-                                {baseInfo ()}
-                             skipping subscribe, no gun atom node."))
-                100
+                | None, _ ->
+                    JS.log
+                        (fun () ->
+                            $"[wrapper.on() subscribe]
+{baseInfo ()}
+skipping subscribe, no gun atom node."))
+        //                100
 
         let debounceGunPut =
             JS.debounce
@@ -476,7 +688,7 @@ lastUserAtomId={lastUserAtomId} """
                                             null
                                         else
                                             $"atomFamily.wrapper.set() debounceGunPut promise. #3.
-                                            before put {key} newValue={newValue}")
+before put {key} newValue={newValue}")
 
                                 if lastGunValue.IsNone
                                    || lastGunValue
@@ -495,40 +707,70 @@ lastUserAtomId={lastUserAtomId} """
                                                     null
                                                 else
                                                     $"atomFamily.wrapper.set() debounceGunPut promise result.
-                                                       newValue={newValue}
-                                                       {key}
-                                                       {baseInfo ()} ")
+newValue={newValue}
+{key}
+{baseInfo ()}                                           ")
                                     else
                                         Browser.Dom.window?lastPutResult <- putResult
 
                                         match JS.window id with
                                         | Some window ->
                                             if window?Cypress = null then
-                                                Browser.Dom.console.error
+                                                JS.consoleError
                                                     $"atomFamily.wrapper.set() debounceGunPut promise put error.
-                                                         newValue={newValue} putResult={putResult}
-                                                           {key}
-                                                        {baseInfo ()}"
+ newValue={newValue} putResult={putResult}
+ {key}
+                                  {baseInfo ()}         "
                                         | None -> ()
-                                else
-                                    JS.log
-                                        (fun () ->
-                                            if (string newValue).StartsWith "Ping " then
-                                                null
-                                            else
-                                                $"atomFamily.wrapper.set() debounceGunPut promise.
-                                                   put skipped
-                                                   newValue[{newValue}]==lastGunValue[]
-                                                   {key}
-                                                   {baseInfo ()} ")
+
+                                    match lastAtomPath, lastHub with
+                                    | Some (AtomPath atomPath), Some hub ->
+                                        promise {
+                                            try
+                                                let! response =
+                                                    hub.invokeAsPromise (Api.Action.Set (atomPath, newValueJson))
+
+                                                match response with
+                                                | Api.Response.SetResult result ->
+                                                    if not result then
+                                                        printfn "API PUT ERROR"
+                                                    else
+                                                        lastGunValue <- Some newValue
+                                                | response -> JS.consoleError ("#90592 response:", response)
+                                            with
+                                            | ex -> JS.consoleError $"api.set, error={ex.Message}"
+                                        }
+                                        |> Promise.start
+                                    | _ ->
+                                        JS.log
+                                            (fun () ->
+                                                if (string newValue).StartsWith "Ping " then
+                                                    null
+                                                else
+                                                    $"[wrapper.on() API put]
+{baseInfo ()}
+skipping.                                                               ")
+                            //                                    else
+//                                        match JS.window id with
+//                                        | Some window ->
+//                                            if window?Cypress = null then
+//                                                JS.consoleError
+//                                                    $"atomFamily.wrapper.set() API debounceGunPut promise put error.
+//newValue={newValue} putResult={putResult}
+//{key}
+//                                        {baseInfo ()} "
+//                                        | None -> ()
                             | None ->
                                 JS.log
                                     (fun () ->
-                                        $"[gunEffect.debounceGunPut promise]
-                                        skipping gun put. no gun atom node.
-                                        {baseInfo ()} ")
+                                        if (string newValue).StartsWith "Ping " then
+                                            null
+                                        else
+                                            $"[gunEffect.debounceGunPut promise]
+skipping gun put. no gun atom node.
+  {baseInfo ()}                                 ")
                         with
-                        | ex -> Browser.Dom.console.error ("[exception2]", ex)
+                        | ex -> JS.consoleError ("[exception2]", ex, newValue)
 
                         syncPaused <- false
                     }
@@ -559,10 +801,10 @@ lastUserAtomId={lastUserAtomId} """
                                 null
                             else
                                 $"atomFamily.wrapper.get()
-                                wrapper={wrapper}
-                                userAtom={userAtom}
-                                result={result}
-                                {baseInfo ()} ")
+wrapper={wrapper}
+userAtom={userAtom}
+result={result}
+{baseInfo ()}               ")
 
                     let userAtomId = Some (userAtom.toString ())
 
@@ -574,18 +816,18 @@ lastUserAtomId={lastUserAtomId} """
                             JS.log
                                 (fun () ->
                                     $"atomFamily.wrapper.get() subscribing
-                                wrapper={wrapper}
-                                userAtom={userAtom}
-                                {baseInfo ()} ")
+wrapper={wrapper}
+userAtom={userAtom}
+{baseInfo ()}                       ")
 
                             subscribe lastWrapperSet
                         | _ ->
                             JS.log
                                 (fun () ->
                                     $"atomFamily.wrapper.get() skipping subscribe
-                                wrapper={wrapper}
-                                userAtom={userAtom}
-                                {baseInfo ()} ")
+wrapper={wrapper}
+userAtom={userAtom}
+{baseInfo ()}                           ")
 
                     lastValue <- Some (DateTime.Now.Ticks, result)
 
@@ -614,12 +856,11 @@ lastUserAtomId={lastUserAtomId} """
                                                 null
                                             else
                                                 $"atomFamily.wrapper.set() SKIPPED
-                                                    wrapper={wrapper}
-                                                    userAtom={userAtom}
-                                                    jsTypeof-newValue={jsTypeof newValue}
-                                                    oldValue={oldValue}
-                                                    newValue={newValue}
-                                                    {baseInfo ()} ")
+wrapper={wrapper}
+userAtom={userAtom}
+oldValue={oldValue}
+newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
+{baseInfo ()}                           ")
                                 | _ ->
                                     if true
                                        || oldValue |> DeepEqual.compare newValue |> not
@@ -632,14 +873,12 @@ lastUserAtomId={lastUserAtomId} """
                                                     null
                                                 else
                                                     $"atomFamily.wrapper.set()
-                                                    wrapper={wrapper}
-                                                    userAtom={userAtom}
-                                                    jsTypeof-newValue={jsTypeof newValue}
-                                                    oldValue={oldValue}
-                                                    newValue={newValue}
-                                                    {baseInfo ()}
-                                                    $$ (should abort set? oldValue==newValue==lastValue/defaultValue)
-                                                    ")
+wrapper={wrapper}
+userAtom={userAtom}
+oldValue={oldValue}
+newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
+{baseInfo ()}
+$$ (should abort set? oldValue==newValue==lastValue/defaultValue) ")
 
                                         syncPaused <- true
                                         debounceGunPut newValue
@@ -677,38 +916,6 @@ lastUserAtomId={lastUserAtomId} """
 
         wrapper
 
-    let inline asyncSelector<'TValue>
-        (
-            atomPath,
-            keyIdentifier,
-            getFn: GetFn -> JS.Promise<'TValue>,
-            setFn: GetFn -> SetFn -> 'TValue -> JS.Promise<unit>
-        ) =
-        jotai.atom (
-            (fun getter ->
-                promise {
-                    Profiling.addCount $"{atomPath}"
-                    let a = getFn getter
-                    return! a
-                }),
-            Some
-                (fun getter setter newValue ->
-                    promise {
-                        Profiling.addCount $"{atomPath} set"
-                        do! setFn getter setter newValue
-                    })
-        )
-        |> registerAtom atomPath keyIdentifier
-        |> fst
-
-    let inline asyncReadSelector<'TValue> (atomPath, getFn: GetFn -> JS.Promise<'TValue>) =
-        asyncSelector (
-            atomPath,
-            None,
-            getFn,
-            (fun _ _ _newValue -> promise { failwith $"readonly selector {atomPath}" })
-        )
-
     let inline selectAtomSyncKeys
         (
             atomPath: string,
@@ -722,19 +929,28 @@ lastUserAtomId={lastUserAtomId} """
         JS.log (fun () -> "@@ #1")
 
         let mutable lastGunAtomNode = None
+        let mutable lastHub = None
         let mutable lastAtomPath = None
+        let mutable lastGunPeers = None
 
         let assignLastGunAtomNode getter =
             if lastAtomPath.IsNone then
                 lastAtomPath <- queryAtomPath (AtomReference.Atom (unbox atom))
 
-            JS.log (fun () -> $"@@ assignLastGunAtomNode atom={atom} lastAtomPath={lastAtomPath}")
+            JS.log (fun () -> $"@@ assignLastGunAtomNode lastAtomPath={lastAtomPath} atom={atom}")
 
             let username = value getter Atoms.username
+
+            let gunPeers = value getter Atoms.gunPeers
+            lastGunPeers <- gunPeers
 
             lastGunAtomNode <-
                 gunAtomNodeFromAtomPath getter username lastAtomPath
                 |> Option.map (fun (key, node) -> key, node.back().back ())
+
+            match lastAtomPath, lastGunAtomNode with
+            | Some _atomPath, Some _ -> lastHub <- value getter Selectors.hub
+            | _ -> ()
 
             username
 
@@ -747,16 +963,15 @@ lastUserAtomId={lastUserAtomId} """
 
         let baseInfo () =
             $"""@@ gunNodePath={gunNodePath}
-                atomPath={atomPath}
-                keyIdentifier={keyIdentifier}
-                lastGunAtomNode={lastGunAtomNode}
-                lastAtomPath={lastAtomPath}
-                """
+atomPath={atomPath}
+keyIdentifier={keyIdentifier}
+lastGunAtomNode={lastGunAtomNode}
+lastAtomPath={lastAtomPath} """
 
         JS.log
             (fun () ->
                 $"@@ atomFamily constructor
-                {baseInfo ()}")
+{baseInfo ()}           ")
 
         let rec wrapper =
             selector (
@@ -815,57 +1030,126 @@ lastUserAtomId={lastUserAtomId} """
 
         let debouncedSet setAtom =
             JS.debounce
-                (fun data ->
+                (fun items ->
                     //                        Browser.Dom.window?lastData <- data
 
-                    let result =
-                        JS.Constructors.Object.entries data
-                        |> unbox<(string * obj) []>
-                        |> Array.filter
-                            (fun (guid, value) ->
-                                guid.Length = 36
-                                && guid <> string Guid.Empty
-                                && value <> null)
-                        |> Array.map (fst >> onFormat)
+                    let result = items |> Array.map onFormat
 
                     JS.log
                         (fun () ->
                             $"@@ [atomKeys debouncedSet gun.on() data]
-                                                   atomPath={atomPath}
-                                                   len={result.Length}
-                                                   {key} ")
+                                                       atomPath={atomPath}
+                                                       len={result.Length}
+                                                       {key} ")
 
                     setAtom result)
-                750
+                250
 
         let subscribe =
-            JS.debounce
-                (fun setAtom ->
-                    JS.log (fun () -> "@@ #3")
+            //            JS.debounce
+            (fun setAtom ->
+                JS.log (fun () -> "@@ #3")
 
-                    match lastGunAtomNode, lastSubscription with
-                    | _, Some _ ->
-                        JS.log
-                            (fun () ->
-                                $"@@ [atomKeys gun.on() subscribing]
+                match lastGunAtomNode, lastSubscription with
+                | _, Some _ ->
+                    JS.log
+                        (fun () ->
+                            $"@@ [atomKeys gun.on() subscribing]
                                                    {baseInfo ()}
                                                 skipping subscribe, lastSubscription is set.")
-                    | Some (key, gunAtomNode), None ->
-                        Profiling.addCount $"@@ {gunNodePath} subscribe"
-                        JS.log (fun () -> $"@@ [atomKeys gun.on() subscribing] atomPath={atomPath} {key}")
+                | Some (key, gunAtomNode), None ->
+                    Profiling.addCount $"@@ {gunNodePath} subscribe"
+                    JS.log (fun () -> $"@@ [atomKeys gun.on() subscribing] atomPath={atomPath} {key}")
 
-                        let setData = debouncedSet setAtom
+                    let setData = debouncedSet setAtom
 
-                        gunAtomNode.on (fun data _key -> setData data)
+                    if lastGunPeers.IsSome then
+                        gunAtomNode.on
+                            (fun data _key ->
+                                let result =
+                                    JS.Constructors.Object.entries data
+                                    |> unbox<(string * obj) []>
+                                    |> Array.filter
+                                        (fun (guid, value) ->
+                                            guid.Length = 36
+                                            && guid <> string Guid.Empty
+                                            && value <> null)
+                                    |> Array.map fst
+
+                                if result.Length > 0 then
+                                    setData result
+                                else
+                                    JS.log(fun () -> $"@@ atomKeys gun.on() API filter fetching/subscribing] @@@
+                                    skipping. result.Length=0
+                                    atomPath={atomPath} lastAtomPath={lastAtomPath} {key}")
+                                    )
 
                         lastSubscription <- Some DateTime.Now.Ticks
-                    | None, _ ->
+
+                    JS.log
+                        (fun () ->
+                            $"@@ [atomKeys gun.on() API filter fetching/subscribing] @@@ atomPath={atomPath} lastAtomPath={lastAtomPath} {key}")
+
+                    //                        (db?data?find {| selector = {| key = atomPath |} |})?``$``?subscribe (fun items ->
+                    match lastAtomPath, lastHub with
+                    | Some (AtomPath atomPath), Some hub ->
+                        promise {
+                            try
+                                let collection =
+                                    match atomPath.Split '/' |> Array.toList with
+                                    | app :: [ _ ] -> Some app
+                                    | _ :: collection :: _ -> Some collection
+                                    | _ -> None
+
+                                match collection with
+                                | Some collection ->
+                                    let! response = hub.invokeAsPromise (Api.Action.Filter collection)
+
+                                    match response with
+                                    | Api.Response.FilterResult items ->
+                                        if items.Length > 0 then
+                                            setData items
+                                        else
+                                            JS.log(fun () -> $"@@ atomKeys gun.on() API filter fetching/subscribing] @@@
+                                            skipping. items.Length=0
+                                            atomPath={atomPath} lastAtomPath={lastAtomPath} {key}")
+
+                                        JS.log
+                                            (fun () ->
+                                                $"@@ [wrapper.on() API KEYS subscribe]
+                                                atomPath={atomPath}
+                                                items={JS.JSON.stringify items}
+                                                        {baseInfo ()}
+                                                     ")
+                                    | response -> JS.consoleError ("#84842 response:", response)
+                                | None -> JS.consoleError ("#04943 invalid collection", collection)
+                            with
+                            | ex -> JS.consoleError $"@@ api.filter, error={ex.Message}"
+                        }
+                        |> Promise.start
+
+                    //                        (collection?find ())?``$``?subscribe (fun items ->
+//                            JS.log
+//                                (fun () ->
+//                                    $"@@ [wrapper.on() RX KEYS subscribe]
+//                                    atomPath={atomPath}
+//                                    items={JS.JSON.stringify items}
+//                                            {baseInfo ()}
+//                                         "))
+                    | _ ->
                         JS.log
                             (fun () ->
-                                $"@@ [atomKeys gun.on() subscribing]
+                                $"@@ [wrapper.on() RX KEYS subscribe]
+                                    {baseInfo ()}
+                                 skipping.")
+
+                | None, _ ->
+                    JS.log
+                        (fun () ->
+                            $"@@ [atomKeys gun.on() subscribing]
                                                    {baseInfo ()}
                                                 skipping subscribe, no gun atom node."))
-                100
+        //                100
 
         let unsubscribe () =
             match lastSubscription with
@@ -1107,37 +1391,6 @@ lastUserAtomId={lastUserAtomId} """
         | _ -> jotaiUtils.waitForAll atoms
 
 
-    let inline selectorFamily<'TKey, 'TValue>
-        (
-            atomPath,
-            getFn: 'TKey -> GetFn -> 'TValue,
-            setFn: 'TKey -> GetFn -> SetFn -> 'TValue -> unit
-        ) =
-        jotaiUtils.atomFamily (fun param -> selector (atomPath, None, getFn param, setFn param)) DeepEqual.compare
-
-
-    let inline asyncSelectorFamily<'TKey, 'TValue>
-        (
-            atomPath,
-            getFn: 'TKey -> GetFn -> JS.Promise<'TValue>,
-            setFn: 'TKey -> GetFn -> SetFn -> 'TValue -> JS.Promise<unit>
-        ) =
-        jotaiUtils.atomFamily
-            (fun param ->
-                asyncSelector (
-                    (atomPath,
-                     None,
-                     (getFn param),
-                     (fun getter setter newValue -> promise { do! setFn param getter setter newValue }))
-                ))
-            DeepEqual.compare
-
-    let inline asyncReadSelectorFamily<'TKey, 'TValue> (atomPath, getFn: 'TKey -> GetFn -> JS.Promise<'TValue>) =
-        asyncSelectorFamily (
-            atomPath,
-            getFn,
-            (fun _key _ _ _newValue -> promise { failwith $"readonly selector family {atomPath}" })
-        )
 
 
 
@@ -1251,28 +1504,22 @@ lastUserAtomId={lastUserAtomId} """
 
             let value, setValue = jotai.useAtom flatAtom
 
-            React.useMemo (
-                (fun () ->
-                    (if atom.IsNone then None else Some value), (if atom.IsNone then (fun _ -> ()) else setValue)),
-                [|
-                    box atom
-                    box value
-                    box setValue
-                |]
-            )
+            (if atom.IsNone then None else Some value), (if atom.IsNone then (fun _ -> ()) else setValue)
 
         let useTempAtom<'TValue7> (atom: InputAtom<'TValue7> option) (inputScope: InputScope<'TValue7> option) =
-            let atomField =
+            let currentAtomField, tempAtomField =
                 React.useMemo (
-                    (fun () -> getAtomField atom (InputScope.AtomScope inputScope)),
+                    (fun () ->
+                        let atomField = getAtomField atom (InputScope.AtomScope inputScope)
+                        atomField.Current, atomField.Temp),
                     [|
                         box atom
                         box inputScope
                     |]
                 )
 
-            let currentValue, setCurrentValue = useStateOption atomField.Current
-            let tempValue, setTempValue = useStateOption atomField.Temp
+            let currentValue, setCurrentValue = useStateOption currentAtomField
+            let tempValue, setTempValue = useStateOption tempAtomField
 
             React.useMemo (
                 (fun () ->
@@ -1314,12 +1561,15 @@ lastUserAtomId={lastUserAtomId} """
                                         | _ -> defaultJsonEncode newValue
                                 ))
                         else
-                            (fun _ -> ())
+                            (fun _ -> printfn "empty set #1")
 
-                    let setCurrentValue = if atom.IsSome then setCurrentValue else (fun _ -> ())
+                    let setCurrentValue =
+                        if atom.IsSome then
+                            setCurrentValue
+                        else
+                            (fun _ -> printfn "empty set #2")
 
                     {|
-                        AtomField = atomField
                         Value =
                             match inputScope with
                             | Some (InputScope.Temp _) -> newTempValue
@@ -1336,7 +1586,6 @@ lastUserAtomId={lastUserAtomId} """
                 [|
                     box inputScope
                     box atom
-                    box atomField
                     box currentValue
                     box tempValue
                     box setCurrentValue

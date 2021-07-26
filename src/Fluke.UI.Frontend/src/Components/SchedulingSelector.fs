@@ -587,82 +587,61 @@ module SchedulingSelector =
         ]
 
     [<ReactComponent>]
-    let SchedulingSelector taskId =
+    let SchedulingDropdown scheduling setScheduling =
         let weekStart = Store.useValue Atoms.User.weekStart
 
-        let tempScheduling =
-            Store.Hooks.useTempAtom
-                (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.scheduling taskId))))
-                (Some (Store.InputScope.Temp Gun.defaultSerializer))
+        Dropdown.Dropdown
+            {|
+                Tooltip = ""
+                Left = true
+                Trigger =
+                    fun visible setVisible ->
+                        Button.Button
+                            {|
+                                Hint = None
+                                Icon =
+                                    Some (
+                                        (if visible then Icons.fi.FiChevronUp else Icons.fi.FiChevronDown)
+                                        |> Icons.render,
+                                        Button.IconPosition.Right
+                                    )
+                                Props =
+                                    fun x ->
+                                        x.whiteSpace <- "normal"
+                                        x.onClick <- fun _ -> promise { setVisible (not visible) }
+                                Children =
+                                    [
+                                        scheduling |> Scheduling.Label |> str
+                                    ]
+                            |}
+                Body =
+                    fun _onHide ->
+                        [
+                            UI.radioGroup
+                                (fun x ->
+                                    x.overflow <- "auto"
+                                    x.maxHeight <- "350px"
 
-        UI.box
-            (fun x -> x.display <- "inline")
-            [
-                InputLabel.InputLabel
-                    {|
-                        Hint = None
-                        HintTitle = None
-                        Label = str "Scheduling"
-                        Props = fun x -> x.marginBottom <- "5px"
-                    |}
-                Dropdown.Dropdown
-                    {|
-                        Tooltip = ""
-                        Left = true
-                        Trigger =
-                            fun visible setVisible ->
-                                Button.Button
-                                    {|
-                                        Hint = None
-                                        Icon =
-                                            Some (
-                                                (if visible then Icons.fi.FiChevronUp else Icons.fi.FiChevronDown)
-                                                |> Icons.render,
-                                                Button.IconPosition.Right
-                                            )
-                                        Props =
-                                            fun x ->
-                                                x.whiteSpace <- "normal"
-                                                x.onClick <- fun _ -> promise { setVisible (not visible) }
-                                        Children =
-                                            [
-                                                tempScheduling.Value |> Scheduling.Label |> str
-                                            ]
-                                    |}
-                        Body =
-                            fun _onHide ->
+                                    x.onChange <-
+                                        fun (radioValueSelected: string) ->
+                                            promise { setScheduling (radioValueSelected |> Json.decode) }
+
+                                    x.value <- scheduling |> Json.encode)
                                 [
-                                    UI.radioGroup
+                                    UI.stack
                                         (fun x ->
-                                            x.overflow <- "auto"
-                                            x.maxHeight <- "350px"
-
-                                            x.onChange <-
-                                                fun (radioValueSelected: string) ->
-                                                    promise {
-                                                        tempScheduling.SetValue (radioValueSelected |> Json.decode) }
-
-                                            x.value <- tempScheduling.Value |> Json.encode)
+                                            x.spacing <- "18px"
+                                            x.padding <- "5px")
                                         [
-                                            UI.stack
-                                                (fun x ->
-                                                    x.spacing <- "18px"
-                                                    x.padding <- "5px")
-                                                [
-                                                    ManualRadio tempScheduling.Value
-                                                    SuggestedRadio tempScheduling.Value
-                                                    OffsetDaysRadio tempScheduling.Value tempScheduling.SetValue
-                                                    OffsetWeeksRadio tempScheduling.Value tempScheduling.SetValue
-                                                    OffsetMonthsRadio tempScheduling.Value tempScheduling.SetValue
-                                                    FixedWeeklyRadio
-                                                        tempScheduling.Value
-                                                        tempScheduling.SetValue
-                                                        weekStart
-                                                    FixedMonthlyRadio tempScheduling.Value tempScheduling.SetValue
-                                                    FixedYearlyRadio tempScheduling.Value tempScheduling.SetValue
-
-                                                ]
+                                            ManualRadio scheduling
+                                            SuggestedRadio scheduling
+                                            OffsetDaysRadio scheduling setScheduling
+                                            OffsetWeeksRadio scheduling setScheduling
+                                            OffsetMonthsRadio scheduling setScheduling
+                                            FixedWeeklyRadio scheduling setScheduling weekStart
+                                            FixedMonthlyRadio scheduling setScheduling
+                                            FixedYearlyRadio scheduling setScheduling
                                         ]
                                 ]
-                    |}
-            ]
+                        ]
+            |}

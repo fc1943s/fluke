@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
     </PropertyGroup>
     <ItemGroup>
 		<Content Include=".gitignore" />
         <Content Include="package.json" />
 		<Content Include="server.js" />
 		<Content Include="ssl.cmd" />
-		<Content Include="yarn.lock" />
+        <Content Include="package-lock.json" />
     </ItemGroup>
 </Project>

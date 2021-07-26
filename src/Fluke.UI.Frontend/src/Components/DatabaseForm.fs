@@ -10,6 +10,8 @@ open Fluke.UI.Frontend.Bindings
 open Fable.DateFunctions
 open Fable.Core
 open Fluke.UI.Frontend.Hooks
+open Fluke.UI.Frontend.State.State
+open Fluke.UI.Frontend.State
 
 
 module DatabaseForm =
@@ -18,7 +20,7 @@ module DatabaseForm =
     [<ReactComponent>]
     let rec DatabaseForm (databaseId: DatabaseId) (onSave: Database -> JS.Promise<unit>) =
         let toast = UI.useToast ()
-        let debug = Store.useValue Atoms.debug
+        let debug = Store.useValue Atoms.Session.debug
 
         let onSave =
             Store.useCallback (

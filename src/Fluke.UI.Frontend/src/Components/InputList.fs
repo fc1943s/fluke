@@ -1,116 +1,106 @@
 namespace Fluke.UI.Frontend.Components
 
-open Fable.Core
-open Fable.Core.JsInterop
 open Feliz
 open Fable.React
 open Fluke.UI.Frontend.Bindings
 
 
 module InputList =
-    type IProps<'TValue> =
-        inherit UI.IChakraProps
-
-        abstract hint : ReactElement option with get, set
-        abstract hintTitle : ReactElement option with get, set
-        abstract atom : Store.InputAtom<'TValue> option with get, set
-        abstract inputScope : Store.InputScope<'TValue> option with get, set
-
-
     [<ReactComponent>]
-    let InputList (props: IProps<'TValue []> -> unit) =
-        let props =
+    let InputList inputProps inputCustomProps atomValue setAtomValue =
+        let inputList, (inputProps: UI.IChakraProps) =
             React.useMemo (
-                (fun () -> JS.newObj props),
-                [|
-                    box props
-                |]
-            )
-
-        let tempAtom = Store.Hooks.useTempAtom<'TValue []> props.atom props.inputScope
-
-        UI.box
-            (fun _ -> ())
-            [
-                match props.label with
-                | null -> nothing
-                | _ ->
-                    InputLabel.InputLabel
-                        {|
-                            Label =
-                                UI.box
-                                    (fun _ -> ())
-                                    [
-                                        props.label
-
-                                        Tooltip.wrap
-                                            (str "Add row")
-                                            [
-                                                InputLabelIconButton.InputLabelIconButton
-                                                    (fun x ->
-                                                        x.icon <- Icons.fa.FaPlus |> Icons.render
-                                                        x.marginLeft <- "5px"
-
-                                                        x.onClick <-
-                                                            fun _ ->
-                                                                promise {
-                                                                    let initialArray =
-                                                                        [|
-                                                                            Unchecked.defaultof<'TValue>
-                                                                        |]
-
-                                                                    tempAtom.SetValue (
-                                                                        match tempAtom.Value with
-                                                                        | [||] -> initialArray
-                                                                        | currentValue -> currentValue
-                                                                        |> Array.append initialArray
-                                                                    )
-                                                                })
-                                            ]
-                                    ]
-                            Hint = props.hint
-                            HintTitle = props.hintTitle
-                            Props = fun x -> x.marginBottom <- "5px"
-                        |}
-
-                match props.atom with
-                | Some _ ->
+                (fun () ->
                     let inputList =
-                        match tempAtom.Value with
+                        match atomValue with
                         | [||] ->
                             [|
-                                unbox ""
+                                ""
                             |]
                         | inputList -> inputList
 
-                    yield!
-                        inputList
-                        |> Array.mapi
-                            (fun i value ->
-                                UI.box
-                                    (fun x -> x.position <- "relative")
-                                    [
+                    inputList, JS.newObj inputProps),
+                [|
+                    box atomValue
+                    box inputProps
+                |]
+            )
 
-                                        Input.Input
-                                            {|
-                                                CustomProps = fun x -> x.fixedValue <- Some value
-                                                Props =
-                                                    fun x ->
-                                                        x.onChange <-
-                                                            fun (e: Browser.Types.KeyboardEvent) ->
-                                                                promise {
-                                                                    tempAtom.SetValue (
-                                                                        tempAtom.Value
-                                                                        |> Array.mapi
-                                                                            (fun i' v ->
-                                                                                if i' = i then unbox e.Value else v)
-                                                                    )
-                                                                }
-                                            |}
+        UI.stack
+            (fun x ->
+                x.flex <- "1"
+                x.spacing <- "0")
+            [
+                yield!
+                    inputList
+                    |> Array.mapi
+                        (fun i value ->
+                            UI.flex
+                                (fun x ->
+                                    x.position <- "relative"
+                                    x.flex <- "1")
+                                [
+                                    Input.Input
+                                        {|
+                                            CustomProps =
+                                                fun x ->
+                                                    x.fixedValue <- Some value
+                                                    inputCustomProps x
+                                            Props =
+                                                fun x ->
+                                                    x.onChange <-
+                                                        fun (e: Browser.Types.KeyboardEvent) ->
+                                                            promise {
+                                                                setAtomValue (
+                                                                    inputList
+                                                                    |> Array.mapi
+                                                                        (fun i' v ->
+                                                                            if i' = i then unbox e.Value else v)
+                                                                )
+                                                            }
+
+                                                    match i, inputList.Length with
+                                                    | 0, n when n > 1 ->
+                                                        x.borderBottomLeftRadius <- "0px"
+                                                        x.borderBottomRightRadius <- "0px"
+                                                    | i, n when i > 0 && i = n - 1 ->
+                                                        x.borderTopLeftRadius <- "0px"
+                                                        x.borderTopRightRadius <- "0px"
+                                                    | _, n when n > 2 -> x.borderRadius <- "0px"
+                                                    | _ -> ()
+
+                                                    x <+ inputProps
+                                        |}
 
 
-                                        match inputList.Length with
-                                        | 1 -> nothing
+                                    if inputProps.isDisabled <> true then
+                                        match i, inputList.Length with
+                                        | 0, _ ->
+                                            Tooltip.wrap
+                                                (str "Add row")
+                                                [
+                                                    InputLabelIconButton.InputLabelIconButton
+                                                        (fun x ->
+                                                            x.icon <- Icons.fa.FaPlus |> Icons.render
+
+                                                            x.onClick <-
+                                                                fun _ ->
+                                                                    promise {
+                                                                        setAtomValue (
+                                                                            [|
+                                                                                ""
+                                                                            |]
+                                                                            |> Array.append inputList
+                                                                        )
+                                                                    }
+
+                                                            x.position <- "absolute"
+                                                            x.right <- "10px"
+                                                            x.top <- "50%"
+                                                            x.transform <- "translate(0, -50%)"
+                                                            x.margin <- "0")
+                                                ]
+                                        | _, 1 -> nothing
                                         | _ ->
                                             Tooltip.wrap
                                                 (str "Remove row")
@@ -122,8 +112,8 @@ module InputList =
                                                             x.onClick <-
                                                                 fun _ ->
                                                                     promise {
-                                                                        tempAtom.SetValue (
-                                                                            tempAtom.Value
+                                                                        setAtomValue (
+                                                                            inputList
                                                                             |> Array.indexed
                                                                             |> Array.filter (fun (i', _) -> i' <> i)
                                                                             |> Array.map snd
@@ -131,11 +121,10 @@ module InputList =
                                                                     }
 
                                                             x.position <- "absolute"
-                                                            x.right <- "5px"
+                                                            x.right <- "10px"
                                                             x.top <- "50%"
                                                             x.transform <- "translate(0, -50%)"
                                                             x.margin <- "0")
                                                 ]
-                                    ])
-                | _ -> nothing
+                                ])
             ]

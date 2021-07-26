@@ -8,6 +8,7 @@ open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 open Fluke.UI.Frontend.State
+open Fluke.UI.Frontend.State.State
 
 
 module CellForm =

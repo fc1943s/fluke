@@ -172,35 +172,29 @@ module Gun =
                     err ex)
 
 
-    let inline userDecode<'TValue> (gun: IGunChainReference) data =
+    let inline userDecode<'TValue> (keys: GunKeys) data =
         promise {
             try
-                let user = gun.user ()
-                let keys = user.__.sea
-
-                match keys |> Option.ofObjUnbox with
-                | Some (Some keys) ->
-                    let! decrypted =
-                        promise {
-                            let! verified = sea.verify data keys.pub
-                            let! decrypted = sea.decrypt verified keys
-                            return decrypted
-                        }
-                    //
+                let! decrypted =
+                    promise {
+                        let! verified = sea.verify data keys.pub
+                        let! decrypted = sea.decrypt verified keys
+                        return decrypted
+                    }
+                //
 //                    printfn
 //                        $"userDecode
 //                    decrypted={decrypted}
 //                    typeof decrypted={jsTypeof decrypted}"
 
-                    let decoded = decrypted |> Json.decode<'TValue option>
+                let decoded = decrypted |> Json.decode<'TValue option>
 
-                    //                    printfn $"userDecode decoded={decoded}"
+                //                    printfn $"userDecode decoded={decoded}"
 //
-                    return decoded
-                | _ -> return failwith $"No keys found for user {user.is}"
+                return decoded
             with
             | ex ->
-                Browser.Dom.console.error ("[exception5]", ex)
+                JS.consoleError ("[exception5]", ex, data)
                 return None
         }
 
@@ -227,7 +221,7 @@ module Gun =
                 | None -> return failwith $"No keys found for user {user.is}"
             with
             | ex ->
-                Browser.Dom.console.error ("[exception4]", ex)
+                JS.consoleError ("[exception4]", ex, value)
                 return raise ex
         }
 
@@ -250,8 +244,7 @@ module Gun =
                             match JS.window id with
                             | Some window ->
                                 if window?Cypress = null then
-                                    Browser.Dom.console.error
-                                        $"Gun.put error. newValue={newValue} ack={JS.JSON.stringify ack} "
+                                    JS.consoleError $"Gun.put error. newValue={newValue} ack={JS.JSON.stringify ack} "
                             | None -> ()
 
                             res false)
@@ -259,18 +252,18 @@ module Gun =
 
 
     let batchData =
-        Batcher.batcher
-            (Array.map
-                (fun (item: {| Fn: int64 * string -> JS.Promise<unit>
-                               Timestamp: int64
-                               Data: string |}) ->
-                    //                JS.consoleLog("batchData", item)
-                    item.Fn (item.Timestamp, item.Data))
-             >> Promise.Parallel
-             >> Promise.start)
-            {| interval = 500 |}
+        let fn
+            (item: {| Fn: int64 * string -> JS.Promise<unit>
+                      Timestamp: int64
+                      Data: string |})
+            =
+            //                JS.consoleLog("batchData", item)
+            item.Fn (item.Timestamp, item.Data)
 
-    let subscribe (gun: IGunChainReference) fn =
+        //        fn >> ignore
+        Batcher.batcher (Array.map fn >> Promise.Parallel >> Promise.start) {| interval = 500 |}
+
+    let inline subscribe (gun: IGunChainReference) fn =
         gun.on
             (fun data _key ->
                 JS.log
@@ -282,32 +275,33 @@ module Gun =
 
                 fn data)
 
-    let batchSubscribe =
-        Batcher.batcher
-            (Array.map
-                (fun (item: {| GunAtomNode: IGunChainReference
-                               Fn: int64 * string -> JS.Promise<unit> |}) ->
-                    promise {
-                        subscribe
-                            item.GunAtomNode
-                            (fun data ->
-                                batchData
-                                    {|
-                                        Timestamp = DateTime.Now.Ticks
-                                        Data = data
-                                        Fn = item.Fn
-                                    |})
-                    })
-             >> Promise.Parallel
-             >> Promise.start)
-            {| interval = 500 |}
 
-    let wrapAtomPath (atomPath: string) =
+    let batchSubscribe =
+        let fn
+            (item: {| GunAtomNode: IGunChainReference
+                      Fn: int64 * string -> JS.Promise<unit> |})
+            =
+            promise {
+                subscribe
+                    item.GunAtomNode
+                    (fun data ->
+                        batchData
+                            {|
+                                Timestamp = DateTime.Now.Ticks
+                                Data = data
+                                Fn = item.Fn
+                            |})
+            }
+
+        //        fn >> Promise.start
+        Batcher.batcher (Array.map fn >> Promise.Parallel >> Promise.start) {| interval = 500 |}
+
+    let inline wrapAtomPath (atomPath: string) =
         let header = $"{nameof Fluke}/"
         let header = if atomPath.StartsWith header then "" else header
         $"{header}{atomPath}"
 
-    let getGunNodePath (atomPath: string) (keyIdentifier: string list) =
+    let inline getGunNodePath (atomPath: string) (keyIdentifier: string list) =
         let newAtomPath =
             match keyIdentifier with
             | [] -> atomPath

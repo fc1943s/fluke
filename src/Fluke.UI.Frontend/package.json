@@ -59,10 +59,10 @@
     "gun": "amark/gun.git#8c8b51371656ff346166e93d57e115676d0aa7c1",
     "@peculiar/asn1-schema": "~2.0",
 
-    "rxdb": "~10.0",
+    "@microsoft/signalr": "6.0.0-preview.6.21355.2",
 
-    "react": "18.0.0-alpha-3f62dec84-20210719",
-    "react-dom": "18.0.0-alpha-3f62dec84-20210719",
+    "react": "18.0.0-alpha-ae5d26154-20210721",
+    "react-dom": "18.0.0-alpha-ae5d26154-20210721",
 
     "jotai": "~1.2",
 
@@ -94,7 +94,7 @@
 
     "typescript": "~4.3",
     "ts-node": "~10.1",
-    "@types/node" : "~16.3",
+    "@types/node" : "~16.4",
     "ts2fable" : "0.8.0-build.615",
 
     "@welldone-software/why-did-you-render": "~6.2",
@@ -111,7 +111,7 @@
     "eslint-plugin-react-hooks": "~4.2",
     "eslint-plugin-jest-dom": "~3.9",
 
-    "gatsby": "~3.9",
+    "gatsby": "~3.10",
     "@chakra-ui/gatsby-plugin": "~2.0",
     "postcss": "~8.3",
 

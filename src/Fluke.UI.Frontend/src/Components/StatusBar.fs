@@ -10,6 +10,7 @@ open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 open Fluke.Shared.Domain
+open Fluke.UI.Frontend.State.State
 
 
 module StatusBar =
@@ -355,11 +356,11 @@ module StatusBar =
 
     [<ReactComponent>]
     let PositionIndicator () =
-        let position = Store.useValue Atoms.position
+        let position = Store.useValue Atoms.Session.position
 
         Scheduling.useScheduling
             Scheduling.Interval
-            2000
+            5000
             (fun _ setter ->
                 promise { Store.set setter (Atoms.Device.devicePing deviceId) (Ping (string DateTime.Now.Ticks)) })
 

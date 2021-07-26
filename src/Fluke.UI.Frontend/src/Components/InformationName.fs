@@ -9,6 +9,7 @@ open Fluke.UI.Frontend.Bindings
 open Fluke.Shared.Domain
 open Fluke.Shared.Domain.Model
 open Fluke.Shared
+open Fluke.UI.Frontend.State.State
 
 
 module InformationName =
@@ -40,7 +41,7 @@ module InformationName =
 
                         Store.set
                             setter
-                            Atoms.User.lastInformationDatabase
+                            Atoms.User.lastDatabaseSelected
                             (match databaseIdSearch with
                              | [ databaseId ] -> Some databaseId
                              | _ ->

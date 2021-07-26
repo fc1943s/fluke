@@ -15,6 +15,7 @@ open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
 open Fluke.Shared
 open Fluke.UI.Frontend.TempUI
+open Fluke.UI.Frontend.State.State
 
 
 module TaskForm =
@@ -37,13 +38,8 @@ module TaskForm =
         )
 
     [<ReactComponent>]
-    let MissedAfterSelector taskId =
+    let MissedAfterInput (missedAfter: FlukeTime option) setMissedAfter =
         let dayStart = Store.useValue Atoms.User.dayStart
-
-        let tempMissedAfter =
-            Store.Hooks.useTempAtom
-                (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.missedAfter taskId))))
-                (Some (Store.InputScope.Temp Gun.defaultSerializer))
 
         UI.box
             (fun x -> x.display <- "inline")
@@ -62,20 +58,17 @@ module TaskForm =
                         x.spacing <- "15px")
                     [
                         Checkbox.Checkbox
-                            (if tempMissedAfter.Value.IsNone then Some "Enable" else None)
+                            (if missedAfter.IsNone then Some "Enable" else None)
                             (fun x ->
-                                x.isChecked <- tempMissedAfter.Value.IsSome
+                                x.isChecked <- missedAfter.IsSome
                                 x.alignSelf <- "center"
 
                                 x.onChange <-
                                     fun _ ->
                                         promise {
-                                            tempMissedAfter.SetValue (
-                                                if tempMissedAfter.Value.IsSome then None else (Some dayStart)
-                                            )
-                                        })
+                                            setMissedAfter (if missedAfter.IsSome then None else (Some dayStart)) })
 
-                        match tempMissedAfter.Value with
+                        match missedAfter with
                         | Some missedAfter ->
                             Input.Input
                                 {|
@@ -107,7 +100,7 @@ module TaskForm =
                                                         |> DateTime.Parse
                                                         |> FlukeTime.FromDateTime
                                                         |> Some
-                                                        |> tempMissedAfter.SetValue
+                                                        |> setMissedAfter
                                                     })
                                 |}
                         | None -> nothing
@@ -115,13 +108,8 @@ module TaskForm =
             ]
 
     [<ReactComponent>]
-    let PendingAfterSelector taskId =
+    let PendingAfterInput (pendingAfter: FlukeTime option) setPendingAfter =
         let dayStart = Store.useValue Atoms.User.dayStart
-
-        let tempPendingAfter =
-            Store.Hooks.useTempAtom
-                (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.pendingAfter taskId))))
-                (Some (Store.InputScope.Temp Gun.defaultSerializer))
 
         UI.box
             (fun x -> x.display <- "inline")
@@ -140,20 +128,17 @@ module TaskForm =
                         x.spacing <- "15px")
                     [
                         Checkbox.Checkbox
-                            (if tempPendingAfter.Value.IsNone then Some "Enable" else None)
+                            (if pendingAfter.IsNone then Some "Enable" else None)
                             (fun x ->
-                                x.isChecked <- tempPendingAfter.Value.IsSome
+                                x.isChecked <- pendingAfter.IsSome
                                 x.alignSelf <- "center"
 
                                 x.onChange <-
                                     fun _ ->
                                         promise {
-                                            tempPendingAfter.SetValue (
-                                                if tempPendingAfter.Value.IsSome then None else (Some dayStart)
-                                            )
-                                        })
+                                            setPendingAfter (if pendingAfter.IsSome then None else (Some dayStart)) })
 
-                        match tempPendingAfter.Value with
+                        match pendingAfter with
                         | Some pendingAfter ->
                             Input.Input
                                 {|
@@ -185,7 +170,7 @@ module TaskForm =
                                                         |> DateTime.Parse
                                                         |> FlukeTime.FromDateTime
                                                         |> Some
-                                                        |> tempPendingAfter.SetValue
+                                                        |> setPendingAfter
                                                     })
                                 |}
                         | None -> nothing
@@ -193,12 +178,7 @@ module TaskForm =
             ]
 
     [<ReactComponent>]
-    let DurationSelector taskId =
-        let tempDuration =
-            Store.Hooks.useTempAtom
-                (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.duration taskId))))
-                (Some (Store.InputScope.Temp Gun.defaultSerializer))
-
+    let DurationInput (duration: Minute option) setDuration =
         UI.box
             (fun x -> x.display <- "inline")
             [
@@ -216,20 +196,16 @@ module TaskForm =
                         x.spacing <- "15px")
                     [
                         Checkbox.Checkbox
-                            (if tempDuration.Value.IsNone then Some "Enable" else None)
+                            (if duration.IsNone then Some "Enable" else None)
                             (fun x ->
-                                x.isChecked <- tempDuration.Value.IsSome
+                                x.isChecked <- duration.IsSome
                                 x.alignSelf <- "center"
 
                                 x.onChange <-
                                     fun _ ->
-                                        promise {
-                                            tempDuration.SetValue (
-                                                if tempDuration.Value.IsSome then None else (Some (Minute 1))
-                                            )
-                                        })
+                                        promise { setDuration (if duration.IsSome then None else (Some (Minute 1))) })
 
-                        match tempDuration.Value with
+                        match duration with
                         | Some duration ->
                             Input.Input
                                 {|
@@ -237,15 +213,6 @@ module TaskForm =
                                         fun x ->
                                             x.fixedValue <- Some duration
                                             x.onFormat <- Some (Minute.Value >> string)
-
-                                            //                                            x.atom <-
-//                                                Some (
-//                                                    Store.InputAtom (
-//                                                        Store.AtomReference.Atom (Atoms.Task.duration taskId)
-//                                                    )
-//                                                )
-//
-//                                            x.inputScope <- Some (Store.InputScope.ReadWrite Gun.defaultSerializer)
 
                                             x.onValidate <-
                                                 Some (
@@ -261,35 +228,24 @@ module TaskForm =
                                         fun x ->
                                             x.onChange <-
                                                 (fun (e: KeyboardEvent) ->
-                                                    promise {
-                                                        e.Value
-                                                        |> int
-                                                        |> Minute
-                                                        |> Some
-                                                        |> tempDuration.SetValue
-                                                    })
+                                                    promise { e.Value |> int |> Minute |> Some |> setDuration })
                                 |}
                         | None -> nothing
                     ]
             ]
 
     [<ReactComponent>]
-    let PrioritySelector taskId =
-        let tempPriority =
-            Store.Hooks.useTempAtom
-                (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.priority taskId))))
-                (Some (Store.InputScope.Temp Gun.defaultSerializer))
-
+    let PriorityInput priority setPriority =
         let priorityNumber =
             React.useMemo (
                 (fun () ->
-                    match tempPriority.Value with
+                    match priority with
                     | Some priority ->
                         let priorityNumber = (priority |> Priority.toTag) + 1
                         Some priorityNumber
                     | None -> None),
                 [|
-                    box tempPriority.Value
+                    box priority
                 |]
             )
 
@@ -316,11 +272,7 @@ module TaskForm =
 
                                 x.onChange <-
                                     fun _ ->
-                                        promise {
-                                            tempPriority.SetValue (
-                                                if priorityNumber.IsSome then None else (Some Medium5)
-                                            )
-                                        })
+                                        promise { setPriority (if priorityNumber.IsSome then None else (Some Medium5)) })
 
                         match priorityNumber with
                         | Some priorityNumber ->
@@ -333,7 +285,7 @@ module TaskForm =
                                     x.onChange <-
                                         fun x ->
                                             promise {
-                                                tempPriority.SetValue (
+                                                setPriority (
                                                     match x with
                                                     | 1 -> Some Low1
                                                     | 2 -> Some Low2
@@ -384,9 +336,10 @@ module TaskForm =
         )
 
     [<ReactComponent>]
-    let AddTaskButton () =
+    let AddTaskButton information =
         let navigate = Navigate.useNavigate ()
         let taskUIFlag = Store.useValue (Atoms.User.uiFlag UIFlagType.Task)
+        let setInformationUIFlag = Store.useSetState (Atoms.User.uiFlag UIFlagType.Information)
 
         let databaseId =
             React.useMemo (
@@ -412,23 +365,29 @@ module TaskForm =
 
                                 x.onClick <-
                                     fun _ ->
-                                        navigate (
-                                            Navigate.DockPosition.Right,
-                                            Some DockType.Task,
-                                            UIFlagType.Task,
-                                            UIFlag.Task (databaseId, Task.Default.Id)
-                                        )
+                                        promise {
+                                            do!
+                                                navigate (
+                                                    Navigate.DockPosition.Right,
+                                                    Some DockType.Task,
+                                                    UIFlagType.Task,
+                                                    UIFlag.Task (databaseId, Task.Default.Id)
+                                                )
+
+                                            match information with
+                                            | Some information -> setInformationUIFlag (UIFlag.Information information)
+                                            | None -> ()
+                                        }
                     |}
             ]
 
     [<ReactComponent>]
     let rec TaskForm (taskId: TaskId) (onSave: Task -> JS.Promise<unit>) =
         let toast = UI.useToast ()
-        let debug = Store.useValue Atoms.debug
+        let debug = Store.useValue Atoms.Session.debug
         let startSession = useStartSession ()
         let deleteTask = useDeleteTask ()
         let sessions, setSessions = Store.useState (Atoms.Task.sessions taskId)
-        let isReadWrite = Store.useValue (Selectors.Task.isReadWrite taskId)
         let taskUIFlag, setTaskUIFlag = Store.useState (Atoms.User.uiFlag UIFlagType.Task)
         let attachmentIdSet = Store.useValue (Atoms.Task.attachmentIdSet taskId)
         let cellAttachmentIdMap = Store.useValue (Atoms.Task.cellAttachmentIdMap taskId)
@@ -449,6 +408,8 @@ module TaskForm =
                     box attachmentIdSet
                 |]
             )
+
+        let isReadWrite = Store.useValue (Selectors.Database.isReadWrite taskDatabaseId)
 
         let onAttachmentAdd =
             Store.useCallback (
@@ -478,6 +439,32 @@ module TaskForm =
             Store.Hooks.useTempAtom
                 (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.information taskId))))
                 (Some (Store.InputScope.Temp Gun.defaultSerializer))
+
+        let tempPriority =
+            Store.Hooks.useTempAtom
+                (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.priority taskId))))
+                (Some (Store.InputScope.Temp Gun.defaultSerializer))
+
+        let tempDuration =
+            Store.Hooks.useTempAtom
+                (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.duration taskId))))
+                (Some (Store.InputScope.Temp Gun.defaultSerializer))
+
+        let tempPendingAfter =
+            Store.Hooks.useTempAtom
+                (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.pendingAfter taskId))))
+                (Some (Store.InputScope.Temp Gun.defaultSerializer))
+
+        let tempMissedAfter =
+            Store.Hooks.useTempAtom
+                (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.missedAfter taskId))))
+                (Some (Store.InputScope.Temp Gun.defaultSerializer))
+
+        let tempScheduling =
+            Store.Hooks.useTempAtom
+                (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.scheduling taskId))))
+                (Some (Store.InputScope.Temp Gun.defaultSerializer))
+
 
         let onSave =
             Store.useCallback (
@@ -683,15 +670,29 @@ module TaskForm =
                                                 x.placeholder <- $"""new-task-{DateTime.Now.Format "yyyy-MM-dd"}"""
                                     |}
 
-                                SchedulingSelector.SchedulingSelector taskId
 
-                                PrioritySelector taskId
+                                UI.box
+                                    (fun x -> x.display <- "inline")
+                                    [
+                                        InputLabel.InputLabel
+                                            {|
+                                                Hint = None
+                                                HintTitle = None
+                                                Label = str "Scheduling"
+                                                Props = fun x -> x.marginBottom <- "5px"
+                                            |}
+                                        SchedulingSelector.SchedulingDropdown
+                                            tempScheduling.Value
+                                            tempScheduling.SetValue
+                                    ]
 
-                                DurationSelector taskId
+                                PriorityInput tempPriority.Value tempPriority.SetValue
 
-                                PendingAfterSelector taskId
+                                DurationInput tempDuration.Value tempDuration.SetValue
 
-                                MissedAfterSelector taskId
+                                PendingAfterInput tempPendingAfter.Value tempPendingAfter.SetValue
+
+                                MissedAfterInput tempMissedAfter.Value tempMissedAfter.SetValue
 
                                 Button.Button
                                     {|
@@ -842,13 +843,9 @@ module TaskForm =
                 promise {
                     if task.Id <> taskId then
                         let taskState =
-                            {
+                            { TaskState.Default with
                                 Task = task
                                 Archived = archive |> Option.defaultValue false
-                                SortList = []
-                                SessionList = []
-                                AttachmentStateList = []
-                                CellStateMap = Map.empty
                             }
 
                         do! hydrateTaskState (Store.AtomScope.Current, taskDatabaseId, taskState)

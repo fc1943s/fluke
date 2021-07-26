@@ -16,7 +16,8 @@ module CellBorder =
         let dateId = Store.useValue dateIdAtom
         let weekStart = Store.useValue Atoms.User.weekStart
         let cellSize = Store.useValue Atoms.User.cellSize
-        let isReadWrite = Store.useValue (Selectors.Task.isReadWrite taskId)
+        let databaseId = Store.useValue (Atoms.Task.databaseId taskId)
+        let isReadWrite = Store.useValue (Selectors.Database.isReadWrite databaseId)
 
         match (weekStart, dateId) with
         | StartOfMonth -> Some ("1px", "#ffffff3d")

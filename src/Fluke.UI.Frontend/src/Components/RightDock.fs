@@ -3,23 +3,32 @@ namespace Fluke.UI.Frontend.Components
 open Fable.Core
 open Feliz
 open Fable.React
+open Fluke.Shared.Domain.Model
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
+open Fluke.UI.Frontend.State.State
 
 
 module RightDock =
 
     [<ReactComponent>]
     let RightDock () =
-        let deviceInfo = Store.useValue Selectors.deviceInfo
+        let deviceInfo = Store.useValue Selectors.Selectors.deviceInfo
         let setLeftDock = Store.useSetState Atoms.User.leftDock
         let rightDock = Store.useValue Atoms.User.rightDock
 
         let rightDockSize, setRightDockSize = Store.useState Atoms.User.rightDockSize
+        let informationUIFlag = Store.useValue (Atoms.User.uiFlag UIFlagType.Information)
+        let taskUIFlag = Store.useValue (Atoms.User.uiFlag UIFlagType.Task)
+
+        let information =
+            match informationUIFlag with
+            | UIFlag.Information information -> Some information
+            | _ -> None
 
         let items =
             React.useMemo (
@@ -38,7 +47,10 @@ module RightDock =
                             Name = "Information"
                             Icon = Icons.bs.BsListNested
                             Content = InformationForm.InformationFormWrapper
-                            RightIcons = []
+                            RightIcons =
+                                [
+                                    DockPanel.DockPanelIcon.Component (TaskForm.AddTaskButton information)
+                                ]
                         |}
 
                         TempUI.DockType.Task,
@@ -48,7 +60,10 @@ module RightDock =
                             Content = TaskForm.TaskFormWrapper
                             RightIcons =
                                 [
-                                    DockPanel.DockPanelIcon.Component (TaskForm.AddTaskButton ())
+                                    match taskUIFlag with
+                                    | UIFlag.Task (_databaseId, taskId) when taskId <> Task.Default.Id ->
+                                        yield DockPanel.DockPanelIcon.Component (TaskForm.AddTaskButton None)
+                                    | _ -> ()
                                 ]
                         |}
 
@@ -67,8 +82,19 @@ module RightDock =
                             Content = SearchForm.SearchForm
                             RightIcons = []
                         |}
+
+                        TempUI.DockType.Filter,
+                        {|
+                            Name = "Filter"
+                            Icon = Icons.fi.FiFilter
+                            Content = FilterForm.FilterForm
+                            RightIcons = []
+                        |}
                     ]),
-                [||]
+                [|
+                    box taskUIFlag
+                    box information
+                |]
             )
 
         let itemsMap = items |> Map.ofSeq

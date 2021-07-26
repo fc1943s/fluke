@@ -15,6 +15,8 @@ module Operators =
     [<Emit("Object.assign($0, $1)")>]
     let inline (<+) _o1 _o2 : unit = jsNative
 
+    let inline (<.>) obj key = emitJsExpr (obj, key) "$0[$1]"
+
 [<AutoOpen>]
 module JSMagic =
     type ClipboardRead =
@@ -146,6 +148,7 @@ module JS =
             if result <> null then printfn $"[log] {result}"
 
     let inline consoleLog x = Browser.Dom.console.log x
+    let inline consoleError x = Browser.Dom.console.error x
 
     [<Emit "(w => $0 instanceof w[$1])(window)">]
     let inline instanceof (_obj: obj, _typeName: string) : bool = jsNative

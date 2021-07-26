@@ -2,9 +2,11 @@ namespace Fluke.UI.Frontend.Components
 
 open Fable.React
 open Feliz
+open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
 open Fluke.Shared
+open Fluke.UI.Frontend.Hooks
 
 
 module Dropdown =
@@ -171,6 +173,8 @@ module Dropdown =
 
     [<ReactComponent>]
     let CustomConfirmDropdown left onConfirm trigger children =
+        let isMounted = React.useIsMounted ()
+
         Dropdown
             {|
                 Tooltip = ""
@@ -197,12 +201,16 @@ module Dropdown =
                                                         )
                                                     Props =
                                                         fun x ->
-                                                            x.onClick <-
-                                                                fun _ ->
-                                                                    promise {
-                                                                        let! result = onConfirm ()
-                                                                        if result then onHide ()
-                                                                    }
+                                                            if isMounted.current then
+                                                                x.onClick <-
+                                                                    fun _ ->
+                                                                        promise {
+                                                                            if isMounted.current then
+                                                                                let! result = onConfirm ()
+
+                                                                                if result && isMounted.current then
+                                                                                    onHide ()
+                                                                        }
                                                     Children =
                                                         [
                                                             str "Confirm"

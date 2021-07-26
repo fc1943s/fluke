@@ -254,6 +254,7 @@ module Input =
                                 x.ref <- inputRef
                                 x._focus <- JS.newObj (fun x -> x.borderColor <- "heliotrope")
                                 x.borderColor <- if darkMode then "#484848" else "#b7b7b7"
+                                x.borderRadius <- "4px"
                                 x.backgroundColor <- "gray.10"
                                 x.paddingBottom <- "1px"
 
@@ -318,7 +319,7 @@ module Input =
                                                 fun x ->
                                                     x.height <- "calc(50% - 0.5px)"
                                                     x.paddingTop <- "6px"
-                                                    x.borderRadius <- "0 5px 0 0"
+                                                    x.borderRadius <- "0 4px 0 0"
                                                     x.minWidth <- "26px"
 
                                                     x.onClick <-
@@ -338,7 +339,7 @@ module Input =
                                                 fun x ->
                                                     x.height <- "calc(50% - 0.5px)"
                                                     x.paddingBottom <- "6px"
-                                                    x.borderRadius <- "0 0 5px 0"
+                                                    x.borderRadius <- "0 0 4px 0"
                                                     x.minWidth <- "26px"
 
                                                     x.onClick <-

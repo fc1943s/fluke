@@ -15,7 +15,7 @@ module LeftDock =
     let LeftDock () =
         let leftDock = Store.useValue Atoms.User.leftDock
         let setRightDock = Store.useSetState Atoms.User.rightDock
-        let deviceInfo = Store.useValue Selectors.deviceInfo
+        let deviceInfo = Store.useValue Selectors.Selectors.deviceInfo
         let leftDockSize, setLeftDockSize = Store.useState Atoms.User.leftDockSize
         let exportUserSettings = Hydrate.useExportUserSettings ()
         let importUserSettings = Hydrate.useImportUserSettings ()
@@ -108,6 +108,20 @@ module LeftDock =
                                                                     ImportFile.ImportFile
                                                                         "Import Database"
                                                                         importDatabase
+                                                                ]
+                                                    |}
+
+                                                Popover.MenuItemPopover
+                                                    {|
+                                                        Trigger =
+                                                            MenuItem.MenuItem
+                                                                Icons.bi.BiPaste
+                                                                "Paste Shared Database ID"
+                                                                None
+                                                                (fun x -> x.closeOnSelect <- false)
+                                                        Body =
+                                                            fun (_disclosure, _fetchInitialFocusRef) ->
+                                                                [
                                                                 ]
                                                     |}
                                             ]

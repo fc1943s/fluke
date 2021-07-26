@@ -8,7 +8,7 @@ open Fluke.UI.Frontend.Bindings
 module TaskCells =
     [<ReactComponent>]
     let TaskCells index taskIdAtom =
-        let dateIdAtoms = Store.useValue Selectors.dateIdAtoms
+        let dateIdAtoms = Store.useValue Selectors.Selectors.dateIdAtoms
 
         UI.flex
             (fun x -> x.backgroundColor <- "#212121")

@@ -9,6 +9,8 @@ open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared.Domain
 open Fluke.UI.Frontend.Hooks
+open Fluke.UI.Frontend.State.State
+open Fluke.UI.Frontend.State
 
 
 module CellMenu =
@@ -17,7 +19,7 @@ module CellMenu =
 
     [<ReactComponent>]
     let PostponeTooltipText dateIdAtom =
-        let position = Store.useValue Atoms.position
+        let position = Store.useValue Atoms.Session.position
         let dateId = Store.useValue dateIdAtom
         let cellSelectionMap = Store.useValue Selectors.Session.cellSelectionMap
 

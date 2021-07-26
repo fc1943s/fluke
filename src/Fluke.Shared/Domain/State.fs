@@ -116,6 +116,14 @@ module State =
                 Position = None
             }
 
+    and InformationState with
+        static member inline Default =
+            {
+                Information = Task.Default.Information
+                AttachmentStateList = []
+                SortList = []
+            }
+
     and TaskState with
         static member inline Default =
             {
@@ -127,19 +135,23 @@ module State =
                 CellStateMap = Map.empty
             }
 
+    and CellState with
+        static member inline Default =
+            {
+                Status = Disabled
+                AttachmentStateList = []
+                SessionList = []
+            }
+
 
     let inline informationListToStateMap informationList =
         informationList
         |> List.map
             (fun information ->
-                let informationState: InformationState =
-                    {
-                        Information = information
-                        AttachmentStateList = []
-                        SortList = []
-                    }
-
-                information, informationState)
+                information,
+                { InformationState.Default with
+                    Information = information
+                })
         |> Map.ofSeq
 
     let inline getAccess database username =
@@ -174,10 +186,8 @@ module State =
                             databaseState.InformationStateMap
                             |> Map.tryFind information
                             |> Option.defaultValue
-                                {
+                                { InformationState.Default with
                                     Information = information
-                                    AttachmentStateList = []
-                                    SortList = []
                                 }
 
                         let newInformationState =
@@ -240,12 +250,7 @@ module State =
                         let cellState =
                             taskState.CellStateMap
                             |> Map.tryFind dateId
-                            |> Option.defaultValue
-                                {
-                                    Status = CellStatus.Disabled
-                                    AttachmentStateList = []
-                                    SessionList = []
-                                }
+                            |> Option.defaultValue CellState.Default
 
                         let newCellState =
                             match cellInteraction with

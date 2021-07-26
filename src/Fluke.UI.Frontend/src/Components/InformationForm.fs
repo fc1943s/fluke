@@ -9,6 +9,7 @@ open Fluke.UI.Frontend.State
 open System
 open Fluke.Shared.Domain
 open Fluke.Shared
+open Fluke.UI.Frontend.State.State
 
 
 module InformationForm =
@@ -36,17 +37,17 @@ module InformationForm =
 
         let setInformationUIFlag = Store.useSetState (Atoms.User.uiFlag UIFlagType.Information)
 
-        let databaseId, setDatabaseId = Store.useState Atoms.User.lastInformationDatabase
+        let lastDatabaseSelected, setLastDatabaseSelected = Store.useState Atoms.User.lastDatabaseSelected
 
         let onAttachmentAdd =
             Store.useCallback (
                 (fun _ setter attachmentId ->
                     promise {
-                        match databaseId, information with
-                        | Some databaseId, Some information ->
+                        match lastDatabaseSelected, information with
+                        | Some lastDatabaseSelected, Some information ->
                             Store.change
                                 setter
-                                (Atoms.Database.informationAttachmentIdMap databaseId)
+                                (Atoms.Database.informationAttachmentIdMap lastDatabaseSelected)
                                 (fun informationAttachmentIdMap ->
                                     informationAttachmentIdMap
                                     |> Map.add
@@ -58,7 +59,7 @@ module InformationForm =
                         | _ -> ()
                     }),
                 [|
-                    box databaseId
+                    box lastDatabaseSelected
                     box information
                 |]
             )
@@ -106,9 +107,9 @@ module InformationForm =
                             (fun x -> x.spacing <- "15px")
                             [
                                 DatabaseSelector.DatabaseSelector
-                                    (databaseId
+                                    (lastDatabaseSelected
                                      |> Option.defaultValue Database.Default.Id)
-                                    (Some >> setDatabaseId)
+                                    (Some >> setLastDatabaseSelected)
 
                                 InformationSelector.InformationSelector
                                     {|
@@ -135,7 +136,7 @@ module InformationForm =
                                 [
                                     AttachmentPanel.AttachmentPanel
                                         AddAttachmentInput.AttachmentPanelType.Information
-                                        (if databaseId.IsSome then Some onAttachmentAdd else None)
+                                        (if lastDatabaseSelected.IsSome then Some onAttachmentAdd else None)
                                         onAttachmentDelete
                                         attachmentIdList
                                 ])

@@ -30,7 +30,26 @@
         <Compile Include="src\TempAudio.fs" />
         <Compile Include="src\TempUI.fs" />
         <Compile Include="src\Templates.fs" />
-        <Compile Include="src\State.fs" />
+        <Compile Include="src\State\State.fs" />
+        <Compile Include="src\State\Atoms\Session.fs" />
+        <Compile Include="src\State\Atoms\User.fs" />
+        <Compile Include="src\State\Atoms\Device.fs" />
+        <Compile Include="src\State\Atoms\Database.fs" />
+        <Compile Include="src\State\Atoms\File.fs" />
+        <Compile Include="src\State\Atoms\Attachment.fs" />
+        <Compile Include="src\State\Atoms\Task.fs" />
+        <Compile Include="src\State\Atoms\Cell.fs" />
+        <Compile Include="src\State\Selectors\Selectors.fs" />
+        <Compile Include="src\State\Selectors\User.fs" />
+        <Compile Include="src\State\Selectors\File.fs" />
+        <Compile Include="src\State\Selectors\Attachment.fs" />
+        <Compile Include="src\State\Selectors\Task.fs" />
+        <Compile Include="src\State\Selectors\Database.fs" />
+        <Compile Include="src\State\Selectors\Information.fs" />
+        <Compile Include="src\State\Selectors\Cell.fs" />
+        <Compile Include="src\State\Selectors\Session.fs" />
+        <Compile Include="src\State\Selectors\DateId.fs" />
+        <Compile Include="src\State\Selectors\BulletJournalView.fs" />
         <Compile Include="src\Hooks\Scheduling.fs" />
         <Compile Include="src\Hooks\Listener.fs" />
         <Compile Include="src\Hooks\Theme.fs" />
@@ -47,6 +66,7 @@
         <Compile Include="src\Components\Popover.fs" />
         <Compile Include="src\Components\Hint.fs" />
         <Compile Include="src\Components\InputLabel.fs" />
+        <Compile Include="src\Components\Checkbox.fs" />
         <Compile Include="src\Components\Input.fs" />
         <Compile Include="src\Components\MonthResponsiveCell.fs" />
         <Compile Include="src\Components\Day.fs" />
@@ -71,7 +91,6 @@
         <Compile Include="src\Components\TaskCells.fs" />
         <Compile Include="src\Components\Cells.fs" />
         <Compile Include="src\Components\Radio.fs" />
-        <Compile Include="src\Components\Checkbox.fs" />
         <Compile Include="src\Components\CheckboxInput.fs" />
         <Compile Include="src\Components\DebugOverlay.fs" />
         <Compile Include="src\Components\Logo.fs" />
@@ -117,6 +136,7 @@
         <Compile Include="src\Components\DockButton.fs" />
         <Compile Include="src\Components\DockPanel.fs" />
         <Compile Include="src\Components\InformationForm.fs" />
+        <Compile Include="src\Components\FilterForm.fs" />
         <Compile Include="src\Components\SearchForm.fs" />
         <Compile Include="src\Components\CellForm.fs" />
         <Compile Include="src\Components\RightDock.fs" />
@@ -125,7 +145,6 @@
         <Compile Include="src\Components\StatusBar.fs" />
         <Compile Include="src\Components\ViewTabs.fs" />
         <Compile Include="src\Components\LoginScreen.fs" />
-        <Compile Include="src\Components\InitialPeers.fs" />
         <Compile Include="src\Components\SoundPlayer.fs" />
         <Compile Include="src\Components\PositionUpdater.fs" />
         <Compile Include="src\Components\RouterObserver.fs" />
@@ -145,6 +164,7 @@
         <Compile Include="src\Tests\CellSelection\VerticalShiftPressed.test.fs" />
         <Compile Include="src\Tests\CellSelection\BoxSelection.test.fs" />
         <Compile Include="src\Tests\Full.spec.fs" />
+        <Content Include="src\setupProxy.js" />
         <Content Include="public\sounds\tick.wav" />
         <Content Include="public\sounds\ding.wav" />
         <Content Include="public\icons\48x48.png" />
@@ -176,6 +196,10 @@
         <Content Include="cypress.json" />
         <Content Include="src\electron.js" />
         <Content Include="src\electron-preload.js" />
+        <Content Include=".gitignore" />
+        <None Include="build.fsx" />
+        <Content Include="pnpm-lock.yaml" />
+        <Content Include="config.xml" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Fluke.Shared\Fluke.Shared.fsproj" />

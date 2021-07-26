@@ -13,10 +13,17 @@ open Fluke.Shared
 module DatabaseSelector =
     [<ReactComponent>]
     let rec DatabaseSelector (databaseId: DatabaseId) (onChange: DatabaseId -> unit) =
+        let setLastDatabaseSelected = Store.useSetState Atoms.User.lastDatabaseSelected
+
+        let onChange =
+            fun databaseId ->
+                setLastDatabaseSelected (Some databaseId)
+                onChange databaseId
+
         let (DatabaseName databaseName) = Store.useValue (Atoms.Database.name databaseId)
         let hydrateDatabase = Hydrate.useHydrateDatabase ()
 
-        let databaseIdAtoms = Store.useValue Selectors.databaseIdAtoms
+        let databaseIdAtoms = Store.useValue Selectors.Session.databaseIdAtoms
 
         let databaseIdList =
             databaseIdAtoms
@@ -44,6 +51,7 @@ module DatabaseSelector =
             |> Store.useValue
             |> Array.toList
             |> List.map DatabaseName.Value
+
 
         let index =
             React.useMemo (
@@ -170,6 +178,7 @@ module DatabaseSelector =
                                                                             database
                                                                         )
 
+                                                                    onChange database.Id
                                                                     onHide ()
                                                                 })
                                                     ]

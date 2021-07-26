@@ -11,8 +11,8 @@ module GridHeader =
     [<ReactComponent>]
     let GridHeader () =
         let cellSize = Store.useValue Atoms.User.cellSize
-        let dateIdAtoms = Store.useValue Selectors.dateIdAtoms
-        let dateIdAtomsByMonth = Store.useValue Selectors.dateIdAtomsByMonth
+        let dateIdAtoms = Store.useValue Selectors.Selectors.dateIdAtoms
+        let dateIdAtomsByMonth = Store.useValue Selectors.Selectors.dateIdAtomsByMonth
 
         UI.box
             (fun _ -> ())

@@ -62,7 +62,7 @@ module PasteListener =
                                         return Some blobs
                                     with
                                     | ex ->
-                                        Browser.Dom.console.error ex
+                                        JS.consoleError ("handlePasteEvent clipboard error", ex)
                                         return None
                                 }
                             | None ->

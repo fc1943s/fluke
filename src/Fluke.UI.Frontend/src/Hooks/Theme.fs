@@ -228,8 +228,11 @@ module Theme =
         let systemUiFont = Store.useValue Atoms.User.systemUiFont
         let fontSize = Store.useValue Atoms.User.fontSize
 
+
         React.useMemo (
             (fun () ->
+                Profiling.addCount "useTheme().useMemo()"
+
                 UI.react.extendTheme (
                     JsInterop.toPlainJsObj (
                         theme

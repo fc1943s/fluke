@@ -1,16 +1,172 @@
 namespace Fluke.UI.Frontend.Components
 
+open Browser.Types
 open Fable.React
 open Feliz
 open System
 open Fluke.Shared.Domain
+open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
 open Fluke.Shared.Domain.Model
 open Fluke.Shared
+open Fluke.UI.Frontend.State.State
 
 
 module Settings =
+    [<ReactComponent>]
+    let GunPeersInput () =
+        let tempGunPeers =
+            Store.Hooks.useTempAtom
+                (Some (Store.InputAtom (Store.AtomReference.Atom Store.Atoms.gunPeers)))
+                (Some (Store.InputScope.Temp Gun.defaultSerializer))
+
+        UI.box
+            (fun x -> x.display <- "inline")
+            [
+                InputLabel.InputLabel
+                    {|
+                        Hint =
+                            Some (
+                                UI.box
+                                    (fun _ -> ())
+                                    [
+                                        UI.box
+                                            (fun _ -> ())
+                                            [
+                                                str "Add a relay peer to sync data between devices"
+                                            ]
+
+                                        br []
+
+                                        ExternalLink.ExternalLink
+                                            {|
+                                                Link = str "Read documentation"
+                                                Href =
+                                                    "https://gun.eco/docs/FAQ#what-is-the-difference-between-super-peer-and-other-peers"
+                                                Props = fun _ -> ()
+                                            |}
+                                    ]
+                            )
+                        HintTitle = None
+                        Label = str "Gun relay peers"
+                        Props = fun x -> x.marginBottom <- "5px"
+                    |}
+
+                UI.stack
+                    (fun x ->
+                        x.direction <- "row"
+                        x.spacing <- "15px")
+                    [
+                        Checkbox.Checkbox
+                            None
+                            (fun x ->
+                                x.isChecked <-
+                                    match tempGunPeers.CurrentValue, tempGunPeers.TempValue with
+                                    | Some _, _ -> true
+                                    | _ -> false
+
+                                x.alignSelf <- "center"
+
+                                x.onChange <-
+                                    fun _ ->
+                                        promise {
+                                            match tempGunPeers.CurrentValue, tempGunPeers.TempValue with
+                                            | Some _, Some _ -> tempGunPeers.SetTempValue None
+                                            | Some current, None ->
+                                                tempGunPeers.SetTempValue (Some current)
+                                                tempGunPeers.SetCurrentValue None
+                                            | None, Some temp ->
+                                                tempGunPeers.SetCurrentValue (Some temp)
+                                                tempGunPeers.SetTempValue None
+                                            | None, None -> tempGunPeers.SetTempValue (Some [||])
+                                        })
+
+                        InputList.InputList
+                            (fun x ->
+                                x.isDisabled <-
+                                    match tempGunPeers.CurrentValue, tempGunPeers.TempValue with
+                                    | Some _, _ -> true
+                                    | _ -> false)
+                            (fun _ -> ())
+                            (tempGunPeers.TempValue
+                             |> Option.defaultValue (
+                                 tempGunPeers.CurrentValue
+                                 |> Option.defaultValue [||]
+                             ))
+                            (Some >> tempGunPeers.SetTempValue)
+                    ]
+            ]
+
+    [<ReactComponent>]
+    let ApiUrlInput () =
+        let tempApiUrl =
+            Store.Hooks.useTempAtom
+                (Some (Store.InputAtom (Store.AtomReference.Atom Store.Atoms.apiUrl)))
+                (Some (Store.InputScope.Temp Gun.defaultSerializer))
+
+        UI.box
+            (fun x -> x.display <- "inline")
+            [
+                InputLabel.InputLabel
+                    {|
+                        Hint = None
+                        HintTitle = None
+                        Label = str "API URL"
+                        Props = fun x -> x.marginBottom <- "5px"
+                    |}
+
+                UI.stack
+                    (fun x ->
+                        x.direction <- "row"
+                        x.spacing <- "15px")
+                    [
+                        Checkbox.Checkbox
+                            None
+                            (fun x ->
+                                x.isChecked <-
+                                    match tempApiUrl.CurrentValue, tempApiUrl.TempValue with
+                                    | Some _, _ -> true
+                                    | _ -> false
+
+                                x.alignSelf <- "center"
+
+                                x.onChange <-
+                                    fun _ ->
+                                        promise {
+                                            match tempApiUrl.CurrentValue, tempApiUrl.TempValue with
+                                            | Some _, Some _ -> tempApiUrl.SetTempValue None
+                                            | Some current, None ->
+                                                tempApiUrl.SetTempValue (Some current)
+                                                tempApiUrl.SetCurrentValue None
+                                            | None, Some temp ->
+                                                tempApiUrl.SetCurrentValue (Some temp)
+                                                tempApiUrl.SetTempValue None
+                                            | None, None -> tempApiUrl.SetTempValue (Some "")
+                                        })
+
+                        Input.Input
+                            {|
+                                Props =
+                                    fun x ->
+
+                                        x.isDisabled <-
+                                            match tempApiUrl.CurrentValue, tempApiUrl.TempValue with
+                                            | Some _, _ -> true
+                                            | _ -> false
+
+                                        x.onChange <-
+                                            fun (e: KeyboardEvent) -> promise { tempApiUrl.SetValue (Some e.Value) }
+                                CustomProps =
+                                    fun x ->
+                                        x.fixedValue <-
+                                            tempApiUrl.TempValue
+                                            |> Option.defaultValue (tempApiUrl.CurrentValue |> Option.defaultValue "")
+                                            |> Some
+                            |}
+                    ]
+            ]
+
     [<ReactComponent>]
     let rec Settings props =
         let weekStart, setWeekStart = Store.useState Atoms.User.weekStart
@@ -192,13 +348,6 @@ module Settings =
 
                                 CheckboxInput.CheckboxInput
                                     {|
-                                        Atom = Atoms.User.filterTasksByView
-                                        Label = Some "Filter Tasks by View"
-                                        Props = fun _ -> ()
-                                    |}
-
-                                CheckboxInput.CheckboxInput
-                                    {|
                                         Atom = Atoms.User.enableCellPopover
                                         Label = Some "Enable Cell Click Popup"
                                         Props = fun _ -> ()
@@ -206,7 +355,7 @@ module Settings =
 
                                 CheckboxInput.CheckboxInput
                                     {|
-                                        Atom = Atoms.debug
+                                        Atom = Atoms.Session.debug
                                         Label = Some "Show Debug Information"
                                         Props = fun _ -> ()
                                     |}
@@ -259,10 +408,9 @@ module Settings =
                         (UI.stack
                             (fun x -> x.spacing <- "10px")
                             [
-                                InputList.InputList
-                                    (fun x ->
-                                        x.label <- str "Gun peers"
-                                        x.atom <- Some (Store.InputAtom (Store.AtomReference.Atom Store.Atoms.gunPeers)))
+                                GunPeersInput ()
+
+                                ApiUrlInput ()
                             ])
                     ]
             |}

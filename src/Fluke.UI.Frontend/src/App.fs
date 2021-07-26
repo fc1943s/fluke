@@ -9,7 +9,8 @@ module App =
 
     [<ReactComponent>]
     let App wrap =
-        Profiling.addTimestamp "appMain.render"
+        Profiling.addTimestamp "App().render"
+        Profiling.addCount "App().render"
 
         (if wrap then RootWrapper.RootWrapper else React.fragment)
             [
