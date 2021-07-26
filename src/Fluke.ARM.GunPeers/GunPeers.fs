@@ -107,7 +107,7 @@ module GunPeers =
                         "/bin/sh"
                         "-c"
                         // We will need to do a retry loop since we can't have a depends_on for the deploymentScript to finish.
-                        "cd /app; apk add --no-cache git; npm install; while true; do npm run start && break; sleep 30; done"
+                        "cd /app; apk add --no-cache git; npm install; while true; do yarn start && break; sleep 30; done"
                         //                        $"cd /data/{shareName}; while true; do java -Djava.net.preferIPv4Stack=true -Xms1G -Xmx3G -jar server.jar nogui && break; sleep 30; done"
                         ]
                 }

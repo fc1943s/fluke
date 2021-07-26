@@ -12,9 +12,9 @@
   "homepage": ".",
   "private": true,
   "scripts": {
-    "electron-watch": "npm run electronmon .",
+    "electron-watch": "yarn electronmon .",
     "electron-build": "rm -rf cra_output && cp -r ../Fluke.UI.Frontend/cra_output cra_output && cp src/electron.js src/electron-preload.js cra_output && electron-builder --publish=onTag",
-    "electron-build-dir": "npm run electron-build -- --dir"
+    "electron-build-dir": "yarn electron-build -- --dir"
   },
   "dependencies": {
     "https-localhost": "~4.6"

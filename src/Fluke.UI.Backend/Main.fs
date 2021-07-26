@@ -185,12 +185,7 @@ module Main =
                     (fun corsBuilder ->
                         corsBuilder
                             .AllowCredentials()
-                            .WithHeaders(
-                                [|
-                                    "x-requested-with"
-                                    "x-signalr-user-agent"
-                                |]
-                            )
+                            .AllowAnyHeader()
                             .WithOrigins [|
                                 "https://localhost:33929"
                             |]
