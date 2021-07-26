@@ -27,7 +27,7 @@ module Main =
             |> Sqlite.executeCommand
             |> function
                 | Ok _rows ->
-//                    printfn $"rows affected %A{rows}"
+                    //                    printfn $"rows affected %A{rows}"
                     ()
                 | Error err -> failwith $"create table error err={err}"
 
@@ -45,7 +45,7 @@ module Main =
                ]
             |> function
                 | Ok _rows ->
-//                    printfn $"rows affected %A{rows.Length}"
+                    //                    printfn $"rows affected %A{rows.Length}"
                     true
                 | Error err ->
                     printfn $"error %A{err}"
@@ -66,7 +66,7 @@ module Main =
                     |})
             |> function
                 | Ok result ->
-//                    printfn $"result %A{result}"
+                    //                    printfn $"result %A{result}"
                     result |> List.tryHead
                 | Error err ->
                     printfn $"error %A{err}"
@@ -82,7 +82,7 @@ module Main =
             |> Sqlite.execute (fun read -> {| Key = read.string "key" |})
             |> function
                 | Ok result ->
-//                    printfn $"result %A{result}"
+                    //                    printfn $"result %A{result}"
                     result |> List.map (fun x -> x.Key)
                 | Error err ->
                     printfn $"error %A{err}"
@@ -158,7 +158,7 @@ module Main =
                                     return result
                                 })
 
-//                        use_messagepack
+                    //                        use_messagepack
                     }
                 )
 
@@ -186,6 +186,8 @@ module Main =
                 no_router
                 logging (fun logging -> logging.SetMinimumLevel LogLevel.Warning |> ignore)
                 force_ssl
+
+            //                        use_messagepack
             }
 
         printfn "creating table..."

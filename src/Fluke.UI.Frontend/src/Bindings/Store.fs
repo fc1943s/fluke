@@ -208,7 +208,7 @@ module Store =
                                         .withUrl($"{apiUrl}{Api.endpoint}")
                                         .withAutomaticReconnect()
                                         .configureLogging(LogLevel.Debug)
-//                                        .useMessagePack()
+                                        //                                        .useMessagePack()
                                         .onMessage (
                                             function
                                             | Api.Response.ConnectResult -> printfn $"Api.Response.ConnectResult"
@@ -973,6 +973,8 @@ lastAtomPath={lastAtomPath} """
                 $"@@ atomFamily constructor
 {baseInfo ()}           ")
 
+        let mutable lastValue: Set<'TKey> option = None
+
         let rec wrapper =
             selector (
                 atomPath,
@@ -984,29 +986,29 @@ lastAtomPath={lastAtomPath} """
                     Profiling.addCount $"{gunNodePath} get"
 
 
-                    if not JS.jestWorkerId then
+                    let result =
+                        if not JS.jestWorkerId then
+                            value getter userAtom
+                        else
+                            match lastAtomPath with
+                            | Some (AtomPath atomPath) ->
+                                match splitAtomPath atomPath with
+                                | Some (root, _guid) ->
+                                    match testKeysCache.TryGetValue root with
+                                    | true, guids -> guids |> Set.toArray |> Array.map onFormat
+                                    | _ -> [||]
+                                | None -> [||]
+                            | None -> [||]
 
-                        let result = value getter userAtom
-
-                        JS.log
-                            (fun () ->
-                                $"@@ atomFamily.wrapper.get()
+                    JS.log
+                        (fun () ->
+                            $"@@ atomFamily.wrapper.get()
                                     wrapper={wrapper}
                                     userAtom={userAtom}
                                     result={result}
                                     {baseInfo ()} ")
 
-                        result
-                    else
-                        match lastAtomPath with
-                        | Some (AtomPath atomPath) ->
-                            match splitAtomPath atomPath with
-                            | Some (root, _guid) ->
-                                match testKeysCache.TryGetValue root with
-                                | true, guids -> guids |> Set.toArray |> Array.map onFormat
-                                | _ -> [||]
-                            | None -> [||]
-                        | None -> [||]),
+                    result),
                 (fun getter setter newValueFn ->
                     let username = assignLastGunAtomNode getter
                     let userAtom = internalAtom username
@@ -1028,22 +1030,25 @@ lastAtomPath={lastAtomPath} """
 
         let mutable lastSubscription = None
 
-        let debouncedSet setAtom =
-            JS.debounce
-                (fun items ->
-                    //                        Browser.Dom.window?lastData <- data
+        let batchSet setAtom =
+            Batcher.batcher
+                (fun itemsArray ->
+                    let items = itemsArray
+                                                            |> Array.collect id
+                                                            |> Array.append (lastValue |> Option.defaultValue Set.empty |> Set.toArray)
+                                                            |> Array.distinct
 
-                    let result = items |> Array.map onFormat
+                    lastValue <- Some (items|> Set.ofArray)
 
                     JS.log
                         (fun () ->
                             $"@@ [atomKeys debouncedSet gun.on() data]
                                                        atomPath={atomPath}
-                                                       len={result.Length}
+                                                       items.len={items.Length}
                                                        {key} ")
 
-                    setAtom result)
-                250
+                    setAtom items)
+                {| interval = 500 |}
 
         let subscribe =
             //            JS.debounce
@@ -1061,28 +1066,50 @@ lastAtomPath={lastAtomPath} """
                     Profiling.addCount $"@@ {gunNodePath} subscribe"
                     JS.log (fun () -> $"@@ [atomKeys gun.on() subscribing] atomPath={atomPath} {key}")
 
-                    let setData = debouncedSet setAtom
+                    let setData = batchSet setAtom
 
                     if lastGunPeers.IsSome then
-                        gunAtomNode.on
-                            (fun data _key ->
-                                let result =
-                                    JS.Constructors.Object.entries data
-                                    |> unbox<(string * obj) []>
-                                    |> Array.filter
-                                        (fun (guid, value) ->
-                                            guid.Length = 36
-                                            && guid <> string Guid.Empty
-                                            && value <> null)
-                                    |> Array.map fst
 
-                                if result.Length > 0 then
-                                    setData result
-                                else
-                                    JS.log(fun () -> $"@@ atomKeys gun.on() API filter fetching/subscribing] @@@
-                                    skipping. result.Length=0
-                                    atomPath={atomPath} lastAtomPath={lastAtomPath} {key}")
-                                    )
+                        gunAtomNode
+                            .map()
+                            .on (fun data gunKey ->
+
+                                JS.log
+                                    (fun () ->
+                                        $"
+                                @@$ atomKeys gun.on() API filter fetching/subscribing] @@@ gunAtomNode.map().on result
+                                  data={data} typeof data={jsTypeof data} gunKey={gunKey} typeof gunKey={jsTypeof gunKey}
+                                  atomPath={atomPath} lastAtomPath={lastAtomPath} key={key}
+                                       ")
+
+                                if data <> null then
+                                    let newValue =
+                                            [|
+                                                onFormat gunKey
+                                            |]
+
+
+                                    setData newValue)
+
+                        //                        gunAtomNode.on
+//                            (fun data _key ->
+//                                let result =
+//                                    JS.Constructors.Object.entries data
+//                                    |> unbox<(string * obj) []>
+//                                    |> Array.filter
+//                                        (fun (guid, value) ->
+//                                            guid.Length = 36
+//                                            && guid <> string Guid.Empty
+//                                            && value <> null)
+//                                    |> Array.map fst
+//
+//                                if result.Length > 0 then
+//                                    setData result
+//                                else
+//                                    JS.log(fun () -> $"@@ atomKeys gun.on() API filter fetching/subscribing] @@@
+//                                    skipping. result.Length=0
+//                                    atomPath={atomPath} lastAtomPath={lastAtomPath} {key}")
+//                                    )
 
                         lastSubscription <- Some DateTime.Now.Ticks
 
@@ -1108,9 +1135,11 @@ lastAtomPath={lastAtomPath} """
                                     match response with
                                     | Api.Response.FilterResult items ->
                                         if items.Length > 0 then
-                                            setData items
+                                            setData (items |> Array.map onFormat)
                                         else
-                                            JS.log(fun () -> $"@@ atomKeys gun.on() API filter fetching/subscribing] @@@
+                                            JS.log
+                                                (fun () ->
+                                                    $"@@ atomKeys gun.on() API filter fetching/subscribing] @@@
                                             skipping. items.Length=0
                                             atomPath={atomPath} lastAtomPath={lastAtomPath} {key}")
 

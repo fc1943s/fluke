@@ -18,28 +18,28 @@
     "watch:frontend-build": "dotnet fable watch",
     "watch:frontend": "cross-env HTTPS=true EXTEND_ESLINT=true BROWSER=none FAST_REFRESH=true PORT=33922 SKIP_PREFLIGHT_CHECK=true react-app-rewired start",
     "old-watch:frontend-parcel": "cross-env EXTEND_ESLINT=true parcel public/index.html --https --port 33922 --detailed-report",
-    "watch": "concurrently \"pnpm:watch:*\"",
-    "enable-build-watch": "pnpm cra-build-watch",
-    "disable-build-watch": "pnpm --check-files",
-    "build": "pnpm build:fable && pnpm build:react",
+    "watch": "concurrently \"npm:watch:*\"",
+    "enable-build-watch": "npm run cra-build-watch",
+    "disable-build-watch": "npm --check-files",
+    "build": "npm run build:fable && npm run build:react",
     "gatsby-build": "cross-env NODE_ENV=production gatsby build",
     "gatsby-develop": "cross-env NODE_ENV=development gatsby develop",
     "ts2fable-react-icons": "ts2fable node_modules/react-icons/all.d.ts src/Bindings/Vendor/ReactIcons.fs -e react-icons",
     "test-parallel": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --rootDir . --ci --watchAll=false --forceExit --testNamePattern=",
-    "test-sequential": "pnpm test-parallel --runInBand --detectOpenHandles",
-    "test": "pnpm test-sequential",
+    "test-sequential": "npm run test-parallel --runInBand --detectOpenHandles",
+    "test": "npm run test-sequential",
     "cypress-install": "cypress install --force",
     "cypress": "cypress open",
-    "cypress-watch": "concurrently \"pnpm:watch\" \"pnpm:cypress\"",
+    "cypress-watch": "concurrently \"npm:watch\" \"npm:cypress\"",
     "cypress-run": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 cypress run --headed",
     "frontend-serve": "cross-env PORT=33922 NODE_ENV=production serve cra_output",
-    "test-watch": "pnpm test -- --watchAll",
-    "test-build-watch": "concurrently \"pnpm:watch:frontend-build\" \"pnpm:test-watch\"",
+    "test-watch": "npm run test -- --watchAll",
+    "test-build-watch": "concurrently \"npm:watch:frontend-build\" \"npm:test-watch\"",
     "postinstall": "patch-package",
 
     "cordova-requirements": "cordova requirements",
     "emulate-android": "cordova emulate android",
-    "build-android": "pnpm build && rm -rf www && cp -r cra_output www && cordova build android --prod --release -- --keystore ~/.android/debug.keystore",
+    "build-android": "npm run build && rm -rf www && cp -r cra_output www && cordova build android --prod --release -- --keystore ~/.android/debug.keystore",
     "deploy-android": "adb install -d -r ./platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk",
     "run-android": "cordova run android --device"
   },
@@ -48,10 +48,10 @@
 
     "lodash.debounce": "~4.0",
     "batcher-js": "~1.0",
-    "rooks": "~5.2",
+    "rooks": "~5.4",
     "binconv": "~0.2",
     "@shelf/fast-chunk-string": "~1.1",
-    "date-fns": "~2.22",
+    "date-fns": "~2.23",
     "jssha": "~3.2",
 
     "@pmmmwh/react-refresh-webpack-plugin": "~0.4",
@@ -61,8 +61,8 @@
 
     "@microsoft/signalr": "6.0.0-preview.6.21355.2",
 
-    "react": "18.0.0-alpha-ae5d26154-20210721",
-    "react-dom": "18.0.0-alpha-ae5d26154-20210721",
+    "react": "18.0.0-alpha-c76e4dbbc-20210722",
+    "react-dom": "18.0.0-alpha-c76e4dbbc-20210722",
 
     "jotai": "~1.2",
 
@@ -89,6 +89,8 @@
   },
   "devDependencies": {
     "https-localhost": "~4.6",
+
+    "http-proxy-middleware": "~2.0",
 
     "@types/react": "~17.0",
 

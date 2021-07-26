@@ -244,6 +244,7 @@ module rec Database =
                                         taskState.CellStateMap
                                         |> Map.map (fun _ cellState -> { cellState with SessionList = [] })
                                 })
+                        |> List.sortBy (fun (_, taskState) -> taskState.Task.Name |> TaskName.Value)
                         |> Map.ofSeq
 
                     let databaseState =
