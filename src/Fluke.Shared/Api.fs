@@ -1,19 +1,14 @@
 namespace Fluke.Shared
 
-module Api =
-    type IApi =
-        {
-            set: string * string -> Async<bool>
-            get: string -> Async<string>
-            filter: string -> Async<string []>
-        }
+open Fluke.Shared.Domain.UserInteraction
 
+module Api =
     [<RequireQualifiedAccess>]
     type Action =
-        | Connect
-        | Set of string * string
-        | Get of string
-        | Filter of string
+        | Connect of Username
+        | Set of Username * string * string
+        | Get of Username * string
+        | Filter of Username * string
 
     [<RequireQualifiedAccess>]
     type Response =

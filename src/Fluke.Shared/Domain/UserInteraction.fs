@@ -242,9 +242,9 @@ module UserInteraction =
         | _ -> AfterToday
 
     let inline (|StartOfMonth|StartOfWeek|NormalDay|) (weekStart, dateId) =
-        match dateId |> DateId.Value with
-        | { Day = Day 1 } -> StartOfMonth
-        | date when (date |> FlukeDate.DateTime).DayOfWeek = weekStart -> StartOfWeek
+        match dateId |> Option.ofObjUnbox |> Option.map DateId.Value with // TODO: remove |> Option.ofObjUnbox
+        | Some { Day = Day 1 } -> StartOfMonth
+        | Some date when (date |> FlukeDate.DateTime).DayOfWeek = weekStart -> StartOfWeek
         | _ -> NormalDay
 
     let inline isToday dayStart position dateId =

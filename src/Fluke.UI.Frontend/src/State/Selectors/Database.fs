@@ -219,19 +219,19 @@ module rec Database =
                                     | Attachment.Image fileId -> Some fileId
                                     | _ -> None))
 
-                let hexStringList =
+                let byteArrayArray =
                     fileIdList
-                    |> List.map File.hexString
+                    |> List.map File.byteArray
                     |> List.toArray
                     |> Store.waitForAll
                     |> Store.value getter
 
-                if hexStringList |> Array.contains None then
+                if byteArrayArray |> Array.contains None then
                     Error "Invalid files present"
                 else
                     let fileMap =
                         fileIdList
-                        |> List.mapi (fun i fileId -> fileId, hexStringList.[i].Value)
+                        |> List.mapi (fun i fileId -> fileId, byteArrayArray.[i].Value)
                         |> Map.ofList
 
                     let taskStateMap =
@@ -252,7 +252,7 @@ module rec Database =
                             Database = database
                             InformationStateMap = informationStateMap
                             TaskStateMap = taskStateMap
-                            FileMap = fileMap
+                            FileMap = fileMap |> Map.mapValues JS.byteArrayToHexString
                         }
 
                     if databaseState.TaskStateMap

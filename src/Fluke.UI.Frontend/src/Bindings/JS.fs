@@ -201,7 +201,7 @@ module JS =
     let inline hexStringToByteArray (text: string) =
         let rec loop acc =
             function
-            | a :: b :: tail -> loop (parseInt $"{a}{b}" 16 :: acc) tail
+            | a :: b :: tail -> loop ((parseInt $"{a}{b}" 16 |> byte) :: acc) tail
             | [ _ ] -> failwith "invalid string length"
             | [] -> acc
 

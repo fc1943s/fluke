@@ -40,8 +40,6 @@ module TempUI =
         static member inline Value (DateId referenceDay) = referenceDay
 
         static member inline Format dateIdFormat dateId =
-            printfn $"dateId.Format dateIdFormat='{dateIdFormat}' dateId='{dateId}'"
-
             match dateId
                   |> Option.ofObjUnbox
                   |> Option.map DateId.Value,

@@ -79,8 +79,14 @@ module InformationView =
 
     [<ReactComponent>]
     let CellsWrapper informationTaskIdAtom =
-        let _information, taskIdAtoms = Store.useValue informationTaskIdAtom
-        Cells.Cells taskIdAtoms
+        let informationTaskId = Store.useValue informationTaskIdAtom
+
+        Cells.Cells (
+            informationTaskId
+            |> Option.ofObjUnbox
+            |> Option.map snd
+            |> Option.defaultValue [||]
+        )
 
     [<ReactComponent>]
     let KindCellsWrapper kindInformationTaskIdAtom =

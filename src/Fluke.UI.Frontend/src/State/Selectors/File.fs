@@ -10,9 +10,9 @@ open Fluke.UI.Frontend.State
 
 
 module rec File =
-    let rec hexString =
+    let rec byteArray =
         Store.readSelectorFamily (
-            $"{nameof File}/{nameof hexString}",
+            $"{nameof File}/{nameof byteArray}",
             (fun (fileId: FileId) getter ->
                 let chunkCount = Store.value getter (Atoms.File.chunkCount fileId)
 
@@ -47,17 +47,20 @@ module rec File =
                                     chunks.[0].Length={if chunks.Length = 0 then unbox null else chunks.[0].Length}
                                     ")
 
-                        Some (chunks |> String.concat ""))
+                        Some (
+                            chunks
+                            |> String.concat ""
+                            |> JS.hexStringToByteArray
+                        ))
         )
 
     let rec blob =
         Store.readSelectorFamily (
             $"{nameof File}/{nameof blob}",
             (fun (fileId: FileId) getter ->
-                let hexString = Store.value getter (hexString fileId)
+                let byteArray = Store.value getter (byteArray fileId)
 
-                hexString
-                |> Option.map JS.hexStringToByteArray
+                byteArray
                 |> Option.map (fun bytes -> JS.uint8ArrayToBlob (JSe.Uint8Array (unbox<uint8 []> bytes)) "image/png"))
         )
 

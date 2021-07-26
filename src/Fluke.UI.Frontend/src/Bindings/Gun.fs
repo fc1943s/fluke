@@ -174,28 +174,27 @@ module Gun =
 
     let inline userDecode<'TValue> (keys: GunKeys) data =
         promise {
-            try
-                let! decrypted =
-                    promise {
+            let! decrypted =
+                promise {
+                    try
                         let! verified = sea.verify data keys.pub
                         let! decrypted = sea.decrypt verified keys
                         return decrypted
-                    }
-                //
-//                    printfn
-//                        $"userDecode
-//                    decrypted={decrypted}
-//                    typeof decrypted={jsTypeof decrypted}"
+                    with
+                    | ex ->
+                        JS.consoleError ("userDecode decrypt exception", ex, data)
+                        return null
+                }
 
-                let decoded = decrypted |> Json.decode<'TValue option>
+            let decoded =
+                try
+                    decrypted |> Json.decode<'TValue option>
+                with
+                | ex ->
+                    JS.consoleError ("userDecode decode error. ex=", ex, "data=", data, "decrypted=", decrypted)
+                    None
 
-                //                    printfn $"userDecode decoded={decoded}"
-//
-                return decoded
-            with
-            | ex ->
-                JS.consoleError ("[exception5]", ex, data)
-                return None
+            return decoded
         }
 
     let inline userEncode<'TValue> (gun: IGunChainReference) (value: 'TValue) =
