@@ -132,7 +132,11 @@ module JS =
 
     match window id with
     | None -> ()
-    | Some window -> window?Debug <- false
+    | Some window ->
+        window?Debug <- false
+
+        if window?Cypress <> null then
+            window?Debug <- true
 
     let inline isDebug () =
         let debug =
