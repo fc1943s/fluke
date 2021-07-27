@@ -10,19 +10,19 @@ module Setters =
     open UserInteraction
     open State
 
-    let useSetCellSelectionMap () =
+    let useSetTaskSelectedDateIdMap () =
         Store.useCallback (
             (fun getter setter newSelection ->
                 promise {
                     let sortedTaskIdArray = Store.value getter Selectors.Session.sortedTaskIdArray
-                    let cellSelectionMap = Store.value getter Selectors.Session.cellSelectionMap
+                    let visibleTaskSelectedDateIdMap = Store.value getter Selectors.Session.visibleTaskSelectedDateIdMap
 
                     let operations =
                         sortedTaskIdArray
                         |> Array.collect
                             (fun taskId ->
                                 let dates =
-                                    cellSelectionMap
+                                    visibleTaskSelectedDateIdMap
                                     |> Map.tryFind taskId
                                     |> Option.defaultValue Set.empty
 
@@ -54,7 +54,7 @@ module Setters =
         )
 
     let useSetSelected () =
-        let setCellSelectionMap = useSetCellSelectionMap ()
+        let setTaskSelectedDateIdMap = useSetTaskSelectedDateIdMap ()
 
         Store.useCallback (
             (fun getter _ (taskId, dateId, newValue) ->
@@ -87,17 +87,19 @@ module Setters =
 
                                     oldSelection |> Map.add taskId newSet
 
-                                let oldSelection = Store.value getter Selectors.Session.cellSelectionMap
+                                let oldSelection = Store.value getter Selectors.Session.visibleTaskSelectedDateIdMap
 
                                 return swapSelection oldSelection taskId dateId
                             }
                         | true, _ ->
                             promise {
                                 let sortedTaskIdArray = Store.value getter Selectors.Session.sortedTaskIdArray
-                                let oldCellSelectionMap = Store.value getter Selectors.Session.cellSelectionMap
+
+                                let visibleTaskSelectedDateIdMap =
+                                    Store.value getter Selectors.Session.visibleTaskSelectedDateIdMap
 
                                 let initialTaskIdSet =
-                                    oldCellSelectionMap
+                                    visibleTaskSelectedDateIdMap
                                     |> Map.toSeq
                                     |> Seq.filter (fun (_, dates) -> Set.isEmpty dates |> not)
                                     |> Seq.map fst
@@ -112,7 +114,7 @@ module Setters =
                                     |> Array.rev
 
                                 let initialDateList =
-                                    oldCellSelectionMap
+                                    visibleTaskSelectedDateIdMap
                                     |> Map.values
                                     |> Set.unionMany
                                     |> Set.add dateId
@@ -140,10 +142,9 @@ module Setters =
                                 return newMap
                             }
 
-
-                    do! setCellSelectionMap newCellSelectionMap
+                    do! setTaskSelectedDateIdMap newCellSelectionMap
                 }),
             [|
-                box setCellSelectionMap
+                box setTaskSelectedDateIdMap
             |]
         )

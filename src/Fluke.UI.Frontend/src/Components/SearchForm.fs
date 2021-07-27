@@ -256,11 +256,7 @@ module SearchForm =
                     ]
 
                 if searchResults.IsEmpty then
-                    UI.box
-                        (fun _ -> ())
-                        [
-                            str "No results"
-                        ]
+                    UI.str "No results"
                 else
                     yield!
                         searchResults
@@ -284,11 +280,7 @@ module SearchForm =
                                 UI.box
                                     (fun x -> x.marginBottom <- "10px")
                                     [
-                                        UI.box
-                                            (fun _ -> ())
-                                            [
-                                                str header
-                                            ]
+                                        UI.str header
                                         UI.box
                                             (fun x -> x.marginLeft <- "25px")
                                             [

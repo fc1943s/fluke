@@ -3,6 +3,7 @@ namespace Fluke.UI.Frontend.Bindings
 open Fable.Core.JsInterop
 open Browser.Types
 open Fable.Core
+open Fable.React
 open Fluke.Shared
 open Feliz
 
@@ -340,6 +341,12 @@ module UI =
     let textarea<'T> = renderChakraComponent react.Textarea
     let tooltip<'T> = renderChakraComponent react.Tooltip
 
+    let str text =
+        box
+            (fun _ -> ())
+            [
+                str text
+            ]
 
     type IToastProps =
         abstract title : string with get, set

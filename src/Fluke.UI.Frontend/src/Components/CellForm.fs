@@ -19,6 +19,8 @@ module CellForm =
         let (TaskName taskName) = Store.useValue (Atoms.Task.name taskId)
 
         let attachmentIdSet = Store.useValue (Selectors.Cell.attachmentIdSet (taskId, dateId))
+        let visibleTaskSelectedDateIdMap = Store.useValue Selectors.Session.visibleTaskSelectedDateIdMap
+
 
         let attachmentIdList =
             React.useMemo (
@@ -85,26 +87,33 @@ module CellForm =
                         (UI.stack
                             (fun x -> x.spacing <- "10px")
                             [
-                                UI.box
-                                    (fun x -> x.userSelect <- "text")
-                                    [
-                                        str $"""Task: {taskName}"""
-                                    ]
-                                UI.box
-                                    (fun x -> x.userSelect <- "text")
-                                    [
-                                        str $"""Date: {dateId |> DateId.Value |> FlukeDate.Stringify}"""
-                                    ]
+                                if visibleTaskSelectedDateIdMap
+                                   |> Map.keys
+                                   |> Seq.length
+                                   <= 1 then
+                                    UI.box
+                                        (fun x -> x.userSelect <- "text")
+                                        [
+                                            str $"""Task: {taskName}"""
+                                        ]
+
+                                if visibleTaskSelectedDateIdMap
+                                   |> Map.values
+                                   |> Seq.fold Set.union Set.empty
+                                   |> Set.count
+                                   <= 1 then
+                                    UI.box
+                                        (fun x -> x.userSelect <- "text")
+                                        [
+                                            str $"""Date: {dateId |> DateId.Value |> FlukeDate.Stringify}"""
+                                        ]
+
                                 UI.stack
                                     (fun x ->
                                         x.direction <- "row"
                                         x.alignItems <- "center")
                                     [
-                                        UI.box
-                                            (fun _ -> ())
-                                            [
-                                                str "Status: "
-                                            ]
+                                        UI.str "Status: "
                                         CellMenu.CellMenu taskIdAtom dateIdAtom None false
                                     ]
                             ])

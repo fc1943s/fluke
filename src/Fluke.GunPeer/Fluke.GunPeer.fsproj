@@ -8,6 +8,6 @@
         <Content Include="package.json" />
 		<Content Include="server.js" />
 		<Content Include="ssl.cmd" />
-        <Content Include="package-lock.json" />
+        <Content Include="yarn.lock" />
     </ItemGroup>
 </Project>

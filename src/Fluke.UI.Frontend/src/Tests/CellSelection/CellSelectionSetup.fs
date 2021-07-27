@@ -66,7 +66,7 @@ module CellSelectionSetup =
             do! RTL.waitFor id
 
             let cellSelectionMap =
-                Store.value getFn Selectors.Session.cellSelectionMap
+                Store.value getFn Selectors.Session.visibleTaskSelectedDateIdMap
                 |> Map.map (fun _ dateIdSet -> dateIdSet |> Set.map DateId.Value)
 
             Jest

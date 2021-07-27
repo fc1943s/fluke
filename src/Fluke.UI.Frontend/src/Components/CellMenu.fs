@@ -21,13 +21,13 @@ module CellMenu =
     let PostponeTooltipText dateIdAtom =
         let position = Store.useValue Atoms.Session.position
         let dateId = Store.useValue dateIdAtom
-        let cellSelectionMap = Store.useValue Selectors.Session.cellSelectionMap
+        let visibleTaskSelectedDateIdMap = Store.useValue Selectors.Session.visibleTaskSelectedDateIdMap
 
         str
             $"""Postpone{match position, dateId with
                          | Some position, dateId when
                              position.Date = (dateId |> DateId.Value)
-                             && cellSelectionMap
+                             && visibleTaskSelectedDateIdMap
                                 |> Map.values
                                 |> Seq.forall ((=) (Set.singleton dateId))
                              ->
@@ -42,7 +42,7 @@ module CellMenu =
         let toast = UI.useToast ()
         let cellSize = Store.useValue Atoms.User.cellSize
         let sessionStatus, setSessionStatus = Store.useState (Selectors.Cell.sessionStatus (taskId, dateId))
-        let cellSelectionMap = Store.useValue Selectors.Session.cellSelectionMap
+        let visibleTaskSelectedDateIdMap = Store.useValue Selectors.Session.visibleTaskSelectedDateIdMap
         let darkMode = Store.useValue Atoms.User.darkMode
 
         let postponedUntil, setPostponedUntil =
@@ -69,7 +69,7 @@ module CellMenu =
             Store.useCallback (
                 (fun _ setter (onClickStatus: CellStatus) ->
                     promise {
-                        cellSelectionMap
+                        visibleTaskSelectedDateIdMap
                         |> Map.iter
                             (fun taskId dateIdSet ->
                                 dateIdSet
@@ -79,7 +79,7 @@ module CellMenu =
 
                         Store.set setter (Selectors.Cell.sessionStatus (taskId, dateId)) onClickStatus
 
-                        cellSelectionMap
+                        visibleTaskSelectedDateIdMap
                         |> Map.keys
                         |> Seq.iter (fun taskId -> Store.set setter (Atoms.Task.selectionSet taskId) Set.empty)
 
@@ -91,7 +91,7 @@ module CellMenu =
                     box onClose
                     box taskId
                     box dateId
-                    box cellSelectionMap
+                    box visibleTaskSelectedDateIdMap
                 |]
             )
 
@@ -126,21 +126,25 @@ module CellMenu =
                 (fun _ setter _ ->
                     promise {
                         let newMap =
-                            if cellSelectionMap.Count = 1 then
-                                cellSelectionMap
+                            if visibleTaskSelectedDateIdMap.Count = 1 then
+                                visibleTaskSelectedDateIdMap
                                 |> Map.mapValues (Seq.random >> Set.singleton)
                             else
-                                let key = cellSelectionMap |> Map.keys |> Seq.random
+                                let key =
+                                    visibleTaskSelectedDateIdMap
+                                    |> Map.keys
+                                    |> Seq.random
 
-                                cellSelectionMap
+                                visibleTaskSelectedDateIdMap
                                 |> Map.map (fun key' value -> if key' = key then value else Set.empty)
 
                         match cellUIFlag with
                         | UIFlag.Cell (taskId, dateId) when
-                            cellSelectionMap
+                            visibleTaskSelectedDateIdMap
                             |> Map.keys
                             |> Seq.contains taskId
-                            && cellSelectionMap.[taskId] |> Set.contains dateId
+                            && visibleTaskSelectedDateIdMap.[taskId]
+                               |> Set.contains dateId
                             && (newMap |> Map.keys |> Seq.contains taskId |> not
                                 || newMap.[taskId] |> Set.contains dateId |> not)
                             ->
@@ -167,7 +171,7 @@ module CellMenu =
                 [|
                     box onClose
                     box cellUIFlag
-                    box cellSelectionMap
+                    box visibleTaskSelectedDateIdMap
                     box setCellUIFlag
                 |]
             )
@@ -270,21 +274,12 @@ module CellMenu =
                                                 }))
                                 ]
 
-                        UI.box
-                            (fun _ -> ())
-                            [
-                                str "Complete"
-                            ]
-                        |> wrapButtonTooltip Completed
+                        UI.str "Complete" |> wrapButtonTooltip Completed
 
                         UI.box
                             (fun _ -> ())
                             [
-                                UI.box
-                                    (fun _ -> ())
-                                    [
-                                        str "Dismiss"
-                                    ]
+                                UI.str "Dismiss"
                                 UI.box
                                     (fun _ -> ())
                                     [
@@ -359,31 +354,27 @@ module CellMenu =
                                         ]
                                 ])
 
-                        UI.box
-                            (fun x -> x.padding <- "4px")
+                        UI.stack
+                            (fun x ->
+                                x.padding <- "4px"
+                                x.spacing <- "8px")
                             [
-                                UI.box
-                                    (fun _ -> ())
-                                    [
-                                        str "Schedule"
-                                    ]
-                                UI.box
-                                    (fun x -> x.marginTop <- "8px")
-                                    [
-                                        str
-                                            """Manually schedule a task,
+                                UI.str "Schedule"
+                                UI.str
+                                    """Manually schedule a task,
 overriding any other behavior.
 """
-                                    ]
                             ]
                         |> wrapButtonTooltip Scheduled
 
-                        if cellSelectionMap.IsEmpty
-                           || (cellSelectionMap.Count = 1
-                               && cellSelectionMap.[cellSelectionMap |> Map.keys |> Seq.head]
+                        if visibleTaskSelectedDateIdMap.IsEmpty
+                           || (visibleTaskSelectedDateIdMap.Count = 1
+                               && visibleTaskSelectedDateIdMap.[visibleTaskSelectedDateIdMap
+                                                                |> Map.keys
+                                                                |> Seq.head]
                                    .Count = 1)
                            || (not floating
-                               && cellSelectionMap
+                               && visibleTaskSelectedDateIdMap
                                   |> Map.tryFind taskId
                                   |> Option.defaultValue Set.empty
                                   |> Set.contains dateId

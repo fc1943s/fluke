@@ -205,9 +205,8 @@ module rec Session =
 
                 let filteredTaskIdArray =
                     selectedTaskStateArray
-                    |> Array.indexed
                     |> Array.filter
-                        (fun (i, taskState) ->
+                        (fun taskState ->
                             let text =
                                 (taskState.Task.Name |> TaskName.Value |> checkText)
                                 || (taskState.Task.Information
@@ -249,7 +248,7 @@ module rec Session =
                             && duration
                             && pendingAfter
                             && missedAfter)
-                    |> Array.map (fun (_, taskState) -> taskState.Task.Id)
+                    |> Array.map (fun taskState -> taskState.Task.Id)
 
 
                 JS.log
@@ -418,9 +417,9 @@ module rec Session =
                 |> Store.value getter)
         )
 
-    let rec selectionSetMap =
+    let rec taskSelectedDateIdMap =
         Store.readSelector (
-            $"{nameof Session}/{nameof selectionSetMap}",
+            $"{nameof Session}/{nameof taskSelectedDateIdMap}",
             (fun getter ->
                 let sortedTaskIdArray = Store.value getter sortedTaskIdArray
 
@@ -432,20 +431,20 @@ module rec Session =
                 |> Map.ofArray)
         )
 
-    let rec cellSelectionMap =
+    let rec visibleTaskSelectedDateIdMap =
         Store.readSelector (
-            $"{nameof Session}/{nameof cellSelectionMap}",
+            $"{nameof Session}/{nameof visibleTaskSelectedDateIdMap}",
             (fun getter ->
-                let selectionSetMap = Store.value getter selectionSetMap
+                let taskSelectedDateIdMap = Store.value getter taskSelectedDateIdMap
                 let dateIdArray = Store.value getter Selectors.dateIdArray
 
-                selectionSetMap
+                taskSelectedDateIdMap
                 |> Map.keys
                 |> Seq.map
                     (fun taskId ->
                         let dates =
                             dateIdArray
-                            |> Array.map (fun dateId -> dateId, selectionSetMap.[taskId].Contains dateId)
+                            |> Array.map (fun dateId -> dateId, taskSelectedDateIdMap.[taskId].Contains dateId)
                             |> Array.filter snd
                             |> Array.map fst
                             |> Set.ofSeq

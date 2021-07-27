@@ -443,12 +443,10 @@ skipping unsubscribe, no gun atom node.")
             JS.debounce
                 (fun (ticks, newValue) ->
                     try
-                        JS.log
+                        JS.logFiltered
+                            newValue
                             (fun () ->
-                                if (string newValue).StartsWith "Ping " then
-                                    null
-                                else
-                                    $"gun.on() value. start.
+                                $"gun.on() value. start.
 newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
 lastValue={lastValue}
 ticks={ticks}
@@ -456,12 +454,10 @@ ticks={ticks}
 
                         match syncPaused, lastValue with
                         | true, _ ->
-                            JS.log
+                            JS.logFiltered
+                                newValue
                                 (fun () ->
-                                    if (string newValue).StartsWith "Ping " then
-                                        null
-                                    else
-                                        $"gun.on() value. skipping. Sync paused.
+                                    $"gun.on() value. skipping. Sync paused.
 newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
 lastValue={lastValue}
 ticks={ticks}
@@ -477,12 +473,10 @@ ticks={ticks}
 
                             Profiling.addCount $"{gunNodePath} on() skip"
 
-                            JS.log
+                            JS.logFiltered
+                                newValue
                                 (fun () ->
-                                    if (string newValue).StartsWith "Ping " then
-                                        null
-                                    else
-                                        $"gun.on() value. skipping.
+                                    $"gun.on() value. skipping.
 newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
 lastValue={lastValue}
 ticks={ticks}
@@ -490,7 +484,8 @@ ticks={ticks}
                         | _ ->
                             Profiling.addCount $"{gunNodePath} on() assign"
 
-                            JS.log
+                            JS.logFiltered
+                                newValue
                                 (fun () ->
                                     let _lastValue =
                                         match unbox lastValue with
@@ -505,10 +500,7 @@ newValue={newValue} typeof newValue={jsTypeof newValue}
 ticks={ticks}
 {baseInfo ()}                                      ")
 
-                                    if (string newValue).StartsWith "Ping " then
-                                        null
-                                    else
-                                        $"gun.on() value. triggering. ##
+                                    $"gun.on() value. triggering. ##
 lastValue={lastValue} typeof _lastValue={jsTypeof _lastValue}
 newValue={newValue} typeof newValue={jsTypeof newValue}
 ticks={ticks}
@@ -522,12 +514,10 @@ ticks={ticks}
                             // setAtom internalAtom
 
                             if unbox newValue = JS.undefined then
-                                JS.log
+                                JS.logFiltered
+                                    newValue
                                     (fun () ->
-                                        if (string newValue).StartsWith "Ping " then
-                                            null
-                                        else
-                                            $"gun.on() value. skipping. newValue=undefined
+                                        $"gun.on() value. skipping. newValue=undefined
 newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
 lastValue={lastValue}
 ticks={ticks}
@@ -579,20 +569,18 @@ ticks={ticks}
                                         | Some _, _ -> JS.consoleError "sub already present"
                                         | None, None -> JS.consoleError "username is none (subscription)"
                                         | None, Some username ->
-                                            let! stream =
-                                                hub.streamFrom (Api.Action.Get (username, gunNodePath))
-                                                |> Async.StartAsPromise
-
                                             let subscription =
-                                                stream.subscribe
-                                                    {
-                                                        next =
-                                                            fun (msg: Api.Response) ->
+                                                Gun.batchApiSubscribe
+                                                    {|
+                                                        Hub = hub
+                                                        Action = Api.Action.Get (username, gunNodePath)
+                                                        Fn =
+                                                            fun (_ticks, msg: Api.Response) ->
                                                                 JS.log
                                                                     (fun () ->
                                                                         $"[wrapper.next() HUB stream subscribe]
-                                                                    {baseInfo ()}
-                                                                    msg={msg}")
+                                                                                {baseInfo ()}
+                                                                                msg={msg}")
 
                                                                 match msg with
                                                                 | Api.Response.GetResult result ->
@@ -609,22 +597,9 @@ ticks={ticks}
                                                                             setAtom
                                                                             (DateTime.Now.Ticks, newValue)
                                                                     }
-                                                                    |> Promise.start
-                                                                | _ -> ()
-                                                        complete =
-                                                            fun () ->
-                                                                JS.log
-                                                                    (fun () ->
-                                                                        $"[wrapper.complete() HUB stream subscription]
-                                                                    {baseInfo ()} ")
-                                                        error =
-                                                            fun err ->
-                                                                JS.consoleError (
-                                                                    $"[wrapper.error() HUB stream subscription]
-                                                                    {baseInfo ()} ",
-                                                                    err
-                                                                )
-                                                    }
+                                                                | _ -> promise { () }
+                                                    |}
+
 
                                             lastApiSubscription <- Some subscription
                                     with
@@ -659,12 +634,10 @@ ticks={ticks}
 
 
                                                     if lastApiValue |> DeepEqual.compare newValue then
-                                                        JS.log
+                                                        JS.logFiltered
+                                                            newValue
                                                             (fun () ->
-                                                                if (string newValue).StartsWith "Ping " then
-                                                                    null
-                                                                else
-                                                                    $"debouncedPut() API (update from gun) SKIPPED
+                                                                $"debouncedPut() API (update from gun) SKIPPED
             newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
             {baseInfo ()}                           ")
                                                     else
@@ -696,12 +669,10 @@ ticks={ticks}
                                                             }
                                                             |> Promise.start
                                                         | _ ->
-                                                            JS.log
+                                                            JS.logFiltered
+                                                                newValue
                                                                 (fun () ->
-                                                                    if (string newValue).StartsWith "Ping " then
-                                                                        null
-                                                                    else
-                                                                        $"[$$$$ wrapper.on() API put]
+                                                                    $"[$$$$ wrapper.on() API put]
                 {baseInfo ()}
                 skipping.                                                               ")
                                                 }
@@ -735,22 +706,15 @@ ticks={ticks}
             JS.debounce
                 (fun newValue ->
                     promise {
-                        JS.log
-                            (fun () ->
-                                if (string newValue).StartsWith "Ping " then
-                                    null
-                                else
-                                    "atomFamily.wrapper.set() debounceGunPut promise. #1")
+                        JS.logFiltered newValue (fun () -> "atomFamily.wrapper.set() debounceGunPut promise. #1")
 
                         try
                             match lastGunAtomNode with
                             | Some (key, gunAtomNode) ->
-                                JS.log
+                                JS.logFiltered
+                                    newValue
                                     (fun () ->
-                                        if (string newValue).StartsWith "Ping " then
-                                            null
-                                        else
-                                            $"atomFamily.wrapper.set() debounceGunPut promise. #2 before encode {key}")
+                                        $"atomFamily.wrapper.set() debounceGunPut promise. #2 before encode {key}")
 
                                 let! newValueJson =
                                     if newValue |> JS.ofNonEmptyObj |> Option.isNone then
@@ -758,66 +722,18 @@ ticks={ticks}
                                     else
                                         Gun.userEncode<'TValue> gunAtomNode newValue
 
-                                JS.log
+                                JS.logFiltered
+                                    newValue
                                     (fun () ->
-                                        if (string newValue).StartsWith "Ping " then
-                                            null
-                                        else
-                                            $"atomFamily.wrapper.set() debounceGunPut promise. #3.
+                                        $"atomFamily.wrapper.set() debounceGunPut promise. #3.
 before put {key} newValue={newValue}")
-
-                                match lastGunValue2 with
-                                | Some lastGunValue when lastGunValue |> DeepEqual.compare newValue ->
-                                    JS.log
-                                        (fun () ->
-                                            if (string newValue).StartsWith "Ping " then
-                                                null
-                                            else
-                                                $"debouncedPut() SKIPPED
-newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
-{baseInfo ()}                           ")
-                                | _ ->
-                                    if lastGunValue2.IsNone
-                                       || lastGunValue2
-                                          |> DeepEqual.compare (unbox newValue)
-                                          |> not
-                                       || unbox newValue = null then
-
-                                        let! putResult = Gun.put gunAtomNode newValueJson
-
-                                        if putResult then
-                                            lastGunValue2 <- Some newValue
-
-                                            JS.log
-                                                (fun () ->
-                                                    if (string newValue).StartsWith "Ping " then
-                                                        null
-                                                    else
-                                                        $"atomFamily.wrapper.set() debounceGunPut promise result.
-    newValue={newValue}
-    {key}
-    {baseInfo ()}                                           ")
-                                        else
-                                            Browser.Dom.window?lastPutResult <- putResult
-
-                                            match JS.window id with
-                                            | Some window ->
-                                                if window?Cypress = null then
-                                                    JS.consoleError
-                                                        $"atomFamily.wrapper.set() debounceGunPut promise put error.
-     newValue={newValue} putResult={putResult}
-     {key}
-                                      {baseInfo ()}         "
-                                            | None -> ()
 
                                 match lastApiValue with
                                 | Some lastApiValue when lastApiValue |> DeepEqual.compare newValue ->
-                                    JS.log
+                                    JS.logFiltered
+                                        newValue
                                         (fun () ->
-                                            if (string newValue).StartsWith "Ping " then
-                                                null
-                                            else
-                                                $"debouncedPut() API SKIPPED
+                                            $"debouncedPut() API SKIPPED
 newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
 {baseInfo ()}                           ")
                                 | _ ->
@@ -842,31 +758,58 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
                                         }
                                         |> Promise.start
                                     | _ ->
-                                        JS.log
+                                        JS.logFiltered
+                                            newValue
                                             (fun () ->
-                                                if (string newValue).StartsWith "Ping " then
-                                                    null
-                                                else
-                                                    $"[wrapper.on() API put]
+                                                $"[wrapper.on() API put]
     {baseInfo ()}
     skipping.                                                               ")
-                            //                                    else
-                            //                                        match JS.window id with
-                            //                                        | Some window ->
-                            //                                            if window?Cypress = null then
-                            //                                                JS.consoleError
-                            //                                                    $"atomFamily.wrapper.set() API debounceGunPut promise put error.
-                            //newValue={newValue} putResult={putResult}
-                            //{key}
-                            //                                        {baseInfo ()} "
-                            //                                        | None -> ()
-                            | None ->
-                                JS.log
-                                    (fun () ->
-                                        if (string newValue).StartsWith "Ping " then
-                                            null
+
+                                match lastGunValue2 with
+                                | Some lastGunValue when lastGunValue |> DeepEqual.compare newValue ->
+                                    JS.logFiltered
+                                        newValue
+                                        (fun () ->
+                                            $"debouncedPut() SKIPPED
+newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
+{baseInfo ()}                           ")
+                                | _ ->
+                                    if lastGunValue2.IsNone
+                                       || lastGunValue2
+                                          |> DeepEqual.compare (unbox newValue)
+                                          |> not
+                                       || unbox newValue = null then
+
+                                        let! putResult = Gun.put gunAtomNode newValueJson
+
+                                        if putResult then
+                                            lastGunValue2 <- Some newValue
+
+                                            JS.logFiltered
+                                                newValue
+                                                (fun () ->
+                                                    $"atomFamily.wrapper.set() debounceGunPut promise result.
+    newValue={newValue}
+    {key}
+    {baseInfo ()}                                           ")
                                         else
-                                            $"[gunEffect.debounceGunPut promise]
+                                            Browser.Dom.window?lastPutResult <- putResult
+
+                                            match JS.window id with
+                                            | Some window ->
+                                                if window?Cypress = null then
+                                                    JS.consoleError
+                                                        $"atomFamily.wrapper.set() debounceGunPut promise put error.
+     newValue={newValue} putResult={putResult}
+     {key}
+                                      {baseInfo ()}         "
+                                            | None -> ()
+
+                            | None ->
+                                JS.logFiltered
+                                    newValue
+                                    (fun () ->
+                                        $"[gunEffect.debounceGunPut promise]
 skipping gun put. no gun atom node.
   {baseInfo ()}                                 ")
                         with
@@ -953,12 +896,10 @@ userAtom={userAtom}
                                    || (lastValue.IsNone
                                        && newValue |> DeepEqual.compare defaultValue) then
 
-                                    JS.log
+                                    JS.logFiltered
+                                        newValue
                                         (fun () ->
-                                            if (string newValue).StartsWith "Ping " then
-                                                null
-                                            else
-                                                $"atomFamily.wrapper.set()
+                                            $"atomFamily.wrapper.set()
 wrapper={wrapper}
 userAtom={userAtom}
 oldValue={oldValue}
@@ -970,13 +911,6 @@ $$ (should abort set? oldValue==newValue==lastValue/defaultValue) ")
                                     debouncedPut newValue
 
                                 lastValue <- Some (DateTime.Now.Ticks, newValue)
-
-                                //                                JS.log
-//                                    (fun () ->
-//                                        if (string newValue).StartsWith "Ping " then
-//                                            null
-//                                        else
-//                                            "atomFamily.wrapper.set() ##### lastValue setted. returning ##### ")
 
                                 if JS.jestWorkerId then
                                     match splitAtomPath gunNodePath with
@@ -1228,6 +1162,12 @@ lastAtomPath={lastAtomPath} """
                                         match response with
                                         | Api.Response.FilterResult items ->
                                             if items.Length > 0 then
+                                                JS.log
+                                                    (fun () ->
+                                                        $"@@ atomKeys gun.on() API filter fetching/subscribing] @@@
+                                                setting keys locally. items.Length={items.Length}
+                                                atomPath={atomPath} lastAtomPath={lastAtomPath} {key}")
+
                                                 setData (items |> Array.map onFormat)
                                             else
                                                 JS.log

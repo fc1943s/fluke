@@ -2,6 +2,7 @@ namespace Fluke.UI.Frontend.Hooks
 
 open System
 open Fable.Core.JsInterop
+open Fable.Extras
 open Fable.Core
 open Fluke.Shared
 open Fluke.Shared.Domain.UserInteraction
@@ -124,9 +125,14 @@ module Auth =
         Store.useCallback (
             (fun getter setter (username, password) ->
                 promise {
-                    if username = "" || username = "" then
+                    if username = "" || password = "" then
                         return Error "Required fields"
-                    elif username = (Templates.templatesUser.Username |> Username.Value) then
+                    elif [
+                             Templates.templatesUser.Username |> Username.Value
+                         ]
+                         |> List.contains username
+                         || JSe.RegExp(@"^[^0-9][a-zA-Z0-9]+$").Test username
+                            |> not then
                         return Error "Invalid username"
                     else
                         let gunNamespace = Store.value getter Store.Selectors.gunNamespace

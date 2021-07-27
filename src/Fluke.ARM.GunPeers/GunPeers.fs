@@ -57,7 +57,7 @@ module GunPeers =
                     [
                         let projectDir = "Fluke.GunPeer"
                         "package.json", (File.ReadAllBytes $"../{projectDir}/package.json")
-                        "package-lock.json", (File.ReadAllBytes $"../{projectDir}/package-lock.json")
+                        "yarn.lock", (File.ReadAllBytes $"../{projectDir}/yarn.lock")
                         "server.js", (File.ReadAllBytes $"../{projectDir}/server.js")
 
                         "cert.pem",
@@ -107,7 +107,7 @@ module GunPeers =
                         "/bin/sh"
                         "-c"
                         // We will need to do a retry loop since we can't have a depends_on for the deploymentScript to finish.
-                        "cd /app; apk add --no-cache git; npm install; while true; do yarn start && break; sleep 30; done"
+                        "cd /app; apk add --no-cache git; yarn install; while true; do yarn start && break; sleep 30; done"
                         //                        $"cd /data/{shareName}; while true; do java -Djava.net.preferIPv4Stack=true -Xms1G -Xmx3G -jar server.jar nogui && break; sleep 30; done"
                         ]
                 }

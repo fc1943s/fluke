@@ -70,17 +70,22 @@ module StatusBar =
     let UserIndicator () =
         let username = Store.useValue Store.Atoms.username
 
-        UI.flex
-            (fun _ -> ())
+        UI.stack
+            (fun x ->
+                x.direction <- "row"
+                x.spacing <- "4px")
             [
-                UI.icon
-                    (fun x ->
-                        x.``as`` <- Icons.fa.FaRegUser
-                        x.marginRight <- "4px")
-                    []
+                UI.icon (fun x -> x.``as`` <- Icons.fa.FaRegUser) []
 
                 match username with
-                | Some (Username username) -> str $"User: {username}"
+                | Some (Username username) ->
+                    UI.str "User:"
+
+                    UI.box
+                        (fun x -> x.userSelect <- "text")
+                        [
+                            str username
+                        ]
                 | _ -> nothing
             ]
 
@@ -92,130 +97,130 @@ module StatusBar =
         let (Minute sessionDuration) = Store.useValue Atoms.User.sessionDuration
         let (Minute sessionBreakDuration) = Store.useValue Atoms.User.sessionBreakDuration
 
-        UI.flex
-            (fun _ -> ())
+        UI.stack
+            (fun x ->
+                x.direction <- "row"
+                x.spacing <- "4px")
             [
-                UI.icon
-                    (fun x ->
-                        x.``as`` <- Icons.gi.GiHourglass
-                        x.marginRight <- "4px")
-                    []
+                UI.icon (fun x -> x.``as`` <- Icons.gi.GiHourglass) []
+                UI.str "Sessions:"
 
-                match activeSessions with
-                | [] -> str "Sessions: No active sessions"
-                | activeSessions ->
-                    let getSessionInfo (TempUI.ActiveSession (taskName, Minute duration)) =
-                        let left = sessionDuration - duration
+                UI.box
+                    (fun x -> x.userSelect <- "text")
+                    [
+                        match activeSessions with
+                        | [] -> UI.str "No active sessions"
+                        | activeSessions ->
+                            let getSessionInfo (TempUI.ActiveSession (taskName, Minute duration)) =
+                                let left = sessionDuration - duration
 
-                        match duration < sessionDuration with
-                        | true when duration < 0 ->
-                            {|
-                                TaskName = taskName
-                                SessionType = "Session"
-                                Color = "#d8b324"
-                                Duration = -duration
-                                Left = duration
-                            |}
-                        | true ->
-                            {|
-                                TaskName = taskName
-                                SessionType = "Session"
-                                Color = "#7cca7c"
-                                Duration = duration
-                                Left = left
-                            |}
-                        | false ->
-                            {|
-                                TaskName = taskName
-                                SessionType = "Break"
-                                Color = "#ca7c7c"
-                                Duration = -left
-                                Left = sessionBreakDuration + left
-                            |}
+                                match duration < sessionDuration with
+                                | true when duration < 0 ->
+                                    {|
+                                        TaskName = taskName
+                                        SessionType = "Session"
+                                        Color = "#d8b324"
+                                        Duration = -duration
+                                        Left = duration
+                                    |}
+                                | true ->
+                                    {|
+                                        TaskName = taskName
+                                        SessionType = "Session"
+                                        Color = "#7cca7c"
+                                        Duration = duration
+                                        Left = left
+                                    |}
+                                | false ->
+                                    {|
+                                        TaskName = taskName
+                                        SessionType = "Break"
+                                        Color = "#ca7c7c"
+                                        Duration = -left
+                                        Left = sessionBreakDuration + left
+                                    |}
 
 
-                    Popover.Popover
-                        {|
-                            Trigger =
-                                Tooltip.wrap
-                                    (str "Session Details")
-                                    [
-                                        UI.box
-                                            (fun x -> x.cursor <- "pointer")
-                                            [
-                                                let sessionInfo = getSessionInfo activeSessions.Head
-
-                                                UI.stack
-                                                    (fun x ->
-                                                        x.color <- sessionInfo.Color
-                                                        x.direction <- "row"
-                                                        x.spacing <- "0"
-                                                        x.display <- "inline")
-                                                    [
-                                                        UI.box
-                                                            (fun x -> x.display <- "inline")
-                                                            [
-                                                                str
-                                                                    $"{sessionInfo.SessionType}: {activeSessions.Length} active ("
-                                                            ]
-
-                                                        UI.box
-                                                            (fun x ->
-                                                                x.display <- "inline-block"
-                                                                x.textOverflow <- "ellipsis"
-                                                                x.whiteSpace <- "nowrap"
-                                                                x.overflow <- "hidden"
-                                                                x.verticalAlign <- "bottom"
-                                                                x.maxWidth <- "100px")
-                                                            [
-                                                                str sessionInfo.TaskName
-                                                            ]
-
-                                                        UI.box
-                                                            (fun x -> x.display <- "inline")
-                                                            [
-                                                                str
-                                                                    $"""). {if sessionInfo.Left < 0 then
-                                                                                $"Starts in {sessionInfo.Duration}m."
-                                                                            else
-                                                                                $"Started {sessionInfo.Duration}m ago ({sessionInfo.Left}m left)"}"""
-                                                            ]
-                                                    ]
-                                            ]
-                                    ]
-                            Body =
-                                fun (_disclosure, _fetchInitialFocusRef) ->
-                                    [
-                                        UI.stack
-                                            (fun x -> x.spacing <- "10px")
+                            Popover.Popover
+                                {|
+                                    Trigger =
+                                        Tooltip.wrap
+                                            (str "Session Details")
                                             [
                                                 UI.box
-                                                    (fun x -> x.fontSize <- "1.3rem")
+                                                    (fun x -> x.cursor <- "pointer")
                                                     [
-                                                        str "Session Details"
+                                                        let sessionInfo = getSessionInfo activeSessions.Head
+
+                                                        UI.stack
+                                                            (fun x ->
+                                                                x.color <- sessionInfo.Color
+                                                                x.direction <- "row"
+                                                                x.spacing <- "0"
+                                                                x.display <- "inline")
+                                                            [
+                                                                UI.box
+                                                                    (fun x -> x.display <- "inline")
+                                                                    [
+                                                                        str
+                                                                            $"{sessionInfo.SessionType}: {activeSessions.Length} active ("
+                                                                    ]
+
+                                                                UI.box
+                                                                    (fun x ->
+                                                                        x.display <- "inline-block"
+                                                                        x.textOverflow <- "ellipsis"
+                                                                        x.whiteSpace <- "nowrap"
+                                                                        x.overflow <- "hidden"
+                                                                        x.verticalAlign <- "bottom"
+                                                                        x.maxWidth <- "100px")
+                                                                    [
+                                                                        str sessionInfo.TaskName
+                                                                    ]
+
+                                                                UI.box
+                                                                    (fun x -> x.display <- "inline")
+                                                                    [
+                                                                        str
+                                                                            $"""). {if sessionInfo.Left < 0 then
+                                                                                        $"Starts in {sessionInfo.Duration}m."
+                                                                                    else
+                                                                                        $"Started {sessionInfo.Duration}m ago ({sessionInfo.Left}m left)"}"""
+                                                                    ]
+                                                            ]
                                                     ]
-
-                                                yield!
-                                                    activeSessions
-                                                    |> List.map
-                                                        (fun session ->
-                                                            let sessionInfo = getSessionInfo session
-
-                                                            UI.flex
-                                                                (fun x -> x.color <- sessionInfo.Color)
-                                                                [
-                                                                    str
-                                                                        $"""{sessionInfo.SessionType}: {if sessionInfo.Left < 0 then
-                                                                                                            $"Starts in {sessionInfo.Duration}m"
-                                                                                                        else
-                                                                                                            $" {sessionInfo.Duration}m ago ({sessionInfo.Left}m left)"}. Task: {sessionInfo.TaskName}"""
-                                                                ])
                                             ]
-                                    ]
-                        |}
+                                    Body =
+                                        fun (_disclosure, _fetchInitialFocusRef) ->
+                                            [
+                                                UI.stack
+                                                    (fun x -> x.spacing <- "10px")
+                                                    [
+                                                        UI.box
+                                                            (fun x -> x.fontSize <- "1.3rem")
+                                                            [
+                                                                str "Session Details"
+                                                            ]
 
-            //                        | _ -> str "Sessions: Loading sessions"
+                                                        yield!
+                                                            activeSessions
+                                                            |> List.map
+                                                                (fun session ->
+                                                                    let sessionInfo = getSessionInfo session
 
+                                                                    UI.flex
+                                                                        (fun x -> x.color <- sessionInfo.Color)
+                                                                        [
+                                                                            str
+                                                                                $"""{sessionInfo.SessionType}: {if sessionInfo.Left < 0 then
+                                                                                                                    $"Starts in {sessionInfo.Duration}m"
+                                                                                                                else
+                                                                                                                    $" {sessionInfo.Duration}m ago ({sessionInfo.Left}m left)"}. Task: {sessionInfo.TaskName}"""
+                                                                        ])
+                                                    ]
+                                            ]
+                                |}
+                    ]
             ]
 
 
@@ -333,25 +338,27 @@ module StatusBar =
                 |]
             )
 
-        UI.flex
-            (fun _ -> ())
+        UI.stack
+            (fun x ->
+                x.direction <- "row"
+                x.spacing <- "4px")
             [
-                UI.icon
-                    (fun x ->
-                        x.``as`` <- Icons.bi.BiTask
-                        x.marginRight <- "4px")
-                    []
+                UI.icon (fun x -> x.``as`` <- Icons.bi.BiTask) []
 
-                //                        match sortedTaskIdList with
-//                        | sortedTaskIdList ->
+                UI.str "Tasks:"
 
-                Tooltip.wrap
-                    detailsText
+                UI.box
+                    (fun x -> x.userSelect <- "text")
                     [
-                        str
-                            $"Tasks: {sortedTaskIdAtoms.Length} of {selectedTaskIdListByArchive.Length} visible (Total: {total})"
+
+                        Tooltip.wrap
+                            detailsText
+                            [
+                                str
+                                    $"{sortedTaskIdAtoms.Length} of {selectedTaskIdListByArchive.Length} visible (Total: {total})"
+                            ]
+
                     ]
-            //                        | _ -> str "Tasks: Loading tasks"
             ]
 
     [<ReactComponent>]
@@ -366,23 +373,25 @@ module StatusBar =
 
         match position with
         | Some position ->
-            React.fragment [
-                UI.flex
-                    (fun _ -> ())
-                    [
-                        UI.icon
-                            (fun x ->
-                                x.``as`` <- Icons.fa.FaRegClock
-                                x.marginRight <- "4px")
-                            []
+            UI.stack
+                (fun x ->
+                    x.direction <- "row"
+                    x.spacing <- "4px")
+                [
+                    UI.icon (fun x -> x.``as`` <- Icons.fa.FaRegClock) []
 
-                        Tooltip.wrap
-                            (NowIndicator ())
-                            [
-                                str $"Position: {(position |> FlukeDateTime.Stringify).[0..-4]}"
-                            ]
-                    ]
-            ]
+                    UI.str "Position:"
+
+                    UI.box
+                        (fun x -> x.userSelect <- "text")
+                        [
+                            Tooltip.wrap
+                                (NowIndicator ())
+                                [
+                                    str (position |> FlukeDateTime.Stringify).[0..-4]
+                                ]
+                        ]
+                ]
         | None -> str "Position: No databases selected"
 
     [<ReactComponent>]

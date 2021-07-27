@@ -77,10 +77,11 @@ module SelectionListener =
             (fun getter setter e ->
                 promise {
                     if e.key = "Escape" && e.``type`` = "keydown" then
-                        let cellSelectionMap = Store.value getter Selectors.Session.cellSelectionMap
+                        let visibleTaskSelectedDateIdMap =
+                            Store.value getter Selectors.Session.visibleTaskSelectedDateIdMap
 
-                        if not cellSelectionMap.IsEmpty then
-                            cellSelectionMap
+                        if not visibleTaskSelectedDateIdMap.IsEmpty then
+                            visibleTaskSelectedDateIdMap
                             |> Map.keys
                             |> Seq.iter (fun taskId -> Store.set setter (Atoms.Task.selectionSet taskId) Set.empty)
                 })

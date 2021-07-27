@@ -1,13 +1,15 @@
 namespace Fluke.UI.Frontend.Bindings
 
+open Fable.SignalR
+
 #nowarn "40"
 
 
-open System
 open Fable.Core
 open Fable.Core.JsInterop
-open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
+open System
+open Fluke.UI.Frontend.Bindings
 
 
 module Gun =
@@ -178,8 +180,12 @@ module Gun =
                 promise {
                     try
                         let! verified = sea.verify data keys.pub
-                        let! decrypted = sea.decrypt verified keys
-                        return decrypted
+
+                        if verified |> Option.ofObjUnbox |> Option.isNone then
+                            return JS.undefined
+                        else
+                            let! decrypted = sea.decrypt verified keys
+                            return decrypted
                     with
                     | ex ->
                         JS.consoleError ("userDecode decrypt exception", ex, data)
@@ -188,7 +194,11 @@ module Gun =
 
             let decoded =
                 try
-                    decrypted |> Json.decode<'TValue option>
+                    if decrypted |> Option.ofObjUnbox |> Option.isNone then
+                        JS.log (fun () -> $"userDecode decrypt empty. decrypted={decrypted} data={data}")
+                        JS.undefined
+                    else
+                        decrypted |> Json.decode<'TValue option>
                 with
                 | ex ->
                     JS.consoleError ("userDecode decode error. ex=", ex, "data=", data, "decrypted=", decrypted)
@@ -291,6 +301,52 @@ module Gun =
                                 Fn = item.Fn
                             |})
             }
+
+        //        fn >> Promise.start
+        Batcher.batcher (Array.map fn >> Promise.Parallel >> Promise.start) {| interval = 500 |}
+
+    let apiSubscribe<'A, 'R> (hub: HubConnection<'A, 'A, _, 'R, 'R>) action fn =
+        promise {
+            let! stream = hub.streamFrom action |> Async.StartAsPromise
+
+            let subscription =
+                stream.subscribe
+                    {
+                        next = fun (msg: 'R) -> fn msg
+                        complete =
+                            fun () ->
+                                JS.log
+                                    (fun () ->
+                                        $"[apiSubscribe.complete() HUB stream subscription]
+                                                                    action={action} ")
+                        error =
+                            fun err ->
+                                JS.consoleError (
+                                    $"[apiSubscribe.error() HUB stream subscription]
+                                                                    action={action} ",
+                                    err
+                                )
+                    }
+
+            return subscription
+        }
+
+    let batchApiSubscribe<'A, 'R> =
+        let fn
+            (item: {| Hub: HubConnection<'A, 'A, _, 'R, 'R>
+                      Action: 'A
+                      Fn: _ -> JS.Promise<unit> |})
+            =
+            apiSubscribe
+                item.Hub
+                item.Action
+                (fun msg ->
+                    batchData
+                        {|
+                            Timestamp = DateTime.Now.Ticks
+                            Data = msg
+                            Fn = item.Fn
+                        |})
 
         //        fn >> Promise.start
         Batcher.batcher (Array.map fn >> Promise.Parallel >> Promise.start) {| interval = 500 |}

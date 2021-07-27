@@ -80,14 +80,7 @@ module DatabaseForm =
                         (UI.stack
                             (fun x -> x.spacing <- "15px")
                             [
-                                if not debug then
-                                    nothing
-                                else
-                                    UI.box
-                                        (fun _ -> ())
-                                        [
-                                            str $"{databaseId}"
-                                        ]
+                                if not debug then nothing else UI.str $"{databaseId}"
 
                                 Input.Input
                                     {|
@@ -118,11 +111,7 @@ module DatabaseForm =
                                         x.direction <- "row"
                                         x.alignItems <- "center")
                                     [
-                                        UI.box
-                                            (fun _ -> ())
-                                            [
-                                                str "Access:"
-                                            ]
+                                        UI.str "Access:"
 
                                         DatabaseAccessIndicator.DatabaseAccessIndicator ()
                                     ]

@@ -14,10 +14,10 @@ module AttachmentList =
 //                droppableId = nameof AttachmentList
 //                direction = "horizontal"
 //            |}
-        UI.flex
+        UI.stack
             (fun x ->
                 //                x.display <- "flex"
-//                x.flexDirection <- "row"
+                x.direction <- "row"
                 x.marginTop <- "5px"
 
                 x.overflow <- "auto")

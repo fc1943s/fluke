@@ -182,11 +182,7 @@ module AddAttachmentInput =
                                                                             setClipboardVisible (not clipboardVisible) }
                                                         Children =
                                                             [
-                                                                UI.box
-                                                                    (fun _ -> ())
-                                                                    [
-                                                                        str (string clipboardAttachmentIdMap.Count)
-                                                                    ]
+                                                                UI.str (string clipboardAttachmentIdMap.Count)
                                                             ]
                                                     |}
                                             ]

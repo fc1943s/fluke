@@ -56,11 +56,7 @@ module SchedulingSelector =
                         x.alignItems <- "center"
                         x.direction <- "row")
                     [
-                        UI.box
-                            (fun _ -> ())
-                            [
-                                str "Manual"
-                            ]
+                        UI.str "Manual"
 
                         Hint.Hint
                             (fun x ->
@@ -84,11 +80,7 @@ module SchedulingSelector =
                         x.alignItems <- "center"
                         x.direction <- "row")
                     [
-                        UI.box
-                            (fun _ -> ())
-                            [
-                                str "Suggested"
-                            ]
+                        UI.str "Suggested"
 
                         Hint.Hint
                             (fun x ->
@@ -112,21 +104,13 @@ module SchedulingSelector =
                         x.alignItems <- "center"
                         x.direction <- "row")
                     [
-                        UI.box
-                            (fun _ -> ())
-                            [
-                                str "Every"
-                            ]
+                        UI.str "Every"
                         NumberInput
                             (match value with
                              | Recurrency (Offset (Days n)) -> Some n
                              | _ -> Some 1)
                             (fun value -> setValue (Recurrency (Offset (Days value))))
-                        UI.box
-                            (fun _ -> ())
-                            [
-                                str "days"
-                            ]
+                        UI.str "days"
                     ]
             ]
 
@@ -143,21 +127,13 @@ module SchedulingSelector =
                         x.alignItems <- "center"
                         x.direction <- "row")
                     [
-                        UI.box
-                            (fun _ -> ())
-                            [
-                                str "Every"
-                            ]
+                        UI.str "Every"
                         NumberInput
                             (match value with
                              | Recurrency (Offset (Weeks n)) -> Some n
                              | _ -> Some 1)
                             (fun value -> setValue (Recurrency (Offset (Weeks value))))
-                        UI.box
-                            (fun _ -> ())
-                            [
-                                str "weeks"
-                            ]
+                        UI.str "weeks"
                     ]
             ]
 
@@ -174,21 +150,13 @@ module SchedulingSelector =
                         x.alignItems <- "center"
                         x.direction <- "row")
                     [
-                        UI.box
-                            (fun _ -> ())
-                            [
-                                str "Every"
-                            ]
+                        UI.str "Every"
                         NumberInput
                             (match value with
                              | Recurrency (Offset (Months n)) -> Some n
                              | _ -> Some 1)
                             (fun value -> setValue (Recurrency (Offset (Months value))))
-                        UI.box
-                            (fun _ -> ())
-                            [
-                                str "months"
-                            ]
+                        UI.str "months"
                     ]
             ]
 
@@ -200,11 +168,7 @@ module SchedulingSelector =
                 x.alignItems <- "center"
                 x.direction <- "row")
             [
-                UI.box
-                    (fun _ -> ())
-                    [
-                        str "Weekly: "
-                    ]
+                UI.str "Weekly: "
 
                 yield!
                     Enum.ToList<DayOfWeek> ()
@@ -261,11 +225,7 @@ module SchedulingSelector =
                                                             | _ -> Recurrency (Fixed [ Weekly dayOfWeek ])
                                                         )
                                                     })
-                                    UI.box
-                                        (fun _ -> ())
-                                        [
-                                            str (Enum.name dayOfWeek)
-                                        ]
+                                    UI.str (Enum.name dayOfWeek)
                                 ])
             ]
 
@@ -277,11 +237,7 @@ module SchedulingSelector =
                 x.alignItems <- "center"
                 x.direction <- "row")
             [
-                UI.box
-                    (fun _ -> ())
-                    [
-                        str "Monthly: "
-                    ]
+                UI.str "Monthly: "
 
                 UI.stack
                     (fun _ -> ())
@@ -349,11 +305,7 @@ module SchedulingSelector =
                                                                         | _ -> Recurrency (Fixed [ Monthly day ])
                                                                     )
                                                                 })
-                                                UI.box
-                                                    (fun _ -> ())
-                                                    [
-                                                        str (day |> Day.Value |> string)
-                                                    ]
+                                                UI.str (day |> Day.Value |> string)
                                             ])
                             )
                             |> List.map

@@ -25,9 +25,9 @@ module rec DateId =
         Store.readSelectorFamily (
             $"{nameof DateId}/{nameof hasCellSelection}",
             (fun (dateId: DateId) getter ->
-                let cellSelectionMap = Store.value getter Session.cellSelectionMap
+                let visibleTaskSelectedDateIdMap = Store.value getter Session.visibleTaskSelectedDateIdMap
 
-                cellSelectionMap
+                visibleTaskSelectedDateIdMap
                 |> Map.values
                 |> Seq.exists (Set.contains dateId))
         )

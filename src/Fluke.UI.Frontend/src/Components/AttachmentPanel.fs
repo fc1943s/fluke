@@ -41,11 +41,7 @@ module AttachmentPanel =
                                                     attachmentId)
                                 ]
                         else
-                            UI.box
-                                (fun _ -> ())
-                                [
-                                    str "No attachments found"
-                                ]
+                            UI.str "No attachments found"
                     ]
 
                 AddAttachmentInput.AddAttachmentInput attachmentPanelType onAdd

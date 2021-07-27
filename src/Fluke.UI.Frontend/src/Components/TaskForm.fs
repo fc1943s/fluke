@@ -316,11 +316,7 @@ module TaskForm =
                                     UI.sliderThumb (fun _ -> ()) []
                                 ]
 
-                            UI.box
-                                (fun _ -> ())
-                                [
-                                    str (string priorityNumber)
-                                ]
+                            UI.str (string priorityNumber)
                         | None -> nothing
                     ]
             ]
@@ -575,20 +571,12 @@ module TaskForm =
                             (UI.stack
                                 (fun x -> x.spacing <- "15px")
                                 [
-                                    UI.box
-                                        (fun _ -> ())
-                                        [
-                                            str $"Cell Status Count: {statusMap |> Map.count}"
-                                        ]
-                                    UI.box
-                                        (fun _ -> ())
-                                        [
-                                            str
-                                                $"Cell Attachment Count: {cellAttachmentIdMap
-                                                                          |> Map.values
-                                                                          |> Seq.map Set.count
-                                                                          |> Seq.sum}"
-                                        ]
+                                    UI.str $"Cell Status Count: {statusMap |> Map.count}"
+                                    UI.str
+                                        $"Cell Attachment Count: {cellAttachmentIdMap
+                                                                  |> Map.values
+                                                                  |> Seq.map Set.count
+                                                                  |> Seq.sum}"
                                 ])
 
                         (UI.box
@@ -625,14 +613,7 @@ module TaskForm =
                         (UI.stack
                             (fun x -> x.spacing <- "15px")
                             [
-                                if not debug then
-                                    nothing
-                                else
-                                    UI.box
-                                        (fun _ -> ())
-                                        [
-                                            str $"{taskId}"
-                                        ]
+                                if not debug then nothing else UI.str $"{taskId}"
 
                                 DatabaseSelector.DatabaseSelector
                                     taskDatabaseId
@@ -739,12 +720,7 @@ module TaskForm =
 
                                 ]),
                             (match sessions with
-                             | [] ->
-                                 UI.box
-                                     (fun _ -> ())
-                                     [
-                                         str "No sessions found"
-                                     ]
+                             | [] -> UI.str "No sessions found"
                              | sessions ->
                                  UI.stack
                                      (fun _ -> ())

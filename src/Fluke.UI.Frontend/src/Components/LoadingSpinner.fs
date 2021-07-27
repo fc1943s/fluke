@@ -16,11 +16,7 @@ module LoadingSpinner =
                     (fun x -> x.alignItems <- "center")
                     [
                         Spinner.Spinner (fun _ -> ())
-                        UI.box
-                            (fun _ -> ())
-                            [
-                                str "Loading..."
-                            ]
+                        UI.str "Loading..."
                     ]
             ]
 

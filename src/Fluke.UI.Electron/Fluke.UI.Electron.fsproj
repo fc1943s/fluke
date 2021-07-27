@@ -7,7 +7,7 @@
 		<Content Include="src/electron.js" />
 		<Content Include="src/electron-preload.js" />
         <Content Include="package.json" />
-        <Content Include="package-lock.json" />
+        <Content Include="yarn.lock" />
         <Content Include=".gitignore" />
     </ItemGroup>
 </Project>

@@ -135,8 +135,7 @@ module JS =
     | Some window ->
         window?Debug <- false
 
-        if window?Cypress <> null then
-            window?Debug <- true
+        if window?Cypress <> null then window?Debug <- true
 
     let inline isDebug () =
         let debug =
@@ -150,6 +149,9 @@ module JS =
         if isDebug () then
             let result = fn ()
             if result <> null then printfn $"[log] {result}"
+
+    let inline logFiltered newValue fn =
+        log (fun () -> if (string newValue).StartsWith "Ping " then null else fn ())
 
     let inline consoleLog x = Browser.Dom.console.log x
     let inline consoleError x = Browser.Dom.console.error x

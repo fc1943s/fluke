@@ -1,6 +1,6 @@
 ﻿namespace Fluke.UI.Backend
 
-open System.Collections.Generic
+open System.Threading
 open Fable.SignalR
 open Fluke.Shared
 open Fluke.Shared.Domain.UserInteraction
@@ -30,7 +30,7 @@ module Main =
             |> function
                 | Ok rows ->
                     printfn $"table {table} created. rows affected %A{rows}"
-                    ()
+                    Thread.Sleep 50
                 | Error err -> failwith $"create table error err={err}"
 
         let insert (table: string) key value =
@@ -77,10 +77,7 @@ module Main =
         let preKeyFilter (table: string) key =
             connectionString
             |> Sqlite.connect
-            |> Sqlite.query $" SELECT key FROM {table} where key like '%%/@Key/%%' "
-            |> Sqlite.parameters [
-                "@Key", Sqlite.string key
-               ]
+            |> Sqlite.query $""" SELECT key FROM {table} where key like "%%/{key}/%%" """
             |> Sqlite.execute (fun read -> {| Key = read.string "key" |})
             |> function
                 | Ok result ->
@@ -102,12 +99,12 @@ module Main =
         let memoizedCreateTable = getMemoizedCreateTable ()
 
         let update (msg: Api.Action) =
-            printfn $"Model.update() msg={msg}"
+            //            printfn $"Model.update() msg={msg}"
 
             match msg with
             | Api.Action.Connect (Username username) ->
                 memoizedCreateTable username
-                printfn $"Api.Action.Connect username={username}"
+                printfn $"@@@ Api.Action.Connect username={username}"
                 Response.ConnectResult
             | Api.Action.Set (Username username, key, value) ->
                 memoizedCreateTable username
@@ -134,7 +131,7 @@ module Main =
                     |> Seq.distinct
                     |> Seq.toArray
 
-                printfn $"filter {key} total={preResult.Length} result={result.Length}"
+                printfn $"@@@ filter {key} total={preResult.Length} result={result.Length}"
 
                 Response.FilterResult result
 
@@ -166,6 +163,19 @@ module Main =
                         send Model.send
                         invoke Model.invoke
                         stream_from Model.Stream.sendToClient
+                        //                        use_messagepack
+                        //                        with_log_level LogLevel.Trace
+                        with_hub_options (fun options -> options.EnableDetailedErrors <- true)
+
+                        with_after_routing
+                            (fun _x ->
+                                printfn "saturn.with_after_routing()"
+                                _x)
+
+                        with_before_routing
+                            (fun _x ->
+                                printfn "saturn.with_before_routing()"
+                                _x)
 
                         with_on_disconnected (fun ex _hub -> task { printfn $"saturn.with_on_disconnected() ex={ex}" })
 
@@ -180,6 +190,7 @@ module Main =
                     }
                 )
 
+                //                config
                 use_cors
                     "cors"
                     (fun corsBuilder ->
@@ -193,11 +204,18 @@ module Main =
 
                 url "https://0.0.0.0:33921/"
                 use_gzip
-                //                disable_diagnostics
+                disable_diagnostics
                 use_developer_exceptions
                 memory_cache
                 no_router
-                logging (fun logging -> logging.SetMinimumLevel LogLevel.Warning |> ignore)
+
+                logging
+                    (fun logging ->
+                        logging.SetMinimumLevel LogLevel.Debug |> ignore
+
+                        logging.AddFilter ("Microsoft.", LogLevel.Warning)
+                        |> ignore)
+
                 force_ssl
             //                                    return result
             }

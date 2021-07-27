@@ -96,7 +96,7 @@ module Full =
         "tests"
         (fun () ->
             let homeUrl = "https://localhost:33922"
-            let timeout = 40000
+            let timeout = 200000
             before (fun () -> Cy.visit homeUrl)
 
             it

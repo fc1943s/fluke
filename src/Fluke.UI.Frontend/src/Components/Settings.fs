@@ -31,11 +31,7 @@ module Settings =
                                 UI.box
                                     (fun _ -> ())
                                     [
-                                        UI.box
-                                            (fun _ -> ())
-                                            [
-                                                str "Add a relay peer to sync data between devices"
-                                            ]
+                                        UI.str "Add a relay peer to sync data between devices"
 
                                         br []
 

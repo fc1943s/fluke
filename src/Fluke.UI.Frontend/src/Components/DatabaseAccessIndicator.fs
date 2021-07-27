@@ -26,11 +26,7 @@ module DatabaseAccessIndicator =
                                 x.backgroundColor <- "#0f0")
                             []
 
-                        UI.box
-                            (fun _ -> ())
-                            [
-                                str "Private"
-                            ]
+                        UI.str "Private"
 
                     ]
                 UI.iconButton
