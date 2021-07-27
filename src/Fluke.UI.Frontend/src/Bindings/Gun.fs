@@ -250,11 +250,11 @@ module Gun =
                 |> ignore)
 
 
-    let batchData =
+    let batchData<'T> =
         let fn
-            (item: {| Fn: int64 * string -> JS.Promise<unit>
+            (item: {| Fn: int64 * 'T -> JS.Promise<unit>
                       Timestamp: int64
-                      Data: string |})
+                      Data: 'T |})
             =
             //                JS.consoleLog("batchData", item)
             item.Fn (item.Timestamp, item.Data)
@@ -275,10 +275,10 @@ module Gun =
                 fn data)
 
 
-    let batchSubscribe =
+    let batchSubscribe<'T> =
         let fn
             (item: {| GunAtomNode: IGunChainReference
-                      Fn: int64 * string -> JS.Promise<unit> |})
+                      Fn: int64 * 'T -> JS.Promise<unit> |})
             =
             promise {
                 subscribe
