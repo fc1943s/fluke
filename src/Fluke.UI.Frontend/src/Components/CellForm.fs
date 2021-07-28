@@ -105,7 +105,10 @@ module CellForm =
                                     UI.box
                                         (fun x -> x.userSelect <- "text")
                                         [
-                                            str $"""Date: {dateId |> DateId.Value |> FlukeDate.Stringify}"""
+                                            str
+                                                $"Date: {dateId
+                                                         |> DateId.ValueOrDefault
+                                                         |> FlukeDate.Stringify}"
                                         ]
 
                                 UI.stack

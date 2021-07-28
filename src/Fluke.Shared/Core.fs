@@ -30,7 +30,7 @@ module private ListIter =
 
 
 module Async =
-    let lift (value: 'T) = async { return value }
+    let inline lift (value: 'T) = async { return value }
 
 
 module Seq =
@@ -51,9 +51,9 @@ module Seq =
                 yield (ListIter.item items) i
         }
 
-    let random items =
-        let arr = items |> Seq.toArray
-        arr.[Random().Next (0, arr.Length)]
+    let inline random items =
+        let len = items |> Seq.length
+        items |> Seq.item (Random().Next (0, len))
 
 
 module Option =
@@ -63,7 +63,7 @@ module Option =
 
 
 module List =
-    let removeAt index list =
+    let inline removeAt index list =
         list
         |> List.indexed
         |> List.filter (fun (i, _) -> i <> index)
@@ -117,11 +117,12 @@ module Map =
 module Set =
     let inline choose fn set =
         set
-        |> Set.toSeq
-        |> Seq.map fn
-        |> Seq.filter Option.isSome
-        |> Seq.map Option.get
-        |> Set.ofSeq
+        |> Set.fold
+            (fun result item ->
+                match fn item with
+                | Some item -> result |> Set.add item
+                | None -> result)
+            Set.empty
 
     let inline toggle value (set: Set<'T>) =
         if set.Contains value then set.Remove value else set.Add value
@@ -175,18 +176,18 @@ module String =
         | NullString -> Some InvalidString
         | _ -> None
 
-    let parseInt (text: string) =
+    let inline parseInt (text: string) =
         match Int32.TryParse text with
         | true, value -> Some value
         | _ -> None
 
-    let parseIntMin min (text: string) =
+    let inline parseIntMin min (text: string) =
         parseInt text
         |> Option.bind (fun n -> if n >= min then Some n else None)
 
     let parseUInt = parseIntMin 0
 
-    let parseIntMax max (text: string) =
+    let inline parseIntMax max (text: string) =
         parseInt text
         |> Option.bind (fun n -> if n <= max then Some n else None)
 
@@ -200,6 +201,6 @@ module Enum =
 
 
 module DateTime =
-    let ticksDiff ticks =
+    let inline ticksDiff ticks =
         (TimeSpan (DateTime.Now.Ticks - ticks))
             .TotalMilliseconds

@@ -54,7 +54,7 @@ module rec Session =
 
                         let valid =
                             database.Name
-                            |> DatabaseName.Value
+                            |> DatabaseName.ValueOrDefault
                             |> String.IsNullOrWhiteSpace
                             |> not
                             && database.Owner

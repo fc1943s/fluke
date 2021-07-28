@@ -119,6 +119,7 @@ module Setters =
                                     |> Set.unionMany
                                     |> Set.add dateId
                                     |> Set.toList
+                                    |> List.choose DateId.Value
                                     |> List.sort
 
                                 let dateSet =
@@ -129,7 +130,6 @@ module Setters =
                                             dateList.Head
                                             dateList |> List.last
                                         ]
-                                        |> List.map DateId.Value
                                         |> Rendering.getDateSequence (0, 0)
                                         |> List.map DateId
                                     |> Set.ofSeq

@@ -152,7 +152,7 @@ module Dropdown =
     let ColorDropdown color setColor props =
         InputDropdown
             (fun x ->
-                x.color <- color |> Color.Value
+                x.color <- color |> Color.Value |> Option.defaultValue null
                 x.fontWeight <- "bold"
                 x.isReadOnly <- true
                 props x)
@@ -161,7 +161,7 @@ module Dropdown =
                 [
                     ColorPicker.render
                         {|
-                            color = color |> Color.Value
+                            color = color |> Color.Value |> Option.defaultValue null
                             onChange = fun color -> setColor (Color (color.hex.ToUpper ()))
                         |}
                 ])

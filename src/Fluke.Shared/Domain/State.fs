@@ -88,7 +88,12 @@ module State =
         static member inline Value (DatabaseId guid) = guid
 
     and DatabaseName with
-        static member inline Value (DatabaseName name) = name
+        static member inline Value value =
+            match value |> Option.ofObjUnbox with
+            | Some (DatabaseName name) -> Some name
+            | _ -> None
+
+        static member inline ValueOrDefault = DatabaseName.Value >> Option.defaultValue ""
 
     and DatabaseState with
         static member inline Create (name, owner, ?position, ?sharedWith, ?id) =

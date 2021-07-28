@@ -148,7 +148,9 @@ module JS =
     let inline log fn =
         if isDebug () then
             let result = fn ()
-            if result <> null then printfn $"[log] {result}"
+
+            if result |> Option.ofObjUnbox |> Option.isSome then
+                printfn $"[log] {result}"
 
     let inline logFiltered newValue fn =
         log (fun () -> if (string newValue).StartsWith "Ping " then null else fn ())

@@ -116,14 +116,12 @@ module Rendering =
                     let isDateMatched =
                         recurrencyList
                         |> List.map
-                            (function
-                            | Weekly dayOfWeek ->
-                                dayOfWeek = (dateId |> DateId.Value |> FlukeDate.DateTime)
-                                    .DayOfWeek
-                            | Monthly day -> day = (dateId |> DateId.Value).Day
-                            | Yearly (day, month) ->
-                                day = (dateId |> DateId.Value).Day
-                                && month = (dateId |> DateId.Value).Month)
+                            (fun recurrency ->
+                                match dateId |> DateId.Value, recurrency with
+                                | Some date, Weekly dayOfWeek -> dayOfWeek = (date |> FlukeDate.DateTime).DayOfWeek
+                                | Some date, Monthly day -> day = date.Day
+                                | Some date, Yearly (day, month) -> day = date.Day && month = date.Month
+                                | _ -> false)
                         |> List.exists id
 
                     match renderState, group with
@@ -178,7 +176,7 @@ module Rendering =
         let dates =
             taskState.CellStateMap
             |> Map.keys
-            |> Seq.map (DateId.Value >> FlukeDate.DateTime)
+            |> Seq.choose (DateId.Value >> Option.map FlukeDate.DateTime)
             |> Seq.sort
             |> Seq.toArray
 

@@ -269,11 +269,16 @@ module Full =
 
                     Cy2.clickTestId "[data-testid^='cell-']"
 
-                    Cy2.clickTestId $"[data-testid='cell-button-{Color.Value UserState.Default.CellColorCompleted}']"
+                    Cy2.clickTestId
+                        $"[data-testid='cell-button-{Color.Value UserState.Default.CellColorCompleted
+                                                     |> Option.get}']"
 
 
                     Cy2.clickTestId "[data-testid^='cell-']"
-                    Cy2.clickTestId $"[data-testid='cell-button-{Color.Value UserState.Default.CellColorPending}']"
+
+                    Cy2.clickTestId
+                        $"[data-testid='cell-button-{Color.Value UserState.Default.CellColorPending
+                                                     |> Option.get}']"
 
                     Cy.wait 200
 
@@ -289,7 +294,10 @@ module Full =
                     Cy2.waitFor "1 of 1 visible" (Some {| timeout = timeout |})
 
                     Cy2.clickTestId "[data-testid^='cell-']"
-                    Cy2.clickTestId $"[data-testid='cell-button-{Color.Value UserState.Default.CellColorDisabled}']"
+
+                    Cy2.clickTestId
+                        $"[data-testid='cell-button-{Color.Value UserState.Default.CellColorDisabled
+                                                     |> Option.get}']"
 
                     Cy2.waitFor "1 of 1 visible" (Some {| timeout = timeout |})
 

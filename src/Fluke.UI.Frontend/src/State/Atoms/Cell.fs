@@ -8,5 +8,7 @@ module rec Cell =
     let cellIdentifier (taskId: TaskId) (dateId: DateId) =
         [
             taskId |> TaskId.Value |> string
-            dateId |> DateId.Value |> FlukeDate.Stringify
+            dateId
+            |> DateId.ValueOrDefault
+            |> FlukeDate.Stringify
         ]

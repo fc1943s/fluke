@@ -1,10 +1,10 @@
 namespace Fluke.UI.Frontend.Bindings
 
-open Fable.SignalR
 
 #nowarn "40"
 
 
+open Fable.SignalR
 open Fable.Core
 open Fable.Core.JsInterop
 open Fluke.Shared
@@ -259,19 +259,6 @@ module Gun =
                             res false)
                 |> ignore)
 
-
-    let batchData<'T> =
-        let fn
-            (item: {| Fn: int64 * 'T -> JS.Promise<unit>
-                      Timestamp: int64
-                      Data: 'T |})
-            =
-            //                JS.consoleLog("batchData", item)
-            item.Fn (item.Timestamp, item.Data)
-
-        //        fn >> ignore
-        Batcher.batcher (Array.map fn >> Promise.Parallel >> Promise.start) {| interval = 500 |}
-
     let inline subscribe (gun: IGunChainReference) fn =
         gun.on
             (fun data _key ->
@@ -285,25 +272,20 @@ module Gun =
                 fn data)
 
 
-    let batchSubscribe<'T> =
-        let fn
-            (item: {| GunAtomNode: IGunChainReference
-                      Fn: int64 * 'T -> JS.Promise<unit> |})
-            =
-            promise {
-                subscribe
-                    item.GunAtomNode
-                    (fun data ->
-                        batchData
-                            {|
-                                Timestamp = DateTime.Now.Ticks
-                                Data = data
-                                Fn = item.Fn
-                            |})
-            }
+    let batchData<'T> (fn: int64 * 'T -> JS.Promise<unit>) (data: 'T) =
+        Batcher.batch (Batcher.BatchType.Data (data, DateTime.Now.Ticks, fn))
 
-        //        fn >> Promise.start
-        Batcher.batcher (Array.map fn >> Promise.Parallel >> Promise.start) {| interval = 500 |}
+    let batchKeys map fn data =
+        let fn = map >> fn
+        Batcher.batch (Batcher.BatchType.KeysFromServer (data, DateTime.Now.Ticks, fn))
+
+    let batchSubscribe gunAtomNode fn =
+        let fn () = subscribe gunAtomNode (batchData fn)
+        Batcher.batch (Batcher.BatchType.Subscribe fn)
+
+    let batchSet gunAtomNode fn =
+        let fn () = subscribe gunAtomNode (batchData fn)
+        Batcher.batch (Batcher.BatchType.Subscribe fn)
 
     let apiSubscribe<'A, 'R> (hub: HubConnection<'A, 'A, _, 'R, 'R>) action fn =
         promise {
@@ -331,25 +313,12 @@ module Gun =
             return subscription
         }
 
-    let batchApiSubscribe<'A, 'R> =
-        let fn
-            (item: {| Hub: HubConnection<'A, 'A, _, 'R, 'R>
-                      Action: 'A
-                      Fn: _ -> JS.Promise<unit> |})
-            =
-            apiSubscribe
-                item.Hub
-                item.Action
-                (fun msg ->
-                    batchData
-                        {|
-                            Timestamp = DateTime.Now.Ticks
-                            Data = msg
-                            Fn = item.Fn
-                        |})
+    let batchApiSubscribe (hub: HubConnection<'A, 'A, _, 'R, 'R>) action fn =
+        let fn () =
+            apiSubscribe hub action (batchData fn)
+            |> Promise.start
 
-        //        fn >> Promise.start
-        Batcher.batcher (Array.map fn >> Promise.Parallel >> Promise.start) {| interval = 500 |}
+        Batcher.batch (Batcher.BatchType.Subscribe fn)
 
     let inline wrapAtomPath (atomPath: string) =
         let header = $"{nameof Fluke}/"

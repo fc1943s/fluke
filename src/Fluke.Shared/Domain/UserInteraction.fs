@@ -111,11 +111,28 @@ module UserInteraction =
         static member inline Value (Username username) = username
 
     and DateId with
-        static member inline Value (DateId referenceDay) = referenceDay
+        static member inline Value value =
+            match value |> Option.ofObjUnbox with
+            | Some (DateId referenceDay) -> Some referenceDay
+            | _ -> None
+
+        static member inline ValueOrDefault value =
+            value
+            |> DateId.Value
+            |> Option.defaultValue FlukeDate.MinValue
 
     and Color with
-        static member inline Value (Color hex) = hex
+        static member inline Value value =
+            match value |> Option.ofObjUnbox with
+            | Some (Color hex) -> Some hex
+            | _ -> None
+
         static member inline Default = Color "#000000"
+
+        static member inline ValueOrDefault value =
+            value
+            |> Color.Value
+            |> Option.defaultValue (Color.Default |> Color.Value |> Option.get)
 
     and FlukeDate with
         static member inline DateTime
@@ -242,7 +259,7 @@ module UserInteraction =
         | _ -> AfterToday
 
     let inline (|StartOfMonth|StartOfWeek|NormalDay|) (weekStart, dateId) =
-        match dateId |> Option.ofObjUnbox |> Option.map DateId.Value with // TODO: remove |> Option.ofObjUnbox
+        match dateId |> DateId.Value with
         | Some { Day = Day 1 } -> StartOfMonth
         | Some date when (date |> FlukeDate.DateTime).DayOfWeek = weekStart -> StartOfWeek
         | _ -> NormalDay

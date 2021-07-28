@@ -26,7 +26,7 @@ module CellMenu =
         str
             $"""Postpone{match position, dateId with
                          | Some position, dateId when
-                             position.Date = (dateId |> DateId.Value)
+                             position.Date = (dateId |> DateId.ValueOrDefault)
                              && visibleTaskSelectedDateIdMap
                                 |> Map.values
                                 |> Seq.forall ((=) (Set.singleton dateId))
@@ -186,6 +186,7 @@ module CellMenu =
                     x.borderColor <-
                         if darkMode then
                             Color.Value UserState.Default.CellColorDisabled
+                            |> Option.get
                         else
                             "gray.45"
 
@@ -231,7 +232,7 @@ module CellMenu =
                                     if until.IsSome then cellColorPostponedUntil else cellColorPostponed
                                 | Dismissed -> cellColorDismissed
                                 | Scheduled -> cellColorScheduled
-                                |> Color.Value
+                                |> Color.ValueOrDefault
 
                             Tooltip.wrap
                                 tooltipLabel
@@ -256,7 +257,8 @@ module CellMenu =
                                 [
                                     wrapButton
                                         (Icons.fi.FiArrowRight |> Icons.render |> Some)
-                                        (Color.Value UserState.Default.CellColorPending)
+                                        (Color.Value UserState.Default.CellColorPending
+                                         |> Option.get)
                                         (Some
                                             (fun () ->
                                                 promise {
@@ -299,7 +301,7 @@ module CellMenu =
                             (Tooltip.wrap
                                 (str $"Postpone until {postponedUntilLabel}")
                                 [
-                                    wrapButton None (Color.Value cellColorPostponedUntil) None
+                                    wrapButton None (cellColorPostponedUntil |> Color.ValueOrDefault) None
                                 ])
                             postponeUntilLater
                             (fun (_disclosure, fetchInitialFocusRef) ->
@@ -386,7 +388,8 @@ overriding any other behavior.
                                 [
                                     wrapButton
                                         (Icons.bi.BiShuffle |> Icons.render |> Some)
-                                        (Color.Value UserState.Default.CellColorSuggested)
+                                        (Color.Value UserState.Default.CellColorSuggested
+                                         |> Option.get)
                                         (Some random)
                                 ]
 
@@ -397,7 +400,8 @@ overriding any other behavior.
                                 [
                                     wrapButtonStatus
                                         (Icons.md.MdClear |> Icons.render |> Some)
-                                        (Color.Value UserState.Default.CellColorDisabled)
+                                        (Color.Value UserState.Default.CellColorDisabled
+                                         |> Option.get)
                                         Disabled
                                 ]
                         | _ -> nothing

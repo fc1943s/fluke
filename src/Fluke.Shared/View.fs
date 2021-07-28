@@ -71,8 +71,11 @@ module View =
                     |> Seq.exists
                         (fun (dateId, cellState) ->
                             let dateInRange =
-                                dateId |> DateId.Value |> FlukeDate.DateTime
-                                >==< (dateRangeStart, dateRangeEnd)
+                                match dateId
+                                      |> DateId.Value
+                                      |> Option.map FlukeDate.DateTime with
+                                | Some date -> date >==< (dateRangeStart, dateRangeEnd)
+                                | None -> false
 
                             let hasRelevantData =
                                 not cellState.SessionList.IsEmpty

@@ -54,7 +54,11 @@ module rec Selectors =
 
                 dateIdArray
                 |> Array.indexed
-                |> Array.groupBy (fun (_, dateId) -> dateId |> DateId.Value |> fun date -> date.Month)
+                |> Array.groupBy
+                    (fun (_, dateId) ->
+                        dateId
+                        |> DateId.Value
+                        |> Option.map (fun date -> date.Month))
                 |> Array.map (fun (_, dates) -> dates |> Array.map (fun (i, _) -> dateIdAtoms.[i])))
         )
 

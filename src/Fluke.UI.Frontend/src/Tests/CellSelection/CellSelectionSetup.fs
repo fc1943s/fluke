@@ -34,10 +34,9 @@ module CellSelectionSetup =
                     let taskName = Store.value getFn (Atoms.Task.name taskId)
 
                     dateIdArray
+                    |> Array.choose DateId.Value
                     |> Array.map
-                        (fun dateId ->
-                            let date = dateId |> DateId.Value
-
+                        (fun date ->
                             let el =
                                 subject.queryByTestId
                                     $"cell-{taskId}-{(date |> FlukeDate.DateTime).ToShortDateString ()}"
@@ -67,7 +66,7 @@ module CellSelectionSetup =
 
             let cellSelectionMap =
                 Store.value getFn Selectors.Session.visibleTaskSelectedDateIdMap
-                |> Map.map (fun _ dateIdSet -> dateIdSet |> Set.map DateId.Value)
+                |> Map.map (fun _ dateIdSet -> dateIdSet |> Set.choose DateId.Value)
 
             Jest
                 .expect(toString cellSelectionMap)

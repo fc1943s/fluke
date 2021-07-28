@@ -84,7 +84,9 @@ module Cell =
             (fun x ->
                 UI.setTestId
                     x
-                    $"cell-{taskId}-{(dateId |> DateId.Value |> FlukeDate.DateTime)
+                    $"cell-{taskId}-{(dateId
+                                      |> DateId.ValueOrDefault
+                                      |> FlukeDate.DateTime)
                                          .ToShortDateString ()}"
 
                 if isReadWrite then x.onClick <- onCellClick
@@ -106,7 +108,7 @@ module Cell =
                          | Postponed until -> if until.IsSome then cellColorPostponedUntil else cellColorPostponed
                          | Dismissed -> cellColorDismissed
                          | Scheduled -> cellColorScheduled
-                     |> Color.Value)
+                     |> Color.ValueOrDefault)
                     + (if isToday then "aa"
                        elif input.SemiTransparent then "d9"
                        else "")

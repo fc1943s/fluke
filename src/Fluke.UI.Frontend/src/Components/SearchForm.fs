@@ -158,21 +158,25 @@ module SearchForm =
                                                                             yield!
                                                                                 searchAttachments
                                                                                     cellState.AttachmentStateList
-                                                                                |> List.map
+                                                                                |> List.choose
                                                                                     (fun attachmentText ->
-                                                                                        SearchResultType.CellAttachment (
-                                                                                            taskName,
-                                                                                            dateId
-                                                                                            |> DateId.Value
-                                                                                            |> FlukeDate.Stringify
-                                                                                        ),
-                                                                                        Navigate.Anchor.CellAttachment (
-                                                                                            taskId,
-                                                                                            dateId,
-                                                                                            AttachmentId
-                                                                                                System.Guid.Empty
-                                                                                        ),
-                                                                                        attachmentText)
+                                                                                        match dateId |> DateId.Value with
+                                                                                        | Some date ->
+                                                                                            Some (
+                                                                                                SearchResultType.CellAttachment (
+                                                                                                    taskName,
+                                                                                                    date
+                                                                                                    |> FlukeDate.Stringify
+                                                                                                ),
+                                                                                                Navigate.Anchor.CellAttachment (
+                                                                                                    taskId,
+                                                                                                    dateId,
+                                                                                                    AttachmentId
+                                                                                                        System.Guid.Empty
+                                                                                                ),
+                                                                                                attachmentText
+                                                                                            )
+                                                                                        | None -> None)
                                                                         ])
                                                         ])
 

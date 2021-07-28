@@ -30,7 +30,7 @@ module AttachmentIndicator =
                             x.borderTopColor <-
                                 userColor
                                 |> Option.defaultValue Color.Default
-                                |> Color.Value
+                                |> Color.ValueOrDefault
 
                             x.borderLeftWidth <- $"{min (cellSize / 2) 10}px"
                             x.borderLeftColor <- "transparent"

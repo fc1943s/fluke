@@ -50,7 +50,7 @@ module DatabaseSelector =
             |> Store.waitForAll
             |> Store.useValue
             |> Array.toList
-            |> List.map DatabaseName.Value
+            |> List.map DatabaseName.ValueOrDefault
 
 
         let index =

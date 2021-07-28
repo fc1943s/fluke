@@ -170,7 +170,7 @@ module rec Task =
                 | _ ->
                     let dateSequence =
                         dateIdArray
-                        |> Array.map DateId.Value
+                        |> Array.choose DateId.Value
                         |> Array.toList
 
                     let firstDateRange, lastDateRange, taskStateDateSequence =

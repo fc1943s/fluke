@@ -12,7 +12,10 @@ module Logo =
             (fun x ->
                 x.columns <- 2
                 x.borderWidth <- "1px"
-                x.borderColor <- Color.Value UserState.Default.CellColorDisabled)
+
+                x.borderColor <-
+                    Color.Value UserState.Default.CellColorDisabled
+                    |> Option.get)
             [
                 yield!
                     [
@@ -21,6 +24,7 @@ module Logo =
                         Color.Value UserState.Default.CellColorPostponed
                         Color.Value UserState.Default.CellColorCompleted
                     ]
+                    |> List.map Option.get
                     |> List.map
                         (fun color ->
                             UI.box

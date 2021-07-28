@@ -38,8 +38,8 @@ module CellStatusUserIndicator =
 
                                 x.borderBottomColor <-
                                     userColor
-                                    |> Option.defaultValue Color.Default
-                                    |> Color.Value
+                                    |> Option.map Color.ValueOrDefault
+                                    |> Option.get
 
                                 x.borderBottomWidth <- $"{min (cellSize / 2) 10}px"
                                 x.borderLeftColor <- "transparent"
