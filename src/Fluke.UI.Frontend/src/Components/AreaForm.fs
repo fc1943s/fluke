@@ -4,9 +4,12 @@ open Browser.Types
 open Fable.React
 open Feliz
 open Fluke.Shared.Domain.Model
-open Fluke.UI.Frontend.Bindings
+open FsStore
+open FsCore
+open FsUi.Bindings
 open Fable.Core
 open Fluke.Shared
+open FsUi.Components
 
 
 module AreaForm =

@@ -1,8 +1,7 @@
 namespace Fluke.UI.Frontend.Components
 
 open Feliz
-open Fable.React
-open Fluke.UI.Frontend.Bindings
+open FsUi.Bindings
 open Fluke.Shared
 open Fluke.UI.Frontend.Components
 

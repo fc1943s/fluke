@@ -1,5 +1,6 @@
 namespace Fluke.Shared.Domain
 
+open FsCore
 open Fluke.Shared
 open System
 

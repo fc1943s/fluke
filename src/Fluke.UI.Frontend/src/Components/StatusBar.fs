@@ -1,16 +1,20 @@
 namespace Fluke.UI.Frontend.Components
 
+open FsJs
+open FsCore
 open System
 open Fable.React
 open Feliz
 open Fluke.Shared.Domain.State
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.State
-open Fluke.UI.Frontend.Hooks
-open Fluke.UI.Frontend.Bindings
+open FsStore
+open FsUi.Bindings
+open FsUi.Hooks
 open Fluke.Shared
 open Fluke.Shared.Domain
 open Fluke.UI.Frontend.State.State
+open FsUi.Components
 
 
 module StatusBar =
@@ -68,7 +72,7 @@ module StatusBar =
 
     [<ReactComponent>]
     let UserIndicator () =
-        let username = Store.useValue Store.Atoms.username
+        let username = Store.useValue Atoms.username
 
         UI.stack
             (fun x ->

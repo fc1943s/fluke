@@ -1,5 +1,7 @@
 namespace Fluke.UI.Frontend.Components
 
+open FsCore
+open FsJs
 open System
 open Fable.Core.JsInterop
 open Fable.Core
@@ -10,9 +12,13 @@ open Feliz
 open Fable.React
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.Bindings
+open FsStore
+open FsStore.Bindings
+open FsUi.Bindings
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.TempUI
 open Fluke.UI.Frontend.State.State
+open FsUi.Components
 
 
 module Databases =
@@ -371,7 +377,7 @@ module Databases =
                 |]
             )
 
-        let isTesting = Store.useValue Store.Atoms.isTesting
+        let isTesting = Store.useValue Atoms.isTesting
         let selectedDatabaseIdSet, setSelectedDatabaseIdSet = Store.useState Atoms.User.selectedDatabaseIdSet
 
         let nodes, newExpandedDatabaseGuidArray, newSelectedDatabaseGuidArray =
@@ -488,7 +494,7 @@ module Databases =
                 |]
             )
 
-        match JS.window id with
+        match Dom.window () with
         | Some window -> window?nodes <- nodes
         | None -> ()
 

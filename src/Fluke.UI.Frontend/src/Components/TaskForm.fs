@@ -1,6 +1,8 @@
 namespace Fluke.UI.Frontend.Components
 
 open Browser.Types
+open FsStore
+open FsCore
 open Fable.DateFunctions
 open Fable.React
 open Feliz
@@ -8,7 +10,8 @@ open Fluke.Shared.Domain
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.State
 open Fluke.Shared.Domain.UserInteraction
-open Fluke.UI.Frontend.Bindings
+open FsStore.Bindings
+open FsUi.Bindings
 open System
 open Fable.Core
 open Fluke.UI.Frontend.Hooks
@@ -16,6 +19,7 @@ open Fluke.UI.Frontend.State
 open Fluke.Shared
 open Fluke.UI.Frontend.TempUI
 open Fluke.UI.Frontend.State.State
+open FsUi.Components
 
 
 module TaskForm =
@@ -380,7 +384,7 @@ module TaskForm =
     [<ReactComponent>]
     let rec TaskForm (taskId: TaskId) (onSave: Task -> JS.Promise<unit>) =
         let toast = UI.useToast ()
-        let debug = Store.useValue Atoms.Session.debug
+        let logLevel = Store.useValue Atoms.logLevel
         let startSession = useStartSession ()
         let deleteTask = useDeleteTask ()
         let sessions, setSessions = Store.useState (Atoms.Task.sessions taskId)
@@ -432,32 +436,32 @@ module TaskForm =
             )
 
         let tempInformation =
-            Store.Hooks.useTempAtom
+            Store.useTempAtom
                 (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.information taskId))))
                 (Some (Store.InputScope.Temp Gun.defaultSerializer))
 
         let tempPriority =
-            Store.Hooks.useTempAtom
+            Store.useTempAtom
                 (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.priority taskId))))
                 (Some (Store.InputScope.Temp Gun.defaultSerializer))
 
         let tempDuration =
-            Store.Hooks.useTempAtom
+            Store.useTempAtom
                 (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.duration taskId))))
                 (Some (Store.InputScope.Temp Gun.defaultSerializer))
 
         let tempPendingAfter =
-            Store.Hooks.useTempAtom
+            Store.useTempAtom
                 (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.pendingAfter taskId))))
                 (Some (Store.InputScope.Temp Gun.defaultSerializer))
 
         let tempMissedAfter =
-            Store.Hooks.useTempAtom
+            Store.useTempAtom
                 (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.missedAfter taskId))))
                 (Some (Store.InputScope.Temp Gun.defaultSerializer))
 
         let tempScheduling =
-            Store.Hooks.useTempAtom
+            Store.useTempAtom
                 (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.scheduling taskId))))
                 (Some (Store.InputScope.Temp Gun.defaultSerializer))
 
@@ -613,7 +617,10 @@ module TaskForm =
                         (UI.stack
                             (fun x -> x.spacing <- "15px")
                             [
-                                if not debug then nothing else UI.str $"{taskId}"
+                                if logLevel <= Model.LogLevel.Debug then
+                                    UI.str $"{taskId}"
+                                else
+                                    nothing
 
                                 DatabaseSelector.DatabaseSelector
                                     taskDatabaseId

@@ -3,11 +3,11 @@
 open System.Threading
 open Fable.SignalR
 open Fluke.Shared
-open Fluke.Shared.Domain.UserInteraction
+open FsCore.Model
+open FsStore.Shared
 open Fumble
 open Microsoft.Extensions.Logging
 open System.Text.RegularExpressions
-open Fluke.Shared.Api
 open FSharp.Control.Tasks.V2
 open Saturn
 
@@ -98,27 +98,27 @@ module Main =
 
         let memoizedCreateTable = getMemoizedCreateTable ()
 
-        let update (msg: Api.Action) =
+        let update (msg: Sync.Request) =
             //            printfn $"Model.update() msg={msg}"
 
             match msg with
-            | Api.Action.Connect (Username username) ->
+            | Sync.Request.Connect (Username username) ->
                 memoizedCreateTable username
                 printfn $"@@@ Api.Action.Connect username={username}"
-                Response.ConnectResult
-            | Api.Action.Set (Username username, key, value) ->
+                Sync.Response.ConnectResult
+            | Sync.Request.Set (Username username, key, value) ->
                 memoizedCreateTable username
                 let result = insert username key value
                 //                printfn $"set {key} {value}"
-                Response.SetResult result
-            | Api.Action.Get (Username username, key) ->
+                Sync.Response.SetResult result
+            | Sync.Request.Get (Username username, key) ->
                 memoizedCreateTable username
                 let result = query username key
 
                 result
                 |> Option.bind (fun x -> x.Value)
-                |> Response.GetResult
-            | Api.Action.Filter (Username username, key) ->
+                |> Sync.Response.GetResult
+            | Sync.Request.Filter (Username username, key) ->
                 memoizedCreateTable username
                 let preResult = preKeyFilter username key
 
@@ -133,18 +133,18 @@ module Main =
 
                 printfn $"@@@ filter {key} total={preResult.Length} result={result.Length}"
 
-                Response.FilterResult result
+                Sync.Response.FilterResult result
 
-        let invoke (msg: Api.Action) _ = task { return update msg }
+        let invoke (msg: Sync.Request) _ = task { return update msg }
 
-        let send (msg: Api.Action) (hubContext: FableHub<Api.Action, Response>) =
+        let send (msg: Sync.Request) (hubContext: FableHub<Sync.Request, Sync.Response>) =
             hubContext.Clients.Caller.Send (update msg)
 
         [<RequireQualifiedAccess>]
         module Stream =
             open FSharp.Control
 
-            let sendToClient (msg: Api.Action) (_hubContext: FableHub<Api.Action, Api.Response>) =
+            let sendToClient (msg: Sync.Request) (_hubContext: FableHub<Sync.Request, Sync.Response>) =
                 asyncSeq {
                     try
                         update msg
@@ -159,7 +159,7 @@ module Main =
             application {
                 use_signalr (
                     configure_signalr {
-                        endpoint Api.endpoint
+                        endpoint Sync.endpoint
                         send Model.send
                         invoke Model.invoke
                         stream_from Model.Stream.sendToClient
@@ -182,7 +182,7 @@ module Main =
                         with_on_connected
                             (fun _hub ->
                                 task {
-                                    //                                    let! result = Model.send Api.Action.Connect hub
+                                    //                                    let! result = Model.send Sync.Request.Connect hub
                                     printfn "saturn.with_on_connected()"
                                 //                                    return result
                                 })

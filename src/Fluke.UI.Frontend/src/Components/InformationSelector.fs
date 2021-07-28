@@ -1,13 +1,16 @@
 namespace rec Fluke.UI.Frontend.Components
 
 open System
+open FsCore
 open Fable.React
 open Feliz
 open Fluke.Shared.Domain
 open Fluke.Shared.Domain.Model
-open Fluke.UI.Frontend.Bindings
+open FsStore
+open FsUi.Bindings
 open Fluke.UI.Frontend.State
 open Fluke.Shared
+open FsUi.Components
 
 
 module InformationSelector =

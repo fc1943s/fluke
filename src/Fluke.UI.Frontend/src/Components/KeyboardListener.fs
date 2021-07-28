@@ -3,10 +3,10 @@ namespace Fluke.UI.Frontend.Components
 open Feliz
 open Fable.React
 open Fluke.UI.Frontend.State
-open Fluke.UI.Frontend.Hooks
-open Fable.Core
 open Fluke.Shared
-open Fluke.UI.Frontend.Bindings
+open FsJs
+open FsStore
+open FsUi.Hooks
 
 
 module CtrlListener =
@@ -55,7 +55,7 @@ module ShiftListener =
 
                     match e.ctrlKey, e.altKey, e.key with
                     | true, true, "I" ->
-                        JS.log (fun () -> "RouterObserver.onKeyDown() View.Information")
+                        Dom.log (fun () -> "RouterObserver.onKeyDown() View.Information")
                         setView View.View.Information
                     | true, true, "H" -> setView View.View.HabitTracker
                     | true, true, "P" -> setView View.View.Priority

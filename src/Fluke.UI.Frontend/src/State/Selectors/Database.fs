@@ -1,10 +1,6 @@
 namespace Fluke.UI.Frontend.State.Selectors
 
-#nowarn "40"
-
-
 open System
-open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain
@@ -12,6 +8,10 @@ open Fluke.UI.Frontend.State
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.Shared.Domain.State
 open Fluke.UI.Frontend.State.State
+open FsJs
+open FsStore
+
+#nowarn "40"
 
 
 module rec Database =
@@ -33,7 +33,7 @@ module rec Database =
             $"{nameof Database}/{nameof nodeType}",
             (fun (databaseId: DatabaseId) getter ->
                 let database = Store.value getter (database databaseId)
-                let username = Store.value getter Store.Atoms.username
+                let username = Store.value getter Atoms.username
 
                 match database.Owner with
                 | owner when owner = Templates.templatesUser.Username -> DatabaseNodeType.Template
@@ -46,7 +46,7 @@ module rec Database =
         Store.readSelectorFamily (
             $"{nameof Database}/{nameof isReadWrite}",
             (fun (databaseId: DatabaseId) getter ->
-                let username = Store.value getter Store.Atoms.username
+                let username = Store.value getter Atoms.username
 
                 let access =
                     match username with

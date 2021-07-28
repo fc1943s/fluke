@@ -1,10 +1,12 @@
 namespace Fluke.UI.Frontend.State.Atoms
 
-open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.Shared.Domain.State
+open Fluke.UI.Frontend.State.State
+open FsCore.Model
+open FsStore
 
 
 module rec Task =
@@ -13,6 +15,7 @@ module rec Task =
 
     let rec statusMap =
         Store.atomFamilyWithSync (
+            State.collection,
             $"{nameof Task}/{nameof statusMap}",
             (fun (_taskId: TaskId) -> Map.empty: Map<DateId, Username * ManualCellStatus>),
             taskIdIdentifier
@@ -20,6 +23,7 @@ module rec Task =
 
     let rec databaseId =
         Store.atomFamilyWithSync (
+            State.collection,
             $"{nameof Task}/{nameof databaseId}",
             (fun (_taskId: TaskId) -> Database.Default.Id),
             taskIdIdentifier
@@ -27,6 +31,7 @@ module rec Task =
 
     let rec sessions =
         Store.atomFamilyWithSync (
+            State.collection,
             $"{nameof Task}/{nameof sessions}",
             (fun (_taskId: TaskId) -> []: Session list),
             taskIdIdentifier
@@ -34,6 +39,7 @@ module rec Task =
 
     let rec attachmentIdSet =
         Store.atomFamilyWithSync (
+            State.collection,
             $"{nameof Task}/{nameof attachmentIdSet}",
             (fun (_taskId: TaskId) -> Set.empty: Set<AttachmentId>),
             taskIdIdentifier
@@ -41,6 +47,7 @@ module rec Task =
 
     let rec cellAttachmentIdMap =
         Store.atomFamilyWithSync (
+            State.collection,
             $"{nameof Task}/{nameof cellAttachmentIdMap}",
             (fun (_taskId: TaskId) -> Map.empty: Map<DateId, Set<AttachmentId>>),
             taskIdIdentifier
@@ -48,6 +55,7 @@ module rec Task =
 
     let rec selectionSet =
         Store.atomFamilyWithSync (
+            State.collection,
             $"{nameof Task}/{nameof selectionSet}",
             (fun (_taskId: TaskId) -> Set.empty: Set<DateId>),
             taskIdIdentifier
@@ -55,6 +63,7 @@ module rec Task =
 
     let rec information =
         Store.atomFamilyWithSync (
+            State.collection,
             $"{nameof Task}/{nameof information}",
             (fun (_taskId: TaskId) -> Task.Default.Information),
             taskIdIdentifier
@@ -62,6 +71,7 @@ module rec Task =
 
     let rec name =
         Store.atomFamilyWithSync (
+            State.collection,
             $"{nameof Task}/{nameof name}",
             (fun (_taskId: TaskId) -> Task.Default.Name),
             taskIdIdentifier
@@ -69,6 +79,7 @@ module rec Task =
 
     let rec scheduling =
         Store.atomFamilyWithSync (
+            State.collection,
             $"{nameof Task}/{nameof scheduling}",
             (fun (_taskId: TaskId) -> Task.Default.Scheduling),
             taskIdIdentifier
@@ -76,6 +87,7 @@ module rec Task =
 
     let rec pendingAfter =
         Store.atomFamilyWithSync (
+            State.collection,
             $"{nameof Task}/{nameof pendingAfter}",
             (fun (_taskId: TaskId) -> Task.Default.PendingAfter),
             taskIdIdentifier
@@ -83,6 +95,7 @@ module rec Task =
 
     let rec missedAfter =
         Store.atomFamilyWithSync (
+            State.collection,
             $"{nameof Task}/{nameof missedAfter}",
             (fun (_taskId: TaskId) -> Task.Default.MissedAfter),
             taskIdIdentifier
@@ -90,6 +103,7 @@ module rec Task =
 
     let rec priority =
         Store.atomFamilyWithSync (
+            State.collection,
             $"{nameof Task}/{nameof priority}",
             (fun (_taskId: TaskId) -> Task.Default.Priority),
             taskIdIdentifier
@@ -97,6 +111,7 @@ module rec Task =
 
     let rec duration =
         Store.atomFamilyWithSync (
+            State.collection,
             $"{nameof Task}/{nameof duration}",
             (fun (_taskId: TaskId) -> Task.Default.Duration),
             taskIdIdentifier
@@ -104,6 +119,7 @@ module rec Task =
 
     let rec archived =
         Store.atomFamilyWithSync (
+            State.collection,
             $"{nameof Task}/{nameof archived}",
             (fun (_taskId: TaskId) -> None: bool option),
             taskIdIdentifier

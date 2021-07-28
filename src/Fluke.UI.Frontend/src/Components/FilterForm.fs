@@ -5,9 +5,11 @@ open Feliz
 open Fable.React
 open Fluke.Shared.Domain.Model
 open Fluke.UI.Frontend.Components
-open Fluke.UI.Frontend.Bindings
+open FsStore
+open FsUi.Bindings
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.State.State
+open FsUi.Components
 
 
 module FilterForm =

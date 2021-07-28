@@ -5,7 +5,8 @@ open Feliz
 open Fluke.Shared
 open Fluke.UI.Frontend.TempUI
 open Fluke.UI.Frontend.State
-open Fluke.UI.Frontend.Bindings
+open FsStore
+open FsUi.Bindings
 
 
 module MonthResponsiveCell =

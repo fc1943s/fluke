@@ -7,10 +7,13 @@ open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.State
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Components
-open Fluke.UI.Frontend.Bindings
+open FsJs
+open FsStore
+open FsUi.Bindings
 open Fluke.Shared
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
+open FsUi.Components
 
 
 module SearchForm =

@@ -1,7 +1,7 @@
 namespace Fluke.UI.Frontend.Tests.Core
 
 open Feliz
-open Fluke.UI.Frontend.Bindings
+open Fluke.UI.Frontend.Bindings; open FsStore; open FsUi.Bindings
 open Fable.Jester
 open Fable.ReactTestingLibrary
 open Fable.Core.JsInterop

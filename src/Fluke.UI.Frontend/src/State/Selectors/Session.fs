@@ -1,9 +1,7 @@
 namespace Fluke.UI.Frontend.State.Selectors
 
-#nowarn "40"
-
+open FsCore
 open System
-open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 open Fluke.Shared.View
 open Fluke.Shared.Domain.Model
@@ -12,8 +10,13 @@ open Fluke.UI.Frontend.State
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.Shared.Domain.State
 open Fluke.UI.Frontend
-open Fable.Core
 open Fluke.UI.Frontend.State.State
+open FsCore.Model
+open FsJs
+open FsStore
+open FsStore.Bindings
+
+#nowarn "40"
 
 
 module rec Session =
@@ -251,7 +254,7 @@ module rec Session =
                     |> Array.map (fun taskState -> taskState.Task.Id)
 
 
-                JS.log
+                Dom.log
                     (fun () ->
                         $"filteredTaskIdArray.Length={filteredTaskIdArray.Length}
                         selectedTaskStateArray.Length={selectedTaskStateArray.Length}")
@@ -277,7 +280,7 @@ module rec Session =
                 | Some position ->
                     let filteredTaskIdSet = Store.value getter filteredTaskIdSet
 
-                    JS.log (fun () -> $"sortedTaskIdArray. filteredTaskIdSet.Count={filteredTaskIdSet.Count}")
+                    Dom.log (fun () -> $"sortedTaskIdArray. filteredTaskIdSet.Count={filteredTaskIdSet.Count}")
 
                     let filteredTaskIdArray = filteredTaskIdSet |> Set.toArray
 
@@ -312,7 +315,7 @@ module rec Session =
                                 Lanes = lanes
                             |}
 
-                    JS.log (fun () -> $"sortedTaskIdArray. result.Length={result.Length}")
+                    Dom.log (fun () -> $"sortedTaskIdArray. result.Length={result.Length}")
 
                     result
                     |> List.map (fun (taskState, _) -> taskState.Task.Id)

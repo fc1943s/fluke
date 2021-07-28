@@ -1,12 +1,14 @@
 namespace Fluke.UI.Frontend.Hooks
 
+open FsUi.State
 open Fluke.UI.Frontend.State
+open Feliz
+open Fable.Core
+open FsJs
+open FsStore
+open FsUi.Bindings
 
 #nowarn "40"
-
-open Feliz
-open Fluke.UI.Frontend.Bindings
-open Fable.Core
 
 
 module Theme =
@@ -224,9 +226,9 @@ module Theme =
 //                                ``.markdown-container ul, .tooltip-popup p`` = {| padding = "5px 0" |}
 
     let useTheme () =
-        let darkMode = Store.useValue Atoms.User.darkMode
+        let darkMode = Store.useValue Atoms.Ui.darkMode
+        let fontSize = Store.useValue Atoms.Ui.fontSize
         let systemUiFont = Store.useValue Atoms.User.systemUiFont
-        let fontSize = Store.useValue Atoms.User.fontSize
 
 
         React.useMemo (

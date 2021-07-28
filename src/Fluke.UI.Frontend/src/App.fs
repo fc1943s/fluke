@@ -1,8 +1,9 @@
 namespace Fluke.UI.Frontend
 
 open Feliz
-open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.Components
+open FsJs
+open FsUi.Components
 
 
 module App =

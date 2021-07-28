@@ -4,12 +4,13 @@ open Fable.React
 open Feliz
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.State
-open Fluke.UI.Frontend.Bindings
+open Fluke.UI.Frontend.Bindings; open FsStore; open FsUi.Bindings
 open Fluke.UI.Frontend.State
 open System
 open Fluke.Shared.Domain
 open Fluke.Shared
 open Fluke.UI.Frontend.State.State
+open FsUi.Components
 
 
 module InformationForm =

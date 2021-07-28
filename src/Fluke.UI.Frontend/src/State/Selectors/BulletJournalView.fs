@@ -1,12 +1,13 @@
 namespace Fluke.UI.Frontend.State.Selectors
 
 open System
-open Fluke.UI.Frontend.Bindings
 open Fable.DateFunctions
 open Fluke.Shared
 open Fluke.UI.Frontend.State
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.Shared.Domain.State
+open FsStore
+open FsStore.Bindings
 
 
 module rec BulletJournalView =

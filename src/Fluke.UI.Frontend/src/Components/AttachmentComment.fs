@@ -4,6 +4,9 @@ open Feliz
 open Fable.React
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
+open FsJs
+open FsUi.Bindings
+open FsCore
 open Fluke.Shared
 open Fable.Extras
 open Fluke.UI.Frontend.Components

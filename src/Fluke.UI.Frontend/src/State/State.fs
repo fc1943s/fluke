@@ -1,11 +1,11 @@
 namespace Fluke.UI.Frontend.State
 
+open FsCore
 open System
 open Fluke.Shared
 open Fluke.Shared.Domain
 open Fluke.UI.Frontend
-open Fluke.UI.Frontend.Bindings
-open Fable.Core
+open FsJs
 
 
 module State =
@@ -60,7 +60,7 @@ module State =
 
 
     let deviceId =
-        match JS.window id with
+        match Dom.window () with
         | Some window ->
             match window.localStorage.getItem "deviceId" with
             | String.ValidString deviceId -> DeviceId (Guid deviceId)
@@ -103,14 +103,12 @@ module State =
             CellSize: int
             ClipboardAttachmentIdMap: Map<AttachmentId, bool>
             ClipboardVisible: bool
-            DarkMode: bool
             DaysAfter: int
             DaysBefore: int
             DayStart: FlukeTime
             EnableCellPopover: bool
             ExpandedDatabaseIdSet: Set<DatabaseId>
             Filter: Filter
-            FontSize: int
             HideSchedulingOverlay: bool
             HideTemplates: bool option
             Language: Language
@@ -163,7 +161,6 @@ module State =
                 CellSize = 19
                 ClipboardAttachmentIdMap = Map.empty
                 ClipboardVisible = false
-                DarkMode = false
                 DaysAfter = 7
                 DaysBefore = 7
                 DayStart = FlukeTime.Create 0 0
@@ -182,7 +179,6 @@ module State =
                         Task = Task.Default
                         CellStatus = Disabled
                     }
-                FontSize = 15
                 HideSchedulingOverlay = false
                 HideTemplates = None
                 Language = Language.English
@@ -219,3 +215,6 @@ module State =
                 View = View.View.Information
                 WeekStart = DayOfWeek.Sunday
             }
+
+    module State =
+        let collection = Collection (nameof Fluke)

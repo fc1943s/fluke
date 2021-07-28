@@ -5,7 +5,8 @@ open Feliz
 open Fable.DateFunctions
 open Fluke.Shared.Domain
 open Fluke.UI.Frontend.State
-open Fluke.UI.Frontend.Bindings
+open FsStore
+open FsUi.Bindings
 open Fluke.Shared
 
 

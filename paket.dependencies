@@ -22,7 +22,6 @@ nuget Fable.DateFunctions ~> 3.6
 nuget Fable.Extras ~> 0.4
 nuget Fable.Jester ~> 0.33
 nuget Fable.ReactTestingLibrary ~> 0.33
-nuget Fable.SimpleJson ~> 3.21
 nuget Feliz ~> 1.47
 nuget Feliz.Router ~> 3.8
 nuget Sutil.Shoelace ~> 2.0 prerelease

@@ -7,8 +7,12 @@ open Fluke.Shared.Domain
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Hooks
 open Fluke.Shared
-open Fluke.UI.Frontend.Bindings
+open FsJs
+open FsStore
+open FsUi.Bindings
 open Fluke.UI.Frontend.State.State
+open FsUi.Components
+open FsUi.Hooks
 
 
 module TopBar =
@@ -380,7 +384,7 @@ module TopBar =
 
     [<ReactComponent>]
     let TopBar () =
-        let deviceInfo = Store.useValue Selectors.Selectors.deviceInfo
+        let deviceInfo = Store.useValue Selectors.deviceInfo
         let logout = Auth.useLogout ()
 
         let onLogoClick =
@@ -444,7 +448,7 @@ module TopBar =
                                                     x.onClick <-
                                                         fun _ ->
                                                             promise {
-                                                                match JS.window id with
+                                                                match Dom.window () with
                                                                 | Some window -> window?api?send "minimize"
                                                                 | None -> ()
                                                             }
@@ -465,7 +469,7 @@ module TopBar =
                                                     x.onClick <-
                                                         fun _ ->
                                                             promise {
-                                                                match JS.window id with
+                                                                match Dom.window () with
                                                                 | Some window ->
                                                                     window.location.href <- window.location.href
                                                                 | None -> ()
@@ -555,7 +559,7 @@ module TopBar =
                                                     x.onClick <-
                                                         fun _ ->
                                                             promise {
-                                                                match JS.window id with
+                                                                match Dom.window () with
                                                                 | Some window ->
                                                                     if deviceInfo.IsElectron then
                                                                         window?api?send "close"

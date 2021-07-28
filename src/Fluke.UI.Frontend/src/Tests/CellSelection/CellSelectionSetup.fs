@@ -3,7 +3,11 @@ namespace Fluke.UI.Frontend.Tests.CellSelection
 open Fable.ReactTestingLibrary
 open Fable.Jester
 open Feliz
-open Fluke.UI.Frontend.Bindings
+open FsCore.Model
+open FsJs
+open FsStore
+open FsStore.Bindings
+open FsUi.Bindings
 open Fluke.UI.Frontend
 open Fluke.Shared.Domain
 open Fluke.Shared.Domain.Model
@@ -176,8 +180,8 @@ module CellSelectionSetup =
                 (fun () ->
                     printfn "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ BEFORE RENDER"
 
-                    let gunNamespace = Store.useValue Store.Selectors.gunNamespace
-                    let username, setUsername = Store.useState Store.Atoms.username
+                    let gunNamespace = Store.useValue Selectors.gunNamespace
+                    let username, setUsername = Store.useState Atoms.username
 
                     React.useEffect (
                         (fun () ->
@@ -214,7 +218,7 @@ module CellSelectionSetup =
             do! RTL.sleep 400
 
             let! username =
-                JS.waitForSome (fun () -> async { return Store.value getFn Store.Atoms.username })
+                Dom.waitForSome (fun () -> async { return Store.value getFn Atoms.username })
                 |> Async.StartAsPromise
 
             printfn $"! username={username}"
@@ -222,7 +226,7 @@ module CellSelectionSetup =
             do! RTL.waitFor (initialSetter getFn setFn)
 
             let! sortedTaskIdArray =
-                JS.waitForSome
+                Dom.waitForSome
                     (fun () ->
                         async {
                             let sortedTaskIdArray = Store.value getFn Selectors.Session.sortedTaskIdArray

@@ -1,6 +1,7 @@
 namespace Fluke.UI.Frontend
 
 open Fable.Core
+open FsJs
 
 
 module TempAudio =
@@ -9,8 +10,8 @@ module TempAudio =
             0
             1000
         ]
-        |> List.map (JS.setTimeout (fun () -> Bindings.JS.playAudio "../sounds/ding.wav"))
+        |> List.map (JS.setTimeout (fun () -> JS.playAudio "../sounds/ding.wav"))
         |> ignore
 
     let inline playTick () =
-        Bindings.JS.playAudioVolume 1. "../sounds/tick.wav"
+        JS.playAudioVolume 1. "../sounds/tick.wav"

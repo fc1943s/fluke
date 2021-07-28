@@ -1,9 +1,9 @@
 namespace Fluke.UI.Frontend.State.Selectors
 
 open Fluke.Shared.Domain.UserInteraction
-open Fluke.UI.Frontend.Bindings
 open Fluke.Shared.Domain.State
 open Fluke.UI.Frontend.State
+open FsStore
 
 
 module rec Attachment =

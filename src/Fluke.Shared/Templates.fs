@@ -1,6 +1,7 @@
 namespace Fluke.Shared
 
 open System
+open FsCore.Model
 
 module Templates =
     open Domain.Model

@@ -1,10 +1,10 @@
 namespace Fluke.UI.Frontend.Hooks
 
+open FsCore
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.State
 open Fluke.UI.Frontend.State.State
 open Fluke.UI.Frontend.State
-open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend
 open Fluke.Shared
 open Browser.Types
@@ -12,9 +12,23 @@ open Fable.SimpleHttp
 open System
 open Fluke.Shared.Domain.UserInteraction
 open Fable.Core
+open FsCore.Model
+open FsJs
+open FsStore
+open FsUi.Model
+open FsUi.State
+open FsUi.Bindings
 
 
 module Hydrate =
+    let hydrateUiState _ setter (uiState: UiState) =
+        promise {
+            let set atom value = Store.set setter atom value
+
+            set Atoms.Ui.darkMode uiState.DarkMode
+            set Atoms.Ui.fontSize uiState.FontSize
+        }
+
     let hydrateUserState _ setter (userState: UserState) =
         promise {
             let set atom value = Store.set setter atom value
@@ -33,14 +47,12 @@ module Hydrate =
             set Atoms.User.cellSize userState.CellSize
             set Atoms.User.clipboardAttachmentIdMap userState.ClipboardAttachmentIdMap
             set Atoms.User.clipboardVisible userState.ClipboardVisible
-            set Atoms.User.darkMode userState.DarkMode
             set Atoms.User.daysAfter userState.DaysAfter
             set Atoms.User.daysBefore userState.DaysBefore
             set Atoms.User.dayStart userState.DayStart
             set Atoms.User.enableCellPopover userState.EnableCellPopover
             set Atoms.User.expandedDatabaseIdSet userState.ExpandedDatabaseIdSet
             set Atoms.User.filter userState.Filter
-            set Atoms.User.fontSize userState.FontSize
             set Atoms.User.hideSchedulingOverlay userState.HideSchedulingOverlay
             set Atoms.User.hideTemplates userState.HideTemplates
             set Atoms.User.language userState.Language
@@ -125,7 +137,7 @@ module Hydrate =
                     unicodeAware = false
                 |}
 
-        JS.log
+        Dom.log
             (fun () ->
                 $"hydrateFile.
         base64.Length={hexString.Length}
@@ -316,7 +328,7 @@ module Hydrate =
                             (FlukeDateTime.FromDateTime DateTime.Now)
                             |> FlukeDateTime.Stringify
 
-                        JS.download
+                        Dom.download
                             json
                             $"{databaseState.Database.Name |> DatabaseName.Value}-{timestamp}.json"
                             "application/json"
@@ -334,6 +346,8 @@ module Hydrate =
             |]
         )
 
+    type SettingsState = { Ui: UiState; User: UserState }
+
     let useExportUserSettings () =
         let toast = UI.useToast ()
 
@@ -346,25 +360,27 @@ module Hydrate =
                             x.title <- "Loading"
                             x.status <- "warning")
 
-                    let username = Store.value getter Store.Atoms.username
+                    let username = Store.value getter Atoms.username
 
                     match username with
                     | Some username ->
-                        let _firstFetch = Store.value getter Selectors.User.userState
+                        let _ = Store.value getter Selectors.User.userState
+                        let _ = Store.value getter Selectors.Ui.uiState
 
                         do! Promise.sleep 4000
 
-                        let secondFetch = Store.value getter Selectors.User.userState
+                        let userState = Store.value getter Selectors.User.userState
+                        let uiState = Store.value getter Selectors.Ui.uiState
 
-                        let userState = secondFetch
-
-                        let json = userState |> Json.encodeFormatted
+                        let json =
+                            { Ui = uiState; User = userState }
+                            |> Json.encodeFormatted
 
                         let timestamp =
                             (FlukeDateTime.FromDateTime DateTime.Now)
                             |> FlukeDateTime.Stringify
 
-                        JS.download json $"{username |> Username.Value}-{timestamp}.json" "application/json"
+                        Dom.download json $"{username |> Username.Value}-{timestamp}.json" "application/json"
 
                         toast
                             (fun x ->
@@ -384,7 +400,7 @@ module Hydrate =
         Store.useCallback (
             (fun getter setter files ->
                 promise {
-                    let username = Store.value getter Store.Atoms.username
+                    let username = Store.value getter Atoms.username
 
                     match username, files with
                     | Some _username, Some (files: FileList) when files.length = 1 ->
@@ -403,9 +419,10 @@ module Hydrate =
                         try
                             let content = files.[0]
 
-                            let userState = Json.decode<UserState> content
+                            let state = Json.decode<SettingsState> content
 
-                            do! hydrateUserState getter setter userState
+                            do! hydrateUiState getter setter state.Ui
+                            do! hydrateUserState getter setter state.User
 
                             toast
                                 (fun x ->
@@ -427,7 +444,7 @@ module Hydrate =
         Store.useCallback (
             (fun getter setter files ->
                 promise {
-                    let username = Store.value getter Store.Atoms.username
+                    let username = Store.value getter Atoms.username
 
                     match username, files with
                     | Some username, Some (files: FileList) when files.length > 0 ->

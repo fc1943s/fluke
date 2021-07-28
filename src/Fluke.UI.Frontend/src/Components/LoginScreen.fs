@@ -1,10 +1,19 @@
 namespace Fluke.UI.Frontend.Components
 
+open Fluke.Shared
+open Fluke.Shared.Domain.UserInteraction
+open FsCore.Model
+open FsUi.Components
+open FsUi.Hooks
 open Browser.Types
 open Feliz
-open Fluke.UI.Frontend.Bindings
+open System
+open FsStore
+open Fluke.UI.Frontend.State.State
+open FsUi.Bindings
 open Fluke.UI.Frontend.Hooks
 open Fable.React
+open FsUi.Model
 
 
 module LoginScreen =
@@ -36,14 +45,34 @@ module LoginScreen =
 
         let signUpClick =
             Store.useCallback (
-                (fun _ _ _ ->
+                (fun getter setter _ ->
                     promise {
                         if passwordField <> password2Field then
                             toast (fun x -> x.description <- "Passwords don't match")
                             return false
+                        elif Templates.templatesUser.Username |> Username.Value = usernameField then
+                            toast (fun x -> x.description <- "Invalid username")
+                            return false
                         else
                             match! signUp (usernameField, passwordField) with
-                            | Ok _ ->
+                            | Ok (_username, _keys) ->
+                                do! Hydrate.hydrateTemplates getter setter
+
+                                do! Hydrate.hydrateUiState getter setter UiState.Default
+
+                                do!
+                                    Hydrate.hydrateUserState
+                                        getter
+                                        setter
+                                        { UserState.Default with
+                                            Archive = Some false
+                                            HideTemplates = Some false
+                                            UserColor =
+                                                String.Format ("#{0:X6}", Random().Next 0x1000000)
+                                                |> Color
+                                                |> Some
+                                        }
+
                                 toast
                                     (fun x ->
                                         x.title <- "Success"

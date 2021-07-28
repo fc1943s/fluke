@@ -2,10 +2,12 @@ namespace Fluke.UI.Frontend.Components
 
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Components
-open Fluke.UI.Frontend.Bindings
+open FsStore
+open FsUi.Bindings
 open Fluke.UI.Frontend.State
 open Feliz
 open Fluke.UI.Frontend.State.State
+open FsUi.Components
 
 
 module FileThumbnail =
@@ -28,10 +30,9 @@ module FileThumbnail =
     let FileThumbnail fileId =
         let objectUrl = Store.useValue (Selectors.File.objectUrl fileId)
 
-        ImageThumbnail
-            [
-                match objectUrl with
-                | Some url ->
-                    ImageModal.ImageModal UIFlagType.File (UIFlag.File fileId) $"File ID: {fileId |> FileId.Value}" url
-                | None -> LoadingSpinner.InlineLoadingSpinner ()
-            ]
+        ImageThumbnail [
+            match objectUrl with
+            | Some url ->
+                ImageModal.ImageModal UIFlagType.File (UIFlag.File fileId) $"File ID: {fileId |> FileId.Value}" url
+            | None -> LoadingSpinner.InlineLoadingSpinner ()
+        ]

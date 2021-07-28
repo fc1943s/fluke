@@ -2,6 +2,7 @@ namespace Fluke.Shared.Domain
 
 open System
 open Fluke.Shared
+open FsCore
 
 
 module Model =

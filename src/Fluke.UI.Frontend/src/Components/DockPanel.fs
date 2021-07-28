@@ -3,7 +3,9 @@ namespace Fluke.UI.Frontend.Components
 open Fable.React
 open Feliz
 open Fluke.UI.Frontend
-open Fluke.UI.Frontend.Bindings
+open FsStore
+open FsUi.Bindings
+open FsUi.Components
 
 
 module DockPanel =

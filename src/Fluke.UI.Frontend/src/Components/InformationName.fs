@@ -5,11 +5,13 @@ open Feliz
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
-open Fluke.UI.Frontend.Bindings
+open FsStore
+open FsUi.Bindings
 open Fluke.Shared.Domain
 open Fluke.Shared.Domain.Model
 open Fluke.Shared
 open Fluke.UI.Frontend.State.State
+open FsUi.Components
 
 
 module InformationName =

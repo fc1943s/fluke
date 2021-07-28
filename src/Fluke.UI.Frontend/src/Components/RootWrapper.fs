@@ -1,10 +1,13 @@
 namespace Fluke.UI.Frontend.Components
 
+open FsUi.State
 open Fable.React
 open Feliz
 open Feliz.Router
 open Fluke.UI.Frontend.Hooks
-open Fluke.UI.Frontend.Bindings
+open FsJs
+open FsStore
+open FsUi.Bindings
 open Fluke.UI.Frontend.State
 
 
@@ -12,7 +15,7 @@ module RootWrapper =
     [<ReactComponent>]
     let ThemeLoader children =
         let theme = Theme.useTheme ()
-        let darkMode = Store.useValue Atoms.User.darkMode
+        let darkMode = Store.useValue Atoms.Ui.darkMode
 
         Profiling.addCount "ThemeLoader().render"
 

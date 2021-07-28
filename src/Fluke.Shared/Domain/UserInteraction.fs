@@ -1,5 +1,6 @@
 namespace Fluke.Shared.Domain
 
+open FsCore
 open System
 open Fluke.Shared
 
@@ -69,9 +70,6 @@ module UserInteraction =
             SessionBreakDuration: Minute
         }
 
-    and Username = Username of username: string
-
-    and Color = Color of hex: string
 
     and [<RequireQualifiedAccess>] Language =
         | English
@@ -107,32 +105,6 @@ module UserInteraction =
         static member inline NewId () = FileId (Guid.NewTicksGuid ())
         static member inline Value (FileId guid) = guid
 
-    and Username with
-        static member inline Value (Username username) = username
-
-    and DateId with
-        static member inline Value value =
-            match value |> Option.ofObjUnbox with
-            | Some (DateId referenceDay) -> Some referenceDay
-            | _ -> None
-
-        static member inline ValueOrDefault value =
-            value
-            |> DateId.Value
-            |> Option.defaultValue FlukeDate.MinValue
-
-    and Color with
-        static member inline Value value =
-            match value |> Option.ofObjUnbox with
-            | Some (Color hex) -> Some hex
-            | _ -> None
-
-        static member inline Default = Color "#000000"
-
-        static member inline ValueOrDefault value =
-            value
-            |> Color.Value
-            |> Option.defaultValue (Color.Default |> Color.Value |> Option.get)
 
     and FlukeDate with
         static member inline DateTime
@@ -234,6 +206,17 @@ module UserInteraction =
 
         static member inline FromDateTime (date: DateTime) : FlukeDateTime =
             FlukeDateTime.Create (FlukeDate.FromDateTime date, FlukeTime.FromDateTime date, Second date.Second)
+
+    and DateId with
+        static member inline Value value =
+            match value |> Option.ofObjUnbox with
+            | Some (DateId referenceDay) -> Some referenceDay
+            | _ -> None
+
+        static member inline ValueOrDefault value =
+            value
+            |> DateId.Value
+            |> Option.defaultValue FlukeDate.MinValue
 
     and Attachment with
         static member inline Stringify attachment =

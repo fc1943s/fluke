@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open FsJs
 open Fable.Core
 open Feliz
 open Fable.React
@@ -7,17 +8,19 @@ open Fluke.Shared.Domain.Model
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Bindings
+open FsStore
+open FsUi.Bindings
 open Fluke.Shared
-open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.State.State
+open FsUi.Components
 
 
 module RightDock =
 
     [<ReactComponent>]
     let RightDock () =
-        let deviceInfo = Store.useValue Selectors.Selectors.deviceInfo
+        let deviceInfo = Store.useValue Selectors.deviceInfo
         let setLeftDock = Store.useSetState Atoms.User.leftDock
         let rightDock = Store.useValue Atoms.User.rightDock
 

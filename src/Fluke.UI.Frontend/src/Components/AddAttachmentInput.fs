@@ -4,12 +4,16 @@ open System
 open Fable.React
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Components
-open Fluke.UI.Frontend.Bindings
+open FsStore
+open FsStore.Bindings
+open FsUi.Bindings
 open Fluke.Shared
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
+open FsCore
 open Feliz
 open Fluke.Shared.Domain
+open FsUi.Components
 
 
 module AddAttachmentInput =
@@ -26,7 +30,7 @@ module AddAttachmentInput =
         let ctrlPressed = Store.useValue Atoms.Session.ctrlPressed
 
         let tempAttachment =
-            Store.Hooks.useTempAtom
+            Store.useTempAtom
                 (Some (
                     Store.InputAtom (Store.AtomReference.Atom (Atoms.Attachment.attachment (AttachmentId Guid.Empty)))
                 ))

@@ -1,24 +1,28 @@
 namespace Fluke.UI.Frontend.Components
 
+open FsCore.Model
+open FsUi.State
 open Browser.Types
 open Fable.React
 open Feliz
 open System
 open Fluke.Shared.Domain
-open Fluke.Shared.Domain.UserInteraction
-open Fluke.UI.Frontend.Bindings
+open FsStore
+open FsStore.Bindings
+open FsUi.Bindings
 open Fluke.UI.Frontend.State
 open Fluke.Shared.Domain.Model
 open Fluke.Shared
 open Fluke.UI.Frontend.State.State
+open FsUi.Components
 
 
 module Settings =
     [<ReactComponent>]
     let GunPeersInput () =
         let tempGunPeers =
-            Store.Hooks.useTempAtom
-                (Some (Store.InputAtom (Store.AtomReference.Atom Store.Atoms.gunPeers)))
+            Store.useTempAtom
+                (Some (Store.InputAtom (Store.AtomReference.Atom Atoms.gunPeers)))
                 (Some (Store.InputScope.Temp Gun.defaultSerializer))
 
         UI.box
@@ -97,8 +101,8 @@ module Settings =
     [<ReactComponent>]
     let ApiUrlInput () =
         let tempApiUrl =
-            Store.Hooks.useTempAtom
-                (Some (Store.InputAtom (Store.AtomReference.Atom Store.Atoms.apiUrl)))
+            Store.useTempAtom
+                (Some (Store.InputAtom (Store.AtomReference.Atom Atoms.apiUrl)))
                 (Some (Store.InputScope.Temp Gun.defaultSerializer))
 
         UI.box
@@ -167,6 +171,7 @@ module Settings =
     let rec Settings props =
         let weekStart, setWeekStart = Store.useState Atoms.User.weekStart
         let userColor, setUserColor = Store.useState Atoms.User.userColor
+        let logLevel, setLogLevel = Store.useState Atoms.logLevel
 
         Accordion.Accordion
             {|
@@ -320,17 +325,20 @@ module Settings =
                                         CustomProps =
                                             fun x ->
                                                 x.atom <-
-                                                    Some (
-                                                        Store.InputAtom (Store.AtomReference.Atom Atoms.User.fontSize)
-                                                    )
+                                                    Some (Store.InputAtom (Store.AtomReference.Atom Atoms.Ui.fontSize))
 
                                                 x.inputFormat <- Some Input.InputFormat.Number
                                         Props = fun x -> x.label <- str "Font Size"
                                     |}
 
+                                Dropdown.EnumDropdown<Model.LogLevel>
+                                    logLevel
+                                    setLogLevel
+                                    (fun x -> x.label <- str "Log Level")
+
                                 CheckboxInput.CheckboxInput
                                     {|
-                                        Atom = Atoms.User.darkMode
+                                        Atom = Atoms.Ui.darkMode
                                         Label = Some "Dark Mode"
                                         Props = fun _ -> ()
                                     |}
@@ -346,13 +354,6 @@ module Settings =
                                     {|
                                         Atom = Atoms.User.enableCellPopover
                                         Label = Some "Enable Cell Click Popup"
-                                        Props = fun _ -> ()
-                                    |}
-
-                                CheckboxInput.CheckboxInput
-                                    {|
-                                        Atom = Atoms.Session.debug
-                                        Label = Some "Show Debug Information"
                                         Props = fun _ -> ()
                                     |}
                             ])

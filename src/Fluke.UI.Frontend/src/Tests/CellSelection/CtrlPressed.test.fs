@@ -7,7 +7,7 @@ open Fluke.Shared.Domain.UserInteraction
 open Fluke.Shared
 open Microsoft.FSharp.Core.Operators
 open Fluke.UI.Frontend.State
-open Fluke.UI.Frontend.Bindings
+open Fluke.UI.Frontend.Bindings; open FsStore; open FsUi.Bindings
 
 
 module CtrlPressed =

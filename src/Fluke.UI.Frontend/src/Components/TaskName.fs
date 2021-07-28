@@ -4,10 +4,12 @@ open Fable.React
 open Feliz
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
-open Fluke.UI.Frontend.Bindings
+open FsStore
+open FsUi.Bindings
 open Fluke.Shared
 open Fluke.UI.Frontend.TempUI
 open Fluke.UI.Frontend.State.State
+open FsUi.Components
 
 
 module TaskName =

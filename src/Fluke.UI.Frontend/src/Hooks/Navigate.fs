@@ -2,12 +2,12 @@ namespace Fluke.UI.Frontend.Hooks
 
 open Fluke.UI.Frontend.State.State
 open Fluke.UI.Frontend.State
-open Fluke.UI.Frontend.Bindings
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.State
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.Shared.Domain
 open Fluke.UI.Frontend.TempUI
+open FsStore
 
 
 module Navigate =
@@ -70,7 +70,7 @@ module Navigate =
     let navigate =
         fun getter setter (dockPosition, dockType, uiFlagType, uiFlag) ->
             promise {
-                let deviceInfo = Store.value getter Selectors.Selectors.deviceInfo
+                let deviceInfo = Store.value getter Selectors.deviceInfo
 
                 match dockPosition with
                 | DockPosition.Left

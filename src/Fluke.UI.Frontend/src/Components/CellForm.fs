@@ -4,11 +4,13 @@ open Feliz
 open Fable.React
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.UserInteraction
-open Fluke.UI.Frontend.Components
-open Fluke.UI.Frontend.Bindings
+open FsStore
+open FsStore.Bindings
+open FsUi.Bindings
 open Fluke.Shared
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.State.State
+open FsUi.Components
 
 
 module CellForm =

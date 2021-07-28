@@ -3,12 +3,14 @@ namespace Fluke.UI.Frontend.Bindings
 open Fable.React
 open Fable.Core.JsInterop
 open Fable.Core
+open FsJs
+open FsUi.Bindings
 
 
 module DragDrop =
-    let private reactDnd : {| DragDropContext: obj -> obj
-                              Droppable: obj -> obj
-                              Draggable: obj -> obj |} =
+    let private reactDnd: {| DragDropContext: obj -> obj
+                             Droppable: obj -> obj
+                             Draggable: obj -> obj |} =
         importAll "react-beautiful-dnd"
 
     let dragDropContext onDragEnd children =

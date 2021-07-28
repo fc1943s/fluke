@@ -1,12 +1,12 @@
 namespace Fluke.UI.Frontend.State.Selectors
 
-#nowarn "40"
-
-
 open Fable.Extras
 open Fluke.Shared.Domain.UserInteraction
-open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
+open FsJs
+open FsStore
+
+#nowarn "40"
 
 
 module rec File =
@@ -28,7 +28,7 @@ module rec File =
                         |> Store.value getter
 
                     if chunks |> Array.contains "" then
-                        JS.log
+                        Dom.log
                             (fun () ->
                                 $"File.blob
                                         incomplete blob. skipping
@@ -39,7 +39,7 @@ module rec File =
 
                         None
                     else
-                        JS.log
+                        Dom.log
                             (fun () ->
                                 $"File.blob
                                     chunkCount={chunkCount}

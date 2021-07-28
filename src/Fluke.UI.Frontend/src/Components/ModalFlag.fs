@@ -1,11 +1,14 @@
 namespace Fluke.UI.Frontend.Components
 
+open FsJs
 open Feliz
 open Fable.Core
-open Fluke.UI.Frontend.Bindings
+open FsStore
+open FsUi.Bindings
 open Fluke.UI.Frontend.State
 open Fable.React
 open Fluke.UI.Frontend.State.State
+open FsUi.Components
 
 
 module ModalFlag =
@@ -14,7 +17,7 @@ module ModalFlag =
         (input: {| UIFlagType: UIFlagType
                    Content: UIFlag * (unit -> JS.Promise<unit>) -> Store.GetFn * Store.SetFn -> ReactElement |})
         =
-        let uiFlag, setUIFlag= Store.useState (Atoms.User.uiFlag input.UIFlagType)
+        let uiFlag, setUIFlag = Store.useState (Atoms.User.uiFlag input.UIFlagType)
         let uiVisibleFlag, setUIVisibleFlag = Store.useState (Atoms.User.uiVisibleFlag input.UIFlagType)
 
         let onHide =

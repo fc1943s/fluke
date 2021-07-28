@@ -1,12 +1,11 @@
 namespace Fluke.UI.Frontend.Components
 
 open Fable.Core.JsInterop
-open Fluke.Shared
 open Feliz
 open Fable.React
-open Fluke.UI.Frontend.Hooks
-open Fluke.UI.Frontend.Bindings
+open FsUi.Bindings
 open Browser.Types
+open FsUi.Components
 
 
 module ImportFile =

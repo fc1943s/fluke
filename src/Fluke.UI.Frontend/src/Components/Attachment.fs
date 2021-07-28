@@ -5,11 +5,15 @@ open Feliz
 open Fable.React
 open Fluke.Shared.Domain
 open Fluke.Shared.Domain.UserInteraction
-open Fluke.UI.Frontend.Bindings
+open FsCore
+open FsStore
+open FsStore.Bindings
+open FsUi.Bindings
 open Fluke.Shared
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Components
-open Fluke.UI.Frontend.Hooks
+open FsUi.Components
+open FsUi.Hooks
 
 
 module Attachment =

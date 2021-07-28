@@ -1,12 +1,16 @@
 namespace Fluke.UI.Frontend.Components
 
+open FsCore
+open FsUi.Hooks
 open Feliz
 open Fable.React
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Hooks
 open Fable.Core
 open Fluke.Shared
-open Fluke.UI.Frontend.Bindings
+open FsJs
+open FsStore
+open FsUi.Bindings
 open System
 open Fluke.Shared.Domain.UserInteraction
 
@@ -18,7 +22,7 @@ module PasteListener =
             Store.useCallback (
                 (fun getter setter attachment ->
                     promise {
-                        JS.log (fun () -> $"pasted image attachment={attachment}")
+                        Dom.log (fun () -> $"pasted image attachment={attachment}")
 
                         let attachmentId =
                             Hydrate.hydrateAttachmentState
@@ -62,7 +66,7 @@ module PasteListener =
                                         return Some blobs
                                     with
                                     | ex ->
-                                        JS.consoleError ("handlePasteEvent clipboard error", ex)
+                                        Dom.consoleError ("handlePasteEvent clipboard error", ex)
                                         return None
                                 }
                             | None ->

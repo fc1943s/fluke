@@ -6,11 +6,15 @@ open Fable.React
 open Feliz
 open Fluke.Shared.Domain.Model
 open Fluke.UI.Frontend
-open Fluke.UI.Frontend.Bindings
+open FsCore.Model
+open FsJs
+open FsStore
+open FsUi.Bindings
 open Fluke.Shared.Domain
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State.State
 open Fluke.UI.Frontend.State
+open FsUi.Components
 
 
 module Cell =
@@ -37,7 +41,7 @@ module Cell =
         let setSelected = Setters.useSetSelected ()
         let cellUIFlag = Store.useValue (Atoms.User.uiFlag UIFlagType.Cell)
         let rightDock = Store.useValue Atoms.User.rightDock
-        let deviceInfo = Store.useValue Selectors.Selectors.deviceInfo
+        let deviceInfo = Store.useValue Selectors.deviceInfo
 
         let cellColorDisabled = Store.useValue Atoms.User.cellColorDisabled
         let cellColorSuggested = Store.useValue Atoms.User.cellColorSuggested

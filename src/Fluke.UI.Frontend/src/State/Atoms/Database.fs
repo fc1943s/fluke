@@ -1,10 +1,11 @@
 namespace Fluke.UI.Frontend.State.Atoms
 
-open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.Shared.Domain.State
+open Fluke.UI.Frontend.State.State
+open FsStore
 
 
 module rec Database =
@@ -16,6 +17,7 @@ module rec Database =
 
     let rec name =
         Store.atomFamilyWithSync (
+            State.collection,
             $"{nameof Database}/{nameof name}",
             (fun (_databaseId: DatabaseId) -> Database.Default.Name),
             databaseIdIdentifier
@@ -23,6 +25,7 @@ module rec Database =
 
     let rec owner =
         Store.atomFamilyWithSync (
+            State.collection,
             $"{nameof Database}/{nameof owner}",
             (fun (_databaseId: DatabaseId) -> Database.Default.Owner),
             databaseIdIdentifier
@@ -30,6 +33,7 @@ module rec Database =
 
     let rec sharedWith =
         Store.atomFamilyWithSync (
+            State.collection,
             $"{nameof Database}/{nameof sharedWith}",
             (fun (_databaseId: DatabaseId) -> Database.Default.SharedWith),
             databaseIdIdentifier
@@ -37,6 +41,7 @@ module rec Database =
 
     let rec position =
         Store.atomFamilyWithSync (
+            State.collection,
             $"{nameof Database}/{nameof position}",
             (fun (_databaseId: DatabaseId) -> Database.Default.Position),
             databaseIdIdentifier
@@ -44,6 +49,7 @@ module rec Database =
 
     let rec informationAttachmentIdMap =
         Store.atomFamilyWithSync (
+            State.collection,
             $"{nameof Database}/{nameof informationAttachmentIdMap}",
             (fun (_databaseId: DatabaseId) -> Map.empty: Map<Information, Set<AttachmentId>>),
             databaseIdIdentifier

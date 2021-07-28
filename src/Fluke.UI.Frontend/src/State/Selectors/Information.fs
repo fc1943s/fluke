@@ -1,9 +1,9 @@
 namespace Fluke.UI.Frontend.State.Selectors
 
-open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 open Fluke.Shared.Domain.Model
 open Fluke.UI.Frontend.State
+open FsStore
 
 
 module rec Information =

@@ -1,8 +1,9 @@
 namespace Fluke.UI.Frontend.Components
 
 open Fluke.UI.Frontend.Components
-open Fluke.UI.Frontend.Bindings
+open FsUi.Bindings
 open Feliz
+open FsUi.Components
 
 
 module TempFileThumbnail =

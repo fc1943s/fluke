@@ -4,10 +4,14 @@ open Feliz
 open Fable.React
 open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Bindings
+open FsJs
+open FsStore
+open FsUi.Bindings
 open Fluke.Shared
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.TempUI
+open FsUi.Components
 
 
 module LeftDock =
@@ -15,7 +19,7 @@ module LeftDock =
     let LeftDock () =
         let leftDock = Store.useValue Atoms.User.leftDock
         let setRightDock = Store.useSetState Atoms.User.rightDock
-        let deviceInfo = Store.useValue Selectors.Selectors.deviceInfo
+        let deviceInfo = Store.useValue Selectors.deviceInfo
         let leftDockSize, setLeftDockSize = Store.useState Atoms.User.leftDockSize
         let exportUserSettings = Hydrate.useExportUserSettings ()
         let importUserSettings = Hydrate.useImportUserSettings ()
@@ -119,10 +123,7 @@ module LeftDock =
                                                                 "Paste Shared Database ID"
                                                                 None
                                                                 (fun x -> x.closeOnSelect <- false)
-                                                        Body =
-                                                            fun (_disclosure, _fetchInitialFocusRef) ->
-                                                                [
-                                                                ]
+                                                        Body = fun (_disclosure, _fetchInitialFocusRef) -> []
                                                     |}
                                             ]
                                         )

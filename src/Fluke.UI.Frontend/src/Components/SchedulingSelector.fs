@@ -1,13 +1,17 @@
 namespace rec Fluke.UI.Frontend.Components
 
 open System
+open FsCore
 open Fluke.Shared
 open Browser.Types
 open Fable.React
 open Feliz
 open Fluke.Shared.Domain.Model
-open Fluke.UI.Frontend.Bindings
+open FsJs
+open FsStore
+open FsUi.Bindings
 open Fluke.UI.Frontend.State
+open FsUi.Components
 
 
 module SchedulingSelector =

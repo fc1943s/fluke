@@ -3,8 +3,9 @@ namespace Fluke.UI.Frontend.Components
 open Browser.Types
 open Feliz
 open Fable.React
-open Fluke.UI.Frontend.Bindings
-open Fluke.UI.Frontend.Hooks
+open FsUi.Bindings
+open FsUi.Components
+open FsUi.Hooks
 
 
 module DeleteUserButton =

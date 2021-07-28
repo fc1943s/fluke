@@ -5,14 +5,17 @@ open Fluke.Shared.Domain.State
 open Fluke.Shared.Domain.UserInteraction
 open Feliz
 open Fable.React
-open Fluke.UI.Frontend.Bindings
+open FsCore.Model
+open FsStore
+open FsUi.Bindings
 open Fluke.UI.Frontend.State
+open FsUi.Components
 
 
 module DatabaseLeafIcon =
     [<ReactComponent>]
     let DatabaseLeafIcon databaseId =
-        let username = Store.useValue Store.Atoms.username
+        let username = Store.useValue Atoms.username
         let owner = Store.useValue (Atoms.Database.owner databaseId)
         let sharedWith = Store.useValue (Atoms.Database.sharedWith databaseId)
         let position = Store.useValue (Atoms.Database.position databaseId)

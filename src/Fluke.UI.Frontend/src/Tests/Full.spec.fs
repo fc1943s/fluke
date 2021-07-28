@@ -4,6 +4,7 @@ open Fable.Core.JsInterop
 open System
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Bindings
+open FsCore.Model
 open Fluke.UI.Frontend.State.State
 
 

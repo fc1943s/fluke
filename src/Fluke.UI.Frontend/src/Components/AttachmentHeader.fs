@@ -3,9 +3,11 @@ namespace Fluke.UI.Frontend.Components
 open Feliz
 open Fable.React
 open Fluke.Shared.Domain.UserInteraction
-open Fluke.UI.Frontend.Bindings
+open FsStore
+open FsUi.Bindings
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Components
+open FsUi.Components
 
 
 module AttachmentHeader =

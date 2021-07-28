@@ -1,13 +1,13 @@
 namespace Fluke.UI.Frontend.State.Selectors
 
-#nowarn "40"
-
-open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 open Fluke.Shared.Domain.Model
 open Fluke.UI.Frontend.State
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.Shared.Domain.State
+open FsStore
+
+#nowarn "40"
 
 
 module rec Task =

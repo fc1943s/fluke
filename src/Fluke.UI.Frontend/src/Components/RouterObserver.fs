@@ -1,12 +1,14 @@
 namespace Fluke.UI.Frontend.Components
 
+open FsCore
+open FsJs
 open Fable.React
-open Fable.Core
 open Fable.Core.JsInterop
 open Feliz.Router
 open Feliz
 open Fluke.Shared
-open Fluke.UI.Frontend.Bindings
+open FsStore
+open FsUi.Bindings
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
 
@@ -16,7 +18,7 @@ module RouterObserver =
     let RouterObserver () =
         React.useEffect (
             (fun () ->
-                match JS.window id with
+                match Dom.window () with
                 | Some window ->
                     let redirect = window.sessionStorage?redirect
                     emitJsExpr () "delete sessionStorage.redirect"

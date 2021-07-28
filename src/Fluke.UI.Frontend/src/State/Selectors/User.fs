@@ -1,8 +1,7 @@
 namespace Fluke.UI.Frontend.State.Selectors
 
-#nowarn "40"
-
-open Fluke.UI.Frontend.Bindings
+open FsUi.State
+open FsStore
 open Fluke.Shared
 open Fluke.UI.Frontend.State.State
 open Fluke.UI.Frontend.State
@@ -35,14 +34,12 @@ module rec User =
                     CellSize = Store.value getter Atoms.User.cellSize
                     ClipboardAttachmentIdMap = Store.value getter Atoms.User.clipboardAttachmentIdMap
                     ClipboardVisible = Store.value getter Atoms.User.clipboardVisible
-                    DarkMode = Store.value getter Atoms.User.darkMode
                     DaysAfter = Store.value getter Atoms.User.daysAfter
                     DaysBefore = Store.value getter Atoms.User.daysBefore
                     DayStart = Store.value getter Atoms.User.dayStart
                     EnableCellPopover = Store.value getter Atoms.User.enableCellPopover
                     ExpandedDatabaseIdSet = Store.value getter Atoms.User.expandedDatabaseIdSet
                     Filter = Store.value getter Atoms.User.filter
-                    FontSize = Store.value getter Atoms.User.fontSize
                     HideSchedulingOverlay = Store.value getter Atoms.User.hideSchedulingOverlay
                     HideTemplates = Store.value getter Atoms.User.hideTemplates
                     Language = Store.value getter Atoms.User.language

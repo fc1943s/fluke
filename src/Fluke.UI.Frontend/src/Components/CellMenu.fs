@@ -1,21 +1,26 @@
 namespace Fluke.UI.Frontend.Components
 
+open FsCore.Model
+open FsUi.State
 open System
 open Fable.React
 open Feliz
 open Fluke.Shared
 open Fluke.Shared.Domain.Model
+open Fluke.Shared.Domain.State
+open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend
-open Fluke.UI.Frontend.Bindings
+open FsJs
+open FsStore
+open FsUi.Bindings
 open Fluke.Shared.Domain
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State.State
 open Fluke.UI.Frontend.State
+open FsUi.Components
 
 
 module CellMenu =
-    open UserInteraction
-    open State
 
     [<ReactComponent>]
     let PostponeTooltipText dateIdAtom =
@@ -38,12 +43,12 @@ module CellMenu =
     let CellMenu taskIdAtom dateIdAtom (onClose: (unit -> unit) option) (floating: bool) =
         let taskId = Store.useValue taskIdAtom
         let dateId = Store.useValue dateIdAtom
-        let username = Store.useValue Store.Atoms.username
+        let username = Store.useValue Atoms.username
         let toast = UI.useToast ()
         let cellSize = Store.useValue Atoms.User.cellSize
         let sessionStatus, setSessionStatus = Store.useState (Selectors.Cell.sessionStatus (taskId, dateId))
         let visibleTaskSelectedDateIdMap = Store.useValue Selectors.Session.visibleTaskSelectedDateIdMap
-        let darkMode = Store.useValue Atoms.User.darkMode
+        let darkMode = Store.useValue Atoms.Ui.darkMode
 
         let postponedUntil, setPostponedUntil =
             React.useState (

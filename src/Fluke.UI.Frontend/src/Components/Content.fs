@@ -2,9 +2,11 @@ namespace Fluke.UI.Frontend.Components
 
 open Feliz
 open Fable.React
-open Fluke.UI.Frontend.Bindings
+open FsJs
+open FsStore
+open FsUi.Bindings
 open Fluke.UI.Frontend.State
-open Fable.Core
+open FsUi.Components
 
 
 module Content =
@@ -12,7 +14,7 @@ module Content =
     let LoggedContent () =
         let userColor = Store.useValue Atoms.User.userColor
 
-        JS.log (fun () -> $"Content.render. userColor={userColor}")
+        Dom.log (fun () -> $"Content.render. userColor={userColor}")
 
         //        let asyncTaskIdAtoms = Store.useValue Selectors.asyncTaskIdAtoms
 //        let archive = Store.useValue Atoms.User.archive
@@ -104,8 +106,8 @@ module Content =
         Profiling.addTimestamp "mainComponent.render"
 
         let sessionRestored = Store.useValue Atoms.Session.sessionRestored
-        let deviceInfo = Store.useValue Selectors.Selectors.deviceInfo
-        let username = Store.useValue Store.Atoms.username
+        let deviceInfo = Store.useValue Selectors.deviceInfo
+        let username = Store.useValue Atoms.username
 
         UI.flex
             (fun x ->

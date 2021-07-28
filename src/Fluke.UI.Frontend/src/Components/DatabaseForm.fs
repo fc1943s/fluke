@@ -1,17 +1,22 @@
 namespace Fluke.UI.Frontend.Components
 
+open FsCore
 open Fable.React
 open Feliz
 open System
 open Fluke.Shared.Domain
 open Fluke.UI.Frontend
 open Fluke.Shared
-open Fluke.UI.Frontend.Bindings
+open FsStore
+open FsStore.Bindings
+open FsUi.Bindings
 open Fable.DateFunctions
 open Fable.Core
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State.State
 open Fluke.UI.Frontend.State
+open FsUi.Components
+open FsJs
 
 
 module DatabaseForm =
@@ -20,14 +25,14 @@ module DatabaseForm =
     [<ReactComponent>]
     let rec DatabaseForm (databaseId: DatabaseId) (onSave: Database -> JS.Promise<unit>) =
         let toast = UI.useToast ()
-        let debug = Store.useValue Atoms.Session.debug
+        let logLevel = Store.useValue Atoms.logLevel
 
         let onSave =
             Store.useCallback (
                 (fun getter setter _ ->
                     promise {
                         let databaseName = Store.getTempValue getter (Atoms.Database.name databaseId)
-                        let username = Store.value getter Store.Atoms.username
+                        let username = Store.value getter Atoms.username
 
                         match databaseName with
                         | DatabaseName String.InvalidString -> toast (fun x -> x.description <- "Invalid name")
@@ -80,7 +85,10 @@ module DatabaseForm =
                         (UI.stack
                             (fun x -> x.spacing <- "15px")
                             [
-                                if not debug then nothing else UI.str $"{databaseId}"
+                                if logLevel <= Model.LogLevel.Debug then
+                                    UI.str $"{databaseId}"
+                                else
+                                    nothing
 
                                 Input.Input
                                     {|

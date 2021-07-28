@@ -4,7 +4,7 @@ open Fable.React
 open Feliz
 open Fable.Core
 open Fluke.UI.Frontend
-open Fluke.UI.Frontend.Bindings
+open Fluke.UI.Frontend.Bindings; open FsStore; open FsUi.Bindings
 
 
 module DockButton =

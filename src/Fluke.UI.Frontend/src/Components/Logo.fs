@@ -1,7 +1,7 @@
 namespace Fluke.UI.Frontend.Components
 
-open Fluke.Shared.Domain.UserInteraction
-open Fluke.UI.Frontend.Bindings
+open FsCore.Model
+open FsUi.Bindings
 open Fluke.Shared
 open Fluke.UI.Frontend.State.State
 

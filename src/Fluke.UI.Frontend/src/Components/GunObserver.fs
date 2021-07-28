@@ -1,8 +1,9 @@
 namespace Fluke.UI.Frontend.Components
 
 open Feliz
-open Fluke.UI.Frontend.Bindings
-open Fluke.UI.Frontend.Hooks
+open FsStore
+open FsUi.Bindings
+open FsUi.Hooks
 open Fluke.UI.Frontend.State
 open Fable.React
 open Fable.Core
@@ -12,11 +13,11 @@ module GunObserver =
 
     [<ReactComponent>]
     let GunObserver () =
-        let gunPeers = Store.useValue Store.Atoms.gunPeers
-        let gun = Store.useValue (Store.Selectors.gun (gunPeers |> Option.defaultValue [||]))
-        let gunNamespace = Store.useValue Store.Selectors.gunNamespace
+        let gunPeers = Store.useValue Atoms.gunPeers
+        let gun = Store.useValue (Selectors.gun (gunPeers |> Option.defaultValue [||]))
+        let gunNamespace = Store.useValue Selectors.gunNamespace
         //        let appKeys = Gun.gunHooks.useGunKeys Browser.Dom.window?SEA (fun () -> null) false
-        let gunKeys, setGunKeys = Store.useState Store.Atoms.gunKeys
+        let gunKeys, setGunKeys = Store.useState Atoms.gunKeys
 
         //        let gunState =
 //            Gun.gunHooks.useGunState

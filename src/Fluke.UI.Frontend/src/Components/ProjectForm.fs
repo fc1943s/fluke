@@ -1,12 +1,15 @@
 namespace rec Fluke.UI.Frontend.Components
 
+open FsCore
 open Browser.Types
 open Fable.React
 open Feliz
 open Fluke.Shared.Domain.Model
-open Fluke.UI.Frontend.Bindings
+open FsStore
+open FsUi.Bindings
 open Fable.Core
 open Fluke.Shared
+open FsUi.Components
 
 
 module ProjectForm =

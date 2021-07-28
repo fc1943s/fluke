@@ -1,9 +1,9 @@
 namespace Fluke.UI.Frontend.State.Selectors
 
-open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 open Fluke.UI.Frontend.State
 open Fluke.Shared.Domain.UserInteraction
+open FsStore
 
 
 module rec DateId =

@@ -2,7 +2,9 @@ namespace Fluke.UI.Frontend.Components
 
 open Feliz
 open Fable.React
-open Fluke.UI.Frontend.Bindings
+open FsJs
+open FsStore
+open FsUi.Bindings
 
 
 module MenuItemToggle =

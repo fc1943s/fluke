@@ -56,12 +56,6 @@ module Seq =
         items |> Seq.item (Random().Next (0, len))
 
 
-module Option =
-    let inline ofObjUnbox<'T> (value: 'T) =
-        Option.ofObj (unbox value)
-        |> Option.map (fun x -> box x :?> 'T)
-
-
 module List =
     let inline removeAt index list =
         list
@@ -155,26 +149,12 @@ module Operators =
 
 
 module String =
-    let inline split (separator: string) (str: string) = str.Split separator
-
     let inline trim (str: string) = str.Trim ()
 
     let inline take count (source: string) = source.[..count - 1]
 
     let inline toLower (source: string) =
         if isNull source then source else source.ToLowerInvariant ()
-
-    let inline (|ValidString|WhitespaceString|NullString|) (str: string) =
-        match str with
-        | null -> NullString
-        | str when String.IsNullOrWhiteSpace str -> WhitespaceString
-        | str -> ValidString str
-
-    let inline (|InvalidString|_|) (str: string) =
-        match str with
-        | WhitespaceString
-        | NullString -> Some InvalidString
-        | _ -> None
 
     let inline parseInt (text: string) =
         match Int32.TryParse text with
@@ -192,15 +172,3 @@ module String =
         |> Option.bind (fun n -> if n <= max then Some n else None)
 
 
-module Enum =
-    let inline ToList<'T> () =
-        (Enum.GetValues typeof<'T> :?> 'T [])
-        |> Array.toList
-
-    let inline name<'T> (value: 'T) = Enum.GetName (typeof<'T>, value)
-
-
-module DateTime =
-    let inline ticksDiff ticks =
-        (TimeSpan (DateTime.Now.Ticks - ticks))
-            .TotalMilliseconds

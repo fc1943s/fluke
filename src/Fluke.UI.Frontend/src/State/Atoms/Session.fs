@@ -1,8 +1,7 @@
 namespace Fluke.UI.Frontend.State.Atoms
 
-open Fluke.UI.Frontend.Bindings
 open Fluke.Shared.Domain.UserInteraction
-open Fable.Core
+open FsStore
 
 
 module Session =
@@ -26,7 +25,6 @@ module Session =
 //                    (fun (_eventId: EventId) -> Event.NoOp)
 //                )
 
-    let rec debug = Store.atomWithStorageSync ($"{nameof debug}", JS.isDebug ())
     let rec sessionRestored = Store.atom ($"{nameof sessionRestored}", false)
     let rec position = Store.atom ($"{nameof position}", (None: FlukeDateTime option))
     let rec ctrlPressed = Store.atom ($"{nameof ctrlPressed}", false)

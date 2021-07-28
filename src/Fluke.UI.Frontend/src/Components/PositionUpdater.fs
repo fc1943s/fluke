@@ -5,8 +5,8 @@ open Fable.React
 open Feliz
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.State
-open Fluke.UI.Frontend.Hooks
-open Fluke.UI.Frontend.Bindings
+open FsStore
+open FsUi.Hooks
 
 
 module PositionUpdater =
@@ -41,7 +41,7 @@ module PositionUpdater =
                                     Second = Second 0
                                 }
 
-                            let isTesting = Store.value getter Store.Atoms.isTesting
+                            let isTesting = Store.value getter Atoms.isTesting
                             let position = Store.value getter Atoms.Session.position
 
                             if (not isTesting || position.IsNone)

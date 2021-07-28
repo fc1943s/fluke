@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <LangVersion>preview</LangVersion>
+    </PropertyGroup>
+    <ItemGroup>
+        <Compile Include="src\Bindings\Vendor\ReactIcons.fs" />
+        <Compile Include="src\Bindings\React.fs" />
+        <Compile Include="src\Bindings\ColorPicker.fs" />
+        <Compile Include="src\Bindings\Ui.fs" />
+        <Compile Include="src\Bindings\Icons.fs" />
+        <Compile Include="src\Bindings\Rooks.fs" />
+        <Compile Include="src\Model.fs" />
+        <Compile Include="src\State\Atoms\Ui.fs" />
+        <Compile Include="src\State\Selectors\Ui.fs" />
+        <Compile Include="src\Hooks\Scheduling.fs" />
+        <Compile Include="src\Hooks\Listener.fs" />
+        <Compile Include="src\Hooks\React.fs" />
+        <Compile Include="src\Hooks\Auth.fs" />
+        <Compile Include="src\Components\Accordion.fs" />
+        <Compile Include="src\Components\Empty.fs" />
+        <Compile Include="src\Components\Tooltip.fs" />
+        <Compile Include="src\Components\InputLabelIconButton.fs" />
+        <Compile Include="src\Components\MenuItem.fs" />
+        <Compile Include="src\Components\Checkbox.fs" />
+        <Compile Include="src\Components\Button.fs" />
+        <Compile Include="src\Components\Popover.fs" />
+        <Compile Include="src\Components\Hint.fs" />
+        <Compile Include="src\Components\InputLabel.fs" />
+        <Compile Include="src\Components\Input.fs" />
+        <Compile Include="src\Components\Spinner.fs" />
+        <Compile Include="src\Components\DropdownMenuButton.fs" />
+        <Compile Include="src\Components\Dropdown.fs" />
+        <Compile Include="src\Components\Menu.fs" />
+        <Compile Include="src\Components\Modal.fs" />
+        <Compile Include="src\Components\LoadingSpinner.fs" />
+        <Compile Include="src\Components\Radio.fs" />
+        <Compile Include="src\Components\CheckboxInput.fs" />
+        <Compile Include="src\Components\DebugOverlay.fs" />
+        <Compile Include="src\Components\ExternalLink.fs" />
+        <Compile Include="src\Components\TransparentIconButton.fs" />
+        <Content Include="package.json" />
+        <Content Include="paket.references" />
+        <Content Include=".gitignore" />
+        <Content Include="yarn.lock" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\FsStore\FsStore.fsproj" />
+    </ItemGroup>
+    <Import Project="..\..\.paket\Paket.Restore.targets" />
+</Project>

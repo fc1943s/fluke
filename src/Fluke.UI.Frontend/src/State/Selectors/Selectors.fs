@@ -1,16 +1,17 @@
 namespace Fluke.UI.Frontend.State.Selectors
 
-#nowarn "40"
-
+open FsJs
+open FsStore
+open FsStore.Bindings
 open System
-open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 open Fluke.Shared.Domain.Model
 open Fluke.UI.Frontend.State
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.Shared.Domain.State
-open Fable.Core
 open Fluke.UI.Frontend.State.State
+
+#nowarn "40"
 
 
 module rec Selectors =
@@ -62,10 +63,9 @@ module rec Selectors =
                 |> Array.map (fun (_, dates) -> dates |> Array.map (fun (i, _) -> dateIdAtoms.[i])))
         )
 
-    let rec deviceInfo = Store.readSelector ($"{nameof deviceInfo}", (fun _ -> JS.deviceInfo))
-
     let rec asyncDatabaseIdAtoms =
         Store.selectAtomSyncKeys (
+            State.collection,
             $"{nameof asyncDatabaseIdAtoms}",
             Atoms.Database.name,
             Database.Default.Id,
@@ -74,6 +74,7 @@ module rec Selectors =
 
     let rec asyncTaskIdAtoms =
         Store.selectAtomSyncKeys (
+            State.collection,
             $"{nameof asyncTaskIdAtoms}",
             Atoms.Task.databaseId,
             Task.Default.Id,
@@ -81,4 +82,10 @@ module rec Selectors =
         )
 
     let rec asyncDeviceIdAtoms =
-        Store.selectAtomSyncKeys ($"{nameof asyncDeviceIdAtoms}", Atoms.Device.devicePing, deviceId, (Guid >> DeviceId))
+        Store.selectAtomSyncKeys (
+            State.collection,
+            $"{nameof asyncDeviceIdAtoms}",
+            Atoms.Device.devicePing,
+            deviceId,
+            (Guid >> DeviceId)
+        )

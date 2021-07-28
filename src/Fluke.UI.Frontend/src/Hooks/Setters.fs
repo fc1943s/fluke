@@ -2,8 +2,8 @@ namespace Fluke.UI.Frontend.Hooks
 
 open Fluke.Shared
 open Fluke.UI.Frontend
-open Fluke.UI.Frontend.Bindings
 open Fluke.Shared.Domain
+open FsStore
 
 
 module Setters =

@@ -1,5 +1,5 @@
 // ts2fable 0.8.0-build.613
-namespace Fluke.UI.Frontend.Bindings.Vendor
+namespace FsUi.Bindings.Vendor
 
 module ReactIcons =
 

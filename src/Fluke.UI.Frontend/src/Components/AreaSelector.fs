@@ -1,12 +1,15 @@
 namespace rec Fluke.UI.Frontend.Components
 
+open FsCore
 open System
 open Fable.React
 open Feliz
 open Fluke.Shared.Domain.Model
-open Fluke.UI.Frontend.Bindings
+open FsStore
+open FsUi.Bindings
 open Fluke.UI.Frontend.State
 open Fluke.Shared
+open FsUi.Components
 
 
 module AreaSelector =

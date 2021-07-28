@@ -2,11 +2,13 @@ namespace Fluke.UI.Frontend.Components
 
 open Fluke.Shared.Domain.Model
 open Feliz
-open Fluke.UI.Frontend.Bindings
+open FsStore
+open FsUi.Bindings
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.State.State
 open Fluke.UI.Frontend.TempUI
+open FsUi.Components
 
 
 module DatabaseNodeMenu =

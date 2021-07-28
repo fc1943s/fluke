@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <LangVersion>preview</LangVersion>
+    </PropertyGroup>
+    <ItemGroup>
+        <Compile Include="src\Js.fs" />
+        <Compile Include="src\Dom.fs" />
+        <Compile Include="src\Profiling.fs" />
+        <Content Include="package.json" />
+        <Content Include="paket.references" />
+        <Content Include=".gitignore" />
+        <Content Include="yarn.lock" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\FsCore\FsCore.fsproj" />
+    </ItemGroup>
+    <Import Project="..\..\.paket\Paket.Restore.targets" />
+</Project>

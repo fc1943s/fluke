@@ -2,7 +2,7 @@ namespace Fluke.UI.Frontend.Components
 
 open Feliz
 open Fluke.UI.Frontend.State
-open Fluke.UI.Frontend.Bindings
+open Fluke.UI.Frontend.Bindings; open FsStore; open FsUi.Bindings
 
 
 module TaskInformationName =
