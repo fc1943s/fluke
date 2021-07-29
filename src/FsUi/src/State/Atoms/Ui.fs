@@ -2,10 +2,11 @@ namespace FsUi.State.Atoms
 
 open FsStore
 open FsUi.Model
+open FsUi
 
 module rec Ui =
     let rec darkMode =
-        Store.atomWithStorageSync (Model.collection, $"{nameof Ui}/{nameof darkMode}", UiState.Default.DarkMode)
+        Store.atomWithStorageSync (FsUi.collection, $"{nameof Ui}/{nameof darkMode}", UiState.Default.DarkMode)
 
     let rec fontSize =
-        Store.atomWithStorageSync (Model.collection, $"{nameof Ui}/{nameof fontSize}", UiState.Default.FontSize)
+        Store.atomWithStorageSync (FsUi.collection, $"{nameof Ui}/{nameof fontSize}", UiState.Default.FontSize)

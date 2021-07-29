@@ -9,7 +9,6 @@ open Feliz
 open Fluke.Shared
 open FsStore
 open FsUi.Bindings
-open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
 
 
@@ -25,7 +24,7 @@ module RouterObserver =
 
                     match redirect with
                     | String.ValidString _ when redirect <> window.location.href ->
-                        Router.navigatePath (redirect.Split "/" |> Array.skip 3)
+                        Router.navigatePath (redirect |> String.split "/" |> Array.skip 3)
                     | _ -> ()
                 | None -> ()),
             [||]

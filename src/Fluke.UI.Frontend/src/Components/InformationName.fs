@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open FsCore
 open Fable.React
 open Feliz
 open Fluke.UI.Frontend
@@ -71,25 +72,24 @@ module InformationName =
                         x.whiteSpace <- "nowrap"
                         x.color <- TempUI.informationColor information)
                     [
-                        information
-                        |> Information.Name
-                        |> InformationName.Value
-                        |> function
-                            | "" -> LoadingSpinner.InlineLoadingSpinner ()
-                            | name ->
-                                React.fragment [
-                                    str name
+                        match information
+                              |> Information.Name
+                              |> InformationName.Value with
+                        | String.ValidString name ->
+                            React.fragment [
+                                str name
 
-                                    InputLabelIconButton.InputLabelIconButton
-                                        (fun x ->
-                                            x.icon <- Icons.fi.FiArrowRight |> Icons.render
-                                            x.fontSize <- "11px"
-                                            x.height <- "15px"
-                                            x.color <- "whiteAlpha.700"
-                                            x.marginTop <- "-1px"
-                                            x.marginLeft <- "6px"
-                                            x.onClick <- detailsClick)
-                                ]
+                                InputLabelIconButton.InputLabelIconButton
+                                    (fun x ->
+                                        x.icon <- Icons.fi.FiArrowRight |> Icons.render
+                                        x.fontSize <- "11px"
+                                        x.height <- "15px"
+                                        x.color <- "whiteAlpha.700"
+                                        x.marginTop <- "-1px"
+                                        x.marginLeft <- "6px"
+                                        x.onClick <- detailsClick)
+                            ]
+                        | _ -> LoadingSpinner.InlineLoadingSpinner ()
                     ]
 
                 if attachmentIdMap

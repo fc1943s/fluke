@@ -39,13 +39,12 @@
         <Compile Include="src\State\Selectors\Task.fs" />
         <Compile Include="src\State\Selectors\Database.fs" />
         <Compile Include="src\State\Selectors\Information.fs" />
-        <Compile Include="src\State\Selectors\Cell.fs" />
         <Compile Include="src\State\Selectors\Session.fs" />
+        <Compile Include="src\State\Selectors\Cell.fs" />
         <Compile Include="src\State\Selectors\DateId.fs" />
         <Compile Include="src\State\Selectors\BulletJournalView.fs" />
         <Compile Include="src\Hooks\Theme.fs" />
         <Compile Include="src\Hooks\Hydrate.fs" />
-        <Compile Include="src\Hooks\Setters.fs" />
         <Compile Include="src\Hooks\Navigate.fs" />
         <Compile Include="src\Components\ModalFlagTrigger.fs" />
         <Compile Include="src\Components\ModalFlag.fs" />

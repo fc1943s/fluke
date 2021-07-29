@@ -65,7 +65,6 @@ module rec Selectors =
 
     let rec asyncDatabaseIdAtoms =
         Store.selectAtomSyncKeys (
-            State.collection,
             $"{nameof asyncDatabaseIdAtoms}",
             Atoms.Database.name,
             Database.Default.Id,
@@ -74,7 +73,6 @@ module rec Selectors =
 
     let rec asyncTaskIdAtoms =
         Store.selectAtomSyncKeys (
-            State.collection,
             $"{nameof asyncTaskIdAtoms}",
             Atoms.Task.databaseId,
             Task.Default.Id,
@@ -83,7 +81,6 @@ module rec Selectors =
 
     let rec asyncDeviceIdAtoms =
         Store.selectAtomSyncKeys (
-            State.collection,
             $"{nameof asyncDeviceIdAtoms}",
             Atoms.Device.devicePing,
             deviceId,

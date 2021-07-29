@@ -2,10 +2,11 @@ namespace FsUi
 
 open FsCore.Model
 
-
-module Model =
+module FsUi =
     let collection = Collection (nameof FsUi)
 
+
+module Model =
     type UiState =
         {
             DarkMode: bool

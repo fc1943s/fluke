@@ -220,7 +220,8 @@ module Databases =
         paths
         |> Array.map
             (fun path ->
-                path.Replace("\/", "|||").Split "/"
+                path.Replace ("\/", "|||")
+                |> String.split "/"
                 |> Array.map (fun str -> str.Replace ("|||", "/"))
                 |> Array.toList)
         |> Array.mapi

@@ -4,7 +4,7 @@ open Fluke.Shared
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.Shared.Domain.State
-open Fluke.UI.Frontend.State.State
+open Fluke.UI.Frontend.State
 open FsStore
 
 
@@ -16,7 +16,7 @@ module rec Database =
         |> List.singleton
 
     let inline atomFamilyWithSync atomPath defaultValueFn =
-        Store.atomFamilyWithSync (State.collection, atomPath, defaultValueFn, databaseIdIdentifier)
+        Store.atomFamilyWithSync (Fluke.collection, atomPath, defaultValueFn, databaseIdIdentifier)
 
     let rec name =
         atomFamilyWithSync $"{nameof Database}/{nameof name}" (fun (_databaseId: DatabaseId) -> Database.Default.Name)

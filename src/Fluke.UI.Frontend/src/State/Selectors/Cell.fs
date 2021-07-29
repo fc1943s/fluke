@@ -42,8 +42,83 @@ module rec Cell =
             (fun (taskId: TaskId, dateId: DateId) getter ->
                 let selectionSet = Store.value getter (Atoms.Task.selectionSet taskId)
                 selectionSet.Contains dateId),
-            (fun (taskId: TaskId, dateId: DateId) _ setter newValue ->
-                Store.change setter (Atoms.Task.selectionSet taskId) ((if newValue then Set.add else Set.remove) dateId))
+            (fun (taskId: TaskId, dateId: DateId) getter setter newValue ->
+                let ctrlPressed = Store.value getter Atoms.Session.ctrlPressed
+                let shiftPressed = Store.value getter Atoms.Session.shiftPressed
+
+                let newCellSelectionMap =
+                    match shiftPressed, ctrlPressed with
+                    | false, false ->
+                        let newTaskSelection = if newValue then Set.singleton dateId else Set.empty
+
+                        [
+                            taskId, newTaskSelection
+                        ]
+                        |> Map.ofSeq
+                    | false, true ->
+                        let swapSelection oldSelection taskId dateId =
+                            let oldSet =
+                                oldSelection
+                                |> Map.tryFind taskId
+                                |> Option.defaultValue Set.empty
+
+                            let newSet =
+                                let fn = if newValue then Set.add else Set.remove
+
+                                fn dateId oldSet
+
+                            oldSelection |> Map.add taskId newSet
+
+                        let oldSelection = Store.value getter Selectors.Session.visibleTaskSelectedDateIdMap
+
+                        swapSelection oldSelection taskId dateId
+                    | true, _ ->
+                        let sortedTaskIdArray = Store.value getter Selectors.Session.sortedTaskIdArray
+
+                        let visibleTaskSelectedDateIdMap =
+                            Store.value getter Selectors.Session.visibleTaskSelectedDateIdMap
+
+                        let initialTaskIdSet =
+                            visibleTaskSelectedDateIdMap
+                            |> Map.toSeq
+                            |> Seq.filter (fun (_, dates) -> Set.isEmpty dates |> not)
+                            |> Seq.map fst
+                            |> Set.ofSeq
+                            |> Set.add taskId
+
+                        let newTaskIdArray =
+                            sortedTaskIdArray
+                            |> Array.skipWhile (initialTaskIdSet.Contains >> not)
+                            |> Array.rev
+                            |> Array.skipWhile (initialTaskIdSet.Contains >> not)
+                            |> Array.rev
+
+                        let initialDateList =
+                            visibleTaskSelectedDateIdMap
+                            |> Map.values
+                            |> Set.unionMany
+                            |> Set.add dateId
+                            |> Set.toList
+                            |> List.choose DateId.Value
+                            |> List.sort
+
+                        let dateSet =
+                            match initialDateList with
+                            | [] -> []
+                            | dateList ->
+                                [
+                                    dateList.Head
+                                    dateList |> List.last
+                                ]
+                                |> Rendering.getDateSequence (0, 0)
+                                |> List.map DateId
+                            |> Set.ofSeq
+
+                        newTaskIdArray
+                        |> Array.map (fun taskId -> taskId, dateSet)
+                        |> Map.ofSeq
+
+                Store.set setter Selectors.Session.visibleTaskSelectedDateIdMap newCellSelectionMap)
         )
 
     let rec sessions =

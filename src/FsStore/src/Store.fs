@@ -5,7 +5,6 @@ open Fable.Extras
 open Fable.Core.JsInterop
 open Fable.Core
 open System
-open FsStore.Model
 open FsStore.Shared
 open Microsoft.FSharp.Core.Operators
 open FsCore
@@ -17,15 +16,61 @@ open FsStore.Bindings.Jotai
 
 
 module Store =
-    open Store
 
     let inline gunAtomNodeFromAtomPath getter username atomPath =
         match username, atomPath with
         | Some username, Some atomPath ->
-            match value getter (Selectors.gunAtomNode (username, atomPath)) with
+            match Store.value getter (Selectors.gunAtomNode (username, atomPath)) with
             | Some gunAtomNode -> Some ($">> atomPath={atomPath} username={username}", gunAtomNode)
             | _ -> None
         | _ -> None
+
+    let createSyncEngine mapGunAtomNode =
+        let mutable lastAtomPath = None
+        let mutable lastUsername = None
+        let mutable lastGunPeers = None
+        let mutable lastGunAtomNode = None
+        let mutable lastHub = None
+
+        let getBaseInfo () =
+            $"createSyncEngine baseInfo:
+              lastAtomPath={lastAtomPath}
+              lastUsername={lastUsername}
+              lastGunPeers={lastGunPeers}
+              lastGunAtomNode={lastGunAtomNode} "
+
+        {|
+            getAtomPath = fun () -> lastAtomPath
+            getUsername = fun () -> lastUsername
+            getGunPeers = fun () -> lastGunPeers
+            getGunAtomNode = fun () -> lastGunAtomNode
+            getHub = fun () -> lastHub
+            getBaseInfo = getBaseInfo
+            setProviders =
+                fun getter atom ->
+                    if lastAtomPath.IsNone then
+                        lastAtomPath <- queryAtomPath (AtomReference.Atom (unbox atom))
+
+                    Profiling.addCount $"createSyncEngine.setProviders {lastAtomPath}"
+
+                    match lastAtomPath with
+                    | Some (AtomPath atomPath) ->
+                        Dom.logFiltered
+                            atomPath
+                            (fun () -> $"createSyncEngine.setProviders atom={atom} {getBaseInfo ()}")
+                    | _ -> ()
+
+                    lastUsername <- Store.value getter Atoms.username
+                    lastGunPeers <- Store.value getter Atoms.gunPeers
+
+                    lastGunAtomNode <-
+                        gunAtomNodeFromAtomPath getter lastUsername lastAtomPath
+                        |> Option.map (mapGunAtomNode |> Option.defaultValue id)
+
+                    match lastAtomPath, lastGunAtomNode with
+                    | Some _, Some _ -> lastHub <- Store.value getter Selectors.hub
+                    | _ -> ()
+        |}
 
     let testKeysCache = Dictionary<string, Set<string>> ()
 
@@ -43,57 +88,30 @@ module Store =
 
     // https://i.imgur.com/GB8trpT.png        :~ still trash
     let inline atomWithSync<'TKey, 'TValue> (collection, atomPath, defaultValue: 'TValue, keyIdentifier: string list) =
-        let mutable lastGunAtomNode = None
-        let mutable lastUsername = None
-        let mutable lastHub = None
         let mutable lastValue = None
         let mutable lastGunValue2 = None
         let mutable lastApiValue = None
-        let mutable lastAtomPath = None
         let mutable lastUserAtomId = None
         let mutable lastWrapperSet = None
         let mutable syncPaused = false
+        let mutable lastApiSubscription = None
 
-        let assignLastGunAtomNode getter atom =
-            if lastAtomPath.IsNone then
-                lastAtomPath <- queryAtomPath (AtomReference.Atom (unbox atom))
-
-
-            Dom.log
-                (fun () ->
-                    match lastAtomPath with
-                    | Some (AtomPath atomPath) when atomPath.Contains "devicePing" |> not ->
-                        $"assignLastGunAtomNode lastAtomPath={atomPath} atom={atom}"
-                    | _ -> null)
-
-            let username = value getter Atoms.username
-            lastUsername <- username
-            lastGunAtomNode <- gunAtomNodeFromAtomPath getter username lastAtomPath
-
-            match lastAtomPath, lastGunAtomNode with
-            | Some _atomPath, Some _ -> lastHub <- value getter Selectors.hub
-            | _ -> ()
-
-            username
-
+        let syncEngine = createSyncEngine None
+        let gunNodePath = Gun.getGunNodePath collection atomPath keyIdentifier
 
         let internalAtom = jotaiUtils.atomFamily (fun _username -> jotai.atom defaultValue) Object.compare
 
-        let gunNodePath = Gun.getGunNodePath collection atomPath keyIdentifier
-
-        Profiling.addCount $"{gunNodePath} constructor"
-
         let baseInfo () =
-            $"""gunNodePath={gunNodePath}
-atomPath={atomPath}
-keyIdentifier={keyIdentifier}
+            $"""atomWithSync baseInfo:
 lastValue={lastValue}
 lastGunValue={lastGunValue2}
 lastApiValue={lastApiValue}
-lastGunAtomNode={lastGunAtomNode}
-lastAtomPath={lastAtomPath}
-lastUserAtomId={lastUserAtomId} """
-
+lastUserAtomId={lastUserAtomId}
+gunNodePath={gunNodePath}
+atomPath={atomPath}
+keyIdentifier={keyIdentifier}
+{syncEngine.getBaseInfo ()}
+"""
 
         Dom.log
             (fun () ->
@@ -111,7 +129,7 @@ lastUserAtomId={lastUserAtomId} """
 {baseInfo ()}
 skipping unsubscribe. jotai resubscribe glitch.")
             | Some _ ->
-                match lastGunAtomNode with
+                match syncEngine.getGunAtomNode () with
                 | Some (key, gunAtomNode) ->
 
                     Profiling.addCount $"{gunNodePath} unsubscribe"
@@ -181,37 +199,6 @@ lastValue={lastValue}
 ticks={ticks}
 {baseInfo ()}                                   ")
                         | _ ->
-                            Profiling.addCount $"{gunNodePath} on() assign"
-
-                            Dom.logFiltered
-                                newValue
-                                (fun () ->
-                                    let _lastValue =
-                                        match unbox lastValue with
-                                        | Some (_, b) -> b
-                                        | _ -> null
-
-                                    if string _lastValue = string newValue then
-                                        (Dom.consoleError
-                                            $"should have skipped assign
-lastValue={lastValue} typeof _lastValue={jsTypeof _lastValue}
-newValue={newValue} typeof newValue={jsTypeof newValue}
-ticks={ticks}
-{baseInfo ()}                                      ")
-
-                                    $"gun.on() value. triggering. ##
-lastValue={lastValue} typeof _lastValue={jsTypeof _lastValue}
-newValue={newValue} typeof newValue={jsTypeof newValue}
-ticks={ticks}
-{baseInfo ()}                                        ")
-
-                            //                        Browser.Dom.window?atomPath <- atomPath
-                            //                        Browser.Dom.window?lastValue <- _lastValue
-                            //                        Browser.Dom.window?newValue <- newValue
-                            //                        Browser.Dom.window?deepEqual <- Object.compare
-
-                            // setAtom internalAtom
-
                             if unbox newValue = JS.undefined then
                                 Dom.logFiltered
                                     newValue
@@ -223,6 +210,37 @@ ticks={ticks}
 {baseInfo ()}                                       ")
                             else
                                 try
+                                    Profiling.addCount $"{gunNodePath} on() assign"
+
+                                    Dom.logFiltered
+                                        newValue
+                                        (fun () ->
+                                            let _lastValue =
+                                                match unbox lastValue with
+                                                | Some (_, b) -> b
+                                                | _ -> null
+
+                                            if string _lastValue = string newValue then
+                                                (Dom.consoleError
+                                                    $"should have skipped assign
+        lastValue={lastValue} typeof _lastValue={jsTypeof _lastValue}
+        newValue={newValue} typeof newValue={jsTypeof newValue}
+        ticks={ticks}
+        {baseInfo ()}                                      ")
+
+                                            $"gun.on() value. triggering. ##
+        lastValue={lastValue} typeof _lastValue={jsTypeof _lastValue}
+        newValue={newValue} typeof newValue={jsTypeof newValue}
+        ticks={ticks}
+        {baseInfo ()}                                        ")
+
+                                    //                        Browser.Dom.window?atomPath <- atomPath
+                                    //                        Browser.Dom.window?lastValue <- _lastValue
+                                    //                        Browser.Dom.window?newValue <- newValue
+                                    //                        Browser.Dom.window?deepEqual <- Object.compare
+
+                                    // setAtom internalAtom
+
                                     Gun.batchData (fun (_ticks, data) -> setAtom data) newValue
                                 with
                                 | ex ->
@@ -234,14 +252,12 @@ ticks={ticks}
                         lastSubscription <- None)
                 250
 
-        let mutable lastApiSubscription = None
-
         let subscribe =
             JS.debounce
                 (fun setAtom ->
                     lastWrapperSet <- Some setAtom
 
-                    match lastGunAtomNode, lastSubscription with
+                    match syncEngine.getGunAtomNode (), lastSubscription with
                     | _, Some _ ->
                         Dom.log
                             (fun () ->
@@ -265,11 +281,11 @@ ticks={ticks}
 
                         match gunKeys with
                         | Some gunKeys ->
-                            match lastHub with
+                            match syncEngine.getHub () with
                             | Some hub ->
                                 promise {
                                     try
-                                        match lastApiSubscription, lastUsername with
+                                        match lastApiSubscription, syncEngine.getUsername () with
                                         | Some _, _ -> Dom.consoleError "sub already present"
                                         | None, None -> Dom.consoleError "username is none (subscription)"
                                         | None, Some username ->
@@ -313,8 +329,8 @@ ticks={ticks}
     {baseInfo ()}
     skipping.                                   ")
 
-                            match lastAtomPath with
-                            | Some (AtomPath _atomPath) ->
+                            match syncEngine.getGunPeers (), syncEngine.getAtomPath () with
+                            | Some _, Some (AtomPath _atomPath) ->
                                 //                                if false then
                                 Gun.batchSubscribe
                                     gunAtomNode
@@ -331,7 +347,8 @@ ticks={ticks}
                                             setInternalFromSync setAtom (ticks, newValue)
 
 
-                                            if lastApiValue |> Object.compare newValue then
+                                            if lastApiValue.IsNone
+                                               || lastApiValue |> Object.compare newValue then
                                                 Dom.logFiltered
                                                     newValue
                                                     (fun () ->
@@ -339,7 +356,9 @@ ticks={ticks}
             newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
             {baseInfo ()}                           ")
                                             else
-                                                match lastAtomPath, lastHub, lastUsername with
+                                                match syncEngine.getAtomPath (),
+                                                      syncEngine.getHub (),
+                                                      syncEngine.getUsername () with
                                                 | Some (AtomPath atomPath), Some hub, Some username ->
                                                     promise {
                                                         try
@@ -357,6 +376,14 @@ ticks={ticks}
                                                                 if not result then
                                                                     printfn "$$$$ API PUT ERROR (backend console)"
                                                                 else
+
+                                                                    Dom.logFiltered
+                                                                        newValue
+                                                                        (fun () ->
+                                                                            $"subscribe() api set from gun
+                                newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
+                                {baseInfo ()}                           ")
+
                                                                     lastApiValue <- newValue
                                                             | response ->
                                                                 Dom.consoleError ("#00002 response:", response)
@@ -402,7 +429,7 @@ ticks={ticks}
                 Dom.logFiltered newValue (fun () -> "atomFamily.wrapper.set() debounceGunPut promise. #1")
 
                 try
-                    match lastGunAtomNode with
+                    match syncEngine.getGunAtomNode () with
                     | Some (key, gunAtomNode) ->
                         Dom.logFiltered
                             newValue
@@ -434,7 +461,7 @@ before put {key} newValue={newValue}
 newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
 {baseInfo ()}                           ")
                         | _ ->
-                            match lastAtomPath, lastHub, lastUsername with
+                            match syncEngine.getAtomPath (), syncEngine.getHub (), syncEngine.getUsername () with
                             | Some (AtomPath atomPath), Some hub, Some username ->
                                 promise {
                                     try
@@ -519,16 +546,16 @@ skipping gun put. no gun atom node.
         let debouncedPutFromUi = JS.debounce batchPutFromUi 100
 
         let rec wrapper =
-            selector (
+            Store.selector (
                 atomPath,
                 (Some (collection, keyIdentifier)),
                 (fun getter ->
-                    let logger = value getter Selectors.log
-                    let username = assignLastGunAtomNode getter wrapper
-                    let userAtom = internalAtom username
+                    let logger = Store.value getter Selectors.log
+                    syncEngine.setProviders getter wrapper
+                    let userAtom = internalAtom (syncEngine.getUsername ())
 
                     let result =
-                        value getter userAtom
+                        Store.value getter userAtom
                         |> Option.ofObjUnbox
                         |> Option.defaultValue defaultValue
 
@@ -589,12 +616,12 @@ userAtom={userAtom}
 
                     result),
                 (fun getter setter newValueFn ->
-                    let username = assignLastGunAtomNode getter wrapper
-                    let userAtom = internalAtom username
+                    syncEngine.setProviders getter wrapper
+                    let userAtom = internalAtom (syncEngine.getUsername ())
 
                     Profiling.addCount $"{gunNodePath} set"
 
-                    set
+                    Store.set
                         setter
                         userAtom
                         (unbox
@@ -620,6 +647,8 @@ oldValue={oldValue}
 newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
 __x={(newValueOption, lastGunValue2, lastApiValue)} y={unbox newValueOption = unbox lastGunValue2
                                                        && unbox lastGunValue2 = unbox lastApiValue}
+                                                       z={box newValueOption = box lastGunValue2
+                                                          && box lastGunValue2 = box lastApiValue}
 {baseInfo ()}                                           ")
 
 
@@ -667,82 +696,39 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
 
     let inline selectAtomSyncKeys
         (
-            collection,
             atomPath: string,
             atomFamily: 'TKey -> Atom<_>,
             key: 'TKey,
             onFormat: string -> 'TKey
         ) : Atom<Atom<'TKey> []> =
-        Profiling.addCount $"{atomPath} :selectAtomSyncKeys"
+        let referenceAtom = atomFamily key
 
-        let atom = atomFamily key
-        Dom.log (fun () -> "@@ #1")
-
-        let mutable lastGunAtomNode = None
-        let mutable lastUsername = None
-        let mutable lastHub = None
-        let mutable lastAtomPath = None
-        let mutable lastGunPeers = None
-
-        let assignLastGunAtomNode getter =
-            if lastAtomPath.IsNone then
-                lastAtomPath <- queryAtomPath (AtomReference.Atom (unbox atom))
-
-            Dom.log (fun () -> $"@@ assignLastGunAtomNode lastAtomPath={lastAtomPath} atom={atom}")
-
-            let username = value getter Atoms.username
-            lastUsername <- username
-
-            let gunPeers = value getter Atoms.gunPeers
-            lastGunPeers <- gunPeers
-
-            lastGunAtomNode <-
-                gunAtomNodeFromAtomPath getter username lastAtomPath
-                |> Option.map (fun (key, node) -> key, node.back().back ())
-
-            match lastAtomPath, lastGunAtomNode with
-            | Some _atomPath, Some _ -> lastHub <- value getter Selectors.hub
-            | _ -> ()
-
-            username
+        let syncEngine = createSyncEngine (Some (fun (key, node) -> key, node.back().back ()))
 
         let internalAtom = jotaiUtils.atomFamily (fun _username -> jotai.atom [||]) Object.compare
 
-        let keyIdentifier = []
-        let gunNodePath = Gun.getGunNodePath collection atomPath keyIdentifier
-
-        Profiling.addCount $"@@ {gunNodePath} constructor"
-
         let baseInfo () =
-            $"""@@ gunNodePath={gunNodePath}
-atomPath={atomPath}
-keyIdentifier={keyIdentifier}
-lastGunAtomNode={lastGunAtomNode}
-lastAtomPath={lastAtomPath} """
+            $"""atomWithSync baseInfo:
+{syncEngine.getBaseInfo ()}
+"""
 
-        Dom.log
-            (fun () ->
-                $"@@ atomFamily constructor
-{baseInfo ()}           ")
+        Dom.log (fun () -> $"@@ selectAtomSyncKeys constructor {baseInfo ()}           ")
 
         let mutable lastValue: Set<'TKey> option = None
 
         let rec wrapper =
-            selector (
+            Store.selector (
                 atomPath,
                 None,
                 (fun getter ->
-                    let username = assignLastGunAtomNode getter
-                    let userAtom = internalAtom username
-
-                    Profiling.addCount $"{gunNodePath} get"
-
+                    syncEngine.setProviders getter referenceAtom
+                    let userAtom = internalAtom (syncEngine.getUsername ())
 
                     let result =
                         if not JS.jestWorkerId then
-                            value getter userAtom
+                            Store.value getter userAtom
                         else
-                            match lastAtomPath with
+                            match syncEngine.getAtomPath () with
                             | Some (AtomPath atomPath) ->
                                 match splitAtomPath atomPath with
                                 | Some (root, _guid) ->
@@ -762,10 +748,10 @@ lastAtomPath={lastAtomPath} """
 
                     result),
                 (fun getter setter newValueFn ->
-                    let username = assignLastGunAtomNode getter
-                    let userAtom = internalAtom username
+                    syncEngine.setProviders getter referenceAtom
+                    let userAtom = internalAtom (syncEngine.getUsername ())
 
-                    set
+                    Store.set
                         setter
                         userAtom
                         (unbox
@@ -813,7 +799,7 @@ lastAtomPath={lastAtomPath} """
                 (fun setAtom ->
                     Dom.log (fun () -> "@@ #3")
 
-                    match lastGunAtomNode, lastSubscription with
+                    match syncEngine.getGunAtomNode (), lastSubscription with
                     | _, Some _ ->
                         Dom.log
                             (fun () ->
@@ -821,12 +807,11 @@ lastAtomPath={lastAtomPath} """
                                                        {baseInfo ()}
                                                     skipping subscribe, lastSubscription is set.")
                     | Some (key, gunAtomNode), None ->
-                        Profiling.addCount $"@@ {gunNodePath} subscribe"
                         Dom.log (fun () -> $"@@ [atomKeys gun.on() subscribing] atomPath={atomPath} {key}")
 
                         let batchKeysAtom = batchKeys setAtom
 
-                        if lastGunPeers.IsSome then
+                        if syncEngine.getGunPeers().IsSome then
 
                             gunAtomNode
                                 .map()
@@ -837,7 +822,7 @@ lastAtomPath={lastAtomPath} """
                                             $"
                                     @@$ atomKeys gun.on() API filter fetching/subscribing] @@@ gunAtomNode.map().on result
                                       data={data} typeof data={jsTypeof data} gunKey={gunKey} typeof gunKey={jsTypeof gunKey}
-                                      atomPath={atomPath} lastAtomPath={lastAtomPath} key={key}
+                                      atomPath={atomPath} syncEngine.atomPath={syncEngine.getAtomPath ()} key={key}
                                            ")
 
                                     if data <> null then
@@ -873,15 +858,15 @@ lastAtomPath={lastAtomPath} """
 
                         Dom.log
                             (fun () ->
-                                $"@@ [atomKeys gun.on() API filter fetching/subscribing] @@@ atomPath={atomPath} lastAtomPath={lastAtomPath} {key}")
+                                $"@@ [atomKeys gun.on() API filter fetching/subscribing] @@@ atomPath={atomPath} syncEngine.atomPath={syncEngine.getAtomPath ()} {key}")
 
                         //                        (db?data?find {| selector = {| key = atomPath |} |})?``$``?subscribe (fun items ->
-                        match lastAtomPath, lastHub, lastUsername with
+                        match syncEngine.getAtomPath (), syncEngine.getHub (), syncEngine.getUsername () with
                         | Some (AtomPath atomPath), Some hub, Some username ->
                             promise {
                                 try
                                     let collection =
-                                        match atomPath.Split '/' |> Array.toList with
+                                        match atomPath |> String.split "/" |> Array.toList with
                                         | app :: [ _ ] -> Some app
                                         | _ :: collection :: _ -> Some collection
                                         | _ -> None
@@ -897,7 +882,7 @@ lastAtomPath={lastAtomPath} """
                                                     (fun () ->
                                                         $"@@ atomKeys gun.on() API filter fetching/subscribing] @@@
                                                 setting keys locally. items.Length={items.Length}
-                                                atomPath={atomPath} lastAtomPath={lastAtomPath} {key}")
+                                                atomPath={atomPath} syncEngine.atomPath={syncEngine.getAtomPath ()} {key}")
 
                                                 batchKeysAtom (items |> Array.map onFormat)
                                             else
@@ -905,7 +890,7 @@ lastAtomPath={lastAtomPath} """
                                                     (fun () ->
                                                         $"@@ atomKeys gun.on() API filter fetching/subscribing] @@@
                                                 skipping. items.Length=0
-                                                atomPath={atomPath} lastAtomPath={lastAtomPath} {key}")
+                                                atomPath={atomPath} syncEngine.atomPath={syncEngine.getAtomPath ()} {key}")
 
                                             Dom.log
                                                 (fun () ->
@@ -953,10 +938,8 @@ lastAtomPath={lastAtomPath} """
                                                     {baseInfo ()}
                                                     skipping unsubscribe. jotai resubscribe glitch.")
             | Some _ ->
-                match lastGunAtomNode with
+                match syncEngine.getGunAtomNode () with
                 | Some (key, _gunAtomNode) ->
-
-                    Profiling.addCount $"@@ {gunNodePath} unsubscribe"
 
                     Dom.log
                         (fun () ->
@@ -990,35 +973,35 @@ lastAtomPath={lastAtomPath} """
 
     let inline atomFamilyWithSync<'TKey, 'TValue>
         (
-            databaseHeader,
+            collection,
             atomPath,
             defaultValueFn: 'TKey -> 'TValue,
             persist: 'TKey -> string list
         ) =
         jotaiUtils.atomFamily
-            (fun param -> atomWithSync (databaseHeader, atomPath, defaultValueFn param, persist param))
+            (fun param -> atomWithSync (collection, atomPath, defaultValueFn param, persist param))
             Object.compare
 
     let inline atomWithStorageSync<'TKey, 'TValue> (collection, atomPath, defaultValue) =
-        let storageAtom = atomWithStorage (collection, atomPath, defaultValue)
+        let storageAtom = Store.atomWithStorage (collection, atomPath, defaultValue)
         let syncAtom = atomWithSync<'TKey, 'TValue> (collection, atomPath, defaultValue, [])
 
         let mutable lastSetAtom = None
         let mutable lastValue = None
 
         let rec wrapper =
-            selector (
+            Store.selector (
                 atomPath,
                 None,
                 (fun getter ->
-                    match value getter syncAtom, value getter storageAtom with
+                    match Store.value getter syncAtom, Store.value getter storageAtom with
                     | syncValue, storageValue when
                         syncValue |> Object.compare defaultValue
                         && (storageValue |> Object.compare defaultValue
-                            || (value getter Atoms.username).IsNone
+                            || (Store.value getter Atoms.username).IsNone
                             || lastValue.IsNone)
                         ->
-                        value getter storageAtom
+                        Store.value getter storageAtom
                     | syncValue, _ ->
                         match lastSetAtom with
                         | Some lastSetAtom when
@@ -1036,9 +1019,9 @@ lastAtomPath={lastAtomPath} """
                     if lastValue.IsNone
                        || lastValue |> Object.compare (Some newValue) |> not then
                         lastValue <- Some newValue
-                        set setter syncAtom newValue
+                        Store.set setter syncAtom newValue
 
-                    set setter storageAtom newValue)
+                    Store.set setter storageAtom newValue)
             )
 
         wrapper?onMount <- fun setAtom ->
@@ -1051,7 +1034,7 @@ lastAtomPath={lastAtomPath} """
     let tempValue =
         let rec tempValue =
             atomFamilyWithSync (
-                collection,
+                FsStore.collection,
                 $"{nameof tempValue}",
                 (fun (_guid: Guid) -> null: string),
                 (fun (guid: Guid) ->
@@ -1071,7 +1054,7 @@ lastAtomPath={lastAtomPath} """
                 let wrapper =
                     jotai.atom (
                         (fun getter ->
-                            let value = value getter atom
+                            let value = Store.value getter atom
                             Profiling.addCount $"{atomPath} tempValue set"
 
                             Dom.log
@@ -1097,7 +1080,7 @@ lastAtomPath={lastAtomPath} """
 
                                 Dom.log (fun () -> $"tempValueWrapper.set(). newValue2={newValue}")
 
-                                set setter atom (newValue |> box |> unbox))
+                                Store.set setter atom (newValue |> box |> unbox))
                     )
 
                 wrapper)
@@ -1169,7 +1152,7 @@ lastAtomPath={lastAtomPath} """
         let atomField = getAtomField (Some (InputAtom (AtomReference.Atom atom))) AtomScope.Temp
 
         match atomField.Temp with
-        | Some atom -> set setter atom (value |> Json.encode<'TValue9>)
+        | Some atom -> Store.set setter atom (value |> Json.encode<'TValue9>)
         | _ -> ()
 
     let inline scopedSet<'TValue10, 'TKey>
@@ -1178,14 +1161,14 @@ lastAtomPath={lastAtomPath} """
         (atom: 'TKey -> Jotai.Atom<'TValue10>, key: 'TKey, value: 'TValue10)
         =
         match atomScope with
-        | AtomScope.Current -> set setter (atom key) value
+        | AtomScope.Current -> Store.set setter (atom key) value
         | AtomScope.Temp -> setTempValue<'TValue10, 'TKey> (setter, atom key, value)
 
     let inline resetTempValue<'TValue8, 'TKey> (setter: Jotai.SetFn) (atom: Jotai.Atom<'TValue8>) =
         let atomField = getAtomField (Some (InputAtom (AtomReference.Atom atom))) AtomScope.Temp
 
         match atomField.Temp with
-        | Some atom -> set setter atom null
+        | Some atom -> Store.set setter atom null
         | _ -> ()
 
     let rec ___emptyTempAtom = nameof ___emptyTempAtom
@@ -1195,17 +1178,17 @@ lastAtomPath={lastAtomPath} """
 
         match atomField.Temp with
         | Some tempAtom ->
-            let result = value getter tempAtom
+            let result = Store.value getter tempAtom
 
             match result with
             | result when result = ___emptyTempAtom -> unbox null
-            | null -> value getter atom
+            | null -> Store.value getter atom
             | _ -> Json.decode<'TValue11> result
-        | _ -> value getter atom
+        | _ -> Store.value getter atom
 
     let deleteRoot getter atom =
         promise {
-            let username = value getter Atoms.username
+            let username = Store.value getter Atoms.username
             let atomPath = queryAtomPath (AtomReference.Atom atom)
             let gunAtomNode = gunAtomNodeFromAtomPath getter username atomPath
 

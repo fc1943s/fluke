@@ -4,7 +4,7 @@ open Fluke.Shared
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.Shared.Domain.State
-open Fluke.UI.Frontend.State.State
+open Fluke.UI.Frontend.State
 open FsCore.Model
 open FsStore
 
@@ -14,7 +14,7 @@ module rec Task =
         taskId |> TaskId.Value |> string |> List.singleton
 
     let inline atomFamilyWithSync atomPath defaultValueFn =
-        Store.atomFamilyWithSync (State.collection, atomPath, defaultValueFn, taskIdIdentifier)
+        Store.atomFamilyWithSync (Fluke.collection, atomPath, defaultValueFn, taskIdIdentifier)
 
     let rec statusMap =
         atomFamilyWithSync
@@ -46,7 +46,7 @@ module rec Task =
 
     let rec scheduling =
         Store.atomFamilyWithSync (
-            State.collection,
+            Fluke.collection,
             $"{nameof Task}/{nameof scheduling}",
             (fun (_taskId: TaskId) -> Task.Default.Scheduling),
             taskIdIdentifier

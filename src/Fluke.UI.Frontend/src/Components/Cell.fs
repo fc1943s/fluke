@@ -37,8 +37,7 @@ module Cell =
         let sessionStatus = Store.useValue (Selectors.Cell.sessionStatus (taskId, dateId))
         let attachmentIdSet = Store.useValue (Selectors.Cell.attachmentIdSet (taskId, dateId))
         let isToday = Store.useValue (Selectors.DateId.isToday dateId)
-        let selected = Store.useValue (Selectors.Cell.selected (taskId, dateId))
-        let setSelected = Setters.useSetSelected ()
+        let selected, setSelected = Store.useState (Selectors.Cell.selected (taskId, dateId))
         let cellUIFlag = Store.useValue (Atoms.User.uiFlag UIFlagType.Cell)
         let rightDock = Store.useValue Atoms.User.rightDock
         let deviceInfo = Store.useValue Selectors.deviceInfo
@@ -56,24 +55,20 @@ module Cell =
 
         let onCellClick =
             Store.useCallback (
-                (fun getter _ (e: MouseEvent) ->
+                (fun getter _ (_e: MouseEvent) ->
                     promise {
-                        if deviceInfo.IsTesting then
-                            let ctrlPressed = Store.value getter Atoms.Session.ctrlPressed
-                            let shiftPressed = Store.value getter Atoms.Session.shiftPressed
+                        //                        if deviceInfo.IsTesting then
+                        let ctrlPressed = Store.value getter Atoms.Session.ctrlPressed
+                        let shiftPressed = Store.value getter Atoms.Session.shiftPressed
 
-                            let newSelected =
-                                if ctrlPressed || shiftPressed then
-                                    taskId, dateId, not selected
-                                else
-                                    taskId, dateId, false
+                        let newSelected = if ctrlPressed || shiftPressed then not selected else false
 
-                            do! setSelected newSelected
-                        else
-                            let newSelected = if e.ctrlKey || e.shiftKey then not selected else false
-
-                            if selected <> newSelected then
-                                do! setSelected (taskId, dateId, newSelected)
+                        setSelected newSelected
+                    //                        else
+//                            let newSelected = if e.ctrlKey || e.shiftKey then not selected else false
+//
+//                            if selected <> newSelected then
+//                                do! setSelected (taskId, dateId, newSelected)
                     }),
                 [|
                     box deviceInfo

@@ -318,7 +318,7 @@ module Gun =
         Batcher.batch (Batcher.BatchType.Subscribe fn)
 
     let inline wrapAtomPath (Collection _collection) (atomPath: string) =
-//        let header = $"{collection}/"
+        //        let header = $"{collection}/"
         let header = "Fluke/"
         let header = if atomPath.StartsWith header then "" else header
         $"{header}{atomPath}"
@@ -329,7 +329,7 @@ module Gun =
             | [] -> atomPath
             | keyIdentifier when keyIdentifier |> List.head |> Guid.TryParse |> fst ->
                 [
-                    match atomPath.Split '/' with
+                    match atomPath |> String.split "/" with
                     | [| node |] ->
                         yield node
                         yield! keyIdentifier

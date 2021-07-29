@@ -9,7 +9,7 @@ open FsStore
 
 module rec User =
     let inline atomWithSync atomPath defaultValueFn =
-        Store.atomWithSync (State.collection, atomPath, defaultValueFn, [])
+        Store.atomWithSync (Fluke.collection, atomPath, defaultValueFn, [])
 
     let rec archive = atomWithSync $"{nameof User}/{nameof archive}" UserState.Default.Archive
 
@@ -128,7 +128,7 @@ module rec User =
 
     let rec systemUiFont =
         Store.atomWithStorageSync (
-            State.collection,
+            Fluke.collection,
             $"{nameof User}/{nameof systemUiFont}",
             UserState.Default.SystemUiFont
         )
@@ -141,7 +141,7 @@ module rec User =
 
     let rec uiFlag =
         Store.atomFamilyWithSync (
-            State.collection,
+            Fluke.collection,
             $"{nameof User}/{nameof uiFlag}",
             (fun (_uiFlagType: UIFlagType) -> uiFlagDefault),
             string >> List.singleton
@@ -149,7 +149,7 @@ module rec User =
 
     let rec uiVisibleFlag =
         Store.atomFamilyWithSync (
-            State.collection,
+            Fluke.collection,
             $"{nameof User}/{nameof uiVisibleFlag}",
             (fun (_uiFlagType: UIFlagType) -> uiVisibleFlagDefault),
             string >> List.singleton
@@ -157,7 +157,7 @@ module rec User =
 
     let rec accordionHiddenFlag =
         Store.atomFamilyWithSync (
-            State.collection,
+            Fluke.collection,
             $"{nameof User}/{nameof accordionHiddenFlag}",
             (fun (_accordionType: AccordionType) -> accordionHiddenFlagDefault),
             string >> List.singleton

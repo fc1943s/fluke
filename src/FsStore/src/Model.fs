@@ -2,9 +2,10 @@ namespace FsStore
 
 open FsCore.Model
 
+module FsStore =
+    let collection = Collection (nameof FsStore)
 
 module Model =
-    let collection = Collection (nameof FsStore)
 
     type LogLevel =
         | Trace = 0

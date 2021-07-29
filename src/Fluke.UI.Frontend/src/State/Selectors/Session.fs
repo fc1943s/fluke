@@ -435,8 +435,9 @@ module rec Session =
         )
 
     let rec visibleTaskSelectedDateIdMap =
-        Store.readSelector (
+        Store.selector (
             $"{nameof Session}/{nameof visibleTaskSelectedDateIdMap}",
+            None,
             (fun getter ->
                 let taskSelectedDateIdMap = Store.value getter taskSelectedDateIdMap
                 let dateIdArray = Store.value getter Selectors.dateIdArray
@@ -454,5 +455,44 @@ module rec Session =
 
                         taskId, dates)
                 |> Seq.filter (fun (_, dates) -> Set.isEmpty dates |> not)
-                |> Map.ofSeq)
+                |> Map.ofSeq),
+            (fun getter setter newValue ->
+                let sortedTaskIdArray = Store.value getter sortedTaskIdArray
+                let visibleTaskSelectedDateIdMap = Store.value getter visibleTaskSelectedDateIdMap
+
+                let operations =
+                    sortedTaskIdArray
+                    |> Array.collect
+                        (fun taskId ->
+                            let dates =
+                                visibleTaskSelectedDateIdMap
+                                |> Map.tryFind taskId
+                                |> Option.defaultValue Set.empty
+
+                            let newDates =
+                                newValue
+                                |> Map.tryFind taskId
+                                |> Option.defaultValue Set.empty
+
+                            let deselect =
+                                newDates
+                                |> Set.difference dates
+                                |> Set.toArray
+                                |> Array.map (fun date -> taskId, date, false)
+
+                            let select =
+                                dates
+                                |> Set.difference newDates
+                                |> Set.toArray
+                                |> Array.map (fun date -> taskId, date, true)
+
+                            select |> Array.append deselect)
+
+                operations
+                |> Array.iter
+                    (fun (taskId, dateId, newValue) ->
+                        Store.change
+                            setter
+                            (Atoms.Task.selectionSet taskId)
+                            ((if newValue then Set.add else Set.remove) dateId)))
         )

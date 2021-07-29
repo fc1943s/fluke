@@ -2,6 +2,7 @@ namespace Fluke.UI.Frontend.State.Atoms
 
 open Fluke.Shared
 open Fluke.UI.Frontend.State.State
+open Fluke.UI.Frontend.State
 open FsStore
 
 
@@ -13,7 +14,7 @@ module rec Device =
         |> List.singleton
 
     let inline atomFamilyWithSync atomPath defaultValueFn =
-        Store.atomFamilyWithSync (State.collection, atomPath, defaultValueFn, deviceIdIdentifier)
+        Store.atomFamilyWithSync (Fluke.collection, atomPath, defaultValueFn, deviceIdIdentifier)
 
     let rec devicePing =
         atomFamilyWithSync $"{nameof Device}/{nameof devicePing}" (fun (_deviceId: DeviceId) -> Ping "0")

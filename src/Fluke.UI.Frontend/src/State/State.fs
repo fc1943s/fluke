@@ -1,19 +1,22 @@
 namespace Fluke.UI.Frontend.State
 
+open Fluke.Shared.Domain.Model
+open Fluke.Shared.Domain.State
+open Fluke.Shared.Domain.UserInteraction
+open Fluke.Shared.View
 open FsCore
 open System
 open Fluke.Shared
 open Fluke.Shared.Domain
 open Fluke.UI.Frontend
+open FsCore.Model
 open FsJs
+
+module Fluke =
+    let collection = Collection (nameof Fluke)
 
 
 module State =
-    open Model
-    open Domain.UserInteraction
-    open Domain.State
-    open View
-
     [<RequireQualifiedAccess>]
     type DatabaseNodeType =
         | Template
@@ -215,6 +218,3 @@ module State =
                 View = View.View.Information
                 WeekStart = DayOfWeek.Sunday
             }
-
-    module State =
-        let collection = Collection (nameof Fluke)

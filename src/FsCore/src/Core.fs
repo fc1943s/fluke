@@ -3,8 +3,14 @@ namespace FsCore
 open System
 
 
+module Function =
+    let inline memoizeLazy fn =
+        let result = lazy (fn ())
+        fun () -> result.Value
+
 module Object =
-    let compare a b = (unbox a) = (unbox b)
+    let inline compare a b = (unbox a) = (unbox b)
+
 
 module Option =
     let inline ofObjUnbox<'T> (value: 'T) =
