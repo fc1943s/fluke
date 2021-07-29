@@ -40,7 +40,7 @@ module AddAttachmentInput =
         let clipboardAttachmentIdMap = Store.useValue Atoms.User.clipboardAttachmentIdMap
 
         let addAttachment =
-            Store.useCallback (
+            Store.useCallbackRef
                 (fun getter setter _ ->
                     promise {
                         match onAdd, tempAttachment.Value with
@@ -65,14 +65,7 @@ module AddAttachmentInput =
                             // Store.resetTempValue setter (Atoms.Attachment.attachment (AttachmentId Guid.Empty))
                             tempAttachment.SetValue (Some (Attachment.Comment (Comment.Comment "")))
                         | _ -> ()
-                    }),
-                [|
-                    box attachmentPanelType
-                    box archive
-                    box onAdd
-                    box tempAttachment
-                |]
-            )
+                    })
 
         UI.stack
             (fun x -> x.spacing <- "0")

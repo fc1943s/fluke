@@ -2,7 +2,8 @@ namespace Fluke.UI.Frontend.Components
 
 open Fable.React
 open Feliz
-open Fluke.UI.Frontend.Bindings; open FsStore; open FsUi.Bindings
+open FsStore
+open FsUi.Bindings
 open Fluke.Shared
 open Fluke.UI.Frontend.State
 
@@ -10,10 +11,10 @@ open Fluke.UI.Frontend.State
 module CellSessionIndicator =
     open Domain.State
 
+
     [<ReactComponent>]
     let CellSessionIndicator taskIdAtom dateIdAtom =
-        let taskId = Store.useValue taskIdAtom
-        let dateId = Store.useValue dateIdAtom
+        let taskId, dateId = Store.useValueTuple taskIdAtom dateIdAtom
         let sessionStatus = Store.useValue (Selectors.Cell.sessionStatus (taskId, dateId))
         let sessionCount = Store.useValue (Selectors.Cell.sessionCount (taskId, dateId))
 

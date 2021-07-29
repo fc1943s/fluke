@@ -28,7 +28,7 @@ module DatabaseForm =
         let logLevel = Store.useValue Atoms.logLevel
 
         let onSave =
-            Store.useCallback (
+            Store.useCallbackRef
                 (fun getter setter _ ->
                     promise {
                         let databaseName = Store.getTempValue getter (Atoms.Database.name databaseId)
@@ -67,13 +67,7 @@ module DatabaseForm =
 
                                 do! onSave database
                             | None -> ()
-                    }),
-                [|
-                    box databaseId
-                    box onSave
-                    box toast
-                |]
-            )
+                    })
 
         Accordion.Accordion
             {|
@@ -141,7 +135,7 @@ module DatabaseForm =
 
     [<ReactComponent>]
     let DatabaseFormWrapper () =
-        let hydrateDatabase = Hydrate.useHydrateDatabase ()
+        let hydrateDatabase = Store.useCallbackRef Hydrate.hydrateDatabase
         let setRightDock = Store.useSetState Atoms.User.rightDock
 
         let databaseUIFlag = Store.useValue (Atoms.User.uiFlag UIFlagType.Database)

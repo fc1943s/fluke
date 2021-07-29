@@ -20,7 +20,7 @@ module AreaForm =
         let areaName, setAreaName = React.useState area.Name
 
         let onSave =
-            Store.useCallback (
+            Store.useCallbackRef
                 (fun _ _ _ ->
                     promise {
                         match areaName |> AreaName.Value with
@@ -28,13 +28,7 @@ module AreaForm =
                         | _ ->
                             let area: Area = { Name = areaName }
                             do! onSave area
-                    }),
-                [|
-                    box areaName
-                    box onSave
-                    box toast
-                |]
-            )
+                    })
 
         UI.stack
             (fun x -> x.spacing <- "18px")

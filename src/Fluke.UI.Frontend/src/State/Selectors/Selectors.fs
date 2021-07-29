@@ -1,6 +1,5 @@
 namespace Fluke.UI.Frontend.State.Selectors
 
-open FsJs
 open FsStore
 open FsStore.Bindings
 open System

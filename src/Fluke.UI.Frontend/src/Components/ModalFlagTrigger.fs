@@ -2,7 +2,8 @@ namespace FsUi.Components
 
 open Feliz
 open Fable.Core
-open Fluke.UI.Frontend.Bindings; open FsStore; open FsUi.Bindings
+open FsStore
+open FsUi.Bindings
 open Fluke.UI.Frontend.State
 open Fable.React
 open Fluke.UI.Frontend.State.State
@@ -16,17 +17,12 @@ module ModalFlagTrigger =
                    Trigger: (unit -> JS.Promise<unit>) -> Store.GetFn * Store.SetFn -> ReactElement |})
         =
         let onTrigger =
-            Store.useCallback (
+            Store.useCallbackRef
                 (fun _ setter _ ->
                     promise {
                         Store.set setter (Atoms.User.uiFlag input.UIFlagType) input.UIFlagValue
                         Store.set setter (Atoms.User.uiVisibleFlag input.UIFlagType) true
-                    }),
-                [|
-                    box input.UIFlagType
-                    box input.UIFlagValue
-                |]
-            )
+                    })
 
         let callbacks = Store.useCallbacks ()
         let content, setContent = React.useState nothing

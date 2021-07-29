@@ -1,14 +1,12 @@
 namespace FsUi.Components
 
-open Feliz
 open Fable.React
 open FsJs
 open FsUi.Bindings
 
 
 module MenuItem =
-    [<ReactComponent>]
-    let MenuItem icon label onClick props =
+    let inline MenuItem icon label onClick props =
         UI.menuItem
             (fun x ->
                 x.closeOnSelect <- true

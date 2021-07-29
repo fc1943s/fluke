@@ -1,13 +1,10 @@
 namespace FsUi.Components
 
-open Feliz
 open FsUi.Bindings
 
 
 module Radio =
-    [<ReactComponent>]
-    let Radio (props: UI.IChakraProps -> unit) children =
-
+    let inline Radio (props: UI.IChakraProps -> unit) children =
         UI.stack
             (fun x ->
                 x.spacing <- "4px"

@@ -24,7 +24,7 @@ module DatabaseSelector =
                 onChange databaseId
 
         let (DatabaseName databaseName) = Store.useValue (Atoms.Database.name databaseId)
-        let hydrateDatabase = Hydrate.useHydrateDatabase ()
+        let hydrateDatabase = Store.useCallbackRef Hydrate.hydrateDatabase
 
         let databaseIdAtoms = Store.useValue Selectors.Session.databaseIdAtoms
 

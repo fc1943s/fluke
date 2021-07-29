@@ -16,8 +16,7 @@ open FsUi.Components
 module CellForm =
     [<ReactComponent>]
     let rec CellForm taskIdAtom dateIdAtom =
-        let taskId = Store.useValue taskIdAtom
-        let dateId = Store.useValue dateIdAtom
+        let taskId, dateId = Store.useValueTuple taskIdAtom dateIdAtom
         let (TaskName taskName) = Store.useValue (Atoms.Task.name taskId)
 
         let attachmentIdSet = Store.useValue (Selectors.Cell.attachmentIdSet (taskId, dateId))
@@ -33,7 +32,7 @@ module CellForm =
             )
 
         let onAttachmentAdd =
-            Store.useCallback (
+            Store.useCallbackRef
                 (fun _ setter attachmentId ->
                     promise {
                         Store.change
@@ -47,15 +46,10 @@ module CellForm =
                                      |> Map.tryFind dateId
                                      |> Option.defaultValue Set.empty
                                      |> Set.add attachmentId))
-                    }),
-                [|
-                    box taskId
-                    box dateId
-                |]
-            )
+                    })
 
         let onAttachmentDelete =
-            Store.useCallback (
+            Store.useCallbackRef
                 (fun getter setter attachmentId ->
                     promise {
                         Store.change
@@ -72,12 +66,7 @@ module CellForm =
 
                         do! Store.deleteRoot getter (Atoms.Attachment.attachment attachmentId)
                         return true
-                    }),
-                [|
-                    box taskId
-                    box dateId
-                |]
-            )
+                    })
 
         Accordion.Accordion
             {|

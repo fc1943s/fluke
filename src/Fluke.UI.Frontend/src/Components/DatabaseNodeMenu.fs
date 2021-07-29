@@ -15,21 +15,17 @@ module DatabaseNodeMenu =
     [<ReactComponent>]
     let DatabaseNodeMenu databaseId disabled =
         let isReadWrite = Store.useValue (Selectors.Database.isReadWrite databaseId)
-        let navigate = Navigate.useNavigate ()
+        let navigate = Store.useCallbackRef Navigate.navigate
         let exportDatabase = Hydrate.useExportDatabase ()
 
         let deleteDatabase =
-            Store.useCallback (
+            Store.useCallbackRef
                 (fun getter setter _ ->
                     promise {
                         Store.change setter Atoms.User.selectedDatabaseIdSet (Set.remove databaseId)
                         do! Store.deleteRoot getter (Atoms.Database.name databaseId)
                         return true
-                    }),
-                [|
-                    box databaseId
-                |]
-            )
+                    })
 
         Menu.Menu
             {|

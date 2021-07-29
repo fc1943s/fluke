@@ -16,28 +16,21 @@ module AttachmentsClipboard =
         let clipboardAttachmentIdMap = Store.useValue Atoms.User.clipboardAttachmentIdMap
 
         let deleteImageAttachment =
-            Store.useCallback (
+            Store.useCallbackRef
                 (fun getter setter attachmentId ->
                     promise {
                         Store.change setter Atoms.User.clipboardAttachmentIdMap (Map.remove attachmentId)
                         do! Store.deleteRoot getter (Atoms.Attachment.attachment attachmentId)
-                    }),
-                [||]
-            )
+                    })
 
         let addImageAttachment =
-            Store.useCallback (
+            Store.useCallbackRef
                 (fun _ setter attachmentId ->
                     promise {
                         Store.change setter Atoms.User.clipboardAttachmentIdMap (Map.remove attachmentId)
                         Store.set setter (Atoms.Attachment.archived attachmentId) archive
                         do! onAdd attachmentId
-                    }),
-                [|
-                    box archive
-                    box onAdd
-                |]
-            )
+                    })
 
         if not clipboardVisible then
             nothing

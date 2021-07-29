@@ -28,26 +28,15 @@ module Attachment =
 //
         let editing, setEditing = React.useState false
 
-        let onEdit =
-            Store.useCallback (
-                (fun _ _ _ -> promise { setEditing true }),
-                [|
-                    box setEditing
-                |]
-            )
+        let onEdit = Store.useCallbackRef (fun _ _ _ -> promise { setEditing true })
 
         let reset =
-            Store.useCallback (
+            Store.useCallbackRef
                 (fun _ setter _ ->
                     promise {
                         Store.resetTempValue setter (Atoms.Attachment.attachment attachmentId)
                         setEditing false
-                    }),
-                [|
-                    box setEditing
-                    box attachmentId
-                |]
-            )
+                    })
 
         Listener.useKeyPress
             [|
@@ -56,7 +45,7 @@ module Attachment =
             (fun _ _ e -> promise { if e.key = "Escape" && e.``type`` = "keydown" then do! reset () })
 
         let onSave =
-            Store.useCallback (
+            Store.useCallbackRef
                 (fun getter setter () ->
                     promise {
                         let attachment = Store.getTempValue getter (Atoms.Attachment.attachment attachmentId)
@@ -66,12 +55,7 @@ module Attachment =
                             Store.set setter (Atoms.Attachment.attachment attachmentId) attachment
                             do! reset ()
                         | _ -> ()
-                    }),
-                [|
-                    box attachmentId
-                    box reset
-                |]
-            )
+                    })
 
 
         UI.stack

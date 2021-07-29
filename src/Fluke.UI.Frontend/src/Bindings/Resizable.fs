@@ -7,9 +7,9 @@ open FsJs
 
 
 module Resizable =
-    let private Resizable: obj -> obj = import "Resizable" "re-resizable"
+    let Resizable: obj -> obj = import "Resizable" "re-resizable"
 
-    let resizable props children =
+    let inline resizable props children =
         if Dom.deviceInfo.IsMobile then
             React.fragment children
         else

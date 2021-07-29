@@ -12,6 +12,8 @@ open Microsoft.FSharp.Core.Operators
 open FsJs
 open FsStore.Bindings
 
+#nowarn "40"
+
 
 module Selectors =
     let rec deviceInfo = Store.readSelector ($"{nameof deviceInfo}", (fun _ -> Dom.deviceInfo))
@@ -42,15 +44,16 @@ module Selectors =
         Store.readSelector (
             $"{nameof hub}",
             (fun getter ->
-                let apiUrl = Store.value getter Atoms.apiUrl
+                let _hubTrigger = Store.value getter Atoms.hubTrigger
+                let hubUrl = Store.value getter Atoms.hubUrl
 
-                match apiUrl with
-                | Some (String.ValidString apiUrl) ->
+                match hubUrl with
+                | Some (String.ValidString hubUrl) ->
                     let hub =
                         SignalR.connect<Sync.Request, Sync.Request, obj, Sync.Response, Sync.Response>
                             (fun hub ->
                                 hub
-                                    .withUrl($"{apiUrl}{Sync.endpoint}")
+                                    .withUrl($"{hubUrl}{Sync.endpoint}")
                                     //                                        .useMessagePack()
                                     .withAutomaticReconnect(
                                         {
@@ -69,13 +72,13 @@ module Selectors =
                                     .onMessage (
                                         function
                                         | Sync.Response.ConnectResult ->
-                                            Dom.log (fun () -> "Api.Response.ConnectResult")
+                                            Dom.log (fun () -> "Sync.Response.ConnectResult")
                                         | Sync.Response.GetResult value ->
-                                            Dom.log (fun () -> $"Api.Response.GetResult value={value}")
+                                            Dom.log (fun () -> $"Sync.Response.GetResult value={value}")
                                         | Sync.Response.SetResult result ->
-                                            Dom.log (fun () -> $"Api.Response.SetResult result={result}")
+                                            Dom.log (fun () -> $"Sync.Response.SetResult result={result}")
                                         | Sync.Response.FilterResult keys ->
-                                            Dom.log (fun () -> $"Api.Response.FilterResult keys={keys}")
+                                            Dom.log (fun () -> $"Sync.Response.FilterResult keys={keys}")
                                     ))
 
                     hub.startNow ()
@@ -138,23 +141,25 @@ module Selectors =
         )
 
     let rec gunAtomNode =
-        Store.selectAtomFamily (
+        Store.readSelectorFamily (
             $"{nameof gunAtomNode}",
-            gunNamespace,
-            (fun (username, atomPath) gunNamespace ->
+            (fun (username, AtomPath atomPath) getter ->
+                let gunNamespace = Store.value getter gunNamespace
+
                 match gunNamespace.is with
                 | Some { alias = Some username' } when username' = (username |> Username.ValueOrDefault) ->
-                    let nodes =
-                        atomPath
-                        |> AtomPath.Value
-                        |> String.split "/"
-                        |> Array.toList
+                    let nodes = atomPath |> String.split "/" |> Array.toList
 
-                    (Some (gunNamespace.get nodes.Head), nodes.Tail)
-                    ||> List.fold
-                            (fun result node ->
-                                result
-                                |> Option.map (fun result -> result.get node))
+                    match nodes with
+                    | [] -> None
+                    | [ root ] -> Some (gunNamespace.get root)
+                    | nodes ->
+                        let lastNode = nodes |> List.last
+                        let parentAtomPath = AtomPath (nodes.[0..nodes.Length - 2] |> String.concat "/")
+                        let node = Store.value getter (gunAtomNode (username, parentAtomPath))
+
+                        node
+                        |> Option.map (fun (node: Gun.Types.IGunChainReference) -> node.get lastNode)
                 | _ ->
                     Dom.log
                         (fun () ->

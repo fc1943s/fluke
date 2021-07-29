@@ -28,23 +28,16 @@ module LoginScreen =
         let signUp = Auth.useSignUp ()
 
         let signInClick =
-            Store.useCallback (
+            Store.useCallbackRef
                 (fun _ _ _ ->
                     promise {
                         match! signIn (usernameField, passwordField) with
                         | Ok _ -> printfn "logged"
                         | Error error -> toast (fun x -> x.description <- error)
-                    }),
-                [|
-                    box signIn
-                    box toast
-                    box usernameField
-                    box passwordField
-                |]
-            )
+                    })
 
         let signUpClick =
-            Store.useCallback (
+            Store.useCallbackRef
                 (fun getter setter _ ->
                     promise {
                         if passwordField <> password2Field then
@@ -84,15 +77,7 @@ module LoginScreen =
                             | Error error ->
                                 toast (fun x -> x.description <- error)
                                 return false
-                    }),
-                [|
-                    box signUp
-                    box toast
-                    box usernameField
-                    box passwordField
-                    box password2Field
-                |]
-            )
+                    })
 
         UI.center
             (fun x -> x.flex <- "1")

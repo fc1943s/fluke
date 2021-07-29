@@ -230,7 +230,6 @@ module Theme =
         let fontSize = Store.useValue Atoms.Ui.fontSize
         let systemUiFont = Store.useValue Atoms.User.systemUiFont
 
-
         React.useMemo (
             (fun () ->
                 Profiling.addCount "useTheme().useMemo()"

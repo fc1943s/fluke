@@ -251,22 +251,25 @@ module UI =
 //                            Children: seq<ReactElement> |}) ->
 //                renderComponent input.Component input.Props input.Children)
 
-    [<ReactComponent>]
-    let MemoChakraComponent (cmp: obj) (props: IChakraProps -> unit) (children: seq<ReactElement>) =
-        let newProps, children =
-            React.useMemo (
-                (fun () -> JS.newObj props, children),
-                [|
-                    box props
-                    box children
-                |]
-            )
 
-        renderComponent cmp newProps children
 
-    let renderChakraComponent (cmp: obj) (props: IChakraProps -> unit) (children: seq<ReactElement>) =
-        let newProps = JS.newObj props
-        renderComponent cmp newProps children
+
+
+    //    [<ReactComponent>]
+//    let MemoChakraComponent (cmp: obj) (props: IChakraProps -> unit) (children: seq<ReactElement>) =
+//        let newProps, children =
+//            React.useMemo (
+//                (fun () -> JS.newObj props, children),
+//                [|
+//                    box props
+//                    box children
+//                |]
+//            )
+//
+//        renderComponent cmp newProps children
+
+    let inline renderChakraComponent (cmp: obj) (props: IChakraProps -> unit) children =
+        renderComponent cmp (JS.newObj props) children
 
     //        chakraMemo
 //            {|
@@ -277,72 +280,196 @@ module UI =
 
     type ChakraInput<'T> = 'T -> unit
 
-    let accordion<'T> = renderChakraComponent react.Accordion
-    let accordionItem<'T> = renderChakraComponent react.AccordionItem
-    let accordionButton<'T> = renderChakraComponent react.AccordionButton
-    let accordionIcon<'T> = renderChakraComponent react.AccordionIcon
-    let accordionPanel<'T> = renderChakraComponent react.AccordionPanel
-    let box<'T> = renderChakraComponent react.Box
-    let button<'T> = renderChakraComponent react.Button
-    let center<'T> = renderChakraComponent react.Center
-    let checkbox<'T> = renderChakraComponent react.Checkbox
-    let checkboxGroup<'T> = renderChakraComponent react.CheckboxGroup
-    let circle<'T> = renderChakraComponent react.Circle
-    let darkMode<'T> = renderChakraComponent react.DarkMode
-    let flex<'T> = renderChakraComponent react.Flex
-    let grid<'T> = renderChakraComponent react.Grid
-    let hStack<'T> = renderChakraComponent react.HStack
-    let icon<'T> = renderChakraComponent react.Icon
-    let iconButton<'T> = renderChakraComponent react.IconButton
-    let image<'T> = renderChakraComponent react.Image
-    let input<'T> = renderChakraComponent react.Input
-    let inputGroup<'T> = renderChakraComponent react.InputGroup
-    let inputLeftElement<'T> = renderChakraComponent react.InputLeftElement
-    let lightMode<'T> = renderChakraComponent react.LightMode
-    let link<'T> = renderChakraComponent react.Link
-    let menu<'T> = renderChakraComponent react.Menu
-    let menuButton<'T> = renderChakraComponent react.MenuButton
-    let menuList<'T> = renderChakraComponent react.MenuList
-    let menuItem<'T> = renderChakraComponent react.MenuItem
-    let menuItemOption<'T> = renderChakraComponent react.MenuItemOption
-    let menuOptionGroup<'T> = renderChakraComponent react.MenuOptionGroup
-    let modal<'T> = renderChakraComponent react.Modal
-    let modalBody<'T> = renderChakraComponent react.ModalBody
-    let modalContent<'T> = renderChakraComponent react.ModalContent
-    let modalCloseButton<'T> = renderChakraComponent react.ModalCloseButton
-    let modalOverlay<'T> = renderChakraComponent react.ModalOverlay
-    let numberInput<'T> = renderChakraComponent react.NumberInput
-    let numberInputField<'T> = renderChakraComponent react.NumberInputField
-    let numberInputStepper<'T> = renderChakraComponent react.NumberInputStepper
-    let numberDecrementStepper<'T> = renderChakraComponent react.NumberDecrementStepper
-    let numberIncrementStepper<'T> = renderChakraComponent react.NumberIncrementStepper
-    let popover<'T> = renderChakraComponent react.Popover
-    let popoverArrow<'T> = renderChakraComponent react.PopoverArrow
-    let popoverBody<'T> = renderChakraComponent react.PopoverBody
-    let popoverCloseButton<'T> = renderChakraComponent react.PopoverCloseButton
-    let popoverContent<'T> = renderChakraComponent react.PopoverContent
-    let popoverTrigger<'T> = renderChakraComponent react.PopoverTrigger
-    let provider<'T> = renderChakraComponent react.ChakraProvider
-    let radio<'T> = renderChakraComponent react.Radio
-    let radioGroup<'T> = renderChakraComponent react.RadioGroup
-    let simpleGrid<'T> = renderChakraComponent react.SimpleGrid
+    let inline accordion<'T> props children =
+        renderChakraComponent react.Accordion props children
 
-    let slider<'T> = renderChakraComponent react.Slider
-    let sliderTrack<'T> = renderChakraComponent react.SliderTrack
-    let sliderFilledTrack<'T> = renderChakraComponent react.SliderFilledTrack
-    let sliderThumb<'T> = renderChakraComponent react.SliderThumb
-    let spacer<'T> = renderChakraComponent react.Spacer
-    let spinner<'T> = renderChakraComponent react.Spinner
-    let stack<'T> = renderChakraComponent react.Stack
-    let tabList<'T> = renderChakraComponent react.TabList
-    let tabPanel<'T> = renderChakraComponent react.TabPanel
-    let tabPanels<'T> = renderChakraComponent react.TabPanels
-    let tab<'T> = renderChakraComponent react.Tab
-    let tabs<'T> = renderChakraComponent react.Tabs
-    let textarea<'T> = renderChakraComponent react.Textarea
-    let tooltip<'T> = renderChakraComponent react.Tooltip
+    let inline accordionItem<'T> props children =
+        renderChakraComponent react.AccordionItem props children
 
-    let str text =
+    let inline accordionButton<'T> props children =
+        renderChakraComponent react.AccordionButton props children
+
+    let inline accordionIcon<'T> props children =
+        renderChakraComponent react.AccordionIcon props children
+
+    let inline accordionPanel<'T> props children =
+        renderChakraComponent react.AccordionPanel props children
+
+    let inline box<'T> props children =
+        renderChakraComponent react.Box props children
+
+    let inline button<'T> props children =
+        renderChakraComponent react.Button props children
+
+    let inline center<'T> props children =
+        renderChakraComponent react.Center props children
+
+    let inline checkbox<'T> props children =
+        renderChakraComponent react.Checkbox props children
+
+    let inline checkboxGroup<'T> props children =
+        renderChakraComponent react.CheckboxGroup props children
+
+    let inline circle<'T> props children =
+        renderChakraComponent react.Circle props children
+
+    let inline darkMode<'T> props children =
+        renderChakraComponent react.DarkMode props children
+
+    let inline flex<'T> props children =
+        renderChakraComponent react.Flex props children
+
+    let inline grid<'T> props children =
+        renderChakraComponent react.Grid props children
+
+    let inline hStack<'T> props children =
+        renderChakraComponent react.HStack props children
+
+    let inline icon<'T> props children =
+        renderChakraComponent react.Icon props children
+
+    let inline iconButton<'T> props children =
+        renderChakraComponent react.IconButton props children
+
+    let inline image<'T> props children =
+        renderChakraComponent react.Image props children
+
+    let inline input<'T> props children =
+        renderChakraComponent react.Input props children
+
+    let inline inputGroup<'T> props children =
+        renderChakraComponent react.InputGroup props children
+
+    let inline inputLeftElement<'T> props children =
+        renderChakraComponent react.InputLeftElement props children
+
+    let inline lightMode<'T> props children =
+        renderChakraComponent react.LightMode props children
+
+    let inline link<'T> props children =
+        renderChakraComponent react.Link props children
+
+    let inline menu<'T> props children =
+        renderChakraComponent react.Menu props children
+
+    let inline menuButton<'T> props children =
+        renderChakraComponent react.MenuButton props children
+
+    let inline menuList<'T> props children =
+        renderChakraComponent react.MenuList props children
+
+    let inline menuItem<'T> props children =
+        renderChakraComponent react.MenuItem props children
+
+    let inline menuItemOption<'T> props children =
+        renderChakraComponent react.MenuItemOption props children
+
+    let inline menuOptionGroup<'T> props children =
+        renderChakraComponent react.MenuOptionGroup props children
+
+    let inline modal<'T> props children =
+        renderChakraComponent react.Modal props children
+
+    let inline modalBody<'T> props children =
+        renderChakraComponent react.ModalBody props children
+
+    let inline modalContent<'T> props children =
+        renderChakraComponent react.ModalContent props children
+
+    let inline modalCloseButton<'T> props children =
+        renderChakraComponent react.ModalCloseButton props children
+
+    let inline modalOverlay<'T> props children =
+        renderChakraComponent react.ModalOverlay props children
+
+    let inline numberInput<'T> props children =
+        renderChakraComponent react.NumberInput props children
+
+    let inline numberInputField<'T> props children =
+        renderChakraComponent react.NumberInputField props children
+
+    let inline numberInputStepper<'T> props children =
+        renderChakraComponent react.NumberInputStepper props children
+
+    let inline numberDecrementStepper<'T> props children =
+        renderChakraComponent react.NumberDecrementStepper props children
+
+    let inline numberIncrementStepper<'T> props children =
+        renderChakraComponent react.NumberIncrementStepper props children
+
+    let inline popover<'T> props children =
+        renderChakraComponent react.Popover props children
+
+    let inline popoverArrow<'T> props children =
+        renderChakraComponent react.PopoverArrow props children
+
+    let inline popoverBody<'T> props children =
+        renderChakraComponent react.PopoverBody props children
+
+    let inline popoverCloseButton<'T> props children =
+        renderChakraComponent react.PopoverCloseButton props children
+
+    let inline popoverContent<'T> props children =
+        renderChakraComponent react.PopoverContent props children
+
+    let inline popoverTrigger<'T> props children =
+        renderChakraComponent react.PopoverTrigger props children
+
+    let inline provider<'T> props children =
+        renderChakraComponent react.ChakraProvider props children
+
+    let inline radio<'T> props children =
+        renderChakraComponent react.Radio props children
+
+    let inline radioGroup<'T> props children =
+        renderChakraComponent react.RadioGroup props children
+
+    let inline simpleGrid<'T> props children =
+        renderChakraComponent react.SimpleGrid props children
+
+    let inline slider<'T> props children =
+        renderChakraComponent react.Slider props children
+
+    let inline sliderTrack<'T> props children =
+        renderChakraComponent react.SliderTrack props children
+
+    let inline sliderFilledTrack<'T> props children =
+        renderChakraComponent react.SliderFilledTrack props children
+
+    let inline sliderThumb<'T> props children =
+        renderChakraComponent react.SliderThumb props children
+
+    let inline spacer<'T> props children =
+        renderChakraComponent react.Spacer props children
+
+    let inline spinner<'T> props children =
+        renderChakraComponent react.Spinner props children
+
+    let inline stack<'T> props children =
+        renderChakraComponent react.Stack props children
+
+    let inline tabList<'T> props children =
+        renderChakraComponent react.TabList props children
+
+    let inline tabPanel<'T> props children =
+        renderChakraComponent react.TabPanel props children
+
+    let inline tabPanels<'T> props children =
+        renderChakraComponent react.TabPanels props children
+
+    let inline tab<'T> props children =
+        renderChakraComponent react.Tab props children
+
+    let inline tabs<'T> props children =
+        renderChakraComponent react.Tabs props children
+
+    let inline textarea<'T> props children =
+        renderChakraComponent react.Textarea props children
+
+    let inline tooltip<'T> props children =
+        renderChakraComponent react.Tooltip props children
+
+    let inline str text =
         box
             (fun _ -> ())
             [
@@ -377,7 +504,7 @@ module UI =
 
         toastFn
 
-    let mapIfSet fn value =
+    let inline mapIfSet fn value =
         value
         |> Option.ofObjUnbox
         |> Option.bind Option.ofObjUnbox
@@ -390,8 +517,8 @@ module UI =
         |> Option.map fn
 
 
-    let setTestId (props: IChakraProps) (value: obj) =
+    let inline setTestId (props: IChakraProps) (value: obj) =
         if Dom.deviceInfo.IsTesting then props?``data-testid`` <- value
 
-    let transformShiftBy x y =
+    let inline transformShiftBy x y =
         $"translate({x |> Option.defaultValue 0.}px, {y |> Option.defaultValue 0.}px)"

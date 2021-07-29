@@ -21,17 +21,12 @@ module ModalFlag =
         let uiVisibleFlag, setUIVisibleFlag = Store.useState (Atoms.User.uiVisibleFlag input.UIFlagType)
 
         let onHide =
-            Store.useCallback (
+            Store.useCallbackRef
                 (fun _ _ _ ->
                     promise {
                         setUIFlag UIFlag.None
                         setUIVisibleFlag false
-                    }),
-                [|
-                    box setUIVisibleFlag
-                    box setUIFlag
-                |]
-            )
+                    })
 
         let callbacks = Store.useCallbacks ()
         let content, setContent = React.useState nothing

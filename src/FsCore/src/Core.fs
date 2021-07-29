@@ -11,6 +11,11 @@ module Function =
 module Object =
     let inline compare a b = (unbox a) = (unbox b)
 
+    let inline newDisposable fn =
+        { new IDisposable with
+            member _.Dispose () = fn ()
+        }
+
 
 module Option =
     let inline ofObjUnbox<'T> (value: 'T) =

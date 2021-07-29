@@ -1,6 +1,5 @@
 namespace FsStore
 
-open Fable.Core.JsInterop
 open Fable.Core
 open FsStore.Store
 open Microsoft.FSharp.Core.Operators
@@ -14,7 +13,7 @@ open FsStore.Bindings.Jotai
 [<AutoOpen>]
 module HooksMagic =
     module Store =
-        let useStateOption (atom: Atom<'TValue5> option) =
+        let inline useStateOption (atom: Atom<'TValue5> option) =
             let flatAtom =
                 React.useMemo (
                     (fun () ->
@@ -119,23 +118,13 @@ module HooksMagic =
 
         let inline useValue atom = jotaiUtils.useAtomValue atom
 
-        let shadowedUseCallbackFn (fn, deps) =
-            (emitJsExpr (React.useCallback, fn, deps) "$0($1,$2)")
+        let inline useValueTuple a b =
+            let a = useValue a
+            let b = useValue b
+            a, b
 
-        let useCallback (fn: GetFn -> SetFn -> 'a -> JS.Promise<'c>, deps: obj []) : ('a -> JS.Promise<'c>) =
-
+        let inline useCallbackRef (fn: GetFn -> SetFn -> 'a -> JS.Promise<'c>) : ('a -> JS.Promise<'c>) =
             let fnCallback = React.useCallbackRef (fun (getter, setter, arg) -> fn getter setter arg)
-
-            let fnCallback =
-                shadowedUseCallbackFn (
-                    fnCallback,
-                    Array.concat [
-                        deps
-                        [|
-                            box fnCallback
-                        |]
-                    ]
-                )
 
             let atom =
                 React.useMemo (
@@ -173,7 +162,7 @@ module HooksMagic =
             useAtomCallback
 
         let inline useCallbacks () =
-            useCallback ((fun getter setter () -> promise { return (getter, setter) }), [||])
+            useCallbackRef (fun getter setter () -> promise { return (getter, setter) })
 
 
         let inline useState atom = jotai.useAtom atom

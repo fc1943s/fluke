@@ -2,14 +2,14 @@ namespace Fluke.UI.Frontend.Bindings
 
 open Browser.Types
 open Fable.Core
+open Fable.Core.JsInterop
 
 
 module Cypress =
-    [<Emit("describe($0, $1)")>]
-    let describe (_title: string) (_fn: unit -> unit) = jsNative
+    let inline describe (title: string) (fn: unit -> unit) =
+        emitJsExpr (title, fn) "describe($0, $1)"
 
-    [<Emit("before($0)")>]
-    let before (_fn: unit -> unit) = jsNative
+    let inline before (_fn: unit -> unit) = emitJsExpr () "before($0)"
 
     type ExpectTo<'T> =
         abstract contain : 'T -> unit
@@ -17,11 +17,9 @@ module Cypress =
     type Expect<'T> =
         abstract ``to`` : ExpectTo<'T>
 
-    [<Emit("expect($0)")>]
-    let expect<'T> (_name: 'T) : Expect<'T> = jsNative
+    let inline expect<'T> (_name: 'T) : Expect<'T> = emitJsExpr () "expect($0)"
 
-    [<Emit("it($0, $1)")>]
-    let it (_name: string) (_fn: unit -> unit) = jsNative
+    let inline it (_name: string) (_fn: unit -> unit) = emitJsExpr () "it($0, $1)"
 
     module Cy =
         type Chainable<'T> =
@@ -50,30 +48,15 @@ module Cypress =
             abstract href : string
             abstract hash : string
 
-        [<Emit("cy.location()")>]
-        let location () : Chainable<Location> = jsNative
+        let inline location () : Chainable<Location> = emitJsExpr () "cy.location()"
+        let inline wrap<'T> (_el: Chainable2<'T>) : Chainable2<'T> = emitJsExpr () "cy.wrap($0)"
+        let inline focused () : Chainable2<unit> = emitJsExpr () "cy.focused()"
+        let inline visit (_url: string) : unit = emitJsExpr () "cy.visit($0)"
+        let inline pause () : unit = emitJsExpr () "cy.pause()"
+        let inline wait (_time: int) : unit = emitJsExpr () "cy.wait($0)"
+        let inline window () : JS.Promise<Window> = emitJsExpr () "cy.window()"
 
-        [<Emit("cy.wrap($0)")>]
-        let wrap<'T> (_el: Chainable2<'T>) : Chainable2<'T> = jsNative
+        let inline contains (_text: string) (_options: {| timeout: int |} option) : Chainable2<'T> =
+            emitJsExpr () "cy.contains($0, $1)"
 
-        [<Emit("cy.focused()")>]
-        let focused () : Chainable2<unit> = jsNative
-
-        [<Emit("cy.visit($0)")>]
-        let visit (_url: string) : unit = jsNative
-
-        [<Emit("cy.pause()")>]
-        let pause () : unit = jsNative
-
-        [<Emit("cy.wait($0)")>]
-        let wait (_time: int) : unit = jsNative
-
-
-        [<Emit("cy.window()")>]
-        let window () : JS.Promise<Window> = jsNative
-
-        [<Emit("cy.contains($0, $1)")>]
-        let contains (_text: string) (_options: {| timeout: int |} option) : Chainable2<'T> = jsNative
-
-        [<Emit("cy.get($0)")>]
-        let get (_selector: string) : Chainable2<string> = jsNative
+        let inline get (_selector: string) : Chainable2<string> = emitJsExpr () "cy.get($0)"

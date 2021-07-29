@@ -95,8 +95,6 @@ module Navigate =
                     Store.set setter (Atoms.User.uiFlag uiFlagType) uiFlag
             }
 
-    let useNavigate () = Store.useCallback (navigate, [||])
-
     let navigateAnchor =
         fun getter setter anchor ->
             promise {
@@ -138,6 +136,3 @@ module Navigate =
                 | Anchor.CellAttachment (taskId, dateId, attachmentId) ->
                     do! navigate (DockPosition.Right, Some DockType.Cell, UIFlagType.Cell, UIFlag.Cell (taskId, dateId))
             }
-
-    let useNavigateAnchor () =
-        Store.useCallback (navigateAnchor, [||])

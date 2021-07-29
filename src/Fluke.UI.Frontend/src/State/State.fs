@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.State
 
+open Fable.Core
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.State
 open Fluke.Shared.Domain.UserInteraction

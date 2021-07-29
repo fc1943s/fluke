@@ -103,7 +103,9 @@ module RightDock =
         let itemsMap = items |> Map.ofSeq
 
         UI.flex
-            (fun _ -> ())
+            (fun x ->
+                x.overflowY <- "auto"
+                x.overflowX <- "hidden")
             [
                 match rightDock with
                 | None -> nothing

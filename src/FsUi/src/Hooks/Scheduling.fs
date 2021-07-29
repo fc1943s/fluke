@@ -1,6 +1,6 @@
 namespace FsUi.Hooks
 
-open System
+open FsCore
 open Fable.Core
 open Feliz
 open FsStore
@@ -32,13 +32,8 @@ module Scheduling =
         let mounted, setMounted = React.useState true
 
         let fn =
-            Store.useCallback (
-                (fun getter setter _ -> promise { if mounted then do! savedCallback.current (getter, setter) }),
-                [|
-                    box mounted
-                    box savedCallback
-                |]
-            )
+            Store.useCallbackRef
+                (fun getter setter _ -> promise { if mounted then do! savedCallback.current (getter, setter) })
 
         React.useEffect (
             (fun () ->
@@ -46,11 +41,10 @@ module Scheduling =
                 let id = setFn (fn >> Promise.start) duration
                 setMounted true
 
-                { new IDisposable with
-                    member _.Dispose () =
+                Object.newDisposable
+                    (fun () ->
                         setMounted false
-                        clearFn id
-                }),
+                        clearFn id)),
             [|
                 box fn
                 box setMounted

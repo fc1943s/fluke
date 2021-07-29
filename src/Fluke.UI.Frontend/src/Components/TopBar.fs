@@ -59,7 +59,7 @@ module TopBar =
         let lastResult, setLastResult = React.useState None
 
         let onRandom =
-            Store.useCallback (
+            Store.useCallbackRef
                 (fun getter setter _ ->
                     promise {
                         let selectedRandomTypeArray =
@@ -247,23 +247,7 @@ module TopBar =
                                     x.description <- description)
 
                             return true
-                    }),
-                [|
-                    box toast
-                    box randomizeProject
-                    box randomizeProjectAttachment
-                    box randomizeArea
-                    box randomizeAreaAttachment
-                    box randomizeResource
-                    box randomizeResourceAttachment
-                    box randomizeProjectTask
-                    box randomizeAreaTask
-                    box randomizeProjectTaskAttachment
-                    box randomizeAreaTaskAttachment
-                    box randomizeCellAttachment
-                    box setLastResult
-                |]
-            )
+                    })
 
         Popover.ConfirmPopover
             (Tooltip.wrap
@@ -388,15 +372,13 @@ module TopBar =
         let logout = Auth.useLogout ()
 
         let onLogoClick =
-            Store.useCallback (
+            Store.useCallbackRef
                 (fun _ setter _ ->
                     promise {
                         Store.set setter Atoms.User.leftDock None
                         Store.set setter Atoms.User.rightDock None
                         Store.set setter Atoms.User.view UserState.Default.View
-                    }),
-                [||]
-            )
+                    })
 
         let archive, setArchive = Store.useState Atoms.User.archive
 
@@ -449,7 +431,7 @@ module TopBar =
                                                         fun _ ->
                                                             promise {
                                                                 match Dom.window () with
-                                                                | Some window -> window?api?send "minimize"
+                                                                | Some window -> window?electronApi?send "minimize"
                                                                 | None -> ()
                                                             }
                                         |}
@@ -562,7 +544,7 @@ module TopBar =
                                                                 match Dom.window () with
                                                                 | Some window ->
                                                                     if deviceInfo.IsElectron then
-                                                                        window?api?send "close"
+                                                                        window?electronApi?send "close"
                                                                     else
                                                                         window?close "" "_parent" ""
                                                                 | None -> ()

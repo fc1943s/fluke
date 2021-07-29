@@ -1,13 +1,10 @@
 namespace FsUi.Components
 
-open Feliz
 open FsUi.Bindings
 
 
 module LoadingSpinner =
-
-    [<ReactComponent>]
-    let LoadingSpinner () =
+    let inline LoadingSpinner () =
         UI.center
             (fun x -> x.flex <- "1")
             [
@@ -19,8 +16,7 @@ module LoadingSpinner =
                     ]
             ]
 
-    [<ReactComponent>]
-    let InlineLoadingSpinner () =
+    let inline InlineLoadingSpinner () =
         UI.flex
             (fun x -> x.alignItems <- "center")
             [

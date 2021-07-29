@@ -67,8 +67,7 @@ module Dropdown =
             ]
 
 
-    [<ReactComponent>]
-    let InputDropdown props customProps bodyFn =
+    let inline InputDropdown props customProps bodyFn =
         Dropdown
             {|
                 Tooltip = ""
@@ -114,7 +113,6 @@ module Dropdown =
                 Body = bodyFn
             |}
 
-    [<ReactComponent>]
     let inline EnumDropdown<'T when 'T: equality> (value: 'T) (setValue: 'T -> unit) props =
         InputDropdown
             props
@@ -151,8 +149,7 @@ module Dropdown =
                         ]
                 ])
 
-    [<ReactComponent>]
-    let ColorDropdown color setColor props =
+    let inline ColorDropdown color setColor props =
         InputDropdown
             (fun x ->
                 x.color <- color |> Color.Value |> Option.defaultValue null
@@ -224,8 +221,7 @@ module Dropdown =
                         ]
             |}
 
-    [<ReactComponent>]
-    let ConfirmDropdown label onConfirm children =
+    let inline ConfirmDropdown label onConfirm children =
         CustomConfirmDropdown
             true
             onConfirm

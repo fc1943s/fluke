@@ -255,7 +255,7 @@ module Databases =
 
     [<ReactComponent>]
     let AddDatabaseButton () =
-        let navigate = Navigate.useNavigate ()
+        let navigate = Store.useCallbackRef Navigate.navigate
 
         Tooltip.wrap
             (str "Add Database")

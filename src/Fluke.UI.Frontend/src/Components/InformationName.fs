@@ -23,7 +23,7 @@ module InformationName =
         let selectedDatabaseIdSet = Store.useValue Atoms.User.selectedDatabaseIdSet
 
         let detailsClick =
-            Store.useCallback (
+            Store.useCallbackRef
                 (fun getter setter _ ->
                     promise {
                         do!
@@ -52,13 +52,7 @@ module InformationName =
                                      (selectedDatabaseIdSet |> Seq.head |> Some)
                                  else
                                      None)
-                    }),
-                [|
-                    box selectedDatabaseIdSet
-                    box attachmentIdMap
-                    box information
-                |]
-            )
+                    })
 
         UI.flex
             (fun x ->

@@ -78,20 +78,14 @@ module React =
 //            ]
             ]
 
-    [<ImportAll "react">]
-    let react: {| StrictMode: obj -> ReactElement |} = jsNative
-
     [<ImportAll "react-dom">]
     let reactDom: {| createRoot: HTMLElement -> {| render: ReactElement -> unit |} |} = jsNative
 
-    let inline bindComponent<'C, 'P> (props: 'P) (children: seq<ReactElement>) (cmp: 'C) =
-        ReactBindings.React.createElement (cmp, props, children)
+    let inline bindComponent<'C, 'P> (props: 'P) children (cmp: 'C) =
+        Interop.reactApi.createElement (cmp, props, children)
 
-    let inline renderComponent<'C, 'P> (cmp: 'C) (props: 'P) (children: seq<ReactElement>) =
+    let inline renderComponent<'C, 'P> (cmp: 'C) (props: 'P) children =
         bindComponent<'C, 'P> props children cmp
-
-    let inline strictMode children =
-        bindComponent {|  |} children react.StrictMode
 
 
     //    ReactDOM.render (appMain (), document.getElementById "root")

@@ -18,7 +18,7 @@ module TaskName =
     [<ReactComponent>]
     let TaskName taskIdAtom =
         let taskId = Store.useValue taskIdAtom
-        let navigate = Navigate.useNavigate ()
+        let navigate = Store.useCallbackRef Navigate.navigate
         let hasSelection = Store.useValue (Selectors.Task.hasSelection taskId)
         let name = Store.useValue (Atoms.Task.name taskId)
         let archived, setArchived = Store.useState (Atoms.Task.archived taskId)

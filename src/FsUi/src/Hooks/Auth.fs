@@ -10,25 +10,25 @@ open FsStore.Bindings
 
 
 module Auth =
-    let useLogout () =
-        Store.useCallback (
+    let inline useLogout () =
+        Store.useCallbackRef
             (fun getter setter () ->
                 promise {
                     printfn "before leave"
                     Store.change setter Atoms.gunTrigger ((+) 1)
+                    Store.change setter Atoms.hubTrigger ((+) 1)
                     let gunNamespace = Store.value getter Selectors.gunNamespace
                     gunNamespace.leave ()
                     Store.set setter Atoms.username None
                     Store.set setter Atoms.gunKeys Gun.GunKeys.Default
-                }),
-            [||]
-        )
+                })
 
-    let usePostSignIn () =
-        Store.useCallback (
+    let inline usePostSignIn () =
+        Store.useCallbackRef
             (fun getter setter username ->
                 promise {
                     Store.change setter Atoms.gunTrigger ((+) 1)
+                    Store.change setter Atoms.hubTrigger ((+) 1)
                     let gunNamespace = Store.value getter Selectors.gunNamespace
                     let keys = gunNamespace.__.sea
 
@@ -38,14 +38,12 @@ module Auth =
                         Store.set setter Atoms.username (Some username)
                         return Ok (username, keys)
                     | None -> return Error $"No keys found for user {gunNamespace.is}"
-                }),
-            [||]
-        )
+                })
 
-    let useSignIn () =
+    let inline useSignIn () =
         let postSignIn = usePostSignIn ()
 
-        Store.useCallback (
+        Store.useCallbackRef
             (fun getter _ (username, password) ->
                 promise {
                     let gunNamespace = Store.value getter Selectors.gunNamespace
@@ -55,14 +53,10 @@ module Auth =
                     match ack with
                     | { err = None } -> return! postSignIn (Username username)
                     | { err = Some error } -> return Error error
-                }),
-            [|
-                box postSignIn
-            |]
-        )
+                })
 
-    let useChangePassword () =
-        Store.useCallback (
+    let inline useChangePassword () =
+        Store.useCallbackRef
             (fun getter setter (password, newPassword) ->
                 promise {
                     let username = Store.value getter Atoms.username
@@ -77,19 +71,18 @@ module Auth =
                                 match ack with
                                 | { ok = Some 1; err = None } ->
                                     Store.change setter Atoms.gunTrigger ((+) 1)
+                                    Store.change setter Atoms.hubTrigger ((+) 1)
                                     return Ok ()
                                 | { err = Some error } -> return Error error
                                 | _ -> return Error $"invalid ack {JS.JSON.stringify ack}"
                             }
                     | _ -> return Error "Invalid username"
-                }),
-            [||]
-        )
+                })
 
-    let useDeleteUser () =
+    let inline useDeleteUser () =
         let logout = useLogout ()
 
-        Store.useCallback (
+        Store.useCallbackRef
             (fun getter _ password ->
                 promise {
                     let username = Store.value getter Atoms.username
@@ -111,16 +104,12 @@ module Auth =
                                 | _ -> return Error $"invalid ack {JS.JSON.stringify ack}"
                             }
                     | _ -> return Error "Invalid username"
-                }),
-            [|
-                box logout
-            |]
-        )
+                })
 
-    let useSignUp () =
+    let inline useSignUp () =
         let signIn = useSignIn ()
 
-        Store.useCallback (
+        Store.useCallbackRef
             (fun getter _setter (username, password) ->
                 promise {
                     if username = "" || password = "" then
@@ -156,8 +145,4 @@ module Auth =
                                 | { err = Some err } -> return Error err
                                 | _ -> return Error $"Invalid ack: {JS.JSON.stringify ack}"
                             }
-                }),
-            [|
-                box signIn
-            |]
-        )
+                })

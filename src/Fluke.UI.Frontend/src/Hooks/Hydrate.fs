@@ -21,7 +21,7 @@ open FsUi.Bindings
 
 
 module Hydrate =
-    let hydrateUiState _ setter (uiState: UiState) =
+    let inline hydrateUiState _ setter (uiState: UiState) =
         promise {
             let set atom value = Store.set setter atom value
 
@@ -29,7 +29,7 @@ module Hydrate =
             set Atoms.Ui.fontSize uiState.FontSize
         }
 
-    let hydrateUserState _ setter (userState: UserState) =
+    let inline hydrateUserState _ setter (userState: UserState) =
         promise {
             let set atom value = Store.set setter atom value
 
@@ -93,7 +93,7 @@ module Hydrate =
             |> ignore
         }
 
-    let hydrateDatabase _ setter (atomScope, database: Database) =
+    let inline hydrateDatabase _ setter (atomScope, database: Database) =
         promise {
             Store.scopedSet setter atomScope (Atoms.Database.name, database.Id, database.Name)
             Store.scopedSet setter atomScope (Atoms.Database.owner, database.Id, database.Owner)
@@ -101,10 +101,7 @@ module Hydrate =
             Store.scopedSet setter atomScope (Atoms.Database.position, database.Id, database.Position)
         }
 
-    let useHydrateDatabase () =
-        Store.useCallback (hydrateDatabase, [||])
-
-    let hydrateTask _ setter (atomScope, databaseId, task: Task) =
+    let inline hydrateTask _ setter (atomScope, databaseId, task: Task) =
         promise {
             Store.scopedSet setter atomScope (Atoms.Task.databaseId, task.Id, databaseId)
             Store.scopedSet setter atomScope (Atoms.Task.name, task.Id, task.Name)
@@ -116,16 +113,14 @@ module Hydrate =
             Store.scopedSet setter atomScope (Atoms.Task.priority, task.Id, task.Priority)
         }
 
-    let useHydrateTask () = Store.useCallback (hydrateTask, [||])
-
-    let hydrateAttachmentState _getter setter (atomScope, attachmentState) =
+    let inline hydrateAttachmentState _getter setter (atomScope, attachmentState) =
         let attachmentId = AttachmentId.NewId ()
         Store.scopedSet setter atomScope (Atoms.Attachment.timestamp, attachmentId, Some attachmentState.Timestamp)
         Store.scopedSet setter atomScope (Atoms.Attachment.archived, attachmentId, Some attachmentState.Archived)
         Store.scopedSet setter atomScope (Atoms.Attachment.attachment, attachmentId, Some attachmentState.Attachment)
         attachmentId
 
-    let hydrateFile _getter setter (atomScope: Store.AtomScope, hexString: string) =
+    let inline hydrateFile _getter setter (atomScope: Store.AtomScope, hexString: string) =
         let chunkSize = 256
         let chunkCount = int (Math.Ceiling (float hexString.Length / float chunkSize))
 
@@ -154,7 +149,7 @@ module Hydrate =
         fileId
 
 
-    let hydrateTaskState getter setter (atomScope, databaseId, taskState: TaskState) =
+    let inline hydrateTaskState getter setter (atomScope, databaseId, taskState: TaskState) =
         promise {
             do! hydrateTask getter setter (atomScope, databaseId, taskState.Task)
 
@@ -204,10 +199,7 @@ module Hydrate =
             Store.scopedSet setter atomScope (Atoms.Task.sessions, taskState.Task.Id, taskState.SessionList)
         }
 
-    let useHydrateTaskState () =
-        Store.useCallback (hydrateTaskState, [||])
-
-    let hydrateDatabaseState getter setter (atomScope, databaseState: DatabaseState) =
+    let inline hydrateDatabaseState getter setter (atomScope, databaseState: DatabaseState) =
         promise {
             do! hydrateDatabase getter setter (atomScope, databaseState.Database)
 
@@ -274,7 +266,7 @@ module Hydrate =
                 |> Promise.ignore
         }
 
-    let hydrateTemplates getter setter =
+    let inline hydrateTemplates getter setter =
         promise {
             let databaseStateMap = TestUser.fetchTemplatesDatabaseStateMap ()
 
@@ -287,10 +279,10 @@ module Hydrate =
                 |> Promise.ignore
         }
 
-    let useExportDatabase () =
+    let inline useExportDatabase () =
         let toast = UI.useToast ()
 
-        Store.useCallback (
+        Store.useCallbackRef
             (fun getter _ databaseId ->
                 promise {
                     toast
@@ -340,18 +332,14 @@ module Hydrate =
                                 x.status <- "success")
 
                     | Error error -> toast (fun x -> x.description <- error)
-                }),
-            [|
-                box toast
-            |]
-        )
+                })
 
     type SettingsState = { Ui: UiState; User: UserState }
 
-    let useExportUserSettings () =
+    let inline useExportUserSettings () =
         let toast = UI.useToast ()
 
-        Store.useCallback (
+        Store.useCallbackRef
             (fun getter _ () ->
                 promise {
                     toast
@@ -388,16 +376,12 @@ module Hydrate =
                                 x.title <- "Success"
                                 x.status <- "success")
                     | None -> ()
-                }),
-            [|
-                box toast
-            |]
-        )
+                })
 
-    let useImportUserSettings () =
+    let inline useImportUserSettings () =
         let toast = UI.useToast ()
 
-        Store.useCallback (
+        Store.useCallbackRef
             (fun getter setter files ->
                 promise {
                     let username = Store.value getter Atoms.username
@@ -432,16 +416,12 @@ module Hydrate =
                         with
                         | ex -> toast (fun x -> x.description <- $"Error importing settings: ${ex.Message}")
                     | _ -> toast (fun x -> x.description <- "No files selected")
-                }),
-            [|
-                box toast
-            |]
-        )
+                })
 
-    let useImportDatabase () =
+    let inline useImportDatabase () =
         let toast = UI.useToast ()
 
-        Store.useCallback (
+        Store.useCallbackRef
             (fun getter setter files ->
                 promise {
                     let username = Store.value getter Atoms.username
@@ -534,8 +514,4 @@ module Hydrate =
                         | ex -> toast (fun x -> x.description <- $"Error importing database: ${ex.Message}")
                     | _ -> toast (fun x -> x.description <- "No files selected")
                 //                                            Store.change setter Atoms.databaseIdSet (Set.add database.Id)
-                }),
-            [|
-                box toast
-            |]
-        )
+                })

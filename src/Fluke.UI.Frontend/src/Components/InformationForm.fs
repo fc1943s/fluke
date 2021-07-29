@@ -4,7 +4,8 @@ open Fable.React
 open Feliz
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.State
-open Fluke.UI.Frontend.Bindings; open FsStore; open FsUi.Bindings
+open FsStore
+open FsUi.Bindings
 open Fluke.UI.Frontend.State
 open System
 open Fluke.Shared.Domain
@@ -41,7 +42,7 @@ module InformationForm =
         let lastDatabaseSelected, setLastDatabaseSelected = Store.useState Atoms.User.lastDatabaseSelected
 
         let onAttachmentAdd =
-            Store.useCallback (
+            Store.useCallbackRef
                 (fun _ setter attachmentId ->
                     promise {
                         match lastDatabaseSelected, information with
@@ -58,15 +59,10 @@ module InformationForm =
                                          |> Option.defaultValue Set.empty
                                          |> Set.add attachmentId))
                         | _ -> ()
-                    }),
-                [|
-                    box lastDatabaseSelected
-                    box information
-                |]
-            )
+                    })
 
         let onAttachmentDelete =
-            Store.useCallback (
+            Store.useCallbackRef
                 (fun getter setter attachmentId ->
                     promise {
                         let databaseIdSearch =
@@ -90,12 +86,7 @@ module InformationForm =
                             do! Store.deleteRoot getter (Atoms.Attachment.attachment attachmentId)
                             return true
                         | _ -> return false
-                    }),
-                [|
-                    box attachmentIdMap
-                    box information
-                |]
-            )
+                    })
 
         Accordion.Accordion
             {|

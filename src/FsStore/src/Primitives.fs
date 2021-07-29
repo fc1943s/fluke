@@ -91,7 +91,7 @@ module PrimitivesMagic =
         let inline selectAtomFamily (atomPath, atom, selector) =
             jotaiUtils.atomFamily (fun param -> selectAtom (atomPath, atom, selector param)) Object.compare
 
-        let atomWithStorage (collection, atomPath, defaultValue) =
+        let inline atomWithStorage (collection, atomPath, defaultValue) =
             let internalAtom = jotaiUtils.atomWithStorage atomPath defaultValue
 
             let wrapper =

@@ -2,13 +2,11 @@ namespace FsUi.Components
 
 open Fable.Core
 open Fable.React
-open Feliz
 open FsUi.Bindings
 
 
 module DropdownMenuButton =
-    [<ReactComponent>]
-    let rec DropdownMenuButton
+    let rec inline DropdownMenuButton
         (input: {| Label: string
                    OnClick: unit -> JS.Promise<unit>
                    Checked: bool |})

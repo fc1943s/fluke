@@ -1,0 +1,108 @@
+diff --git a/node_modules/batcher-js/index.js b/node_modules/batcher-js/index.js
+index 350a515..4728667 100644
+--- a/node_modules/batcher-js/index.js
++++ b/node_modules/batcher-js/index.js
+@@ -1,5 +1,14 @@
+ 'use strict';
+ 
++function findFirstPair(arr, key, func) {
++  for (let i = 0; i < arr.length; i++) {
++    if (arr[i].key === key) {
++      return func(i);
++    }
++  }
++  return null;
++}
++
+ function get(arr, key) {
+ 	return findFirstPair(arr, key, function (i) {
+ 		return arr[i].value;
+@@ -7,12 +16,12 @@ function get(arr, key) {
+ }
+ 
+ function set(arr, key, value) {
+-	var found = findFirstPair(arr, key, function (i) {
+-		arr[i].value = value;
+-		return true;
+-	});
++  let found = findFirstPair(arr, key, function (i) {
++    arr[i].value = value;
++    return true;
++  });
+ 
+-	if (!found) {
++  if (!found) {
+ 		arr.push({key: key, value: value});
+ 	}
+ }
+@@ -23,24 +32,15 @@ function del(arr, key) {
+ 	});
+ }
+ 
+-function findFirstPair(arr, key, func) {
+-	for (var i = 0; i < arr.length; i++) {
+-		if (arr[i].key === key) {
+-			return func(i);
+-		}
+-	}
+-	return null;
+-}
+-
+ module.exports = function (method, settings) {
+ 	if (!method || typeof method !== 'function') {
+ 		throw new TypeError('The first argument should be a function');
+ 	}
+ 
+-	var interval = 0;
+-	var maximum = null;
++  let interval = 0;
++  let maximum = null;
+ 
+-	// keeps compatibility with initial version
++  // keeps compatibility with initial version
+ 	if (typeof settings === 'number') {
+ 		interval = settings;
+ 	} else if (typeof settings === 'object') {
+@@ -48,31 +48,30 @@ module.exports = function (method, settings) {
+ 		maximum = settings.maximum || null;
+ 	}
+ 
+-	var executors = [];
+-	var collectors = [];
++  const executors = [];
++  const collectors = [];
+ 
++  function run(callback) {
++    method(get(collectors, callback), callback);
++    del(collectors, callback);
++  }
+ 	function execute(callback) {
+ 		return setTimeout(function () {
+ 			run(callback);
+ 		}, interval);
+ 	}
+ 
+-	function run(callback) {
+-		method(get(collectors, callback), callback);
+-		del(collectors, callback);
+-	}
+-
+ 	function aggregate(options, callback) {
+-		var collector = get(collectors, callback) || [];
+-		collector.push(options);
++    const collector = get(collectors, callback) || [];
++    collector.push(options);
+ 		set(collectors, callback, collector);
+ 		return collector;
+ 	}
+ 
+ 	return function (options, callback) {
+-		var collector = aggregate(options, callback);
+-		var executor = get(executors, callback);
+-		if (executor) {
++    const collector = aggregate(options, callback);
++    const executor = get(executors, callback);
++    if (executor) {
+ 			clearTimeout(executor);
+ 		}
+ 		set(executors, callback, execute(callback));

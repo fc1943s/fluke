@@ -142,7 +142,9 @@ module LeftDock =
 
 
         UI.flex
-            (fun _ -> ())
+            (fun x ->
+                x.overflowY <- "auto"
+                x.overflowX <- "hidden")
             [
                 UI.box
                     (fun x ->

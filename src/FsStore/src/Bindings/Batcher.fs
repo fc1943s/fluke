@@ -1,5 +1,6 @@
 namespace FsStore.Bindings
 
+open System
 open Fable.Core.JsInterop
 open Fable.Core
 open FsJs
@@ -24,83 +25,99 @@ module Batcher =
 
     [<RequireQualifiedAccess>]
     type BatchType<'TKey, 'TValue> =
-        | KeysFromServer of keys: 'TKey [] * timestamp: int64 * trigger: ((int64 * 'TKey []) [] -> unit)
-        | Data of data: 'TValue * timestamp: int64 * trigger: (int64 * 'TValue -> JS.Promise<unit>)
-        | Subscribe of fn: (unit -> unit)
-        | Set of fn: (unit -> unit)
+        | KeysFromServer of
+            keys: 'TKey [] *
+            timestamp: int64 *
+            trigger: ((int64 * 'TKey []) [] -> JS.Promise<IDisposable>)
+        | Data of data: 'TValue * timestamp: int64 * trigger: (int64 * 'TValue -> JS.Promise<IDisposable>)
+        | Subscribe of fn: (unit -> JS.Promise<IDisposable>)
+        | Set of fn: (unit -> JS.Promise<IDisposable>)
 
-    let batch<'TKey, 'TValue> =
-        batcher
-            (fun (itemsArray: BatchType<'TKey, 'TValue> []) ->
-                // Set
-                let set =
-                    itemsArray
-                    |> Array.choose
-                        (fun batchType ->
-                            match batchType with
-                            | BatchType.Set fn -> Some fn
-                            | _ -> None)
+    let inline macroQueue fn =
+        //        JS.setTimeout fn 0 |> ignore
+        fn ()
 
-                match set with
-                | [||] -> ()
-                | data -> data |> Array.iter (fun fn -> fn ())
+    let batch<'TKey, 'TValue> : (BatchType<'TKey, 'TValue> -> unit) =
+        let internalBatch =
+            fun (itemsArray: BatchType<'TKey, 'TValue> []) ->
+                promise {
+                    match itemsArray
+                          |> Array.choose
+                              (fun batchType ->
+                                  match batchType with
+                                  | BatchType.Set fn -> Some fn
+                                  | _ -> None) with
+                    | [||] -> ()
+                    | setData ->
+                        do!
+                            setData
+                            |> Array.map (fun fn -> fn ())
+                            |> Promise.Parallel
+                            |> Promise.ignore
+                    //                        macroQueue (fun () -> setData |> Array.iter (fun fn -> fn ()))
 
-                // Data
-                let data =
-                    itemsArray
-                    |> Array.choose
-                        (fun batchType ->
-                            match batchType with
-                            | BatchType.Data (data, timestamp, trigger) -> Some (data, timestamp, trigger)
-                            | _ -> None)
+                    match itemsArray
+                          |> Array.choose
+                              (fun batchType ->
+                                  match batchType with
+                                  | BatchType.Subscribe fn -> Some fn
+                                  | _ -> None) with
+                    | [||] -> ()
+                    | subscribeData ->
+                        do!
+                            subscribeData
+                            |> Array.map (fun fn -> fn ())
+                            |> Promise.Parallel
+                            |> Promise.ignore
+                    //                        macroQueue (fun () -> subscribeData |> Array.iter (fun fn -> fn ()))
 
-                match data with
-                | [||] -> ()
-                | data ->
-                    let trigger =
-                        data
-                        |> Array.last
-                        |> fun (_, _, trigger) -> trigger
+                    match itemsArray
+                          |> Array.choose
+                              (fun batchType ->
+                                  match batchType with
+                                  | BatchType.Data (data, timestamp, trigger) -> Some (data, timestamp, trigger)
+                                  | _ -> None) with
+                    | [||] -> ()
+                    | providerData ->
+                        let trigger =
+                            providerData
+                            |> Array.last
+                            |> fun (_, _, trigger) -> trigger
 
-                    data
-                    |> Array.map (fun (data, timestamp, _) -> trigger (timestamp, data))
-                    |> Promise.Parallel
-                    |> Promise.start
 
-                // Subscribe
-                let subscribe =
-                    itemsArray
-                    |> Array.choose
-                        (fun batchType ->
-                            match batchType with
-                            | BatchType.Subscribe fn -> Some fn
-                            | _ -> None)
+                        do!
+                            providerData
+                            |> Array.map (fun (data, timestamp, _) -> trigger (timestamp, data))
+                            |> Promise.Parallel
+                            |> Promise.ignore
+                    //                        macroQueue
+//                            (fun () ->
+//                                providerData
+//                                |> Array.iter (fun (data, timestamp, _) -> trigger (timestamp, data)))
 
-                match subscribe with
-                | [||] -> ()
-                | data -> data |> Array.iter (fun fn -> fn ())
+                    match itemsArray
+                          |> Array.choose
+                              (fun batchType ->
+                                  match batchType with
+                                  | BatchType.KeysFromServer (item, timestamp, trigger) ->
+                                      Some (item, timestamp, trigger)
+                                  | _ -> None) with
+                    | [||] -> ()
+                    | keysFromServer ->
+                        let trigger =
+                            keysFromServer
+                            |> Array.last
+                            |> fun (_, _, trigger) -> trigger
 
-                // Keys From Server
-                let keysFromServer =
-                    itemsArray
-                    |> Array.choose
-                        (fun batchType ->
-                            match batchType with
-                            | BatchType.KeysFromServer (item, timestamp, trigger) -> Some (item, timestamp, trigger)
-                            | _ -> None)
+                        let items =
+                            keysFromServer
+                            |> Array.map (fun (item, timestamp, _) -> timestamp, item)
 
-                match keysFromServer with
-                | [||] -> ()
-                | keysFromServer ->
-                    let trigger =
-                        keysFromServer
-                        |> Seq.map (fun (_, _, trigger) -> trigger)
-                        |> Seq.last
+                        let! _disposable = trigger items
+                        ()
+                //                        macroQueue (fun () -> trigger items)
+                }
+                |> Promise.start
 
-                    let items =
-                        keysFromServer
-                        |> Array.map (fun (item, timestamp, _) -> timestamp, item)
-
-                    trigger items)
-
-            {| interval = 250 |}
+        batcher internalBatch {| interval = 3000 |}
+//        fun item -> internalBatch [| item |]

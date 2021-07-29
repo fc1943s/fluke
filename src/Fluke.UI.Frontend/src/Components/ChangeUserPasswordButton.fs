@@ -19,7 +19,7 @@ module ChangeUserPasswordButton =
         let newPassword2Field, setNewPassword2Field = React.useState ""
 
         let confirmClick =
-            Store.useCallback (
+            Store.useCallbackRef
                 (fun _ _ _ ->
                     promise {
                         if newPasswordField <> newPassword2Field then
@@ -42,18 +42,7 @@ module ChangeUserPasswordButton =
                             | Error error ->
                                 toast (fun x -> x.description <- error)
                                 return false
-                    }),
-                [|
-                    box newPasswordField
-                    box newPassword2Field
-                    box setNewPasswordField
-                    box setNewPassword2Field
-                    box setPasswordField
-                    box passwordField
-                    box changePassword
-                    box toast
-                |]
-            )
+                    })
 
         Dropdown.ConfirmDropdown
             "Change Password"

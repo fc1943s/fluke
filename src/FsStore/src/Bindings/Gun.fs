@@ -127,10 +127,9 @@ module Gun =
     importAll "gun/sea"
     importAll "gun/lib/promise"
 
-    [<Emit "Gun.SEA">]
-    let sea: ISEA = jsNative
+    let sea: ISEA = emitJsExpr () "Gun.SEA"
 
-    let createUser (user: IGunUser) username password =
+    let inline createUser (user: IGunUser) username password =
         Promise.create
             (fun res err ->
                 try
@@ -140,7 +139,7 @@ module Gun =
                     printfn $"createUser error: {ex}"
                     err ex)
 
-    let authUser (user: IGunUser) username password =
+    let inline authUser (user: IGunUser) username password =
         Promise.create
             (fun res err ->
                 try
@@ -150,7 +149,7 @@ module Gun =
                     printfn "authUser error: {ex}"
                     err ex)
 
-    let changeUserPassword (user: IGunUser) username password newPassword =
+    let inline changeUserPassword (user: IGunUser) username password newPassword =
         Promise.create
             (fun res err ->
                 try
@@ -160,7 +159,7 @@ module Gun =
                     printfn "changeUserPassword error: {ex}"
                     err ex)
 
-    let deleteUser (user: IGunUser) username password =
+    let inline deleteUser (user: IGunUser) username password =
         Promise.create
             (fun res err ->
                 try
@@ -268,23 +267,29 @@ module Gun =
 
                 fn data)
 
+        Object.newDisposable
+            (fun () ->
+                printfn "subscribe.on() data. Dispose promise observable."
+                gun.off () |> ignore)
+        |> Promise.lift
 
-    let batchData<'T> (fn: int64 * 'T -> JS.Promise<unit>) (data: 'T) =
+
+    let inline batchData<'T> (fn: int64 * 'T -> JS.Promise<IDisposable>) (data: 'T) =
         Batcher.batch (Batcher.BatchType.Data (data, DateTime.Now.Ticks, fn))
 
-    let batchKeys map fn data =
+    let inline batchKeys map fn data =
         let fn = map >> fn
         Batcher.batch (Batcher.BatchType.KeysFromServer (data, DateTime.Now.Ticks, fn))
 
-    let batchSubscribe gunAtomNode fn =
+    let inline batchSubscribe gunAtomNode fn =
         let fn () = subscribe gunAtomNode (batchData fn)
         Batcher.batch (Batcher.BatchType.Subscribe fn)
 
-    let batchSet gunAtomNode fn =
+    let inline batchSet gunAtomNode fn =
         let fn () = subscribe gunAtomNode (batchData fn)
         Batcher.batch (Batcher.BatchType.Subscribe fn)
 
-    let apiSubscribe<'A, 'R> (hub: HubConnection<'A, 'A, _, 'R, 'R>) action fn =
+    let inline hubSubscribe<'A, 'R> (hub: HubConnection<'A, 'A, _, 'R, 'R>) action fn =
         promise {
             let! stream = hub.streamFrom action |> Async.StartAsPromise
 
@@ -295,14 +300,11 @@ module Gun =
                         complete =
                             fun () ->
                                 Dom.log
-                                    (fun () ->
-                                        $"[apiSubscribe.complete() HUB stream subscription]
-                                                                    action={action} ")
+                                    (fun () -> $"[hubSubscribe.complete() HUB stream subscription] action={action} ")
                         error =
                             fun err ->
                                 Dom.consoleError (
-                                    $"[apiSubscribe.error() HUB stream subscription]
-                                                                    action={action} ",
+                                    $"[hubSubscribe.error() HUB stream subscription] action={action} ",
                                     err
                                 )
                     }
@@ -310,10 +312,8 @@ module Gun =
             return subscription
         }
 
-    let batchApiSubscribe (hub: HubConnection<'A, 'A, _, 'R, 'R>) action fn =
-        let fn () =
-            apiSubscribe hub action (batchData fn)
-            |> Promise.start
+    let inline batchHubSubscribe (hub: HubConnection<'A, 'A, _, 'R, 'R>) action fn =
+        let fn () = hubSubscribe hub action (batchData fn)
 
         Batcher.batch (Batcher.BatchType.Subscribe fn)
 

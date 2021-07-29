@@ -13,8 +13,7 @@ open FsUi.Components
 
 
 module FilterForm =
-    [<ReactComponent>]
-    let SchedulingInput (scheduling: Scheduling option) setScheduling =
+    let inline SchedulingInput (scheduling: Scheduling option) setScheduling =
         UI.box
             (fun x -> x.display <- "inline")
             [

@@ -8,15 +8,15 @@ open FsUi.Bindings
 
 
 module DragDrop =
-    let private reactDnd: {| DragDropContext: obj -> obj
-                             Droppable: obj -> obj
-                             Draggable: obj -> obj |} =
+    let reactDnd: {| DragDropContext: obj -> obj
+                     Droppable: obj -> obj
+                     Draggable: obj -> obj |} =
         importAll "react-beautiful-dnd"
 
-    let dragDropContext onDragEnd children =
+    let inline dragDropContext onDragEnd children =
         ReactBindings.React.createElement (reactDnd.DragDropContext, {| onDragEnd = onDragEnd |}, children)
 
-    let droppable props containerProps children =
+    let inline droppable props containerProps children =
         let content =
             [
                 JS.invoke
@@ -41,7 +41,7 @@ module DragDrop =
 
         ReactBindings.React.createElement (reactDnd.Droppable, props, content)
 
-    let draggable props containerProps children =
+    let inline draggable props containerProps children =
         let content =
             [
                 JS.invoke

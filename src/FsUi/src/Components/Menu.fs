@@ -36,8 +36,7 @@ module Menu =
 
                 props x)
 
-    [<ReactComponent>]
-    let Menu
+    let inline Menu
         (input: {| Tooltip: string
                    Trigger: ReactElement
                    Body: seq<ReactElement>

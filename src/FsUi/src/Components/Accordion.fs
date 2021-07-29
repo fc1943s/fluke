@@ -11,7 +11,8 @@ open Fable.React
 
 
 module Accordion =
-    let accordionItem title children =
+    [<ReactComponent>]
+    let AccordionItem title children =
         UI.accordionItem
             (fun x ->
                 if children
@@ -152,7 +153,7 @@ module Accordion =
                     input.Items
                     |> List.map
                         (fun (title, cmp) ->
-                            accordionItem
+                            AccordionItem
                                 title
                                 [
                                     cmp

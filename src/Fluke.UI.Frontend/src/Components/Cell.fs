@@ -54,7 +54,7 @@ module Cell =
         let cellColorScheduled = Store.useValue Atoms.User.cellColorScheduled
 
         let onCellClick =
-            Store.useCallback (
+            Store.useCallbackRef
                 (fun getter _ (_e: MouseEvent) ->
                     promise {
                         //                        if deviceInfo.IsTesting then
@@ -69,15 +69,7 @@ module Cell =
 //
 //                            if selected <> newSelected then
 //                                do! setSelected (taskId, dateId, newSelected)
-                    }),
-                [|
-                    box deviceInfo
-                    box taskId
-                    box dateId
-                    box selected
-                    box setSelected
-                |]
-            )
+                    })
 
         UI.center
             (fun x ->
@@ -158,7 +150,7 @@ module Cell =
         let enableCellPopover = Store.useValue Atoms.User.enableCellPopover
         let databaseId = Store.useValue (Atoms.Task.databaseId taskId)
         let isReadWrite = Store.useValue (Selectors.Database.isReadWrite databaseId) //
-        let navigate = Navigate.useNavigate ()
+        let navigate = Store.useCallbackRef Navigate.navigate
 
         if enableCellPopover then
             Popover.CustomPopover //

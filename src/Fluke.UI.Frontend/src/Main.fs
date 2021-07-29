@@ -1,10 +1,10 @@
 namespace Fluke.UI.Frontend
 
 open Fable.Core
-open Fable.Core.JsInterop
-open Fluke.UI.Frontend
-open FsJs
 open FsUi.Bindings
+open Feliz
+open Fable.Core.JsInterop
+open FsJs
 
 
 module Main =

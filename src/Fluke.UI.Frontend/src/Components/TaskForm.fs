@@ -23,8 +23,8 @@ open FsUi.Components
 
 
 module TaskForm =
-    let useStartSession () =
-        Store.useCallback (
+    let inline useStartSession () =
+        Store.useCallbackRef
             (fun getter setter taskId ->
                 promise {
                     let sessions = Store.value getter (Atoms.Task.sessions taskId)
@@ -37,9 +37,7 @@ module TaskForm =
                             |> FlukeDateTime.FromDateTime
                          )
                          :: sessions)
-                }),
-            [||]
-        )
+                })
 
     [<ReactComponent>]
     let MissedAfterInput (missedAfter: FlukeTime option) setMissedAfter =
@@ -181,8 +179,7 @@ module TaskForm =
                     ]
             ]
 
-    [<ReactComponent>]
-    let DurationInput (duration: Minute option) setDuration =
+    let inline DurationInput (duration: Minute option) setDuration =
         UI.box
             (fun x -> x.display <- "inline")
             [
@@ -325,19 +322,17 @@ module TaskForm =
                     ]
             ]
 
-    let useDeleteTask () =
-        Store.useCallback (
+    let inline useDeleteTask () =
+        Store.useCallbackRef
             (fun getter _ taskId ->
                 promise {
                     do! Store.deleteRoot getter (Atoms.Task.databaseId taskId)
                     return true
-                }),
-            [||]
-        )
+                })
 
     [<ReactComponent>]
     let AddTaskButton information =
-        let navigate = Navigate.useNavigate ()
+        let navigate = Store.useCallbackRef Navigate.navigate
         let taskUIFlag = Store.useValue (Atoms.User.uiFlag UIFlagType.Task)
         let setInformationUIFlag = Store.useSetState (Atoms.User.uiFlag UIFlagType.Information)
 
@@ -412,28 +407,20 @@ module TaskForm =
         let isReadWrite = Store.useValue (Selectors.Database.isReadWrite taskDatabaseId)
 
         let onAttachmentAdd =
-            Store.useCallback (
+            Store.useCallbackRef
                 (fun _ setter attachmentId ->
-                    promise { Store.change setter (Atoms.Task.attachmentIdSet taskId) (Set.add attachmentId) }),
-                [|
-                    box taskId
-                |]
-            )
+                    promise { Store.change setter (Atoms.Task.attachmentIdSet taskId) (Set.add attachmentId) })
 
 
         let onAttachmentDelete =
-            Store.useCallback (
+            Store.useCallbackRef
                 (fun getter setter attachmentId ->
                     promise {
                         Store.change setter (Atoms.Task.attachmentIdSet taskId) (Set.remove attachmentId)
 
                         do! Store.deleteRoot getter (Atoms.Attachment.attachment attachmentId)
                         return true
-                    }),
-                [|
-                    box taskId
-                |]
-            )
+                    })
 
         let tempInformation =
             Store.useTempAtom
@@ -467,7 +454,7 @@ module TaskForm =
 
 
         let onSave =
-            Store.useCallback (
+            Store.useCallbackRef
                 (fun getter setter _ ->
                     promise {
                         let taskName = Store.getTempValue getter (Atoms.Task.name taskId)
@@ -537,17 +524,10 @@ module TaskForm =
                             Store.set setter (Atoms.User.uiFlag UIFlagType.Task) UIFlag.None
 
                             do! onSave task
-                    }),
-                [|
-                    box taskId
-                    box onSave
-                    box toast
-                    box taskDatabaseId
-                |]
-            )
+                    })
 
         let deleteSession =
-            Store.useCallback (
+            Store.useCallbackRef
                 (fun _ _ start ->
                     promise {
                         let index =
@@ -557,12 +537,7 @@ module TaskForm =
                         setSessions (sessions |> List.removeAt index)
 
                         return true
-                    }),
-                [|
-                    box sessions
-                    box setSessions
-                |]
-            )
+                    })
 
         Accordion.Accordion
             {|
@@ -792,8 +767,8 @@ module TaskForm =
 
     [<ReactComponent>]
     let TaskFormWrapper () =
-        let hydrateTaskState = Hydrate.useHydrateTaskState ()
-        let hydrateTask = Hydrate.useHydrateTask ()
+        let hydrateTaskState = Store.useCallbackRef Hydrate.hydrateTaskState
+        let hydrateTask = Store.useCallbackRef Hydrate.hydrateTask
         let archive = Store.useValue Atoms.User.archive
         let selectedTaskIdListByArchive = Store.useValue Selectors.Session.selectedTaskIdListByArchive
         let setRightDock = Store.useSetState Atoms.User.rightDock

@@ -4,7 +4,7 @@ const {
 } = require("electron");
 
 contextBridge.exposeInMainWorld(
-  "api", {
+  "electronApi", {
     send: ipcRenderer.send
   }
 );

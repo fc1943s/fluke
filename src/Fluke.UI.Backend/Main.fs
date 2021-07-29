@@ -104,7 +104,7 @@ module Main =
             match msg with
             | Sync.Request.Connect (Username username) ->
                 memoizedCreateTable username
-                printfn $"@@@ Api.Action.Connect username={username}"
+                printfn $"@@@ Sync.Request.Connect username={username}"
                 Sync.Response.ConnectResult
             | Sync.Request.Set (Username username, key, value) ->
                 memoizedCreateTable username

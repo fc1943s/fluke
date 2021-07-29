@@ -19,7 +19,7 @@ module PasteListener =
     [<ReactComponent>]
     let PasteListener () =
         let onFilePasted =
-            Store.useCallback (
+            Store.useCallbackRef
                 (fun getter setter attachment ->
                     promise {
                         Dom.log (fun () -> $"pasted image attachment={attachment}")
@@ -36,14 +36,12 @@ module PasteListener =
                                  })
 
                         Store.change setter Atoms.User.clipboardAttachmentIdMap (Map.add attachmentId false)
-                    }),
-                [||]
-            )
+                    })
 
         let toast = UI.useToast ()
 
         let handlePasteEvent =
-            Store.useCallback (
+            Store.useCallbackRef
                 (fun getter setter (e: Browser.Types.Event) ->
                     promise {
 
@@ -92,12 +90,7 @@ module PasteListener =
                                     })
                             |> Promise.Parallel
                             |> Promise.ignore
-                    }),
-                [|
-                    box toast
-                    box onFilePasted
-                |]
-            )
+                    })
 
         let handle =
             React.useMemo (

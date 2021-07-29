@@ -99,10 +99,10 @@ module Settings =
             ]
 
     [<ReactComponent>]
-    let ApiUrlInput () =
-        let tempApiUrl =
+    let HubUrlInput () =
+        let tempHubUrl =
             Store.useTempAtom
-                (Some (Store.InputAtom (Store.AtomReference.Atom Atoms.apiUrl)))
+                (Some (Store.InputAtom (Store.AtomReference.Atom Atoms.hubUrl)))
                 (Some (Store.InputScope.Temp Gun.defaultSerializer))
 
         UI.box
@@ -112,7 +112,7 @@ module Settings =
                     {|
                         Hint = None
                         HintTitle = None
-                        Label = str "API URL"
+                        Label = str "Hub URL"
                         Props = fun x -> x.marginBottom <- "5px"
                     |}
 
@@ -125,7 +125,7 @@ module Settings =
                             None
                             (fun x ->
                                 x.isChecked <-
-                                    match tempApiUrl.CurrentValue, tempApiUrl.TempValue with
+                                    match tempHubUrl.CurrentValue, tempHubUrl.TempValue with
                                     | Some _, _ -> true
                                     | _ -> false
 
@@ -134,15 +134,15 @@ module Settings =
                                 x.onChange <-
                                     fun _ ->
                                         promise {
-                                            match tempApiUrl.CurrentValue, tempApiUrl.TempValue with
-                                            | Some _, Some _ -> tempApiUrl.SetTempValue None
+                                            match tempHubUrl.CurrentValue, tempHubUrl.TempValue with
+                                            | Some _, Some _ -> tempHubUrl.SetTempValue None
                                             | Some current, None ->
-                                                tempApiUrl.SetTempValue (Some current)
-                                                tempApiUrl.SetCurrentValue None
+                                                tempHubUrl.SetTempValue (Some current)
+                                                tempHubUrl.SetCurrentValue None
                                             | None, Some temp ->
-                                                tempApiUrl.SetCurrentValue (Some temp)
-                                                tempApiUrl.SetTempValue None
-                                            | None, None -> tempApiUrl.SetTempValue (Some "")
+                                                tempHubUrl.SetCurrentValue (Some temp)
+                                                tempHubUrl.SetTempValue None
+                                            | None, None -> tempHubUrl.SetTempValue (Some "")
                                         })
 
                         Input.Input
@@ -151,17 +151,17 @@ module Settings =
                                     fun x ->
 
                                         x.isDisabled <-
-                                            match tempApiUrl.CurrentValue, tempApiUrl.TempValue with
+                                            match tempHubUrl.CurrentValue, tempHubUrl.TempValue with
                                             | Some _, _ -> true
                                             | _ -> false
 
                                         x.onChange <-
-                                            fun (e: KeyboardEvent) -> promise { tempApiUrl.SetValue (Some e.Value) }
+                                            fun (e: KeyboardEvent) -> promise { tempHubUrl.SetValue (Some e.Value) }
                                 CustomProps =
                                     fun x ->
                                         x.fixedValue <-
-                                            tempApiUrl.TempValue
-                                            |> Option.defaultValue (tempApiUrl.CurrentValue |> Option.defaultValue "")
+                                            tempHubUrl.TempValue
+                                            |> Option.defaultValue (tempHubUrl.CurrentValue |> Option.defaultValue "")
                                             |> Some
                             |}
                     ]
@@ -407,7 +407,7 @@ module Settings =
                             [
                                 GunPeersInput ()
 
-                                ApiUrlInput ()
+                                HubUrlInput ()
                             ])
                     ]
             |}

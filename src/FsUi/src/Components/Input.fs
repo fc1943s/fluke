@@ -113,16 +113,12 @@ module Input =
             )
 
         let fireChange =
-            Store.useCallback (
+            Store.useCallbackRef
                 (fun _ _ _ ->
                     promise {
                         inputRef.current.dispatchEvent (JS.createEvent "change" {| bubbles = true |})
                         |> ignore
-                    }),
-                [|
-                    box inputRef
-                |]
-            )
+                    })
 
         let alreadyFocused, setAlreadyFocused = React.useState false
 
@@ -153,7 +149,7 @@ module Input =
         )
 
         let onChange =
-            Store.useCallback (
+            Store.useCallbackRef
                 (fun _ _ (e: KeyboardEvent) ->
                     promise {
                         if inputRef.current <> null && e.target <> null then
@@ -183,18 +179,7 @@ module Input =
                                 match validValue with
                                 | Some value -> tempAtom.SetValue value
                                 | None -> tempAtom.SetValue tempAtom.CurrentValue
-                    }),
-                [|
-                    box props
-                    box tempAtom
-                    box currentValue
-                    box currentValueString
-                    box inputRef
-                    box customProps.onFormat
-                    box customProps.onValidate
-                    box customProps.atom
-                |]
-            )
+                    })
 
         let variableHeight =
             React.useMemo (

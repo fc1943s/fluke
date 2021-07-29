@@ -19,7 +19,7 @@ module ResourceForm =
         let resourceName, setResourceName = React.useState resource.Name
 
         let onSave =
-            Store.useCallback (
+            Store.useCallbackRef
                 (fun _ _ _ ->
                     promise {
                         match resourceName with
@@ -27,13 +27,7 @@ module ResourceForm =
                         | _ ->
                             let resource: Resource = { Name = resourceName }
                             do! onSave resource
-                    }),
-                [|
-                    box onSave
-                    box resourceName
-                    box toast
-                |]
-            )
+                    })
 
         UI.stack
             (fun x -> x.spacing <- "18px")

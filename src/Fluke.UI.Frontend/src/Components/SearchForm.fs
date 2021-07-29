@@ -28,7 +28,7 @@ module SearchForm =
 
     [<ReactComponent>]
     let SearchResultItem anchor searchResultText =
-        let navigateAnchor = Navigate.useNavigateAnchor ()
+        let navigateAnchor = Store.useCallbackRef Navigate.navigateAnchor
 
         UI.box
             (fun x ->
@@ -59,7 +59,7 @@ module SearchForm =
         let toast = UI.useToast ()
 
         let search =
-            Store.useCallback (
+            Store.useCallbackRef
                 (fun getter _ searchText ->
                     promise {
                         if searchText = "" then
@@ -194,14 +194,7 @@ module SearchForm =
                             setSearchResults results
 
                         setLoading false
-                    }),
-                [|
-                    box setLoading
-                    box toast
-                    box setSearchResults
-                    box setSearchText
-                |]
-            )
+                    })
 
         let debouncedSearch =
             React.useMemo (

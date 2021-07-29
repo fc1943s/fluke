@@ -86,7 +86,7 @@ module Dom =
                                     JSe.RegExpFlag().i
                                 )
                                 .Test userAgent
-                    IsElectron = jsTypeof window?api = "object"
+                    IsElectron = jsTypeof window?electronApi = "object"
                     IsExtension = window.location.protocol = "chrome-extension:"
                     GitHubPages = window.location.host.EndsWith "github.io"
                     IsTesting = JS.jestWorkerId || window?Cypress <> null

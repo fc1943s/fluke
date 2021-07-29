@@ -41,8 +41,7 @@ module CellMenu =
 
     [<ReactComponent>]
     let CellMenu taskIdAtom dateIdAtom (onClose: (unit -> unit) option) (floating: bool) =
-        let taskId = Store.useValue taskIdAtom
-        let dateId = Store.useValue dateIdAtom
+        let taskId, dateId = Store.useValueTuple taskIdAtom dateIdAtom
         let username = Store.useValue Atoms.username
         let toast = UI.useToast ()
         let cellSize = Store.useValue Atoms.User.cellSize
@@ -62,7 +61,7 @@ module CellMenu =
             | UserStatus (_, Postponed (Some until)) -> until |> FlukeTime.Stringify
             | _ -> "later"
 
-        let navigate = Navigate.useNavigate ()
+        let navigate = Store.useCallbackRef Navigate.navigate
         let cellUIFlag, setCellUIFlag = Store.useState (Atoms.User.uiFlag UIFlagType.Cell)
         let cellColorPostponedUntil = Store.useValue Atoms.User.cellColorPostponedUntil
         let cellColorPostponed = Store.useValue Atoms.User.cellColorPostponed
@@ -71,7 +70,7 @@ module CellMenu =
         let cellColorScheduled = Store.useValue Atoms.User.cellColorScheduled
 
         let onClick =
-            Store.useCallback (
+            Store.useCallbackRef
                 (fun _ setter (onClickStatus: CellStatus) ->
                     promise {
                         visibleTaskSelectedDateIdMap
@@ -91,17 +90,10 @@ module CellMenu =
                         match onClose with
                         | Some onClose -> onClose ()
                         | None -> ()
-                    }),
-                [|
-                    box onClose
-                    box taskId
-                    box dateId
-                    box visibleTaskSelectedDateIdMap
-                |]
-            )
+                    })
 
         let postponeUntilLater =
-            Store.useCallback (
+            Store.useCallbackRef
                 (fun _ _ _ ->
                     promise {
                         match username, postponedUntil with
@@ -116,18 +108,10 @@ module CellMenu =
                         | _ ->
                             toast (fun x -> x.description <- "Invalid time")
                             return false
-                    }),
-                [|
-                    box onClose
-                    box username
-                    box postponedUntil
-                    box setSessionStatus
-                    box toast
-                |]
-            )
+                    })
 
         let random =
-            Store.useCallback (
+            Store.useCallbackRef
                 (fun _ setter _ ->
                     promise {
                         let newMap =
@@ -172,14 +156,7 @@ module CellMenu =
                             ->
                             onClose ()
                         | _ -> ()
-                    }),
-                [|
-                    box onClose
-                    box cellUIFlag
-                    box visibleTaskSelectedDateIdMap
-                    box setCellUIFlag
-                |]
-            )
+                    })
 
         UI.stack
             (fun x ->

@@ -10,17 +10,10 @@ open FsJs
 
 
 module Listener =
-    let useKeyPress keys (fn: Store.GetFn -> Store.SetFn -> KeyboardEvent -> JS.Promise<unit>) =
-        let fnCallback = React.useCallbackRef (fun (getter, setter, e) -> fn getter setter e)
+    let inline useKeyPress keys (fn: Store.GetFn -> Store.SetFn -> KeyboardEvent -> JS.Promise<unit>) =
         Profiling.addTimestamp "useKeyPress.render"
 
-        let keyEvent =
-            Store.useCallback (
-                (fun getter setter e -> fnCallback (getter, setter, e)),
-                [|
-                    box fnCallback
-                |]
-            )
+        let keyEvent = Store.useCallbackRef fn
 
         Rooks.useKey
             keys
@@ -34,7 +27,7 @@ module Listener =
             |}
 
 
-    let useElementHover (elemRef: IRefValue<#HTMLElement option>) =
+    let inline useElementHover (elemRef: IRefValue<#HTMLElement option>) =
         let isHovered, setIsHovered = React.useState false
 
         let setIsHoveredTrue =
