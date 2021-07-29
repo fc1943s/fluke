@@ -380,7 +380,7 @@ module Hydrate =
                             (FlukeDateTime.FromDateTime DateTime.Now)
                             |> FlukeDateTime.Stringify
 
-                        Dom.download json $"{username |> Username.Value}-{timestamp}.json" "application/json"
+                        Dom.download json $"{username |> Username.ValueOrDefault}-{timestamp}.json" "application/json"
 
                         toast
                             (fun x ->

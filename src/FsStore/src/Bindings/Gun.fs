@@ -317,7 +317,7 @@ module Gun =
 
         Batcher.batch (Batcher.BatchType.Subscribe fn)
 
-    let inline wrapAtomPath (Collection collection) (atomPath: string) =
+    let inline wrapAtomPath (Collection _collection) (atomPath: string) =
 //        let header = $"{collection}/"
         let header = "Fluke/"
         let header = if atomPath.StartsWith header then "" else header

@@ -187,7 +187,10 @@ module CellSelectionSetup =
                         (fun () ->
                             promise {
                                 if gunNamespace.__.sea.IsNone then
-                                    let username = Templates.templatesUser.Username |> Username.Value
+                                    let username =
+                                        Templates.templatesUser.Username
+                                        |> Username.ValueOrDefault
+
                                     let! _ = Gun.createUser gunNamespace username username
                                     let! _ = Gun.authUser gunNamespace username username
 

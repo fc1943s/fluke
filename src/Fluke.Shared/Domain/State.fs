@@ -90,9 +90,13 @@ module State =
 
     and DatabaseName with
         static member inline Value value =
-            match value |> Option.ofObjUnbox with
-            | Some (DatabaseName name) -> Some name
-            | _ -> None
+            try
+                match value with
+                | DatabaseName name -> Some name
+            with
+            | ex ->
+                eprintfn $"DatabaseName.Value error value={value} ex={ex}"
+                None
 
         static member inline ValueOrDefault = DatabaseName.Value >> Option.defaultValue ""
 

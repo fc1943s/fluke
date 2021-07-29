@@ -18,4 +18,4 @@ module rec Sync =
         | GetResult of string option
         | FilterResult of string []
 
-    let endpoint = nameof Sync
+    let endpoint = $"/{nameof Sync}"

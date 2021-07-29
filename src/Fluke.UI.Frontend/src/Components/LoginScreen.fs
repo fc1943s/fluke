@@ -50,7 +50,8 @@ module LoginScreen =
                         if passwordField <> password2Field then
                             toast (fun x -> x.description <- "Passwords don't match")
                             return false
-                        elif Templates.templatesUser.Username |> Username.Value = usernameField then
+                        elif Templates.templatesUser.Username
+                             |> Username.ValueOrDefault = usernameField then
                             toast (fun x -> x.description <- "Invalid username")
                             return false
                         else

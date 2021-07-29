@@ -6,10 +6,14 @@ open FsStore
 
 
 module rec Device =
+    let inline deviceIdIdentifier deviceId =
+        deviceId
+        |> DeviceId.Value
+        |> string
+        |> List.singleton
+
+    let inline atomFamilyWithSync atomPath defaultValueFn =
+        Store.atomFamilyWithSync (State.collection, atomPath, defaultValueFn, deviceIdIdentifier)
+
     let rec devicePing =
-        Store.atomFamilyWithSync (
-            State.collection,
-            $"{nameof Device}/{nameof devicePing}",
-            (fun (_deviceId: DeviceId) -> Ping "0"),
-            (DeviceId.Value >> string >> List.singleton)
-        )
+        atomFamilyWithSync $"{nameof Device}/{nameof devicePing}" (fun (_deviceId: DeviceId) -> Ping "0")

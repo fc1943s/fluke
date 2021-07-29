@@ -10,72 +10,39 @@ open FsStore
 
 
 module rec Task =
-    let taskIdIdentifier (taskId: TaskId) =
+    let inline taskIdIdentifier (taskId: TaskId) =
         taskId |> TaskId.Value |> string |> List.singleton
 
+    let inline atomFamilyWithSync atomPath defaultValueFn =
+        Store.atomFamilyWithSync (State.collection, atomPath, defaultValueFn, taskIdIdentifier)
+
     let rec statusMap =
-        Store.atomFamilyWithSync (
-            State.collection,
-            $"{nameof Task}/{nameof statusMap}",
-            (fun (_taskId: TaskId) -> Map.empty: Map<DateId, Username * ManualCellStatus>),
-            taskIdIdentifier
-        )
+        atomFamilyWithSync
+            $"{nameof Task}/{nameof statusMap}"
+            (fun (_taskId: TaskId) -> Map.empty: Map<DateId, Username * ManualCellStatus>)
 
     let rec databaseId =
-        Store.atomFamilyWithSync (
-            State.collection,
-            $"{nameof Task}/{nameof databaseId}",
-            (fun (_taskId: TaskId) -> Database.Default.Id),
-            taskIdIdentifier
-        )
+        atomFamilyWithSync $"{nameof Task}/{nameof databaseId}" (fun (_taskId: TaskId) -> Database.Default.Id)
 
-    let rec sessions =
-        Store.atomFamilyWithSync (
-            State.collection,
-            $"{nameof Task}/{nameof sessions}",
-            (fun (_taskId: TaskId) -> []: Session list),
-            taskIdIdentifier
-        )
+    let rec sessions = atomFamilyWithSync $"{nameof Task}/{nameof sessions}" (fun (_taskId: TaskId) -> []: Session list)
 
     let rec attachmentIdSet =
-        Store.atomFamilyWithSync (
-            State.collection,
-            $"{nameof Task}/{nameof attachmentIdSet}",
-            (fun (_taskId: TaskId) -> Set.empty: Set<AttachmentId>),
-            taskIdIdentifier
-        )
+        atomFamilyWithSync
+            $"{nameof Task}/{nameof attachmentIdSet}"
+            (fun (_taskId: TaskId) -> Set.empty: Set<AttachmentId>)
 
     let rec cellAttachmentIdMap =
-        Store.atomFamilyWithSync (
-            State.collection,
-            $"{nameof Task}/{nameof cellAttachmentIdMap}",
-            (fun (_taskId: TaskId) -> Map.empty: Map<DateId, Set<AttachmentId>>),
-            taskIdIdentifier
-        )
+        atomFamilyWithSync
+            $"{nameof Task}/{nameof cellAttachmentIdMap}"
+            (fun (_taskId: TaskId) -> Map.empty: Map<DateId, Set<AttachmentId>>)
 
     let rec selectionSet =
-        Store.atomFamilyWithSync (
-            State.collection,
-            $"{nameof Task}/{nameof selectionSet}",
-            (fun (_taskId: TaskId) -> Set.empty: Set<DateId>),
-            taskIdIdentifier
-        )
+        atomFamilyWithSync $"{nameof Task}/{nameof selectionSet}" (fun (_taskId: TaskId) -> Set.empty: Set<DateId>)
 
     let rec information =
-        Store.atomFamilyWithSync (
-            State.collection,
-            $"{nameof Task}/{nameof information}",
-            (fun (_taskId: TaskId) -> Task.Default.Information),
-            taskIdIdentifier
-        )
+        atomFamilyWithSync $"{nameof Task}/{nameof information}" (fun (_taskId: TaskId) -> Task.Default.Information)
 
-    let rec name =
-        Store.atomFamilyWithSync (
-            State.collection,
-            $"{nameof Task}/{nameof name}",
-            (fun (_taskId: TaskId) -> Task.Default.Name),
-            taskIdIdentifier
-        )
+    let rec name = atomFamilyWithSync $"{nameof Task}/{nameof name}" (fun (_taskId: TaskId) -> Task.Default.Name)
 
     let rec scheduling =
         Store.atomFamilyWithSync (
@@ -86,41 +53,16 @@ module rec Task =
         )
 
     let rec pendingAfter =
-        Store.atomFamilyWithSync (
-            State.collection,
-            $"{nameof Task}/{nameof pendingAfter}",
-            (fun (_taskId: TaskId) -> Task.Default.PendingAfter),
-            taskIdIdentifier
-        )
+        atomFamilyWithSync $"{nameof Task}/{nameof pendingAfter}" (fun (_taskId: TaskId) -> Task.Default.PendingAfter)
 
     let rec missedAfter =
-        Store.atomFamilyWithSync (
-            State.collection,
-            $"{nameof Task}/{nameof missedAfter}",
-            (fun (_taskId: TaskId) -> Task.Default.MissedAfter),
-            taskIdIdentifier
-        )
+        atomFamilyWithSync $"{nameof Task}/{nameof missedAfter}" (fun (_taskId: TaskId) -> Task.Default.MissedAfter)
 
     let rec priority =
-        Store.atomFamilyWithSync (
-            State.collection,
-            $"{nameof Task}/{nameof priority}",
-            (fun (_taskId: TaskId) -> Task.Default.Priority),
-            taskIdIdentifier
-        )
+        atomFamilyWithSync $"{nameof Task}/{nameof priority}" (fun (_taskId: TaskId) -> Task.Default.Priority)
 
     let rec duration =
-        Store.atomFamilyWithSync (
-            State.collection,
-            $"{nameof Task}/{nameof duration}",
-            (fun (_taskId: TaskId) -> Task.Default.Duration),
-            taskIdIdentifier
-        )
+        atomFamilyWithSync $"{nameof Task}/{nameof duration}" (fun (_taskId: TaskId) -> Task.Default.Duration)
 
     let rec archived =
-        Store.atomFamilyWithSync (
-            State.collection,
-            $"{nameof Task}/{nameof archived}",
-            (fun (_taskId: TaskId) -> None: bool option),
-            taskIdIdentifier
-        )
+        atomFamilyWithSync $"{nameof Task}/{nameof archived}" (fun (_taskId: TaskId) -> None: bool option)

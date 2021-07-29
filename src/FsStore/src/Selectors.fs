@@ -143,7 +143,7 @@ module Selectors =
             gunNamespace,
             (fun (username, atomPath) gunNamespace ->
                 match gunNamespace.is with
-                | Some { alias = Some username' } when username' = (username |> Username.Value) ->
+                | Some { alias = Some username' } when username' = (username |> Username.ValueOrDefault) ->
                     let nodes =
                         atomPath
                         |> AtomPath.Value

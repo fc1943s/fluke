@@ -9,16 +9,13 @@ open Fluke.Shared.Domain.UserInteraction
 
 
 module rec File =
-    let fileIdIdentifier (fileId: FileId) =
+    let inline fileIdIdentifier (fileId: FileId) =
         fileId |> FileId.Value |> string |> List.singleton
 
-    let rec chunkCount =
-        Store.atomFamilyWithSync (
-            State.collection,
-            $"{nameof File}/{nameof chunkCount}",
-            (fun (_fileId: FileId) -> 0),
-            fileIdIdentifier
-        )
+    let inline atomFamilyWithSync atomPath defaultValueFn =
+        Store.atomFamilyWithSync (State.collection, atomPath, defaultValueFn, fileIdIdentifier)
+
+    let rec chunkCount = atomFamilyWithSync $"{nameof File}/{nameof chunkCount}" (fun (_fileId: FileId) -> 0)
 
     let rec chunk =
         Store.atomFamilyWithSync (

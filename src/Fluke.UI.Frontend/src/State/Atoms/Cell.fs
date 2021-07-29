@@ -5,7 +5,7 @@ open Fluke.Shared.Domain.UserInteraction
 
 
 module rec Cell =
-    let cellIdentifier (taskId: TaskId) (dateId: DateId) =
+    let inline cellIdentifier (taskId: TaskId) (dateId: DateId) =
         [
             taskId |> TaskId.Value |> string
             dateId

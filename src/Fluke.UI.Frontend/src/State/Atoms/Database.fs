@@ -9,48 +9,32 @@ open FsStore
 
 
 module rec Database =
-    let databaseIdIdentifier (databaseId: DatabaseId) =
+    let inline databaseIdIdentifier (databaseId: DatabaseId) =
         databaseId
         |> DatabaseId.Value
         |> string
         |> List.singleton
 
+    let inline atomFamilyWithSync atomPath defaultValueFn =
+        Store.atomFamilyWithSync (State.collection, atomPath, defaultValueFn, databaseIdIdentifier)
+
     let rec name =
-        Store.atomFamilyWithSync (
-            State.collection,
-            $"{nameof Database}/{nameof name}",
-            (fun (_databaseId: DatabaseId) -> Database.Default.Name),
-            databaseIdIdentifier
-        )
+        atomFamilyWithSync $"{nameof Database}/{nameof name}" (fun (_databaseId: DatabaseId) -> Database.Default.Name)
 
     let rec owner =
-        Store.atomFamilyWithSync (
-            State.collection,
-            $"{nameof Database}/{nameof owner}",
-            (fun (_databaseId: DatabaseId) -> Database.Default.Owner),
-            databaseIdIdentifier
-        )
+        atomFamilyWithSync $"{nameof Database}/{nameof owner}" (fun (_databaseId: DatabaseId) -> Database.Default.Owner)
 
     let rec sharedWith =
-        Store.atomFamilyWithSync (
-            State.collection,
-            $"{nameof Database}/{nameof sharedWith}",
-            (fun (_databaseId: DatabaseId) -> Database.Default.SharedWith),
-            databaseIdIdentifier
-        )
+        atomFamilyWithSync
+            $"{nameof Database}/{nameof sharedWith}"
+            (fun (_databaseId: DatabaseId) -> Database.Default.SharedWith)
 
     let rec position =
-        Store.atomFamilyWithSync (
-            State.collection,
-            $"{nameof Database}/{nameof position}",
-            (fun (_databaseId: DatabaseId) -> Database.Default.Position),
-            databaseIdIdentifier
-        )
+        atomFamilyWithSync
+            $"{nameof Database}/{nameof position}"
+            (fun (_databaseId: DatabaseId) -> Database.Default.Position)
 
     let rec informationAttachmentIdMap =
-        Store.atomFamilyWithSync (
-            State.collection,
-            $"{nameof Database}/{nameof informationAttachmentIdMap}",
-            (fun (_databaseId: DatabaseId) -> Map.empty: Map<Information, Set<AttachmentId>>),
-            databaseIdIdentifier
-        )
+        atomFamilyWithSync
+            $"{nameof Database}/{nameof informationAttachmentIdMap}"
+            (fun (_databaseId: DatabaseId) -> Map.empty: Map<Information, Set<AttachmentId>>)

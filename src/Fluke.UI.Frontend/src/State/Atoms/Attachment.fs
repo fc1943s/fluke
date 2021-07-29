@@ -7,32 +7,26 @@ open FsStore
 
 
 module rec Attachment =
-    let attachmentIdIdentifier (attachmentId: AttachmentId) =
+    let inline attachmentIdIdentifier (attachmentId: AttachmentId) =
         attachmentId
         |> AttachmentId.Value
         |> string
         |> List.singleton
 
+    let inline atomFamilyWithSync atomPath defaultValueFn =
+        Store.atomFamilyWithSync (State.collection, atomPath, defaultValueFn, attachmentIdIdentifier)
+
     let rec timestamp =
-        Store.atomFamilyWithSync (
-            State.collection,
-            $"{nameof Attachment}/{nameof timestamp}",
-            (fun (_attachmentId: AttachmentId) -> None: FlukeDateTime option),
-            attachmentIdIdentifier
-        )
+        atomFamilyWithSync
+            $"{nameof Attachment}/{nameof timestamp}"
+            (fun (_attachmentId: AttachmentId) -> None: FlukeDateTime option)
 
     let rec archived =
-        Store.atomFamilyWithSync (
-            State.collection,
-            $"{nameof Attachment}/{nameof archived}",
-            (fun (_attachmentId: AttachmentId) -> None: bool option),
-            attachmentIdIdentifier
-        )
+        atomFamilyWithSync
+            $"{nameof Attachment}/{nameof archived}"
+            (fun (_attachmentId: AttachmentId) -> None: bool option)
 
     let rec attachment =
-        Store.atomFamilyWithSync (
-            State.collection,
-            $"{nameof Attachment}/{nameof attachment}",
-            (fun (_attachmentId: AttachmentId) -> None: Attachment option),
-            attachmentIdIdentifier
-        )
+        atomFamilyWithSync
+            $"{nameof Attachment}/{nameof attachment}"
+            (fun (_attachmentId: AttachmentId) -> None: Attachment option)

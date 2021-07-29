@@ -5,7 +5,16 @@ module Model =
     type Username = Username of username: string
 
     and Username with
-        static member inline Value (Username username) = username
+        static member inline Value value =
+            try
+                match value with
+                | Username username -> Some username
+            with
+            | ex ->
+                eprintfn $"Username.Value error value={value} ex={ex}"
+                None
+
+        static member inline ValueOrDefault = Username.Value >> Option.defaultValue ""
 
     and Color = Color of hex: string
 

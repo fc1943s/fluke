@@ -223,7 +223,7 @@ ticks={ticks}
 {baseInfo ()}                                       ")
                             else
                                 try
-                                    Gun.batchData setAtom newValue
+                                    Gun.batchData (fun (_ticks, data) -> setAtom data) newValue
                                 with
                                 | ex ->
                                     Dom.consoleError ("[exception8]", ex, newValue)
