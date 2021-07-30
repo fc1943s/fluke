@@ -5,6 +5,23 @@ source https://api.nuget.org/v3/index.json
 
 nuget FSharp.Core ~> 5.0
 
+// FsCore
+
+// FsJs
+nuget Fable.DateFunctions ~> 3.6
+nuget Fable.Extras ~> 0.4
+nuget Thoth.Json ~> 6.0
+
+// FsStore
+nuget Fable.SignalR ~> 0.11
+
+nuget Fable.Jester ~> 0.33
+nuget Fable.ReactTestingLibrary ~> 0.33
+
+// FsUi
+nuget Feliz.Router ~> 3.8
+
+
 // group Fluke.Shared
 nuget Myriad.Core ~> 0.5
 nuget Myriad.Plugins ~> 0.5
@@ -17,16 +34,6 @@ nuget FSharp.Control.AsyncSeq ~> 3.0
 nuget Fumble ~> 0.7
 
 // Fluke.UI.Frontend
-nuget Fable.Core ~> 3.2
-nuget Fable.DateFunctions ~> 3.6
-nuget Fable.Extras ~> 0.4
-nuget Fable.Jester ~> 0.33
-nuget Fable.ReactTestingLibrary ~> 0.33
-nuget Feliz ~> 1.47
-nuget Feliz.Router ~> 3.8
-nuget Sutil.Shoelace ~> 2.0 prerelease
-nuget Thoth.Json ~> 6.0
-nuget Fable.SignalR ~> 0.11
 
 // Fluke.UI.Electron.Main
 nuget Fable.Electron ~> 6.0

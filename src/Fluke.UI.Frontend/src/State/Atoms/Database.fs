@@ -16,7 +16,7 @@ module rec Database =
         |> List.singleton
 
     let inline atomFamilyWithSync atomPath defaultValueFn =
-        Store.atomFamilyWithSync (Fluke.collection, atomPath, defaultValueFn, databaseIdIdentifier)
+        Store.atomFamilyWithSync Fluke.collection atomPath defaultValueFn databaseIdIdentifier
 
     let rec name =
         atomFamilyWithSync $"{nameof Database}/{nameof name}" (fun (_databaseId: DatabaseId) -> Database.Default.Name)

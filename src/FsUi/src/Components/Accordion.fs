@@ -2,6 +2,7 @@ namespace FsUi.Components
 
 open FsJs
 open FsStore
+open FsStore.Model
 open FsUi.Bindings
 open FsCore
 open Feliz
@@ -61,7 +62,7 @@ module Accordion =
     [<ReactComponent>]
     let Accordion
         (input: {| Items: (ReactElement * ReactElement) list
-                   Atom: Store.Atom<string []>
+                   Atom: Atom<string []>
                    Props: UI.IChakraProps -> unit |})
         =
         let atomValue, setAtomValue = Store.useState input.Atom

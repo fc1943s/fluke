@@ -34,8 +34,8 @@ module Batcher =
         | Set of fn: (unit -> JS.Promise<IDisposable>)
 
     let inline macroQueue fn =
-        //        JS.setTimeout fn 0 |> ignore
-        fn ()
+        JS.setTimeout (fn >> Promise.start) 0 |> ignore
+    //        fn ()
 
     let batch<'TKey, 'TValue> : (BatchType<'TKey, 'TValue> -> unit) =
         let internalBatch =
@@ -49,12 +49,9 @@ module Batcher =
                                   | _ -> None) with
                     | [||] -> ()
                     | setData ->
-                        do!
-                            setData
-                            |> Array.map (fun fn -> fn ())
-                            |> Promise.Parallel
-                            |> Promise.ignore
-                    //                        macroQueue (fun () -> setData |> Array.iter (fun fn -> fn ()))
+                        for item in setData do
+                            let! _disposable = item ()
+                            ()
 
                     match itemsArray
                           |> Array.choose
@@ -64,12 +61,9 @@ module Batcher =
                                   | _ -> None) with
                     | [||] -> ()
                     | subscribeData ->
-                        do!
-                            subscribeData
-                            |> Array.map (fun fn -> fn ())
-                            |> Promise.Parallel
-                            |> Promise.ignore
-                    //                        macroQueue (fun () -> subscribeData |> Array.iter (fun fn -> fn ()))
+                        for item in subscribeData do
+                            let! _disposable = item ()
+                            ()
 
                     match itemsArray
                           |> Array.choose
@@ -84,16 +78,11 @@ module Batcher =
                             |> Array.last
                             |> fun (_, _, trigger) -> trigger
 
-
-                        do!
+                        for item in
                             providerData
-                            |> Array.map (fun (data, timestamp, _) -> trigger (timestamp, data))
-                            |> Promise.Parallel
-                            |> Promise.ignore
-                    //                        macroQueue
-//                            (fun () ->
-//                                providerData
-//                                |> Array.iter (fun (data, timestamp, _) -> trigger (timestamp, data)))
+                            |> Array.map (fun (data, timestamp, _) -> fun () -> trigger (timestamp, data)) do
+                            let! _disposable = item ()
+                            ()
 
                     match itemsArray
                           |> Array.choose
@@ -113,8 +102,12 @@ module Batcher =
                             keysFromServer
                             |> Array.map (fun (item, timestamp, _) -> timestamp, item)
 
-                        let! _disposable = trigger items
-                        ()
+                        fun () ->
+                            promise {
+                                let! _disposable = trigger items
+                                ()
+                            }
+                        |> macroQueue
                 //                        macroQueue (fun () -> trigger items)
                 }
                 |> Promise.start

@@ -2,12 +2,13 @@ namespace FsUi.Components
 
 open Feliz
 open FsStore
+open FsStore.Model
 open FsUi.Bindings
 
 module CheckboxInput =
     [<ReactComponent>]
     let CheckboxInput
-        (input: {| Atom: Store.Atom<_>
+        (input: {| Atom: Atom<_>
                    Label: string option
                    Props: UI.IChakraProps -> unit |})
         =

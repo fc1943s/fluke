@@ -3,10 +3,10 @@ namespace FsStore
 open Fable.Core.JsInterop
 open Fable.Core
 open System
-open Fable.SignalR
 open FsCore
 open FsCore.Model
 open FsStore.Bindings.Jotai
+open FsStore.Model
 open FsStore.Shared
 open Microsoft.FSharp.Core.Operators
 open FsJs
@@ -15,80 +15,65 @@ open FsStore.Bindings
 #nowarn "40"
 
 
-module Selectors =
-    let rec deviceInfo = Store.readSelector ($"{nameof deviceInfo}", (fun _ -> Dom.deviceInfo))
+module SignalR =
+    open Fable.SignalR
 
-    let rec log =
-        Store.readSelector (
-            $"{nameof log}",
+    let connect hubUrl =
+        SignalR.connect<Sync.Request, Sync.Request, obj, Sync.Response, Sync.Response>
+            (fun hub ->
+                hub
+                    .withUrl($"{hubUrl}{Sync.endpoint}")
+                    //                                        .useMessagePack()
+                    .withAutomaticReconnect(
+                        {
+                            nextRetryDelayInMilliseconds =
+                                fun _context ->
+                                    Dom.log (fun () -> "SignalR.connect(). withAutomaticReconnect")
+                                    Some 1000
+                        }
+                    )
+                    .onReconnecting(fun ex -> Dom.log (fun () -> $"SignalR.connect(). onReconnecting ex={ex}"))
+                    .onReconnected(fun ex -> Dom.log (fun () -> $"SignalR.connect(). onReconnected ex={ex}"))
+                    .onClose(fun ex -> Dom.log (fun () -> $"SignalR.connect(). onClose ex={ex}"))
+                    .configureLogging(LogLevel.Debug)
+                    .onMessage (
+                        function
+                        | Sync.Response.ConnectResult -> Dom.log (fun () -> "Sync.Response.ConnectResult")
+                        | Sync.Response.GetResult value -> Dom.log (fun () -> $"Sync.Response.GetResult value={value}")
+                        | Sync.Response.SetResult result ->
+                            Dom.log (fun () -> $"Sync.Response.SetResult result={result}")
+                        | Sync.Response.FilterResult keys ->
+                            Dom.log (fun () -> $"Sync.Response.FilterResult keys={keys}")
+                    ))
+
+module Selectors =
+    let rec deviceInfo = Store.readSelector $"{nameof deviceInfo}" (fun _ -> Dom.deviceInfo)
+
+    let rec logger =
+        Store.readSelector
+            $"{nameof logger}"
             (fun getter ->
                 let logLevel = Store.value getter Atoms.logLevel
-
-                let log logLevel' (fn: unit -> string) =
-                    if logLevel <= logLevel' then
-                        let result = fn ()
-
-                        if result |> Option.ofObjUnbox |> Option.isSome then
-                            printfn $"[{logLevel}] {result}"
-
-                {|
-                    trace = log Model.LogLevel.Trace
-                    debug = log Model.LogLevel.Debug
-                    info = log Model.LogLevel.Information
-                    warning = log Model.LogLevel.Warning
-                    error = log Model.LogLevel.Error
-                |})
-        )
+                Logger.Create logLevel)
 
     let rec hub =
-        Store.readSelector (
-            $"{nameof hub}",
+        Store.readSelector
+            $"{nameof hub}"
             (fun getter ->
                 let _hubTrigger = Store.value getter Atoms.hubTrigger
                 let hubUrl = Store.value getter Atoms.hubUrl
 
                 match hubUrl with
                 | Some (String.ValidString hubUrl) ->
-                    let hub =
-                        SignalR.connect<Sync.Request, Sync.Request, obj, Sync.Response, Sync.Response>
-                            (fun hub ->
-                                hub
-                                    .withUrl($"{hubUrl}{Sync.endpoint}")
-                                    //                                        .useMessagePack()
-                                    .withAutomaticReconnect(
-                                        {
-                                            nextRetryDelayInMilliseconds =
-                                                fun _context ->
-                                                    Dom.log (fun () -> "SignalR.connect(). withAutomaticReconnect")
-                                                    Some 1000
-                                        }
-                                    )
-                                    .onReconnecting(fun ex ->
-                                        Dom.log (fun () -> $"SignalR.connect(). onReconnecting ex={ex}"))
-                                    .onReconnected(fun ex ->
-                                        Dom.log (fun () -> $"SignalR.connect(). onReconnected ex={ex}"))
-                                    .onClose(fun ex -> Dom.log (fun () -> $"SignalR.connect(). onClose ex={ex}"))
-                                    .configureLogging(LogLevel.Debug)
-                                    .onMessage (
-                                        function
-                                        | Sync.Response.ConnectResult ->
-                                            Dom.log (fun () -> "Sync.Response.ConnectResult")
-                                        | Sync.Response.GetResult value ->
-                                            Dom.log (fun () -> $"Sync.Response.GetResult value={value}")
-                                        | Sync.Response.SetResult result ->
-                                            Dom.log (fun () -> $"Sync.Response.SetResult result={result}")
-                                        | Sync.Response.FilterResult keys ->
-                                            Dom.log (fun () -> $"Sync.Response.FilterResult keys={keys}")
-                                    ))
-
+                    let hub = SignalR.connect hubUrl
                     hub.startNow ()
                     Some hub
                 | _ -> None)
-        )
+
 
     let rec gun =
-        Store.readSelectorFamily (
-            $"{nameof gun}",
+        Store.readSelectorFamily
+            $"{nameof gun}"
             (fun gunPeers getter ->
                 let isTesting = Store.value getter Atoms.isTesting
 
@@ -117,12 +102,12 @@ module Selectors =
                 printfn $"Gun selector. peers={peers}. gun={gun} returning..."
 
                 gun)
-        )
+
 
     let rec gunNamespace =
-        Store.readSelector (
-            $"{nameof gunNamespace}",
-            fun getter ->
+        Store.readSelector
+            $"{nameof gunNamespace}"
+            (fun getter ->
                 let gunPeers = Store.value getter Atoms.gunPeers
                 let _gunTrigger = Store.value getter Atoms.gunTrigger
                 let gun = Store.value getter (gun (gunPeers |> Option.defaultValue [||]))
@@ -137,12 +122,11 @@ module Selectors =
                                       )}
                         keys={user.__.sea}..."
 
-                user
-        )
+                user)
 
     let rec gunAtomNode =
-        Store.readSelectorFamily (
-            $"{nameof gunAtomNode}",
+        Store.readSelectorFamily
+            $"{nameof gunAtomNode}"
             (fun (username, AtomPath atomPath) getter ->
                 let gunNamespace = Store.value getter gunNamespace
 
@@ -168,4 +152,48 @@ module Selectors =
                                       user.is={JS.JSON.stringify gunNamespace.is}")
 
                     None)
-        )
+
+    let rec atomAccessors =
+        let mutable lastValue = 0
+        let valueAtom = jotai.atom lastValue
+        let accessorsAtom = jotai.atom (None: (GetFn * SetFn) option)
+
+        let getBaseInfo () =
+            $"
+| atomAccessors baseInfo:
+lastValue={lastValue}
+"
+
+        printfn $"atomAccessors.constructor {getBaseInfo ()}"
+
+        let rec valueWrapper =
+            Store.selector
+                $"{nameof valueWrapper}"
+                None
+                (fun getter ->
+                    let result = Store.value getter valueAtom
+                    printfn $"atomAccessors.valueWrapper.get() result={result} {getBaseInfo ()}"
+                    result)
+                (fun getter setter newValue ->
+                    printfn $"atomAccessors.valueWrapper.set() newValue={newValue} {getBaseInfo ()}"
+                    Store.set setter accessorsAtom (Some (getter, setter))
+                    Store.set setter valueAtom newValue)
+
+        valueWrapper.onMount <-
+            fun setAtom ->
+                printfn $"atomAccessors.valueWrapper.onMount() lastValue={lastValue} {getBaseInfo ()}"
+                lastValue <- lastValue + 1
+                setAtom lastValue
+
+                fun () ->
+                    printfn $"atomAccessors.valueWrapper.onUnmount() lastValue={lastValue} {getBaseInfo ()}"
+                    ()
+
+        Store.readSelector
+            $"{nameof atomAccessors}"
+            (fun getter ->
+                let value = Store.value getter valueWrapper
+                let accessors = Store.value getter accessorsAtom
+                printfn $"atomAccessors.selfWrapper.get() value={value} accessors={accessors.IsSome} {getBaseInfo ()}"
+                accessors)
+

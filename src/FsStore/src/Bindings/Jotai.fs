@@ -10,7 +10,7 @@ open FsJs
 module Jotai =
     type Atom<'TValue> =
         abstract member toString : unit -> string
-        abstract member onMount : ((int -> int) -> unit) -> unit -> unit
+        abstract member onMount : (('TValue -> unit) -> unit -> unit) with get, set
 
     let private atomPathMap = Dictionary<string, string> ()
     let private atomIdMap = Dictionary<string, string> ()

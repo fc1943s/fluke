@@ -1,8 +1,8 @@
 namespace Fluke.UI.Frontend.Components
 
+open FsJs
 open Fable.React
 open Feliz
-open Fable.DateFunctions
 open Fluke.Shared.Domain
 open Fluke.UI.Frontend.State
 open FsStore
@@ -73,8 +73,9 @@ module BulletJournalView =
                                                                         else
                                                                             "")
                                                                 [
-                                                                    (referenceDay |> FlukeDate.DateTime)
-                                                                        .Format "EEEE, dd MMM yyyy"
+                                                                    referenceDay
+                                                                    |> FlukeDate.DateTime
+                                                                    |> DateTime.format "EEEE, dd MMM yyyy"
                                                                     |> String.toLower
                                                                     |> str
                                                                 ]

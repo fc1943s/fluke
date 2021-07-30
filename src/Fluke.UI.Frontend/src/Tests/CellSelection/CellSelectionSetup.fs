@@ -7,6 +7,7 @@ open FsCore.Model
 open FsJs
 open FsStore
 open FsStore.Bindings
+open FsStore.Model
 open FsUi.Bindings
 open Fluke.UI.Frontend
 open Fluke.Shared.Domain
@@ -25,7 +26,7 @@ open State
 module CellSelectionSetup =
     let maxTimeout = 5 * 60 * 1000
 
-    let inline getCellMap (subject: Bindings.render<_, _>) (getFn: Store.GetFn) =
+    let inline getCellMap (subject: Bindings.render<_, _>) (getFn: GetFn) =
         let dateIdArray = Store.value getFn Selectors.Selectors.dateIdArray
         let sortedTaskIdArray = Store.value getFn Selectors.Session.sortedTaskIdArray
 
@@ -53,7 +54,7 @@ module CellSelectionSetup =
 
         cellMap
 
-    let inline expectSelection (getFn: Store.GetFn) expected =
+    let inline expectSelection (getFn: GetFn) expected =
         let toString map =
             map
             |> Map.toList
@@ -106,7 +107,7 @@ module CellSelectionSetup =
                     (fun ((taskId, TaskName taskName'), _) _ -> if taskName = taskName' then Some taskId else None)
         }
 
-    let inline initialSetter (getter: Store.GetFn) (setter: Store.SetFn) =
+    let inline initialSetter (getter: GetFn) (setter: SetFn) =
         promise {
             let dslTemplate =
                 {
@@ -154,7 +155,7 @@ module CellSelectionSetup =
             let databaseState =
                 Templates.databaseStateFromDslTemplate Templates.templatesUser databaseId databaseName dslTemplate
 
-            do! Hydrate.hydrateDatabase getter setter (Store.AtomScope.Current, databaseState.Database)
+            do! Hydrate.hydrateDatabase getter setter (AtomScope.Current, databaseState.Database)
 
             do!
                 databaseState.TaskStateMap
@@ -165,9 +166,9 @@ module CellSelectionSetup =
                                 Hydrate.hydrateTaskState
                                     getter
                                     setter
-                                    (Store.AtomScope.Current, databaseState.Database.Id, taskState)
+                                    (AtomScope.Current, databaseState.Database.Id, taskState)
                         })
-                |> Promise.Parallel
+                |> Promise.all
                 |> Promise.ignore
 
             Store.set setter Atoms.User.selectedDatabaseIdSet (Set.singleton databaseId)

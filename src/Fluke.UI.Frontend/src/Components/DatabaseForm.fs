@@ -9,8 +9,8 @@ open Fluke.UI.Frontend
 open Fluke.Shared
 open FsStore
 open FsStore.Bindings
+open FsStore.Model
 open FsUi.Bindings
-open Fable.DateFunctions
 open Fable.Core
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State.State
@@ -79,10 +79,7 @@ module DatabaseForm =
                         (UI.stack
                             (fun x -> x.spacing <- "15px")
                             [
-                                if logLevel <= Model.LogLevel.Debug then
-                                    UI.str $"{databaseId}"
-                                else
-                                    nothing
+                                if logLevel <= LogLevel.Debug then UI.str $"{databaseId}" else nothing
 
                                 Input.Input
                                     {|
@@ -90,12 +87,10 @@ module DatabaseForm =
                                             fun x ->
                                                 x.atom <-
                                                     Some (
-                                                        Store.InputAtom (
-                                                            Store.AtomReference.Atom (Atoms.Database.name databaseId)
-                                                        )
+                                                        InputAtom (AtomReference.Atom (Atoms.Database.name databaseId))
                                                     )
 
-                                                x.inputScope <- Some (Store.InputScope.Temp Gun.defaultSerializer)
+                                                x.inputScope <- Some (InputScope.Temp Gun.defaultSerializer)
                                                 x.onFormat <- Some (fun (DatabaseName name) -> name)
                                                 x.onValidate <- Some (fst >> DatabaseName >> Some)
                                                 x.onEnterPress <- Some onSave
@@ -105,7 +100,7 @@ module DatabaseForm =
                                                 x.label <- str "Name"
 
                                                 x.placeholder <-
-                                                    $"""new-database-%s{DateTime.Now.Format "yyyy-MM-dd"}"""
+                                                    $"""new-database-%s{DateTime.Now |> DateTime.format "yyyy-MM-dd"}"""
                                     |}
 
                                 UI.stack
@@ -149,6 +144,6 @@ module DatabaseForm =
             databaseId
             (fun database ->
                 promise {
-                    do! hydrateDatabase (Store.AtomScope.Current, database)
+                    do! hydrateDatabase (AtomScope.Current, database)
                     setRightDock None
                 })

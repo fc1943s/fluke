@@ -4,6 +4,7 @@ open Feliz
 open Fable.React
 open FsJs
 open FsStore
+open FsStore.Model
 open FsUi.Bindings
 
 
@@ -34,12 +35,12 @@ module MenuItemToggle =
             ]
 
     [<ReactComponent>]
-    let MenuItemToggleAtom (atom: Store.Atom<bool>) label =
+    let MenuItemToggleAtom (atom: Atom<bool>) label =
         let value, setValue = Store.useState atom
         MenuItemToggle (atom.ToString ()) value setValue label
 
     [<ReactComponent>]
-    let MenuItemToggleAtomOption (atom: Store.Atom<bool option>) label =
+    let MenuItemToggleAtomOption (atom: Atom<bool option>) label =
         let value, setValue = Store.useState atom
 
         MenuItemToggle (atom.ToString ()) (value |> Option.defaultValue false) (Some >> setValue) label

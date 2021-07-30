@@ -1,5 +1,6 @@
 namespace FsJs
 
+open System
 open Browser.Types
 open Fable.Extras
 open FsCore
@@ -121,7 +122,7 @@ module Dom =
             let result = fn ()
 
             if result |> Option.ofObjUnbox |> Option.isSome then
-                printfn $"[log] {result}"
+                printfn $"""[{DateTime.Now |> DateTime.format "HH:mm:ss"}] {result}"""
 
     let inline logFiltered newValue fn =
         log (fun () -> if (string newValue).StartsWith "Ping " then null else fn ())

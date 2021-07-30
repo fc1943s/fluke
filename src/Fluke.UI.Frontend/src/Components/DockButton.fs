@@ -4,7 +4,9 @@ open Fable.React
 open Feliz
 open Fable.Core
 open Fluke.UI.Frontend
-open Fluke.UI.Frontend.Bindings; open FsStore; open FsUi.Bindings
+open FsStore
+open FsStore.Model
+open FsUi.Bindings
 
 
 module DockButton =
@@ -13,7 +15,7 @@ module DockButton =
     let DockButton
         (input: {| Name: string
                    Icon: obj
-                   Atom: Store.Atom<TempUI.DockType option>
+                   Atom: Atom<TempUI.DockType option>
                    OnClick: TempUI.DockType option -> JS.Promise<unit>
                    DockType: TempUI.DockType
                    Props: UI.IChakraProps -> unit |})

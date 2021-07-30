@@ -1,6 +1,7 @@
 namespace Fluke.UI.Frontend.Components
 
 open FsCore.Model
+open FsStore.Model
 open FsUi.State
 open Browser.Types
 open Fable.React
@@ -22,8 +23,8 @@ module Settings =
     let GunPeersInput () =
         let tempGunPeers =
             Store.useTempAtom
-                (Some (Store.InputAtom (Store.AtomReference.Atom Atoms.gunPeers)))
-                (Some (Store.InputScope.Temp Gun.defaultSerializer))
+                (Some (InputAtom (AtomReference.Atom Atoms.gunPeers)))
+                (Some (InputScope.Temp Gun.defaultSerializer))
 
         UI.box
             (fun x -> x.display <- "inline")
@@ -102,8 +103,8 @@ module Settings =
     let HubUrlInput () =
         let tempHubUrl =
             Store.useTempAtom
-                (Some (Store.InputAtom (Store.AtomReference.Atom Atoms.hubUrl)))
-                (Some (Store.InputScope.Temp Gun.defaultSerializer))
+                (Some (InputAtom (AtomReference.Atom Atoms.hubUrl)))
+                (Some (InputScope.Temp Gun.defaultSerializer))
 
         UI.box
             (fun x -> x.display <- "inline")
@@ -189,7 +190,7 @@ module Settings =
                                             fun x ->
                                                 x.atom <-
                                                     Some (
-                                                        Store.InputAtom (Store.AtomReference.Atom Atoms.User.dayStart)
+                                                        InputAtom (AtomReference.Atom Atoms.User.dayStart)
                                                     )
 
                                                 x.inputFormat <- Some Input.InputFormat.Time
@@ -218,8 +219,8 @@ module Settings =
                                             fun x ->
                                                 x.atom <-
                                                     Some (
-                                                        Store.InputAtom (
-                                                            Store.AtomReference.Atom Atoms.User.sessionDuration
+                                                        InputAtom (
+                                                            AtomReference.Atom Atoms.User.sessionDuration
                                                         )
                                                     )
 
@@ -243,8 +244,8 @@ module Settings =
                                             fun x ->
                                                 x.atom <-
                                                     Some (
-                                                        Store.InputAtom (
-                                                            Store.AtomReference.Atom Atoms.User.sessionBreakDuration
+                                                        InputAtom (
+                                                            AtomReference.Atom Atoms.User.sessionBreakDuration
                                                         )
                                                     )
 
@@ -287,7 +288,7 @@ module Settings =
                                             fun x ->
                                                 x.atom <-
                                                     Some (
-                                                        Store.InputAtom (Store.AtomReference.Atom Atoms.User.daysBefore)
+                                                        InputAtom (AtomReference.Atom Atoms.User.daysBefore)
                                                     )
 
                                                 x.inputFormat <- Some Input.InputFormat.Number
@@ -300,7 +301,7 @@ module Settings =
                                             fun x ->
                                                 x.atom <-
                                                     Some (
-                                                        Store.InputAtom (Store.AtomReference.Atom Atoms.User.daysAfter)
+                                                        InputAtom (AtomReference.Atom Atoms.User.daysAfter)
                                                     )
 
                                                 x.inputFormat <- Some Input.InputFormat.Number
@@ -313,7 +314,7 @@ module Settings =
                                             fun x ->
                                                 x.atom <-
                                                     Some (
-                                                        Store.InputAtom (Store.AtomReference.Atom Atoms.User.cellSize)
+                                                        InputAtom (AtomReference.Atom Atoms.User.cellSize)
                                                     )
 
                                                 x.inputFormat <- Some Input.InputFormat.Number
@@ -325,13 +326,13 @@ module Settings =
                                         CustomProps =
                                             fun x ->
                                                 x.atom <-
-                                                    Some (Store.InputAtom (Store.AtomReference.Atom Atoms.Ui.fontSize))
+                                                    Some (InputAtom (AtomReference.Atom Atoms.Ui.fontSize))
 
                                                 x.inputFormat <- Some Input.InputFormat.Number
                                         Props = fun x -> x.label <- str "Font Size"
                                     |}
 
-                                Dropdown.EnumDropdown<Model.LogLevel>
+                                Dropdown.EnumDropdown<LogLevel>
                                     logLevel
                                     setLogLevel
                                     (fun x -> x.label <- str "Log Level")

@@ -20,10 +20,9 @@ open FsStore.Bindings
 
 
 module rec Session =
-
     let rec devicePingList =
-        Store.readSelector (
-            $"{nameof Session}/{nameof devicePingList}",
+        Store.readSelector
+            $"{nameof Session}/{nameof devicePingList}"
             (fun getter ->
                 let deviceIdArray =
                     Selectors.asyncDeviceIdAtoms
@@ -40,11 +39,11 @@ module rec Session =
                 deviceIdArray
                 |> Array.toList
                 |> List.mapi (fun i deviceId -> deviceId, pingArray.[i]))
-        )
+
 
     let rec databaseIdAtoms =
-        Store.readSelector (
-            $"{nameof Session}/{nameof databaseIdAtoms}",
+        Store.readSelector
+            $"{nameof Session}/{nameof databaseIdAtoms}"
             (fun getter ->
                 let asyncDatabaseIdAtoms = Store.value getter Selectors.asyncDatabaseIdAtoms
                 let hideTemplates = Store.value getter Atoms.User.hideTemplates
@@ -72,11 +71,11 @@ module rec Session =
 
                             nodeType <> DatabaseNodeType.Template
                             || hideTemplates = Some false))
-        )
+
 
     let rec selectedTaskIdAtoms =
-        Store.readSelector (
-            $"{nameof Session}/{nameof selectedTaskIdAtoms}",
+        Store.readSelector
+            $"{nameof Session}/{nameof selectedTaskIdAtoms}"
             (fun getter ->
                 let selectedDatabaseIdSet = Store.value getter Atoms.User.selectedDatabaseIdSet
 
@@ -86,11 +85,11 @@ module rec Session =
                 |> Store.waitForAll
                 |> Store.value getter
                 |> Array.collect id)
-        )
+
 
     let rec selectedTaskIdListByArchive =
-        Store.readSelector (
-            $"{nameof Session}/{nameof selectedTaskIdListByArchive}",
+        Store.readSelector
+            $"{nameof Session}/{nameof selectedTaskIdListByArchive}"
             (fun getter ->
                 let selectedDatabaseIdSet = Store.value getter Atoms.User.selectedDatabaseIdSet
 
@@ -103,11 +102,11 @@ module rec Session =
                 |> Store.waitForAll
                 |> Store.value getter
                 |> Array.toList)
-        )
+
 
     let rec informationSet =
-        Store.readSelector (
-            $"{nameof Session}/{nameof informationSet}",
+        Store.readSelector
+            $"{nameof Session}/{nameof informationSet}"
             (fun getter ->
                 let selectedDatabaseIdSet = Store.value getter Atoms.User.selectedDatabaseIdSet
 
@@ -155,11 +154,11 @@ module rec Session =
                         |> String.IsNullOrWhiteSpace
                         |> not)
                 |> Set.ofSeq)
-        )
+
 
     let rec activeSessions =
-        Store.readSelector (
-            $"{nameof Session}/{nameof activeSessions}",
+        Store.readSelector
+            $"{nameof Session}/{nameof activeSessions}"
             (fun getter ->
                 let selectedTaskIdArray =
                     Store.value getter selectedTaskIdListByArchive
@@ -186,11 +185,12 @@ module rec Session =
                         duration
                         |> Option.map
                             (fun duration -> TempUI.ActiveSession (TaskName.Value nameArray.[i], Minute duration))))
-        )
 
     let rec filteredTaskIdSet =
-        Store.readSelector (
-            $"{nameof Session}/{nameof filteredTaskIdSet}",
+        Store.readSelectorInterval
+            1000
+            Set.empty
+            $"{nameof Session}/{nameof filteredTaskIdSet}"
             (fun getter ->
                 let filter = Store.value getter Atoms.User.filter
 
@@ -260,19 +260,19 @@ module rec Session =
                         selectedTaskStateArray.Length={selectedTaskStateArray.Length}")
 
                 filteredTaskIdArray |> Set.ofSeq)
-        )
+
 
     let rec filteredTaskIdCount =
-        Store.readSelector (
-            $"{nameof Session}/{nameof filteredTaskIdCount}",
+        Store.readSelector
+            $"{nameof Session}/{nameof filteredTaskIdCount}"
             (fun getter ->
                 let filteredTaskIdSet = Store.value getter filteredTaskIdSet
                 filteredTaskIdSet.Count)
-        )
+
 
     let rec sortedTaskIdArray =
-        Store.readSelector (
-            $"{nameof Session}/{nameof sortedTaskIdArray}",
+        Store.readSelector
+            $"{nameof Session}/{nameof sortedTaskIdArray}"
             (fun getter ->
                 let position = Store.value getter Atoms.Session.position
 
@@ -321,28 +321,28 @@ module rec Session =
                     |> List.map (fun (taskState, _) -> taskState.Task.Id)
                     |> List.toArray
                 | _ -> [||])
-        )
+
 
     let rec sortedTaskIdAtoms =
-        Store.readSelector (
-            $"{nameof Session}/{nameof sortedTaskIdAtoms}",
+        Store.readSelector
+            $"{nameof Session}/{nameof sortedTaskIdAtoms}"
             (fun getter ->
                 sortedTaskIdArray
                 |> Jotai.jotaiUtils.splitAtom
                 |> Store.value getter)
-        )
+
 
     let rec sortedTaskIdCount =
-        Store.readSelector (
-            $"{nameof Session}/{nameof sortedTaskIdCount}",
+        Store.readSelector
+            $"{nameof Session}/{nameof sortedTaskIdCount}"
             (fun getter ->
                 let sortedTaskIdAtoms = Store.value getter sortedTaskIdAtoms
                 sortedTaskIdAtoms.Length)
-        )
+
 
     let rec informationTaskIdArray =
-        Store.readSelector (
-            $"{nameof Session}/{nameof informationTaskIdArray}",
+        Store.readSelector
+            $"{nameof Session}/{nameof informationTaskIdArray}"
             (fun getter ->
                 let sortedTaskIdAtoms = Store.value getter sortedTaskIdAtoms
 
@@ -379,20 +379,20 @@ module rec Session =
                     >> Option.ofObjUnbox
                     >> Option.map Information.toTag
                 ))
-        )
+
 
     let rec informationTaskIdAtoms =
-        Store.readSelector (
-            $"{nameof Session}/{nameof informationTaskIdAtoms}",
+        Store.readSelector
+            $"{nameof Session}/{nameof informationTaskIdAtoms}"
             (fun getter ->
                 informationTaskIdArray
                 |> Jotai.jotaiUtils.splitAtom
                 |> Store.value getter)
-        )
+
 
     let rec informationTaskIdArrayByKind =
-        Store.readSelector (
-            $"{nameof Session}/{nameof informationTaskIdArrayByKind}",
+        Store.readSelector
+            $"{nameof Session}/{nameof informationTaskIdArrayByKind}"
             (fun getter ->
                 let informationTaskIdAtoms = Store.value getter Session.informationTaskIdAtoms
                 //                         let informationTaskIdArray = Store.value getter Selectors.Session.informationTaskIdArray
@@ -409,20 +409,20 @@ module rec Session =
                         informationKindName,
                         groups
                         |> Array.map (fun (i, _) -> informationTaskIdAtoms.[i])))
-        )
+
 
     let rec informationTaskIdAtomsByKind =
-        Store.readSelector (
-            $"{nameof Session}/{nameof informationTaskIdAtomsByKind}",
+        Store.readSelector
+            $"{nameof Session}/{nameof informationTaskIdAtomsByKind}"
             (fun getter ->
                 informationTaskIdArrayByKind
                 |> Jotai.jotaiUtils.splitAtom
                 |> Store.value getter)
-        )
+
 
     let rec taskSelectedDateIdMap =
-        Store.readSelector (
-            $"{nameof Session}/{nameof taskSelectedDateIdMap}",
+        Store.readSelector
+            $"{nameof Session}/{nameof taskSelectedDateIdMap}"
             (fun getter ->
                 let sortedTaskIdArray = Store.value getter sortedTaskIdArray
 
@@ -432,12 +432,12 @@ module rec Session =
                 |> Store.value getter
                 |> Array.mapi (fun i dates -> sortedTaskIdArray.[i], dates)
                 |> Map.ofArray)
-        )
+
 
     let rec visibleTaskSelectedDateIdMap =
-        Store.selector (
-            $"{nameof Session}/{nameof visibleTaskSelectedDateIdMap}",
-            None,
+        Store.selector
+            $"{nameof Session}/{nameof visibleTaskSelectedDateIdMap}"
+            None
             (fun getter ->
                 let taskSelectedDateIdMap = Store.value getter taskSelectedDateIdMap
                 let dateIdArray = Store.value getter Selectors.dateIdArray
@@ -455,7 +455,7 @@ module rec Session =
 
                         taskId, dates)
                 |> Seq.filter (fun (_, dates) -> Set.isEmpty dates |> not)
-                |> Map.ofSeq),
+                |> Map.ofSeq)
             (fun getter setter newValue ->
                 let sortedTaskIdArray = Store.value getter sortedTaskIdArray
                 let visibleTaskSelectedDateIdMap = Store.value getter visibleTaskSelectedDateIdMap
@@ -495,4 +495,3 @@ module rec Session =
                             setter
                             (Atoms.Task.selectionSet taskId)
                             ((if newValue then Set.add else Set.remove) dateId)))
-        )

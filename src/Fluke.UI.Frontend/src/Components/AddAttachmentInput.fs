@@ -6,6 +6,7 @@ open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Components
 open FsStore
 open FsStore.Bindings
+open FsStore.Model
 open FsUi.Bindings
 open Fluke.Shared
 open Fluke.UI.Frontend.Hooks
@@ -31,10 +32,8 @@ module AddAttachmentInput =
 
         let tempAttachment =
             Store.useTempAtom
-                (Some (
-                    Store.InputAtom (Store.AtomReference.Atom (Atoms.Attachment.attachment (AttachmentId Guid.Empty)))
-                ))
-                (Some (Store.InputScope.Temp Gun.defaultSerializer))
+                (Some (InputAtom (AtomReference.Atom (Atoms.Attachment.attachment (AttachmentId Guid.Empty)))))
+                (Some (InputScope.Temp Gun.defaultSerializer))
 
         let clipboardVisible, setClipboardVisible = Store.useState Atoms.User.clipboardVisible
         let clipboardAttachmentIdMap = Store.useValue Atoms.User.clipboardAttachmentIdMap
@@ -50,7 +49,7 @@ module AddAttachmentInput =
                                 Hydrate.hydrateAttachmentState
                                     getter
                                     setter
-                                    (Store.AtomScope.Current,
+                                    (AtomScope.Current,
                                      {
                                          Timestamp = DateTime.Now |> FlukeDateTime.FromDateTime
                                          Archived =
@@ -86,14 +85,14 @@ module AddAttachmentInput =
 
                                                 x.atom <-
                                                     Some (
-                                                        Store.InputAtom (
-                                                            Store.AtomReference.Atom (
+                                                        InputAtom (
+                                                            AtomReference.Atom (
                                                                 Atoms.Attachment.attachment (AttachmentId Guid.Empty)
                                                             )
                                                         )
                                                     )
 
-                                                x.inputScope <- Some (Store.InputScope.Temp Gun.defaultSerializer)
+                                                x.inputScope <- Some (InputScope.Temp Gun.defaultSerializer)
                                                 x.autoFocusOnAllMounts <- true
                                                 x.variableHeight <- true
 

@@ -4,6 +4,7 @@ open Fable.React
 open Feliz
 open Fluke.UI.Frontend
 open FsStore
+open FsStore.Model
 open FsUi.Bindings
 open FsUi.Components
 
@@ -18,7 +19,7 @@ module DockPanel =
     let DockPanel
         (input: {| Name: string
                    Icon: obj
-                   Atom: Store.Atom<TempUI.DockType option>
+                   Atom: Atom<TempUI.DockType option>
                    RightIcons: DockPanelIcon list
                    children: seq<ReactElement> |})
         =

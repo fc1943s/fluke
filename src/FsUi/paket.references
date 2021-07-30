@@ -1,6 +1,6 @@
 FSharp.Core
 
-Feliz.Router
-
 Fable.Jester
 Fable.ReactTestingLibrary
+
+Feliz.Router

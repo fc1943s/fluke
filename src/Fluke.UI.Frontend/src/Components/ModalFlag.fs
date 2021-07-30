@@ -4,6 +4,7 @@ open FsJs
 open Feliz
 open Fable.Core
 open FsStore
+open FsStore.Model
 open FsUi.Bindings
 open Fluke.UI.Frontend.State
 open Fable.React
@@ -15,7 +16,7 @@ module ModalFlag =
     [<ReactComponent>]
     let ModalFlag
         (input: {| UIFlagType: UIFlagType
-                   Content: UIFlag * (unit -> JS.Promise<unit>) -> Store.GetFn * Store.SetFn -> ReactElement |})
+                   Content: UIFlag * (unit -> JS.Promise<unit>) -> GetFn * SetFn -> ReactElement |})
         =
         let uiFlag, setUIFlag = Store.useState (Atoms.User.uiFlag input.UIFlagType)
         let uiVisibleFlag, setUIVisibleFlag = Store.useState (Atoms.User.uiVisibleFlag input.UIFlagType)
@@ -73,8 +74,8 @@ module ModalFlag =
     let ModalFlagBundle
         (input: {| UIFlagType: UIFlagType
                    UIFlagValue: UIFlag
-                   Trigger: (unit -> JS.Promise<unit>) -> Store.GetFn * Store.SetFn -> ReactElement
-                   Content: (unit -> JS.Promise<unit>) -> Store.GetFn * Store.SetFn -> ReactElement |})
+                   Trigger: (unit -> JS.Promise<unit>) -> GetFn * SetFn -> ReactElement
+                   Content: (unit -> JS.Promise<unit>) -> GetFn * SetFn -> ReactElement |})
         =
         React.fragment [
             ModalFlagTrigger.ModalFlagTrigger

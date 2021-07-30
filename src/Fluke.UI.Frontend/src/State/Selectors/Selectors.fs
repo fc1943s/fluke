@@ -15,8 +15,8 @@ open Fluke.UI.Frontend.State.State
 
 module rec Selectors =
     let rec dateIdArray =
-        Store.readSelector (
-            $"{nameof dateIdArray}",
+        Store.readSelector
+            $"{nameof dateIdArray}"
             (fun getter ->
                 let position = Store.value getter Atoms.Session.position
 
@@ -34,20 +34,20 @@ module rec Selectors =
                     |> List.map DateId
                     |> List.toArray
                 | _ -> [||])
-        )
+
 
     let rec dateIdAtoms =
-        Store.readSelector (
-            $"{nameof dateIdAtoms}",
+        Store.readSelector
+            $"{nameof dateIdAtoms}"
             (fun getter ->
                 dateIdArray
                 |> Jotai.jotaiUtils.splitAtom
                 |> Store.value getter)
-        )
+
 
     let rec dateIdAtomsByMonth =
-        Store.readSelector (
-            $"{nameof dateIdAtomsByMonth}",
+        Store.readSelector
+            $"{nameof dateIdAtomsByMonth}"
             (fun getter ->
                 let dateIdArray = Store.value getter dateIdArray
                 let dateIdAtoms = Store.value getter dateIdAtoms
@@ -60,28 +60,17 @@ module rec Selectors =
                         |> DateId.Value
                         |> Option.map (fun date -> date.Month))
                 |> Array.map (fun (_, dates) -> dates |> Array.map (fun (i, _) -> dateIdAtoms.[i])))
-        )
+
 
     let rec asyncDatabaseIdAtoms =
-        Store.selectAtomSyncKeys (
-            $"{nameof asyncDatabaseIdAtoms}",
-            Atoms.Database.name,
-            Database.Default.Id,
+        Store.selectAtomSyncKeys
+            $"{nameof asyncDatabaseIdAtoms}"
+            Atoms.Database.name
+            Database.Default.Id
             (Guid >> DatabaseId)
-        )
 
     let rec asyncTaskIdAtoms =
-        Store.selectAtomSyncKeys (
-            $"{nameof asyncTaskIdAtoms}",
-            Atoms.Task.databaseId,
-            Task.Default.Id,
-            (Guid >> TaskId)
-        )
+        Store.selectAtomSyncKeys $"{nameof asyncTaskIdAtoms}" Atoms.Task.databaseId Task.Default.Id (Guid >> TaskId)
 
     let rec asyncDeviceIdAtoms =
-        Store.selectAtomSyncKeys (
-            $"{nameof asyncDeviceIdAtoms}",
-            Atoms.Device.devicePing,
-            deviceId,
-            (Guid >> DeviceId)
-        )
+        Store.selectAtomSyncKeys $"{nameof asyncDeviceIdAtoms}" Atoms.Device.devicePing deviceId (Guid >> DeviceId)

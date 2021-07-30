@@ -1,7 +1,7 @@
 namespace Fluke.UI.Frontend.State.Selectors
 
+open FsJs
 open System
-open Fable.DateFunctions
 open Fluke.Shared
 open Fluke.UI.Frontend.State
 open Fluke.Shared.Domain.UserInteraction
@@ -12,8 +12,8 @@ open FsStore.Bindings
 
 module rec BulletJournalView =
     let rec weekCellsMap =
-        Store.readSelector (
-            $"{nameof BulletJournalView}/{nameof weekCellsMap}",
+        Store.readSelector
+            $"{nameof BulletJournalView}/{nameof weekCellsMap}"
             (fun getter ->
                 let position = Store.value getter Atoms.Session.position
                 let sortedTaskIdAtoms = Store.value getter Session.sortedTaskIdAtoms
@@ -55,19 +55,20 @@ module rec BulletJournalView =
                                         if date.DayOfWeek = weekStart then
                                             date
                                         else
-                                            getWeekStart (date.AddDays -1)
+                                            date |> DateTime.addDays -1 |> getWeekStart
 
                                     let startDate =
                                         dateId dayStart position
                                         |> fun (DateId referenceDay) ->
-                                            (referenceDay |> FlukeDate.DateTime)
-                                                .AddDays (7 * weekOffset)
+                                            referenceDay
+                                            |> FlukeDate.DateTime
+                                            |> DateTime.addDays (7 * weekOffset)
                                         |> getWeekStart
 
                                     [
                                         0 .. 6
                                     ]
-                                    |> List.map startDate.AddDays
+                                    |> List.map (fun days -> startDate |> DateTime.addDays days)
                                     |> List.map FlukeDateTime.FromDateTime
                                     |> List.map (dateId dayStart)
 
@@ -147,4 +148,3 @@ module rec BulletJournalView =
 
                     weeks
                 | _ -> [])
-        )

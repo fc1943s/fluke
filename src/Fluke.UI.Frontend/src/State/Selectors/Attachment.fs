@@ -8,8 +8,8 @@ open FsStore
 
 module rec Attachment =
     let rec attachmentState =
-        Store.readSelectorFamily (
-            $"{nameof Attachment}/{nameof attachmentState}",
+        Store.readSelectorFamily
+            $"{nameof Attachment}/{nameof attachmentState}"
             (fun (attachmentId: AttachmentId) getter ->
                 let timestamp = Store.value getter (Atoms.Attachment.timestamp attachmentId)
                 let archived = Store.value getter (Atoms.Attachment.archived attachmentId)
@@ -24,4 +24,3 @@ module rec Attachment =
                             Attachment = attachment
                         }
                 | _ -> None)
-        )

@@ -1,5 +1,6 @@
 namespace FsUi.Components
 
+open FsStore.Model
 open FsUi.State
 open System
 open Browser.Types
@@ -29,8 +30,8 @@ module Input =
         abstract variableHeight : bool with get, set
         abstract autoFocusOnAllMounts : bool with get, set
         abstract hintTitle : ReactElement option with get, set
-        abstract atom : Store.InputAtom<'TValue> option with get, set
-        abstract inputScope : Store.InputScope<'TValue> option with get, set
+        abstract atom : InputAtom<'TValue> option with get, set
+        abstract inputScope : InputScope<'TValue> option with get, set
         abstract fixedValue : 'TValue option with get, set
         abstract onFormat : ('TValue -> string) option with get, set
         abstract onValidate : (string * 'TValue option -> 'TValue option) option with get, set

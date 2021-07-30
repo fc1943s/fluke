@@ -16,8 +16,8 @@ open FsStore
 
 module rec Database =
     let rec database =
-        Store.readSelectorFamily (
-            $"{nameof Database}/{nameof database}",
+        Store.readSelectorFamily
+            $"{nameof Database}/{nameof database}"
             (fun (databaseId: DatabaseId) getter ->
                 {
                     Id = databaseId
@@ -26,11 +26,11 @@ module rec Database =
                     SharedWith = Store.value getter (Atoms.Database.sharedWith databaseId)
                     Position = Store.value getter (Atoms.Database.position databaseId)
                 })
-        )
+
 
     let rec nodeType =
-        Store.readSelectorFamily (
-            $"{nameof Database}/{nameof nodeType}",
+        Store.readSelectorFamily
+            $"{nameof Database}/{nameof nodeType}"
             (fun (databaseId: DatabaseId) getter ->
                 let database = Store.value getter (database databaseId)
                 let username = Store.value getter Atoms.username
@@ -39,12 +39,12 @@ module rec Database =
                 | owner when owner = Templates.templatesUser.Username -> DatabaseNodeType.Template
                 | owner when Some owner = username -> DatabaseNodeType.Owned
                 | _ -> DatabaseNodeType.Shared)
-        )
+
 
 
     let rec isReadWrite =
-        Store.readSelectorFamily (
-            $"{nameof Database}/{nameof isReadWrite}",
+        Store.readSelectorFamily
+            $"{nameof Database}/{nameof isReadWrite}"
             (fun (databaseId: DatabaseId) getter ->
                 let username = Store.value getter Atoms.username
 
@@ -61,11 +61,11 @@ module rec Database =
                     | None -> None
 
                 access = Some Access.ReadWrite)
-        )
+
 
     let rec taskIdAtoms =
-        Store.readSelectorFamily (
-            $"{nameof Database}/{nameof taskIdAtoms}",
+        Store.readSelectorFamily
+            $"{nameof Database}/{nameof taskIdAtoms}"
             (fun (databaseId: DatabaseId) getter ->
                 Selectors.asyncTaskIdAtoms
                 |> Store.value getter
@@ -74,11 +74,11 @@ module rec Database =
                         let taskId = Store.value getter taskIdAtom
                         let databaseId' = Store.value getter (Atoms.Task.databaseId taskId)
                         databaseId = databaseId'))
-        )
+
 
     let rec unarchivedTaskIdAtoms =
-        Store.readSelectorFamily (
-            $"{nameof Database}/{nameof unarchivedTaskIdAtoms}",
+        Store.readSelectorFamily
+            $"{nameof Database}/{nameof unarchivedTaskIdAtoms}"
             (fun (databaseId: DatabaseId) getter ->
                 let taskIdAtoms = Store.value getter (taskIdAtoms databaseId)
 
@@ -88,11 +88,11 @@ module rec Database =
                         let taskId = Store.value getter taskIdAtom
                         let archived = Store.value getter (Atoms.Task.archived taskId)
                         archived = Some false))
-        )
+
 
     let rec archivedTaskIdAtoms =
-        Store.readSelectorFamily (
-            $"{nameof Database}/{nameof archivedTaskIdAtoms}",
+        Store.readSelectorFamily
+            $"{nameof Database}/{nameof archivedTaskIdAtoms}"
             (fun (databaseId: DatabaseId) getter ->
                 let taskIdAtoms = Store.value getter (taskIdAtoms databaseId)
 
@@ -102,11 +102,11 @@ module rec Database =
                         let taskId = Store.value getter taskIdAtom
                         let archived = Store.value getter (Atoms.Task.archived taskId)
                         archived = Some true))
-        )
+
 
     let rec taskIdAtomsByArchive =
-        Store.readSelectorFamily (
-            $"{nameof Database}/{nameof taskIdAtomsByArchive}",
+        Store.readSelectorFamily
+            $"{nameof Database}/{nameof taskIdAtomsByArchive}"
             (fun (databaseId: DatabaseId) getter ->
                 let archive = Store.value getter Atoms.User.archive
 
@@ -116,11 +116,11 @@ module rec Database =
                     else
                         Database.unarchivedTaskIdAtoms)
                 |> Store.value getter)
-        )
+
 
     let rec informationAttachmentIdMapByArchive =
-        Store.readSelectorFamily (
-            $"{nameof Database}/{nameof informationAttachmentIdMapByArchive}",
+        Store.readSelectorFamily
+            $"{nameof Database}/{nameof informationAttachmentIdMapByArchive}"
             (fun (databaseId: DatabaseId) getter ->
                 let archive = Store.value getter Atoms.User.archive
 
@@ -149,11 +149,11 @@ module rec Database =
                     (fun _ attachmentIdSet ->
                         attachmentIdSet
                         |> Set.filter (fun attachmentId -> archivedMap.[attachmentId] = archive)))
-        )
+
 
     let rec databaseState =
-        Store.readSelectorFamily (
-            $"{nameof Database}/{nameof databaseState}",
+        Store.readSelectorFamily
+            $"{nameof Database}/{nameof databaseState}"
             (fun (databaseId: DatabaseId) getter ->
                 let database = Store.value getter (Database.database databaseId)
 
@@ -268,4 +268,3 @@ module rec Database =
                         Error "Database is not fully synced"
                     else
                         Ok databaseState)
-        )

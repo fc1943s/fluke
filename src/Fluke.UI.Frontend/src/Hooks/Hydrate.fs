@@ -15,6 +15,7 @@ open Fable.Core
 open FsCore.Model
 open FsJs
 open FsStore
+open FsStore.Model
 open FsUi.Model
 open FsUi.State
 open FsUi.Bindings
@@ -120,7 +121,7 @@ module Hydrate =
         Store.scopedSet setter atomScope (Atoms.Attachment.attachment, attachmentId, Some attachmentState.Attachment)
         attachmentId
 
-    let inline hydrateFile _getter setter (atomScope: Store.AtomScope, hexString: string) =
+    let inline hydrateFile _getter setter (atomScope: AtomScope, hexString: string) =
         let chunkSize = 256
         let chunkCount = int (Math.Ceiling (float hexString.Length / float chunkSize))
 
@@ -262,7 +263,7 @@ module Hydrate =
                             }
 
                         hydrateTaskState getter setter (atomScope, databaseState.Database.Id, newTaskState))
-                |> Promise.Parallel
+                |> Promise.all
                 |> Promise.ignore
         }
 
@@ -273,9 +274,8 @@ module Hydrate =
             do!
                 databaseStateMap
                 |> Map.values
-                |> Seq.map
-                    (fun databaseState -> hydrateDatabaseState getter setter (Store.AtomScope.Current, databaseState))
-                |> Promise.Parallel
+                |> Seq.map (fun databaseState -> hydrateDatabaseState getter setter (AtomScope.Current, databaseState))
+                |> Promise.all
                 |> Promise.ignore
         }
 
@@ -471,7 +471,7 @@ module Hydrate =
                                                 hydrateDatabaseState
                                                     getter
                                                     setter
-                                                    (Store.AtomScope.Current,
+                                                    (AtomScope.Current,
                                                      { databaseState with
                                                          Database = database
                                                          TaskStateMap =
@@ -502,7 +502,7 @@ module Hydrate =
                                                      })
                                         //                                            Store.change setter Atoms.databaseIdSet (Set.add database.Id)
                                         })
-                                |> Promise.Parallel
+                                |> Promise.all
                                 |> Promise.ignore
 
                             toast

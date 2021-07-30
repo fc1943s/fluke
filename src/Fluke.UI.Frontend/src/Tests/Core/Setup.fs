@@ -1,12 +1,13 @@
 namespace Fluke.UI.Frontend.Tests.Core
 
 open Feliz
-open Fluke.UI.Frontend.Bindings; open FsStore; open FsUi.Bindings
+open FsStore
+open FsStore.Model
+open FsUi.Bindings
 open Fable.Jester
 open Fable.ReactTestingLibrary
 open Fable.Core.JsInterop
 open Fable.React
-open Fluke.UI.Frontend.Hooks
 open Microsoft.FSharp.Core.Operators
 
 
@@ -43,7 +44,7 @@ module Setup =
             //            let mutable peekFn : (CallbackMethods -> JS.Promise<unit>) -> JS.Promise<unit> =
 //                fun _ -> failwith "called empty callback"
 //
-            let mutable callbacksRef: Store.GetFn * Store.SetFn = unbox null
+            let mutable callbacksRef: GetFn * SetFn = unbox null
             //
 //            let cmpWrapper =
 //                React.memo

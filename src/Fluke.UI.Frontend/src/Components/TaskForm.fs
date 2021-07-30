@@ -1,9 +1,9 @@
 namespace Fluke.UI.Frontend.Components
 
+open FsJs
 open Browser.Types
 open FsStore
 open FsCore
-open Fable.DateFunctions
 open Fable.React
 open Feliz
 open Fluke.Shared.Domain
@@ -11,6 +11,7 @@ open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.State
 open Fluke.Shared.Domain.UserInteraction
 open FsStore.Bindings
+open FsStore.Model
 open FsUi.Bindings
 open System
 open Fable.Core
@@ -424,33 +425,33 @@ module TaskForm =
 
         let tempInformation =
             Store.useTempAtom
-                (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.information taskId))))
-                (Some (Store.InputScope.Temp Gun.defaultSerializer))
+                (Some (InputAtom (AtomReference.Atom (Atoms.Task.information taskId))))
+                (Some (InputScope.Temp Gun.defaultSerializer))
 
         let tempPriority =
             Store.useTempAtom
-                (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.priority taskId))))
-                (Some (Store.InputScope.Temp Gun.defaultSerializer))
+                (Some (InputAtom (AtomReference.Atom (Atoms.Task.priority taskId))))
+                (Some (InputScope.Temp Gun.defaultSerializer))
 
         let tempDuration =
             Store.useTempAtom
-                (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.duration taskId))))
-                (Some (Store.InputScope.Temp Gun.defaultSerializer))
+                (Some (InputAtom (AtomReference.Atom (Atoms.Task.duration taskId))))
+                (Some (InputScope.Temp Gun.defaultSerializer))
 
         let tempPendingAfter =
             Store.useTempAtom
-                (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.pendingAfter taskId))))
-                (Some (Store.InputScope.Temp Gun.defaultSerializer))
+                (Some (InputAtom (AtomReference.Atom (Atoms.Task.pendingAfter taskId))))
+                (Some (InputScope.Temp Gun.defaultSerializer))
 
         let tempMissedAfter =
             Store.useTempAtom
-                (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.missedAfter taskId))))
-                (Some (Store.InputScope.Temp Gun.defaultSerializer))
+                (Some (InputAtom (AtomReference.Atom (Atoms.Task.missedAfter taskId))))
+                (Some (InputScope.Temp Gun.defaultSerializer))
 
         let tempScheduling =
             Store.useTempAtom
-                (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.scheduling taskId))))
-                (Some (Store.InputScope.Temp Gun.defaultSerializer))
+                (Some (InputAtom (AtomReference.Atom (Atoms.Task.scheduling taskId))))
+                (Some (InputScope.Temp Gun.defaultSerializer))
 
 
         let onSave =
@@ -592,10 +593,7 @@ module TaskForm =
                         (UI.stack
                             (fun x -> x.spacing <- "15px")
                             [
-                                if logLevel <= Model.LogLevel.Debug then
-                                    UI.str $"{taskId}"
-                                else
-                                    nothing
+                                if logLevel <= LogLevel.Debug then UI.str $"{taskId}" else nothing
 
                                 DatabaseSelector.DatabaseSelector
                                     taskDatabaseId
@@ -613,14 +611,9 @@ module TaskForm =
                                     {|
                                         CustomProps =
                                             fun x ->
-                                                x.atom <-
-                                                    Some (
-                                                        Store.InputAtom (
-                                                            Store.AtomReference.Atom (Atoms.Task.name taskId)
-                                                        )
-                                                    )
+                                                x.atom <- Some (InputAtom (AtomReference.Atom (Atoms.Task.name taskId)))
 
-                                                x.inputScope <- Some (Store.InputScope.Temp Gun.defaultSerializer)
+                                                x.inputScope <- Some (InputScope.Temp Gun.defaultSerializer)
 
                                                 x.onEnterPress <- Some onSave
                                                 x.onFormat <- Some (fun (TaskName name) -> name)
@@ -630,7 +623,8 @@ module TaskForm =
                                                 x.autoFocus <- true
                                                 x.label <- str "Name"
 
-                                                x.placeholder <- $"""new-task-{DateTime.Now.Format "yyyy-MM-dd"}"""
+                                                x.placeholder <-
+                                                    $"""new-task-{DateTime.Now |> DateTime.format "yyyy-MM-dd"}"""
                                     |}
 
 
@@ -806,9 +800,9 @@ module TaskForm =
                                 Archived = archive |> Option.defaultValue false
                             }
 
-                        do! hydrateTaskState (Store.AtomScope.Current, taskDatabaseId, taskState)
+                        do! hydrateTaskState (AtomScope.Current, taskDatabaseId, taskState)
                     else
-                        do! hydrateTask (Store.AtomScope.Current, taskDatabaseId, task)
+                        do! hydrateTask (AtomScope.Current, taskDatabaseId, task)
 
                     setRightDock None
                 })

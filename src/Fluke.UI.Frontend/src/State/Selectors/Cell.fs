@@ -12,8 +12,8 @@ open FsStore
 
 module rec Cell =
     let rec sessionStatus =
-        Store.selectorFamily (
-            $"{nameof Cell}/{nameof sessionStatus}",
+        Store.selectorFamily
+            $"{nameof Cell}/{nameof sessionStatus}"
             (fun (taskId: TaskId, dateId: DateId) getter ->
                 let hideSchedulingOverlay = Store.value getter Atoms.User.hideSchedulingOverlay
 
@@ -25,7 +25,7 @@ module rec Cell =
                 else
                     Store.value getter (Task.cellStatusMap taskId)
                     |> Map.tryFind dateId
-                    |> Option.defaultValue Disabled),
+                    |> Option.defaultValue Disabled)
             (fun (taskId: TaskId, dateId: DateId) _getter setter newValue ->
                 Store.change
                     setter
@@ -34,14 +34,14 @@ module rec Cell =
                         match newValue with
                         | UserStatus (username, status) -> statusMap |> Map.add dateId (username, status)
                         | _ -> statusMap |> Map.remove dateId))
-        )
+
 
     let rec selected =
-        Store.selectorFamily (
-            $"{nameof Cell}/{nameof selected}",
+        Store.selectorFamily
+            $"{nameof Cell}/{nameof selected}"
             (fun (taskId: TaskId, dateId: DateId) getter ->
                 let selectionSet = Store.value getter (Atoms.Task.selectionSet taskId)
-                selectionSet.Contains dateId),
+                selectionSet.Contains dateId)
             (fun (taskId: TaskId, dateId: DateId) getter setter newValue ->
                 let ctrlPressed = Store.value getter Atoms.Session.ctrlPressed
                 let shiftPressed = Store.value getter Atoms.Session.shiftPressed
@@ -119,34 +119,30 @@ module rec Cell =
                         |> Map.ofSeq
 
                 Store.set setter Selectors.Session.visibleTaskSelectedDateIdMap newCellSelectionMap)
-        )
 
     let rec sessions =
-        Store.readSelectorFamily (
-            $"{nameof Cell}/{nameof sessions}",
+        Store.readSelectorFamily
+            $"{nameof Cell}/{nameof sessions}"
             (fun (taskId: TaskId, dateId: DateId) getter ->
                 let sessions = Store.value getter (Atoms.Task.sessions taskId)
                 let dayStart = Store.value getter Atoms.User.dayStart
 
                 sessions
                 |> List.filter (fun (Session start) -> isToday dayStart start dateId))
-        )
 
     let rec sessionCount =
-        Store.readSelectorFamily (
-            $"{nameof Cell}/{nameof sessionCount}",
+        Store.readSelectorFamily
+            $"{nameof Cell}/{nameof sessionCount}"
             (fun (taskId: TaskId, dateId: DateId) getter ->
                 let sessions = Store.value getter (sessions (taskId, dateId))
                 sessions.Length)
-        )
 
     let rec attachmentIdSet =
-        Store.readSelectorFamily (
-            $"{nameof Cell}/{nameof attachmentIdSet}",
+        Store.readSelectorFamily
+            $"{nameof Cell}/{nameof attachmentIdSet}"
             (fun (taskId: TaskId, dateId: DateId) getter ->
                 let cellAttachmentIdMap = Store.value getter (Atoms.Task.cellAttachmentIdMap taskId)
 
                 cellAttachmentIdMap
                 |> Map.tryFind dateId
                 |> Option.defaultValue Set.empty)
-        )

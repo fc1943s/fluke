@@ -8,6 +8,7 @@ open Fluke.Shared.Domain.UserInteraction
 open FsCore
 open FsStore
 open FsStore.Bindings
+open FsStore.Model
 open FsUi.Bindings
 open Fluke.Shared
 open Fluke.UI.Frontend.State
@@ -23,8 +24,8 @@ module Attachment =
 
         //        let tempAttachment =
 //            Store.Hooks.useTempAtom
-//                (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Attachment.attachment attachmentId))))
-//                (Some (Store.InputScope.ReadWrite Gun.defaultSerializer))
+//                (Some (InputAtom (AtomReference.Atom (Atoms.Attachment.attachment attachmentId))))
+//                (Some (InputScope.ReadWrite Gun.defaultSerializer))
 //
         let editing, setEditing = React.useState false
 
@@ -90,15 +91,14 @@ module Attachment =
 
                                                         x.atom <-
                                                             Some (
-                                                                Store.InputAtom (
-                                                                    Store.AtomReference.Atom (
+                                                                InputAtom (
+                                                                    AtomReference.Atom (
                                                                         Atoms.Attachment.attachment attachmentId
                                                                     )
                                                                 )
                                                             )
 
-                                                        x.inputScope <-
-                                                            Some (Store.InputScope.Temp Gun.defaultSerializer)
+                                                        x.inputScope <- Some (InputScope.Temp Gun.defaultSerializer)
 
                                                         x.onFormat <-
                                                             Some

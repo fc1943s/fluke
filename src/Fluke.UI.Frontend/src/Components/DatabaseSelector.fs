@@ -6,6 +6,7 @@ open Fable.React
 open Feliz
 open Fluke.Shared.Domain.State
 open FsStore
+open FsStore.Model
 open FsUi.Bindings
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
@@ -175,12 +176,7 @@ module DatabaseSelector =
                                                             Database.Default.Id
                                                             (fun database ->
                                                                 promise {
-                                                                    do!
-                                                                        hydrateDatabase (
-                                                                            Store.AtomScope.Current,
-                                                                            database
-                                                                        )
-
+                                                                    do! hydrateDatabase (AtomScope.Current, database)
                                                                     onChange database.Id
                                                                     onHide ()
                                                                 })

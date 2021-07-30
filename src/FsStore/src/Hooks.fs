@@ -1,6 +1,7 @@
 namespace FsStore
 
 open Fable.Core
+open FsStore.Model
 open FsStore.Store
 open Microsoft.FSharp.Core.Operators
 open Feliz

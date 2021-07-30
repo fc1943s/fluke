@@ -1,8 +1,8 @@
 namespace Fluke.UI.Frontend
 
+open FsJs
 open Fluke.Shared.Domain
 open Fluke.Shared.Domain.UserInteraction
-open Fable.DateFunctions
 
 
 module TempUI =
@@ -41,8 +41,14 @@ module TempUI =
         static member inline Format dateIdFormat dateId =
             match dateId |> DateId.Value, dateIdFormat with
             | Some { Day = Day day }, DateIdFormat.Day -> day.ToString "D2"
-            | Some date, DateIdFormat.DayOfWeek -> (date |> FlukeDate.DateTime).Format "EEEEEE"
-            | Some date, DateIdFormat.Month -> (date |> FlukeDate.DateTime).Format "MMM"
+            | Some date, DateIdFormat.DayOfWeek ->
+                date
+                |> FlukeDate.DateTime
+                |> DateTime.format "EEEEEE"
+            | Some date, DateIdFormat.Month ->
+                date
+                |> FlukeDate.DateTime
+                |> DateTime.format "MMM"
             | _ -> "??"
 
     and [<RequireQualifiedAccess>] DateIdFormat =

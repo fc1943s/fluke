@@ -9,6 +9,7 @@ open Fluke.UI.Frontend
 open FsCore.Model
 open FsJs
 open FsStore
+open FsStore.Model
 open FsUi.Bindings
 open Fluke.Shared.Domain
 open Fluke.UI.Frontend.Hooks
@@ -23,8 +24,8 @@ module Cell =
 
     [<ReactComponent>]
     let Cell
-        (input: {| TaskIdAtom: Store.Atom<TaskId>
-                   DateIdAtom: Store.Atom<DateId>
+        (input: {| TaskIdAtom: Atom<TaskId>
+                   DateIdAtom: Atom<DateId>
                    SemiTransparent: bool |})
         =
         Profiling.addCount "- CellComponent.render"
@@ -40,8 +41,7 @@ module Cell =
         let selected, setSelected = Store.useState (Selectors.Cell.selected (taskId, dateId))
         let cellUIFlag = Store.useValue (Atoms.User.uiFlag UIFlagType.Cell)
         let rightDock = Store.useValue Atoms.User.rightDock
-        let deviceInfo = Store.useValue Selectors.deviceInfo
-
+//        let deviceInfo = Store.useValue Selectors.deviceInfo
         let cellColorDisabled = Store.useValue Atoms.User.cellColorDisabled
         let cellColorSuggested = Store.useValue Atoms.User.cellColorSuggested
         let cellColorPending = Store.useValue Atoms.User.cellColorPending
@@ -141,8 +141,8 @@ module Cell =
 
     [<ReactComponent>]
     let CellWrapper
-        (input: {| TaskIdAtom: Store.Atom<TaskId>
-                   DateIdAtom: Store.Atom<DateId>
+        (input: {| TaskIdAtom: Atom<TaskId>
+                   DateIdAtom: Atom<DateId>
                    SemiTransparent: bool |})
         =
         let taskId = Store.useValue input.TaskIdAtom

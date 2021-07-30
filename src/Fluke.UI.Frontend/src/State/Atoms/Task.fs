@@ -14,7 +14,7 @@ module rec Task =
         taskId |> TaskId.Value |> string |> List.singleton
 
     let inline atomFamilyWithSync atomPath defaultValueFn =
-        Store.atomFamilyWithSync (Fluke.collection, atomPath, defaultValueFn, taskIdIdentifier)
+        Store.atomFamilyWithSync Fluke.collection atomPath defaultValueFn taskIdIdentifier
 
     let rec statusMap =
         atomFamilyWithSync
@@ -45,12 +45,11 @@ module rec Task =
     let rec name = atomFamilyWithSync $"{nameof Task}/{nameof name}" (fun (_taskId: TaskId) -> Task.Default.Name)
 
     let rec scheduling =
-        Store.atomFamilyWithSync (
-            Fluke.collection,
-            $"{nameof Task}/{nameof scheduling}",
-            (fun (_taskId: TaskId) -> Task.Default.Scheduling),
+        Store.atomFamilyWithSync
+            Fluke.collection
+            $"{nameof Task}/{nameof scheduling}"
+            (fun (_taskId: TaskId) -> Task.Default.Scheduling)
             taskIdIdentifier
-        )
 
     let rec pendingAfter =
         atomFamilyWithSync $"{nameof Task}/{nameof pendingAfter}" (fun (_taskId: TaskId) -> Task.Default.PendingAfter)

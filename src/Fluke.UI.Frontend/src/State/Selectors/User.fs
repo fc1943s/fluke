@@ -10,8 +10,8 @@ open Fluke.Shared.Domain.UserInteraction
 
 module rec User =
     let rec userState =
-        Store.readSelector (
-            $"{nameof User}/{nameof userState}",
+        Store.readSelector
+            $"{nameof User}/{nameof userState}"
             (fun getter ->
                 {
                     Archive = Store.value getter Atoms.User.archive
@@ -77,4 +77,3 @@ module rec User =
                     View = Store.value getter Atoms.User.view
                     WeekStart = Store.value getter Atoms.User.weekStart
                 })
-        )

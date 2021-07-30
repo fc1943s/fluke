@@ -4,6 +4,7 @@ open FsCore
 open Fable.Core
 open Feliz
 open FsStore
+open FsStore.Model
 
 
 module Scheduling =
@@ -16,7 +17,7 @@ module Scheduling =
         | Timeout -> JS.setTimeout, JS.clearTimeout
         | Interval -> JS.setInterval, JS.clearInterval
 
-    let useScheduling schedulingType duration (fn: Store.GetFn -> Store.SetFn -> JS.Promise<unit>) =
+    let useScheduling schedulingType duration (fn: GetFn -> SetFn -> JS.Promise<unit>) =
         let fnCallback = React.useCallbackRef (fun (getter, setter) -> fn getter setter)
 
         let savedCallback = React.useRef fnCallback

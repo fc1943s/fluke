@@ -25,7 +25,7 @@ module Session =
 //                    (fun (_eventId: EventId) -> Event.NoOp)
 //                )
 
-    let rec sessionRestored = Store.atom ($"{nameof sessionRestored}", false)
-    let rec position = Store.atom ($"{nameof position}", (None: FlukeDateTime option))
-    let rec ctrlPressed = Store.atom ($"{nameof ctrlPressed}", false)
-    let rec shiftPressed = Store.atom ($"{nameof shiftPressed}", false)
+    let rec sessionRestored = Store.atom $"{nameof sessionRestored}" false
+    let rec position = Store.atom $"{nameof position}" (None: FlukeDateTime option)
+    let rec ctrlPressed = Store.atom $"{nameof ctrlPressed}" false
+    let rec shiftPressed = Store.atom $"{nameof shiftPressed}" false

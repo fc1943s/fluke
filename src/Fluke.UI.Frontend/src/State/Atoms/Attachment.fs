@@ -14,7 +14,7 @@ module rec Attachment =
         |> List.singleton
 
     let inline atomFamilyWithSync atomPath defaultValueFn =
-        Store.atomFamilyWithSync (Fluke.collection, atomPath, defaultValueFn, attachmentIdIdentifier)
+        Store.atomFamilyWithSync Fluke.collection atomPath defaultValueFn attachmentIdIdentifier
 
     let rec timestamp =
         atomFamilyWithSync

@@ -6,6 +6,7 @@
     </PropertyGroup>
     <ItemGroup>
         <Compile Include="src\Js.fs" />
+        <Compile Include="src\Core.fs" />
         <Compile Include="src\Dom.fs" />
         <Compile Include="src\Profiling.fs" />
         <Content Include="package.json" />

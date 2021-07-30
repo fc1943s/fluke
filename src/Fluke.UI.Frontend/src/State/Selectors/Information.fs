@@ -8,8 +8,8 @@ open FsStore
 
 module rec Information =
     let rec attachmentIdMap =
-        Store.readSelectorFamily (
-            $"{nameof Information}/{nameof attachmentIdMap}",
+        Store.readSelectorFamily
+            $"{nameof Information}/{nameof attachmentIdMap}"
             (fun (information: Information) getter ->
                 let selectedDatabaseIdArray =
                     Store.value getter Atoms.User.selectedDatabaseIdSet
@@ -29,4 +29,3 @@ module rec Information =
                         |> Map.tryFind information
                         |> Option.defaultValue Set.empty)
                 |> Map.ofSeq)
-        )

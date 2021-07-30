@@ -1,6 +1,7 @@
 namespace Fluke.UI.Frontend.Components
 
 open FsCore
+open FsStore.Model
 open FsUi.Hooks
 open Feliz
 open Fable.React
@@ -28,7 +29,7 @@ module PasteListener =
                             Hydrate.hydrateAttachmentState
                                 getter
                                 setter
-                                (Store.AtomScope.Current,
+                                (AtomScope.Current,
                                  {
                                      Timestamp = FlukeDateTime.FromDateTime DateTime.Now
                                      Archived = false
@@ -59,7 +60,7 @@ module PasteListener =
                                                     clipboardItem.types
                                                     |> Array.filter (fun t -> t.StartsWith "image/")
                                                     |> Array.map (fun x -> clipboardItem.getType (unbox x)))
-                                            |> Promise.Parallel
+                                            |> Promise.all
 
                                         return Some blobs
                                     with
@@ -82,13 +83,12 @@ module PasteListener =
                                         let! bytes = JS.blobToUint8Array blob
                                         let hexString = JS.byteArrayToHexString (bytes.Values () |> Seq.toArray)
 
-                                        let fileId =
-                                            Hydrate.hydrateFile getter setter (Store.AtomScope.Current, hexString)
+                                        let fileId = Hydrate.hydrateFile getter setter (AtomScope.Current, hexString)
 
                                         let attachment = Attachment.Image fileId
                                         do! onFilePasted attachment
                                     })
-                            |> Promise.Parallel
+                            |> Promise.all
                             |> Promise.ignore
                     })
 
