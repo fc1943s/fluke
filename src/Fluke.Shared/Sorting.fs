@@ -163,10 +163,15 @@ module Sorting =
         |> List.indexed
         |> List.groupBy
             (fun (_, (taskState, stateMap)) ->
-                stateMap
-                |> Map.filter (fun dateId _ -> isToday dayStart position dateId)
-                |> Seq.map (fun (KeyValue (dateId, status)) -> getGroup taskState (dateId, status))
-                |> Seq.minBy fst)
+                let group =
+                    stateMap
+                    |> Map.filter (fun dateId _ -> isToday dayStart position dateId)
+                    |> Seq.map (fun (KeyValue (dateId, status)) -> getGroup taskState (dateId, status))
+                    |> Seq.toList
+
+                match group with
+                | [] -> -1, LaneSortType.DefaultSort
+                | _ -> group |> List.minBy fst)
         |> List.collect
             (fun ((groupIndex, _sortType), indexedLanes) ->
                 //            match sortType with

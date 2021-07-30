@@ -14,6 +14,8 @@ open Fluke.UI.Frontend.State.State
 
 
 module rec Selectors =
+    let interval = 250
+
     let rec dateIdArray =
         Store.readSelector
             $"{nameof dateIdArray}"

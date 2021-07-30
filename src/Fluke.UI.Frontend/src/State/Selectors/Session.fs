@@ -157,7 +157,9 @@ module rec Session =
 
 
     let rec activeSessions =
-        Store.readSelector
+        Store.readSelectorInterval
+            Selectors.interval
+            []
             $"{nameof Session}/{nameof activeSessions}"
             (fun getter ->
                 let selectedTaskIdArray =
@@ -188,7 +190,7 @@ module rec Session =
 
     let rec filteredTaskIdSet =
         Store.readSelectorInterval
-            1000
+            Selectors.interval
             Set.empty
             $"{nameof Session}/{nameof filteredTaskIdSet}"
             (fun getter ->
@@ -271,7 +273,9 @@ module rec Session =
 
 
     let rec sortedTaskIdArray =
-        Store.readSelector
+        Store.readSelectorInterval
+            Selectors.interval
+            [||]
             $"{nameof Session}/{nameof sortedTaskIdArray}"
             (fun getter ->
                 let position = Store.value getter Atoms.Session.position

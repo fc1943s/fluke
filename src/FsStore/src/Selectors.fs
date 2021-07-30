@@ -164,7 +164,7 @@ module Selectors =
 lastValue={lastValue}
 "
 
-        printfn $"atomAccessors.constructor {getBaseInfo ()}"
+        Dom.log (fun () -> $"atomAccessors.constructor {getBaseInfo ()}")
 
         let rec valueWrapper =
             Store.selector
@@ -172,21 +172,21 @@ lastValue={lastValue}
                 None
                 (fun getter ->
                     let result = Store.value getter valueAtom
-                    printfn $"atomAccessors.valueWrapper.get() result={result} {getBaseInfo ()}"
+                    Dom.log (fun () -> $"atomAccessors.valueWrapper.get() result={result} {getBaseInfo ()}")
                     result)
                 (fun getter setter newValue ->
-                    printfn $"atomAccessors.valueWrapper.set() newValue={newValue} {getBaseInfo ()}"
+                    Dom.log (fun () -> $"atomAccessors.valueWrapper.set() newValue={newValue} {getBaseInfo ()}")
                     Store.set setter accessorsAtom (Some (getter, setter))
                     Store.set setter valueAtom newValue)
 
         valueWrapper.onMount <-
             fun setAtom ->
-                printfn $"atomAccessors.valueWrapper.onMount() lastValue={lastValue} {getBaseInfo ()}"
+                Dom.log (fun () -> $"atomAccessors.valueWrapper.onMount() lastValue={lastValue} {getBaseInfo ()}")
                 lastValue <- lastValue + 1
                 setAtom lastValue
 
                 fun () ->
-                    printfn $"atomAccessors.valueWrapper.onUnmount() lastValue={lastValue} {getBaseInfo ()}"
+                    Dom.log (fun () -> $"atomAccessors.valueWrapper.onUnmount() lastValue={lastValue} {getBaseInfo ()}")
                     ()
 
         Store.readSelector
@@ -194,6 +194,9 @@ lastValue={lastValue}
             (fun getter ->
                 let value = Store.value getter valueWrapper
                 let accessors = Store.value getter accessorsAtom
-                printfn $"atomAccessors.selfWrapper.get() value={value} accessors={accessors.IsSome} {getBaseInfo ()}"
-                accessors)
 
+                Dom.log
+                    (fun () ->
+                        $"atomAccessors.selfWrapper.get() value={value} accessors={accessors.IsSome} {getBaseInfo ()}")
+
+                accessors)

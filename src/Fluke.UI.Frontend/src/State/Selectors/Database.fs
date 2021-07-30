@@ -64,7 +64,9 @@ module rec Database =
 
 
     let rec taskIdAtoms =
-        Store.readSelectorFamily
+        Store.readSelectorFamilyInterval
+            Selectors.interval
+            [||]
             $"{nameof Database}/{nameof taskIdAtoms}"
             (fun (databaseId: DatabaseId) getter ->
                 Selectors.asyncTaskIdAtoms

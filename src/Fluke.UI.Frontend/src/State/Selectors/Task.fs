@@ -158,7 +158,9 @@ module rec Task =
 
 
     let rec cellStatusMap =
-        Store.readSelectorFamily
+        Store.readSelectorFamilyInterval
+            Selectors.interval
+            Map.empty
             $"{nameof Task}/{nameof cellStatusMap}"
             (fun (taskId: TaskId) getter ->
                 let taskState = Store.value getter (taskState taskId)

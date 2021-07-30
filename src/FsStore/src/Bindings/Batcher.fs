@@ -7,6 +7,8 @@ open FsJs
 
 
 module Batcher =
+    let interval = 500
+
     type Cb<'TFnResult> = unit -> 'TFnResult
 
     let private internalBatcher<'TKey, 'TFnResult>
@@ -34,8 +36,8 @@ module Batcher =
         | Set of fn: (unit -> JS.Promise<IDisposable>)
 
     let inline macroQueue fn =
-        JS.setTimeout (fn >> Promise.start) 0 |> ignore
-    //        fn ()
+        //        JS.setTimeout (fn >> Promise.start) 0 |> ignore
+        fn () |> Promise.start
 
     let batch<'TKey, 'TValue> : (BatchType<'TKey, 'TValue> -> unit) =
         let internalBatch =
@@ -49,9 +51,12 @@ module Batcher =
                                   | _ -> None) with
                     | [||] -> ()
                     | setData ->
-                        for item in setData do
-                            let! _disposable = item ()
-                            ()
+                        let! _disposables =
+                            setData
+                            |> Array.map (fun fn -> fn ())
+                            |> Promise.all
+
+                        ()
 
                     match itemsArray
                           |> Array.choose
@@ -61,9 +66,12 @@ module Batcher =
                                   | _ -> None) with
                     | [||] -> ()
                     | subscribeData ->
-                        for item in subscribeData do
-                            let! _disposable = item ()
-                            ()
+                        let! _disposables =
+                            subscribeData
+                            |> Array.map (fun fn -> fn ())
+                            |> Promise.all
+
+                        ()
 
                     match itemsArray
                           |> Array.choose
@@ -78,11 +86,16 @@ module Batcher =
                             |> Array.last
                             |> fun (_, _, trigger) -> trigger
 
-                        for item in
+                        let providerData =
                             providerData
-                            |> Array.map (fun (data, timestamp, _) -> fun () -> trigger (timestamp, data)) do
-                            let! _disposable = item ()
-                            ()
+                            |> Array.map (fun (data, timestamp, _) -> fun () -> trigger (timestamp, data))
+
+                        let! _disposables =
+                            providerData
+                            |> Array.map (fun fn -> fn ())
+                            |> Promise.all
+
+                        ()
 
                     match itemsArray
                           |> Array.choose
@@ -102,15 +115,21 @@ module Batcher =
                             keysFromServer
                             |> Array.map (fun (item, timestamp, _) -> timestamp, item)
 
-                        fun () ->
-                            promise {
-                                let! _disposable = trigger items
-                                ()
-                            }
-                        |> macroQueue
+                        let! _disposable = trigger items
+                        ()
+
+                //                        fun () ->
+//                            promise {
+//                                let! _disposable = trigger items
+//                                ()
+//                            }
+//                        |> macroQueue
                 //                        macroQueue (fun () -> trigger items)
                 }
                 |> Promise.start
 
-        batcher internalBatch {| interval = 3000 |}
-//        fun item -> internalBatch [| item |]
+        batcher internalBatch {| interval = interval |}
+//        fun item ->
+//            match item with
+//            | BatchType.KeysFromServer _ -> batcher internalBatch {| interval = 3000 |} item
+//            | _ -> internalBatch [| item |]

@@ -37,7 +37,8 @@ timeout={timeout} "
         let getLogger () =
             lastLogger |> Option.defaultValue Logger.Default
 
-        printfn $"readSelectorInterval.constructor {getBaseInfo ()}"
+        getLogger()
+            .Debug (fun () -> $"readSelectorInterval.constructor {getBaseInfo ()}")
 
         let wrapper =
             Store.readSelector
@@ -46,13 +47,18 @@ timeout={timeout} "
                     lastAccessors <- Store.value getter Selectors.atomAccessors
                     lastLogger <- Store.value getter Selectors.logger |> Some
                     let cache = Store.value getter cache
-                    printfn $"readSelectorInterval.wrapper.get() cache={cache} {getBaseInfo ()}"
+
+                    getLogger()
+                        .Trace (fun () ->
+                            $"readSelectorInterval.wrapper.get() cache={cache |> Option.ofObjUnbox |> Option.isSome} {getBaseInfo ()}")
+
                     cache)
 
         let mutable lastValue = None
 
         let subscribe () =
-            printfn $"readSelectorInterval.onMount() {getBaseInfo ()}"
+            getLogger()
+                .Debug (fun () -> $"readSelectorInterval.onMount() {getBaseInfo ()}")
 
             let fn () =
                 getLogger()
@@ -62,8 +68,15 @@ timeout={timeout} "
                 | Some (getter, setter) when timeout >= 0 ->
                     let selectorValue = Store.value getter readSelector
 
-                    if Some selectorValue <> lastValue then
-                        printfn $"#2 readSelectorInterval.timeout selectorValue={selectorValue} {getBaseInfo ()}"
+                    if Some selectorValue
+                       |> Object.compare lastValue
+                       |> not then
+                        getLogger()
+                            .Trace (fun () ->
+                                $"#2 readSelectorInterval.timeout selectorValue={selectorValue
+                                                                                 |> Option.ofObjUnbox
+                                                                                 |> Option.isSome} {getBaseInfo ()}")
+
                         Store.set setter cache selectorValue
                         lastValue <- Some selectorValue
                 | _ -> ()
@@ -72,7 +85,9 @@ timeout={timeout} "
             timeout <- JS.setInterval fn interval
 
         let unsubscribe () =
-            printfn $"readSelectorInterval.onUnmount() {getBaseInfo ()}"
+            getLogger()
+                .Debug (fun () -> $"readSelectorInterval.onUnmount() {getBaseInfo ()}")
+
             if timeout >= 0 then JS.clearTimeout timeout
             timeout <- -1
 
@@ -81,6 +96,11 @@ timeout={timeout} "
                                fun () -> unsubscribe ()
 
         wrapper
+
+    let inline readSelectorFamilyInterval interval defaultValue atomPath getFn =
+        jotaiUtils.atomFamily
+            (fun param -> readSelectorInterval interval defaultValue atomPath (getFn param))
+            Object.compare
 
     let inline gunAtomNodeFromAtomPath getter username atomPath =
         match username, atomPath with
@@ -233,292 +253,285 @@ skipping unsubscribe, no gun atom node.")
                                 skipping unsubscribe. no last subscription found.")
 
         let setInternalFromSync setAtom =
-            JS.debounce
-                (fun (ticks, newValue) ->
-                    try
-                        Dom.logFiltered
-                            newValue
-                            (fun () ->
-                                $"gun.on() value. start.
+            (fun (ticks, newValue) ->
+                try
+                    Dom.logFiltered
+                        newValue
+                        (fun () ->
+                            $"gun.on() value. start.
 newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
 lastValue={lastValue}
 ticks={ticks}
 {baseInfo ()}                               ")
 
-                        match syncPaused, lastValue with
-                        | true, _ ->
-                            Dom.logFiltered
-                                newValue
-                                (fun () ->
-                                    $"gun.on() value. skipping. Sync paused.
+                    match syncPaused, lastValue with
+                    | true, _ ->
+                        Dom.logFiltered
+                            newValue
+                            (fun () ->
+                                $"gun.on() value. skipping. Sync paused.
 newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
 lastValue={lastValue}
 ticks={ticks}
 {baseInfo ()}                                       ")
-                        | _, Some (lastValueTicks, lastValue) when
-                            lastValueTicks > ticks
-                            || lastValue |> Object.compare (unbox newValue)
-                            || (unbox lastValue = null && unbox newValue = null)
-                            || (match lastValue |> Option.ofObjUnbox, newValue |> Option.ofObjUnbox with
-                                | Some _, None -> true
-                                | _ -> false)
-                            ->
+                    | _, Some (lastValueTicks, lastValue) when
+                        lastValueTicks > ticks
+                        || lastValue |> Object.compare (unbox newValue)
+                        || (unbox lastValue = null && unbox newValue = null)
+                        || (match lastValue |> Option.ofObjUnbox, newValue |> Option.ofObjUnbox with
+                            | Some _, None -> true
+                            | _ -> false)
+                        ->
 
-                            Profiling.addCount $"{gunNodePath} on() skip"
+                        Profiling.addCount $"{gunNodePath} on() skip"
 
-                            Dom.logFiltered
-                                newValue
-                                (fun () ->
-                                    $"gun.on() value. skipping.
+                        Dom.logFiltered
+                            newValue
+                            (fun () ->
+                                $"gun.on() value. skipping.
 newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
 lastValue={lastValue}
 ticks={ticks}
 {baseInfo ()}                                   ")
-                        | _ ->
-                            if unbox newValue = JS.undefined then
-                                Dom.logFiltered
-                                    newValue
-                                    (fun () ->
-                                        $"gun.on() value. skipping. newValue=undefined
+                    | _ ->
+                        if unbox newValue = JS.undefined then
+                            Dom.logFiltered
+                                newValue
+                                (fun () ->
+                                    $"gun.on() value. skipping. newValue=undefined
 newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
 lastValue={lastValue}
 ticks={ticks}
 {baseInfo ()}                                       ")
-                            else
-                                try
-                                    Profiling.addCount $"{gunNodePath} on() assign"
+                        else
+                            try
+                                Profiling.addCount $"{gunNodePath} on() assign"
 
-                                    Dom.logFiltered
-                                        newValue
-                                        (fun () ->
-                                            let _lastValue =
-                                                match unbox lastValue with
-                                                | Some (_, b) -> b
-                                                | _ -> null
+                                Dom.logFiltered
+                                    newValue
+                                    (fun () ->
+                                        let _lastValue =
+                                            match unbox lastValue with
+                                            | Some (_, b) -> b
+                                            | _ -> null
 
-                                            if string _lastValue = string newValue then
-                                                (Dom.consoleError
-                                                    $"should have skipped assign
+                                        if string _lastValue = string newValue then
+                                            (Dom.consoleError
+                                                $"should have skipped assign
         lastValue={lastValue} typeof _lastValue={jsTypeof _lastValue}
         newValue={newValue} typeof newValue={jsTypeof newValue}
         ticks={ticks}
         {baseInfo ()}                                      ")
 
-                                            $"gun.on() value. triggering. ##
+                                        $"gun.on() value. triggering. ##
         lastValue={lastValue} typeof _lastValue={jsTypeof _lastValue}
         newValue={newValue} typeof newValue={jsTypeof newValue}
         ticks={ticks}
         {baseInfo ()}                                        ")
 
-                                    //                        Browser.Dom.window?atomPath <- atomPath
-                                    //                        Browser.Dom.window?lastValue <- _lastValue
-                                    //                        Browser.Dom.window?newValue <- newValue
-                                    //                        Browser.Dom.window?deepEqual <- Object.compare
+                                //                        Browser.Dom.window?atomPath <- atomPath
+                                //                        Browser.Dom.window?lastValue <- _lastValue
+                                //                        Browser.Dom.window?newValue <- newValue
+                                //                        Browser.Dom.window?deepEqual <- Object.compare
 
-                                    // setAtom internalAtom
+                                // setAtom internalAtom
 
-                                    Gun.batchData (fun (_ticks, data) -> setAtom data) newValue
-                                with
-                                | ex ->
-                                    Dom.consoleError ("[exception8]", ex, newValue)
-                                    raise ex
-                    with
-                    | ex ->
-                        Dom.consoleError ("[exception1]", ex, newValue)
-                        lastSubscription <- None)
-                250
+                                Gun.batchData (fun (_ticks, data) -> setAtom data) newValue
+                            with
+                            | ex ->
+                                Dom.consoleError ("[exception8]", ex, newValue)
+                                raise ex
+                with
+                | ex ->
+                    Dom.consoleError ("[exception1]", ex, newValue)
+                    lastSubscription <- None)
 
-        let subscribe =
-            JS.debounce
-                (fun (setAtom: 'TValue option -> unit) ->
-                    promise {
-                        lastWrapperSet <- Some setAtom
-                        let wrappedSetAtom = wrapSetAtom setAtom
+        //        let debouncedSetInternalFromSync = JS.debounce setInternalFromSync 250
 
-                        match syncEngine.GetGunAtomNode (), lastSubscription with
-                        | _, Some _ ->
-                            Dom.log
-                                (fun () ->
-                                    $"[wrapper.on() subscribe]
+        let subscribe (setAtom: 'TValue option -> unit) =
+            promise {
+                lastWrapperSet <- Some setAtom
+                let wrappedSetAtom = wrapSetAtom setAtom
+
+                match syncEngine.GetGunAtomNode (), lastSubscription with
+                | _, Some _ ->
+                    Dom.log
+                        (fun () ->
+                            $"[wrapper.on() subscribe]
         {baseInfo ()}
         skipping subscribe, lastSubscription is set.")
-                        | Some (key, gunAtomNode), None ->
-                            let gunKeys =
-                                let user = gunAtomNode.user ()
-                                user.__.sea
+                | Some (key, gunAtomNode), None ->
+                    let gunKeys =
+                        let user = gunAtomNode.user ()
+                        user.__.sea
 
-                            Profiling.addCount $"{gunNodePath} subscribe"
+                    Profiling.addCount $"{gunNodePath} subscribe"
 
-                            Dom.log
-                                (fun () ->
-                                    $"[wrapper.on() subscribe] batch subscribing.
+                    Dom.log
+                        (fun () ->
+                            $"[wrapper.on() subscribe] batch subscribing.
         {baseInfo ()}
         key={key}               ")
 
-                            //                    gunAtomNode.off () |> ignore
+                    //                    gunAtomNode.off () |> ignore
 
-                            match gunKeys with
-                            | Some gunKeys ->
-                                match syncEngine.GetHub () with
-                                | Some hub ->
-                                    promise {
-                                        try
-                                            match lastHubSubscription, syncEngine.GetUsername () with
-                                            | Some _, _ -> Dom.consoleError "sub already present"
-                                            | None, None -> Dom.consoleError "username is none (subscription)"
-                                            | None, Some username ->
-                                                let subscription =
-                                                    Gun.batchHubSubscribe
-                                                        hub
-                                                        (Sync.Request.Get (username, gunNodePath))
-                                                        (fun (_ticks, msg: Sync.Response) ->
-                                                            Dom.log
-                                                                (fun () ->
-                                                                    $"[wrapper.next() HUB stream subscribe]
+                    match gunKeys with
+                    | Some gunKeys ->
+                        match syncEngine.GetHub () with
+                        | Some hub ->
+                            promise {
+                                try
+                                    match lastHubSubscription, syncEngine.GetUsername () with
+                                    | Some _, _ -> Dom.consoleError "sub already present"
+                                    | None, None -> Dom.consoleError "username is none (subscription)"
+                                    | None, Some username ->
+                                        let subscription =
+                                            Gun.batchHubSubscribe
+                                                hub
+                                                (Sync.Request.Get (username, gunNodePath))
+                                                (fun (_ticks, msg: Sync.Response) ->
+                                                    Dom.log
+                                                        (fun () ->
+                                                            $"[wrapper.next() HUB stream subscribe]
                                                                                     {baseInfo ()}
                                                                                     msg={msg}")
 
-                                                            promise {
-                                                                match msg with
-                                                                | Sync.Response.GetResult result ->
-                                                                    let! newValue =
-                                                                        match result |> Option.defaultValue null with
-                                                                        | null -> unbox null |> Promise.lift
-                                                                        | result ->
-                                                                            Gun.userDecode<'TValue> gunKeys result
+                                                    promise {
+                                                        match msg with
+                                                        | Sync.Response.GetResult result ->
+                                                            let! newValue =
+                                                                match result |> Option.defaultValue null with
+                                                                | null -> unbox null |> Promise.lift
+                                                                | result -> Gun.userDecode<'TValue> gunKeys result
 
-                                                                    lastHubValue <- newValue
+                                                            lastHubValue <- newValue
 
-                                                                    setInternalFromSync
-                                                                        wrappedSetAtom
-                                                                        (DateTime.Now.Ticks, newValue)
-                                                                | _ -> ()
+                                                            setInternalFromSync
+                                                                wrappedSetAtom
+                                                                (DateTime.Now.Ticks, newValue)
+                                                        | _ -> ()
 
-                                                                return
-                                                                    Object.newDisposable
+                                                        return
+                                                            Object.newDisposable
+                                                                (fun () ->
+                                                                    Dom.log
                                                                         (fun () ->
-                                                                            Dom.log
-                                                                                (fun () ->
-                                                                                    $"[wrapper.next() HUB stream subscribe]. Dispose.
+                                                                            $"[wrapper.next() HUB stream subscribe]. Dispose.
                                                                                       {baseInfo ()}
                                                                                       msg={msg}"))
-                                                            })
+                                                    })
 
-                                                lastHubSubscription <- Some subscription
-                                        with
-                                        | ex -> Dom.consoleError $"hub.get, setInternalFromGun, error={ex.Message}"
-                                    }
-                                    |> Promise.start
-                                | None ->
-                                    Dom.log
-                                        (fun () ->
-                                            $"[wrapper.on() HUB subscribe]
+                                        lastHubSubscription <- Some subscription
+                                with
+                                | ex -> Dom.consoleError $"hub.get, setInternalFromGun, error={ex.Message}"
+                            }
+                            |> Promise.start
+                        | None ->
+                            Dom.log
+                                (fun () ->
+                                    $"[wrapper.on() HUB subscribe]
         {baseInfo ()}
         skipping.                                   ")
 
-                                match syncEngine.GetGunPeers (), syncEngine.GetAtomPath () with
-                                | Some _, Some (AtomPath _atomPath) ->
-                                    //                                if false then
-                                    Gun.batchSubscribe
-                                        gunAtomNode
-                                        (fun (ticks, data) ->
-                                            promise {
-                                                let! newValue =
-                                                    match data |> Option.defaultValue null with
-                                                    | null -> unbox null |> Promise.lift
-                                                    | result -> Gun.userDecode<'TValue> gunKeys result
+                        match syncEngine.GetGunPeers (), syncEngine.GetAtomPath () with
+                        | Some _, Some (AtomPath _atomPath) ->
+                            //                                if false then
+                            Gun.batchSubscribe
+                                gunAtomNode
+                                (fun (ticks, data) ->
+                                    promise {
+                                        let! newValue =
+                                            match data |> Option.defaultValue null with
+                                            | null -> unbox null |> Promise.lift
+                                            | result -> Gun.userDecode<'TValue> gunKeys result
 
-                                                lastGunValue <- newValue
+                                        lastGunValue <- newValue
 
+                                        setInternalFromSync wrappedSetAtom (ticks, newValue)
 
-                                                setInternalFromSync wrappedSetAtom (ticks, newValue)
-
-
-                                                if lastHubValue.IsNone
-                                                   || lastHubValue |> Object.compare newValue then
-                                                    Dom.logFiltered
-                                                        newValue
-                                                        (fun () ->
-                                                            $"debouncedPut() HUB (update from gun) SKIPPED
+                                        if lastHubValue.IsNone
+                                           || lastHubValue |> Object.compare newValue then
+                                            Dom.logFiltered
+                                                newValue
+                                                (fun () ->
+                                                    $"debouncedPut() HUB (update from gun) SKIPPED
                 newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
                 {baseInfo ()}                           ")
-                                                else
-                                                    match syncEngine.GetAtomPath (),
-                                                          syncEngine.GetHub (),
-                                                          syncEngine.GetUsername () with
-                                                    | Some (AtomPath atomPath), Some hub, Some username ->
-                                                        promise {
-                                                            try
-                                                                let! response =
-                                                                    hub.invokeAsPromise (
-                                                                        Sync.Request.Set (
-                                                                            username,
-                                                                            atomPath,
-                                                                            data |> Option.defaultValue null
-                                                                        )
-                                                                    )
+                                        else
+                                            match syncEngine.GetAtomPath (),
+                                                  syncEngine.GetHub (),
+                                                  syncEngine.GetUsername () with
+                                            | Some (AtomPath atomPath), Some hub, Some username ->
+                                                promise {
+                                                    try
+                                                        let! response =
+                                                            hub.invokeAsPromise (
+                                                                Sync.Request.Set (
+                                                                    username,
+                                                                    atomPath,
+                                                                    data |> Option.defaultValue null
+                                                                )
+                                                            )
 
-                                                                match response with
-                                                                | Sync.Response.SetResult result ->
-                                                                    if not result then
-                                                                        printfn "$$$$ HUB PUT ERROR (backend console)"
-                                                                    else
-
-                                                                        Dom.logFiltered
-                                                                            newValue
-                                                                            (fun () ->
-                                                                                $"subscribe() hub set from gun
+                                                        match response with
+                                                        | Sync.Response.SetResult result ->
+                                                            if not result then
+                                                                Dom.consoleError "$$$$ HUB PUT ERROR (backend console)"
+                                                            else
+                                                                Dom.logFiltered
+                                                                    newValue
+                                                                    (fun () ->
+                                                                        $"subscribe() hub set from gun
                                     newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
                                     {baseInfo ()}                           ")
 
-                                                                        lastHubValue <- newValue
-                                                                | response ->
-                                                                    Dom.consoleError ("#00002 response:", response)
-                                                            with
-                                                            | ex -> Dom.consoleError $"$$$$ hub.set, error={ex.Message}"
-                                                        }
-                                                        |> Promise.start
-                                                    | _ ->
-                                                        Dom.logFiltered
-                                                            newValue
-                                                            (fun () ->
-                                                                $"[$$$$ wrapper.on() HUB put]
+                                                                lastHubValue <- newValue
+                                                        | response -> Dom.consoleError ("#00002 response:", response)
+                                                    with
+                                                    | ex -> Dom.consoleError $"$$$$ hub.set, error={ex.Message}"
+                                                }
+                                                |> Promise.start
+                                            | _ ->
+                                                Dom.logFiltered
+                                                    newValue
+                                                    (fun () ->
+                                                        $"[$$$$ wrapper.on() HUB put]
                     {baseInfo ()}
                     skipping.                                                               ")
 
-                                                return
-                                                    Object.newDisposable
+                                        return
+                                            Object.newDisposable
+                                                (fun () ->
+                                                    Dom.log
                                                         (fun () ->
-                                                            Dom.log
-                                                                (fun () ->
-                                                                    $"[$$$$ wrapper.on() HUB put]. Dispose. {baseInfo ()} "))
-                                            })
+                                                            $"[$$$$ wrapper.on() HUB put]. Dispose. {baseInfo ()} "))
+                                    })
 
-                                    lastSubscription <- Some DateTime.Now.Ticks
-                                | _ ->
-                                    Dom.log
-                                        (fun () ->
-                                            $"[wrapper.on() Gun subscribe]
+                            lastSubscription <- Some DateTime.Now.Ticks
+                        | _ ->
+                            Dom.log
+                                (fun () ->
+                                    $"[wrapper.on() Gun subscribe]
         {baseInfo ()}
         skipping.                               ")
-                            | _ ->
-                                Dom.log
-                                    (fun () ->
-                                        $"[wrapper.on() subscribe]
+                    | _ ->
+                        Dom.log
+                            (fun () ->
+                                $"[wrapper.on() subscribe]
         {baseInfo ()}
         skipping. gun keys empty")
 
 
 
-                        | None, _ ->
-                            Dom.log
-                                (fun () ->
-                                    $"[wrapper.on() subscribe]
+                | None, _ ->
+                    Dom.log
+                        (fun () ->
+                            $"[wrapper.on() subscribe]
         {baseInfo ()}
         skipping subscribe, no gun atom node.")
-                    }
-                    |> Promise.start)
-                100
+            }
+
+        let debouncedSubscribe = JS.debounce (subscribe >> Promise.start) 100
 
         let putFromUi newValue =
             promise {
@@ -567,7 +580,7 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
                                         match response with
                                         | Sync.Response.SetResult result ->
                                             if not result then
-                                                printfn "HUB PUT ERROR (backend console)"
+                                                Dom.consoleError "HUB PUT ERROR (backend console)"
                                             else
                                                 lastHubValue <- Some newValue
                                         | response -> Dom.consoleError ("#90592 response:", response)
@@ -709,7 +722,7 @@ wrapper={wrapper}
 userAtom={userAtom}
 {baseInfo ()}                       ")
 
-                            subscribe lastWrapperSet
+                            debouncedSubscribe lastWrapperSet
                         | _ ->
                             Dom.log
                                 (fun () ->
@@ -794,7 +807,7 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
                string Guid.Empty
            ] then
             wrapper?onMount <- fun (setAtom: 'TValue option -> unit) ->
-                                   subscribe setAtom
+                                   debouncedSubscribe setAtom
                                    fun () -> unsubscribe ()
 
         wrapper
@@ -875,17 +888,30 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
         let batchKeys setAtom data =
             Gun.batchKeys
                 (fun itemsArray ->
-                    let items =
-                        itemsArray
-                        |> Array.collect snd
-                        |> Array.append (
-                            lastValue
-                            |> Option.defaultValue Set.empty
-                            |> Set.toArray
-                        )
-                        |> Array.distinct
+                    let newSet = itemsArray |> Seq.collect snd |> Set.ofSeq
 
-                    lastValue <- Some (items |> Set.ofArray)
+                    let merge =
+                        lastValue
+                        |> Option.defaultValue Set.empty
+                        |> Set.union newSet
+
+                    lastValue <- Some merge
+                    let items = merge |> Set.toArray
+
+
+                    //                    let newItems =
+//                        itemsArray
+//                        |> Seq.collect snd
+//                        |> Seq.filter (lastSet.Contains >> not)
+//                        |> Seq.toArray
+//
+//                    let items =
+//                        itemsArray
+//                        |> Array.collect snd
+//                        |> Array.append newItems
+//                        |> Array.distinct
+//
+//                    lastValue <- Some (newItems |> Set.ofArray |> Set.union lastSet)
 
                     Dom.log
                         (fun () ->
@@ -898,145 +924,142 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
                 setAtom
                 data
 
-        let subscribe =
-            JS.debounce
-                (fun (setAtom: 'TKey [] -> unit) ->
-                    promise {
-                        Dom.log (fun () -> "@@ #3")
+        let subscribe (setAtom: 'TKey [] -> unit) =
+            promise {
+                Dom.log (fun () -> "@@ #3")
 
-                        match syncEngine.GetGunAtomNode (), lastSubscription with
-                        | _, Some _ ->
-                            Dom.log
-                                (fun () ->
-                                    $"@@ [atomKeys gun.on() subscribing]
+                match syncEngine.GetGunAtomNode (), lastSubscription with
+                | _, Some _ ->
+                    Dom.log
+                        (fun () ->
+                            $"@@ [atomKeys gun.on() subscribing]
                                                        {baseInfo ()}
                                                     skipping subscribe, lastSubscription is set.")
-                        | Some (key, gunAtomNode), None ->
-                            Dom.log (fun () -> $"@@ [atomKeys gun.on() subscribing] atomPath={atomPath} {key}")
+                | Some (key, gunAtomNode), None ->
+                    Dom.log (fun () -> $"@@ [atomKeys gun.on() subscribing] atomPath={atomPath} {key}")
 
-                            let wrappedSetAtom = wrapSetAtom setAtom
-                            let batchKeysAtom = batchKeys wrappedSetAtom
+                    let wrappedSetAtom = wrapSetAtom setAtom
+                    let batchKeysAtom = batchKeys wrappedSetAtom
 
-                            if syncEngine.GetGunPeers().IsSome then
+                    if syncEngine.GetGunPeers().IsSome then
 
-                                gunAtomNode
-                                    .map()
-                                    .on (fun data gunKey ->
+                        gunAtomNode
+                            .map()
+                            .on (fun data gunKey ->
 
-                                        Dom.log
-                                            (fun () ->
-                                                $"
+                                Dom.log
+                                    (fun () ->
+                                        $"
                                     @@$ atomKeys gun.on() HUB filter fetching/subscribing] @@@ gunAtomNode.map().on result
                                       data={data} typeof data={jsTypeof data} gunKey={gunKey} typeof gunKey={jsTypeof gunKey}
                                       atomPath={atomPath} syncEngine.atomPath={syncEngine.GetAtomPath ()} key={key}
                                            ")
 
-                                        if data <> null then
-                                            let newValue =
-                                                [|
-                                                    onFormat gunKey
-                                                |]
+                                if data <> null then
+                                    let newValue =
+                                        [|
+                                            onFormat gunKey
+                                        |]
 
 
-                                            batchKeysAtom newValue)
+                                    batchKeysAtom newValue)
 
-                                //                        gunAtomNode.on
-                                //                            (fun data _key ->
-                                //                                let result =
-                                //                                    JS.Constructors.Object.entries data
-                                //                                    |> unbox<(string * obj) []>
-                                //                                    |> Array.filter
-                                //                                        (fun (guid, value) ->
-                                //                                            guid.Length = 36
-                                //                                            && guid <> string Guid.Empty
-                                //                                            && value <> null)
-                                //                                    |> Array.map fst
-                                //
-                                //                                if result.Length > 0 then
-                                //                                    setData result
-                                //                                else
-                                //                                    Dom.log(fun () -> $"@@ atomKeys gun.on() API filter fetching/subscribing] @@@
-                                //                                    skipping. result.Length=0
-                                //                                    atomPath={atomPath} lastAtomPath={lastAtomPath} {key}")
-                                //                                    )
+                        //                        gunAtomNode.on
+                        //                            (fun data _key ->
+                        //                                let result =
+                        //                                    JS.Constructors.Object.entries data
+                        //                                    |> unbox<(string * obj) []>
+                        //                                    |> Array.filter
+                        //                                        (fun (guid, value) ->
+                        //                                            guid.Length = 36
+                        //                                            && guid <> string Guid.Empty
+                        //                                            && value <> null)
+                        //                                    |> Array.map fst
+                        //
+                        //                                if result.Length > 0 then
+                        //                                    setData result
+                        //                                else
+                        //                                    Dom.log(fun () -> $"@@ atomKeys gun.on() API filter fetching/subscribing] @@@
+                        //                                    skipping. result.Length=0
+                        //                                    atomPath={atomPath} lastAtomPath={lastAtomPath} {key}")
+                        //                                    )
 
-                                lastSubscription <- Some DateTime.Now.Ticks
+                        lastSubscription <- Some DateTime.Now.Ticks
 
-                            Dom.log
-                                (fun () ->
-                                    $"@@ [atomKeys gun.on() HUB filter fetching/subscribing] @@@ atomPath={atomPath} syncEngine.atomPath={syncEngine.GetAtomPath ()} {key}")
+                    Dom.log
+                        (fun () ->
+                            $"@@ [atomKeys gun.on() HUB filter fetching/subscribing] @@@ atomPath={atomPath} syncEngine.atomPath={syncEngine.GetAtomPath ()} {key}")
 
-                            //                        (db?data?find {| selector = {| key = atomPath |} |})?``$``?subscribe (fun items ->
-                            match syncEngine.GetAtomPath (), syncEngine.GetHub (), syncEngine.GetUsername () with
-                            | Some (AtomPath atomPath), Some hub, Some username ->
-                                promise {
-                                    try
-                                        let collection =
-                                            match atomPath |> String.split "/" |> Array.toList with
-                                            | app :: [ _ ] -> Some app
-                                            | _ :: collection :: _ -> Some collection
-                                            | _ -> None
+                    //                        (db?data?find {| selector = {| key = atomPath |} |})?``$``?subscribe (fun items ->
+                    match syncEngine.GetAtomPath (), syncEngine.GetHub (), syncEngine.GetUsername () with
+                    | Some (AtomPath atomPath), Some hub, Some username ->
+                        promise {
+                            try
+                                let collection =
+                                    match atomPath |> String.split "/" |> Array.toList with
+                                    | app :: [ _ ] -> Some app
+                                    | _ :: collection :: _ -> Some collection
+                                    | _ -> None
 
-                                        match collection with
-                                        | Some collection ->
-                                            let! response =
-                                                hub.invokeAsPromise (Sync.Request.Filter (username, collection))
+                                match collection with
+                                | Some collection ->
+                                    let! response = hub.invokeAsPromise (Sync.Request.Filter (username, collection))
 
-                                            match response with
-                                            | Sync.Response.FilterResult items ->
-                                                if items.Length > 0 then
-                                                    Dom.log
-                                                        (fun () ->
-                                                            $"@@ atomKeys gun.on() HUB filter fetching/subscribing] @@@
+                                    match response with
+                                    | Sync.Response.FilterResult items ->
+                                        if items.Length > 0 then
+                                            Dom.log
+                                                (fun () ->
+                                                    $"@@ atomKeys gun.on() HUB filter fetching/subscribing] @@@
                                                 setting keys locally. items.Length={items.Length}
                                                 atomPath={atomPath} syncEngine.atomPath={syncEngine.GetAtomPath ()} {key}")
 
-                                                    batchKeysAtom (items |> Array.map onFormat)
-                                                else
-                                                    Dom.log
-                                                        (fun () ->
-                                                            $"@@ atomKeys gun.on() HUB filter fetching/subscribing] @@@
+                                            batchKeysAtom (items |> Array.map onFormat)
+                                        else
+                                            Dom.log
+                                                (fun () ->
+                                                    $"@@ atomKeys gun.on() HUB filter fetching/subscribing] @@@
                                                 skipping. items.Length=0
                                                 atomPath={atomPath} syncEngine.atomPath={syncEngine.GetAtomPath ()} {key}")
 
-                                                Dom.log
-                                                    (fun () ->
-                                                        $"@@ [wrapper.on() HUB KEYS subscribe]
+                                        Dom.log
+                                            (fun () ->
+                                                $"@@ [wrapper.on() HUB KEYS subscribe]
                                                     atomPath={atomPath}
                                                     items={JS.JSON.stringify items}
                                                             {baseInfo ()}
                                                          ")
-                                            | response -> Dom.consoleError ("#84842 response:", response)
-                                        | None -> Dom.consoleError ("#04943 invalid collection", collection)
-                                    with
-                                    | ex -> Dom.consoleError $"@@ hub.filter, error={ex.Message}"
-                                }
-                                |> Promise.start
+                                    | response -> Dom.consoleError ("#84842 response:", response)
+                                | None -> Dom.consoleError ("#04943 invalid collection", collection)
+                            with
+                            | ex -> Dom.consoleError $"@@ hub.filter, error={ex.Message}"
+                        }
+                        |> Promise.start
 
-                            //                        (collection?find ())?``$``?subscribe (fun items ->
-                            //                            Dom.log
-                            //                                (fun () ->
-                            //                                    $"@@ [wrapper.on() RX KEYS subscribe]
-                            //                                    atomPath={atomPath}
-                            //                                    items={JS.JSON.stringify items}
-                            //                                            {baseInfo ()}
-                            //                                         "))
-                            | _ ->
-                                Dom.log
-                                    (fun () ->
-                                        $"@@ [wrapper.on() RX KEYS subscribe]
+                    //                        (collection?find ())?``$``?subscribe (fun items ->
+                    //                            Dom.log
+                    //                                (fun () ->
+                    //                                    $"@@ [wrapper.on() RX KEYS subscribe]
+                    //                                    atomPath={atomPath}
+                    //                                    items={JS.JSON.stringify items}
+                    //                                            {baseInfo ()}
+                    //                                         "))
+                    | _ ->
+                        Dom.log
+                            (fun () ->
+                                $"@@ [wrapper.on() RX KEYS subscribe]
                                         {baseInfo ()}
                                      skipping.")
 
-                        | None, _ ->
-                            Dom.log
-                                (fun () ->
-                                    $"@@ [atomKeys gun.on() subscribing]
+                | None, _ ->
+                    Dom.log
+                        (fun () ->
+                            $"@@ [atomKeys gun.on() subscribing]
                                                        {baseInfo ()}
                                                     skipping subscribe, no gun atom node.")
-                    }
-                    |> Promise.start)
-                100
+            }
+
+        let debouncedSubscribe = JS.debounce (subscribe >> Promise.start) 100
 
         let unsubscribe () =
             match lastSubscription with
@@ -1074,7 +1097,7 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
                                 skipping unsubscribe. no last subscription found.")
 
         wrapper?onMount <- fun (setAtom: 'TKey [] -> unit) ->
-                               subscribe setAtom
+                               debouncedSubscribe setAtom
                                fun _ -> unsubscribe ()
 
         jotaiUtils.splitAtom wrapper

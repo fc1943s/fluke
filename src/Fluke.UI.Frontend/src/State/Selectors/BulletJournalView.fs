@@ -12,7 +12,9 @@ open FsStore.Bindings
 
 module rec BulletJournalView =
     let rec weekCellsMap =
-        Store.readSelector
+        Store.readSelectorInterval
+            Selectors.interval
+            []
             $"{nameof BulletJournalView}/{nameof weekCellsMap}"
             (fun getter ->
                 let position = Store.value getter Atoms.Session.position
