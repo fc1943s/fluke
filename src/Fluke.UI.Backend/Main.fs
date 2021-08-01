@@ -98,7 +98,7 @@ module Main =
 
         let memoizedCreateTable = getMemoizedCreateTable ()
 
-        let update (msg: Sync.Request) =
+        let update (msg: Sync.Request) (hubContext: FableHub<Sync.Request, Sync.Response> option) =
             //            printfn $"Model.update() msg={msg}"
 
             match msg with
@@ -110,6 +110,11 @@ module Main =
                 memoizedCreateTable username
                 let result = insert username key value
                 //                printfn $"set {key} {value}"
+                match hubContext with
+                | Some hub when result ->
+//                    hub.Clients.All.Send (Sync.Response.GetResult (key, value))
+                    ()
+                | _ -> ()
                 Sync.Response.SetResult result
             | Sync.Request.Get (Username username, key) ->
                 memoizedCreateTable username
@@ -135,10 +140,10 @@ module Main =
 
                 Sync.Response.FilterResult result
 
-        let invoke (msg: Sync.Request) _ = task { return update msg }
+        let invoke (msg: Sync.Request) _ = task { return update msg None }
 
         let send (msg: Sync.Request) (hubContext: FableHub<Sync.Request, Sync.Response>) =
-            hubContext.Clients.Caller.Send (update msg)
+            hubContext.Clients.Caller.Send (update msg (Some hubContext))
 
         [<RequireQualifiedAccess>]
         module Stream =

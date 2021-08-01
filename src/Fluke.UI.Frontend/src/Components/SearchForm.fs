@@ -117,7 +117,7 @@ module SearchForm =
                                                                             informationName,
                                                                         Navigate.Anchor.InformationAttachment (
                                                                             informationState.Information,
-                                                                            AttachmentId System.Guid.Empty
+                                                                            AttachmentId.Default
                                                                         ),
 
                                                                         attachmentText)
@@ -148,7 +148,7 @@ module SearchForm =
                                                                         Navigate.Anchor.TaskAttachment (
                                                                             databaseState.Database.Id,
                                                                             taskId,
-                                                                            AttachmentId System.Guid.Empty
+                                                                            AttachmentId.Default
                                                                         ),
                                                                         attachmentText)
 
@@ -174,8 +174,7 @@ module SearchForm =
                                                                                                 Navigate.Anchor.CellAttachment (
                                                                                                     taskId,
                                                                                                     dateId,
-                                                                                                    AttachmentId
-                                                                                                        System.Guid.Empty
+                                                                                                    AttachmentId.Default
                                                                                                 ),
                                                                                                 attachmentText
                                                                                             )

@@ -100,6 +100,7 @@ module UserInteraction =
     and AttachmentId with
         static member inline NewId () = AttachmentId (Guid.NewTicksGuid ())
         static member inline Value (AttachmentId guid) = guid
+        static member inline Default = AttachmentId Guid.Empty
 
     and FileId with
         static member inline NewId () = FileId (Guid.NewTicksGuid ())

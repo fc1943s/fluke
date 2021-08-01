@@ -18,7 +18,9 @@ open FsStore.Bindings
 module SignalR =
     open Fable.SignalR
 
-    let connect hubUrl =
+    let connect hubUrl _getter setter =
+        let timeout = 1000
+
         SignalR.connect<Sync.Request, Sync.Request, obj, Sync.Response, Sync.Response>
             (fun hub ->
                 hub
@@ -29,12 +31,16 @@ module SignalR =
                             nextRetryDelayInMilliseconds =
                                 fun _context ->
                                     Dom.log (fun () -> "SignalR.connect(). withAutomaticReconnect")
-                                    Some 1000
+                                    Some timeout
                         }
                     )
                     .onReconnecting(fun ex -> Dom.log (fun () -> $"SignalR.connect(). onReconnecting ex={ex}"))
                     .onReconnected(fun ex -> Dom.log (fun () -> $"SignalR.connect(). onReconnected ex={ex}"))
-                    .onClose(fun ex -> Dom.log (fun () -> $"SignalR.connect(). onClose ex={ex}"))
+                    .onClose(fun ex ->
+                        Dom.log (fun () -> $"SignalR.connect(). onClose ex={ex}")
+
+                        JS.setTimeout (fun () -> Store.change setter Atoms.hubTrigger ((+) 1)) (timeout / 2)
+                        |> ignore)
                     .configureLogging(LogLevel.Debug)
                     .onMessage (
                         function
@@ -55,103 +61,6 @@ module Selectors =
             (fun getter ->
                 let logLevel = Store.value getter Atoms.logLevel
                 Logger.Create logLevel)
-
-    let rec hub =
-        Store.readSelector
-            $"{nameof hub}"
-            (fun getter ->
-                let _hubTrigger = Store.value getter Atoms.hubTrigger
-                let hubUrl = Store.value getter Atoms.hubUrl
-
-                match hubUrl with
-                | Some (String.ValidString hubUrl) ->
-                    let hub = SignalR.connect hubUrl
-                    hub.startNow ()
-                    Some hub
-                | _ -> None)
-
-
-    let rec gun =
-        Store.readSelectorFamily
-            $"{nameof gun}"
-            (fun gunPeers getter ->
-                let isTesting = Store.value getter Atoms.isTesting
-
-                let peers =
-                    gunPeers
-                    |> Array.filter (String.IsNullOrWhiteSpace >> not)
-
-                let gun =
-                    if isTesting then
-                        Gun.gun
-                            {
-                                Gun.GunProps.peers = None
-                                Gun.GunProps.radisk = Some false
-                                Gun.GunProps.localStorage = Some false
-                                Gun.GunProps.multicast = None
-                            }
-                    else
-                        Gun.gun
-                            {
-                                Gun.GunProps.peers = Some peers
-                                Gun.GunProps.radisk = Some true
-                                Gun.GunProps.localStorage = Some false
-                                Gun.GunProps.multicast = None
-                            }
-
-                printfn $"Gun selector. peers={peers}. gun={gun} returning..."
-
-                gun)
-
-
-    let rec gunNamespace =
-        Store.readSelector
-            $"{nameof gunNamespace}"
-            (fun getter ->
-                let gunPeers = Store.value getter Atoms.gunPeers
-                let _gunTrigger = Store.value getter Atoms.gunTrigger
-                let gun = Store.value getter (gun (gunPeers |> Option.defaultValue [||]))
-                let user = gun.user ()
-
-                printfn
-                    $"gunNamespace selector.
-                        gunPeers={gunPeers}
-                        user.is.keys={JS.Constructors.Object.keys (
-                                          user.is
-                                          |> Option.defaultValue (createObj [] |> unbox)
-                                      )}
-                        keys={user.__.sea}..."
-
-                user)
-
-    let rec gunAtomNode =
-        Store.readSelectorFamily
-            $"{nameof gunAtomNode}"
-            (fun (username, AtomPath atomPath) getter ->
-                let gunNamespace = Store.value getter gunNamespace
-
-                match gunNamespace.is with
-                | Some { alias = Some username' } when username' = (username |> Username.ValueOrDefault) ->
-                    let nodes = atomPath |> String.split "/" |> Array.toList
-
-                    match nodes with
-                    | [] -> None
-                    | [ root ] -> Some (gunNamespace.get root)
-                    | nodes ->
-                        let lastNode = nodes |> List.last
-                        let parentAtomPath = AtomPath (nodes.[0..nodes.Length - 2] |> String.concat "/")
-                        let node = Store.value getter (gunAtomNode (username, parentAtomPath))
-
-                        node
-                        |> Option.map (fun (node: Gun.Types.IGunChainReference) -> node.get lastNode)
-                | _ ->
-                    Dom.log
-                        (fun () ->
-                            $"gunAtomNode. Invalid username.
-                                      atomPath={atomPath}
-                                      user.is={JS.JSON.stringify gunNamespace.is}")
-
-                    None)
 
     let rec atomAccessors =
         let mutable lastValue = 0
@@ -200,3 +109,115 @@ lastValue={lastValue}
                         $"atomAccessors.selfWrapper.get() value={value} accessors={accessors.IsSome} {getBaseInfo ()}")
 
                 accessors)
+
+    let rec hub =
+        Store.readSelector
+            $"{nameof hub}"
+            (fun getter ->
+                let _hubTrigger = Store.value getter Atoms.hubTrigger
+                let hubUrl = Store.value getter Atoms.hubUrl
+
+                match hubUrl with
+                | Some (String.ValidString hubUrl) ->
+                    match Store.value getter atomAccessors with
+                    | Some (getter, setter) ->
+                        let hub = SignalR.connect hubUrl getter setter
+                        hub.startNow ()
+                        Some hub
+                    | None -> None
+                | _ -> None)
+
+    let rec gunPeers =
+        Store.readSelector
+            $"{nameof gunPeers}"
+            (fun getter ->
+                let gunOptions = Store.value getter Atoms.gunOptions
+
+                match gunOptions with
+                | GunOptions.Minimal -> [||]
+                | GunOptions.Sync gunPeers ->
+                    gunPeers
+                    |> Array.filter (String.IsNullOrWhiteSpace >> not))
+
+    let rec gun =
+        Store.readSelector
+            $"{nameof gun}"
+            (fun getter ->
+                let isTesting = Store.value getter Atoms.isTesting
+                let gunPeers = Store.value getter gunPeers
+
+                let gun =
+                    if isTesting then
+                        Gun.gun
+                            {
+                                Gun.GunProps.peers = None
+                                Gun.GunProps.radisk = Some false
+                                Gun.GunProps.localStorage = Some false
+                                Gun.GunProps.multicast = None
+                            }
+                    else
+                        Gun.gun
+                            {
+                                Gun.GunProps.peers = Some gunPeers
+                                Gun.GunProps.radisk = Some true
+                                Gun.GunProps.localStorage = Some false
+                                Gun.GunProps.multicast = None
+                            }
+
+                printfn $"Gun selector. gunPeers={gunPeers}. gun={gun} returning..."
+
+                gun)
+
+
+    let rec gunNamespace =
+        Store.readSelector
+            $"{nameof gunNamespace}"
+            (fun getter ->
+                let _gunTrigger = Store.value getter Atoms.gunTrigger
+                let gun = Store.value getter gun
+                let user = gun.user ()
+
+                printfn
+                    $"gunNamespace selector.
+                        gunPeers={gunPeers}
+                        user.is.keys={JS.Constructors.Object.keys (
+                                          user.is
+                                          |> Option.defaultValue (createObj [] |> unbox)
+                                      )}
+                        keys={user.__.sea}..."
+
+                user)
+
+    let rec gunAtomNode =
+        Store.readSelectorFamily
+            $"{nameof gunAtomNode}"
+            (fun (username, AtomPath atomPath) getter ->
+                let gunNamespace = Store.value getter gunNamespace
+
+                match gunNamespace.is with
+                | Some { alias = Some username' } when username' = (username |> Username.ValueOrDefault) ->
+                    let nodes = atomPath |> String.split "/" |> Array.toList
+
+                    match nodes with
+                    | [] -> None
+                    | [ root ] -> Some (gunNamespace.get root)
+                    | nodes ->
+                        let lastNode = nodes |> List.last
+                        let parentAtomPath = AtomPath (nodes.[0..nodes.Length - 2] |> String.concat "/")
+                        let node = Store.value getter (gunAtomNode (username, parentAtomPath))
+
+                        node
+                        |> Option.map (fun (node: Gun.Types.IGunChainReference) -> node.get lastNode)
+                //                    (Some (gunNamespace.get nodes.Head), nodes.Tail)
+//                    ||> List.fold
+//                            (fun result node ->
+//                                result
+//                                |> Option.map (fun result -> result.get node))
+                | _ ->
+                    Dom.log
+                        (fun () ->
+                            $"gunAtomNode. Invalid username.
+                                      atomPath={atomPath}
+                                      user.is={JS.JSON.stringify gunNamespace.is}")
+
+                    None)

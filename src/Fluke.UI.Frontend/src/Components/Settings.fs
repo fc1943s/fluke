@@ -21,9 +21,9 @@ open FsUi.Components
 module Settings =
     [<ReactComponent>]
     let GunPeersInput () =
-        let tempGunPeers =
+        let tempGunOptions =
             Store.useTempAtom
-                (Some (InputAtom (AtomReference.Atom Atoms.gunPeers)))
+                (Some (InputAtom (AtomReference.Atom Atoms.gunOptions)))
                 (Some (InputScope.Temp Gun.defaultSerializer))
 
         UI.box
@@ -63,8 +63,8 @@ module Settings =
                             None
                             (fun x ->
                                 x.isChecked <-
-                                    match tempGunPeers.CurrentValue, tempGunPeers.TempValue with
-                                    | Some _, _ -> true
+                                    match tempGunOptions.CurrentValue, tempGunOptions.TempValue with
+                                    | GunOptions.Sync _, _ -> true
                                     | _ -> false
 
                                 x.alignSelf <- "center"
@@ -72,30 +72,32 @@ module Settings =
                                 x.onChange <-
                                     fun _ ->
                                         promise {
-                                            match tempGunPeers.CurrentValue, tempGunPeers.TempValue with
-                                            | Some _, Some _ -> tempGunPeers.SetTempValue None
-                                            | Some current, None ->
-                                                tempGunPeers.SetTempValue (Some current)
-                                                tempGunPeers.SetCurrentValue None
-                                            | None, Some temp ->
-                                                tempGunPeers.SetCurrentValue (Some temp)
-                                                tempGunPeers.SetTempValue None
-                                            | None, None -> tempGunPeers.SetTempValue (Some [||])
+
+                                            match tempGunOptions.CurrentValue, tempGunOptions.TempValue with
+                                            | GunOptions.Sync _, GunOptions.Sync _ ->
+                                                tempGunOptions.SetCurrentValue GunOptions.Minimal
+                                            | GunOptions.Sync peers, GunOptions.Minimal ->
+                                                tempGunOptions.SetTempValue (GunOptions.Sync peers)
+                                                tempGunOptions.SetCurrentValue GunOptions.Minimal
+                                            | GunOptions.Minimal, GunOptions.Sync peers ->
+                                                tempGunOptions.SetCurrentValue (GunOptions.Sync peers)
+                                                tempGunOptions.SetTempValue GunOptions.Minimal
+                                            | GunOptions.Minimal, GunOptions.Minimal ->
+                                                tempGunOptions.SetTempValue (GunOptions.Sync [||])
                                         })
 
                         InputList.InputList
                             (fun x ->
                                 x.isDisabled <-
-                                    match tempGunPeers.CurrentValue, tempGunPeers.TempValue with
-                                    | Some _, _ -> true
+                                    match tempGunOptions.CurrentValue, tempGunOptions.TempValue with
+                                    | GunOptions.Sync _, _ -> true
                                     | _ -> false)
                             (fun _ -> ())
-                            (tempGunPeers.TempValue
-                             |> Option.defaultValue (
-                                 tempGunPeers.CurrentValue
-                                 |> Option.defaultValue [||]
-                             ))
-                            (Some >> tempGunPeers.SetTempValue)
+                            (match tempGunOptions.TempValue, tempGunOptions.CurrentValue with
+                             | GunOptions.Sync gunPeers, _ -> gunPeers
+                             | _, GunOptions.Sync gunPeers -> gunPeers
+                             | _ -> [||])
+                            (GunOptions.Sync >> tempGunOptions.SetTempValue)
                     ]
             ]
 
@@ -188,10 +190,7 @@ module Settings =
                                     {|
                                         CustomProps =
                                             fun x ->
-                                                x.atom <-
-                                                    Some (
-                                                        InputAtom (AtomReference.Atom Atoms.User.dayStart)
-                                                    )
+                                                x.atom <- Some (InputAtom (AtomReference.Atom Atoms.User.dayStart))
 
                                                 x.inputFormat <- Some Input.InputFormat.Time
                                                 x.onFormat <- Some FlukeTime.Stringify
@@ -218,11 +217,7 @@ module Settings =
                                         CustomProps =
                                             fun x ->
                                                 x.atom <-
-                                                    Some (
-                                                        InputAtom (
-                                                            AtomReference.Atom Atoms.User.sessionDuration
-                                                        )
-                                                    )
+                                                    Some (InputAtom (AtomReference.Atom Atoms.User.sessionDuration))
 
                                                 x.inputFormat <- Some Input.InputFormat.Number
                                                 x.onFormat <- Some (Minute.Value >> string)
@@ -244,9 +239,7 @@ module Settings =
                                             fun x ->
                                                 x.atom <-
                                                     Some (
-                                                        InputAtom (
-                                                            AtomReference.Atom Atoms.User.sessionBreakDuration
-                                                        )
+                                                        InputAtom (AtomReference.Atom Atoms.User.sessionBreakDuration)
                                                     )
 
                                                 x.inputFormat <- Some Input.InputFormat.Number
@@ -286,10 +279,7 @@ module Settings =
                                     {|
                                         CustomProps =
                                             fun x ->
-                                                x.atom <-
-                                                    Some (
-                                                        InputAtom (AtomReference.Atom Atoms.User.daysBefore)
-                                                    )
+                                                x.atom <- Some (InputAtom (AtomReference.Atom Atoms.User.daysBefore))
 
                                                 x.inputFormat <- Some Input.InputFormat.Number
                                         Props = fun x -> x.label <- str "Days Before"
@@ -299,10 +289,7 @@ module Settings =
                                     {|
                                         CustomProps =
                                             fun x ->
-                                                x.atom <-
-                                                    Some (
-                                                        InputAtom (AtomReference.Atom Atoms.User.daysAfter)
-                                                    )
+                                                x.atom <- Some (InputAtom (AtomReference.Atom Atoms.User.daysAfter))
 
                                                 x.inputFormat <- Some Input.InputFormat.Number
                                         Props = fun x -> x.label <- str "Days After"
@@ -312,10 +299,7 @@ module Settings =
                                     {|
                                         CustomProps =
                                             fun x ->
-                                                x.atom <-
-                                                    Some (
-                                                        InputAtom (AtomReference.Atom Atoms.User.cellSize)
-                                                    )
+                                                x.atom <- Some (InputAtom (AtomReference.Atom Atoms.User.cellSize))
 
                                                 x.inputFormat <- Some Input.InputFormat.Number
                                         Props = fun x -> x.label <- str "Cell Size"
@@ -325,8 +309,7 @@ module Settings =
                                     {|
                                         CustomProps =
                                             fun x ->
-                                                x.atom <-
-                                                    Some (InputAtom (AtomReference.Atom Atoms.Ui.fontSize))
+                                                x.atom <- Some (InputAtom (AtomReference.Atom Atoms.Ui.fontSize))
 
                                                 x.inputFormat <- Some Input.InputFormat.Number
                                         Props = fun x -> x.label <- str "Font Size"

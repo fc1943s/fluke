@@ -113,7 +113,7 @@ module rec Session =
                 let informationAttachmentIdMapArray =
                     selectedDatabaseIdSet
                     |> Set.toArray
-                    |> Array.map Atoms.Database.informationAttachmentIdMap
+                    |> Array.map Database.informationAttachmentIdMap
                     |> Store.waitForAll
                     |> Store.value getter
                     |> Array.collect (

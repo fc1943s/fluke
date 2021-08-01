@@ -3,16 +3,16 @@ namespace Fluke.UI.Frontend.Components
 open Feliz
 open Fable.React
 open Fluke.Shared.Domain.UserInteraction
+open Fluke.UI.Frontend.State.State
 open FsStore
 open FsUi.Bindings
 open Fluke.UI.Frontend.State
-open Fluke.UI.Frontend.Components
 open FsUi.Components
 
 
 module AttachmentHeader =
     [<ReactComponent>]
-    let AttachmentHeader attachmentPanelType onDelete onEdit attachmentId =
+    let AttachmentHeader attachmentParent onDelete onEdit attachmentId =
         let attachmentState = Store.useValue (Selectors.Attachment.attachmentState attachmentId)
         let setArchived = Store.useSetState (Atoms.Attachment.archived attachmentId)
 
@@ -59,8 +59,8 @@ module AttachmentHeader =
                                                     (fun _ -> ())
                                             | _ -> nothing
 
-                                            match attachmentPanelType with
-                                            | AddAttachmentInput.AttachmentPanelType.Information ->
+                                            match attachmentParent with
+                                            | AttachmentParent.Information _ ->
                                                 MenuItem.MenuItem
                                                     Icons.ri.RiArchiveLine
                                                     $"""{if attachmentState.Archived = true then "Unarchive" else "Archive"} Attachment"""

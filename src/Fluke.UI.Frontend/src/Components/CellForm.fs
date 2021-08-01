@@ -35,35 +35,16 @@ module CellForm =
             Store.useCallbackRef
                 (fun _ setter attachmentId ->
                     promise {
-                        Store.change
+                        Store.set
                             setter
-                            (Atoms.Task.cellAttachmentIdMap taskId)
-                            (fun cellAttachmentIdMap ->
-                                cellAttachmentIdMap
-                                |> Map.add
-                                    dateId
-                                    (cellAttachmentIdMap
-                                     |> Map.tryFind dateId
-                                     |> Option.defaultValue Set.empty
-                                     |> Set.add attachmentId))
+                            (Atoms.Attachment.parent attachmentId)
+                            (Some (AttachmentParent.Cell (taskId, dateId)))
                     })
 
         let onAttachmentDelete =
             Store.useCallbackRef
-                (fun getter setter attachmentId ->
+                (fun getter _setter attachmentId ->
                     promise {
-                        Store.change
-                            setter
-                            (Atoms.Task.cellAttachmentIdMap taskId)
-                            (fun cellAttachmentIdMap ->
-                                cellAttachmentIdMap
-                                |> Map.add
-                                    dateId
-                                    (cellAttachmentIdMap
-                                     |> Map.tryFind dateId
-                                     |> Option.defaultValue Set.empty
-                                     |> Set.remove attachmentId))
-
                         do! Store.deleteRoot getter (Atoms.Attachment.attachment attachmentId)
                         return true
                     })
@@ -119,7 +100,7 @@ module CellForm =
                                 x.flex <- "1")
                             [
                                 AttachmentPanel.AttachmentPanel
-                                    AddAttachmentInput.AttachmentPanelType.Cell
+                                    (AttachmentParent.Cell (taskId, dateId))
                                     (Some onAttachmentAdd)
                                     onAttachmentDelete
                                     attachmentIdList

@@ -114,8 +114,9 @@ module Hydrate =
             Store.scopedSet setter atomScope (Atoms.Task.priority, task.Id, task.Priority)
         }
 
-    let inline hydrateAttachmentState _getter setter (atomScope, attachmentState) =
+    let inline hydrateAttachmentState _getter setter (atomScope, parent, attachmentState) =
         let attachmentId = AttachmentId.NewId ()
+        Store.scopedSet setter atomScope (Atoms.Attachment.parent, attachmentId, Some parent)
         Store.scopedSet setter atomScope (Atoms.Attachment.timestamp, attachmentId, Some attachmentState.Timestamp)
         Store.scopedSet setter atomScope (Atoms.Attachment.archived, attachmentId, Some attachmentState.Archived)
         Store.scopedSet setter atomScope (Atoms.Attachment.attachment, attachmentId, Some attachmentState.Attachment)
@@ -172,30 +173,30 @@ module Hydrate =
                       | _ -> None)
                   |> Map.ofSeq))
 
-            Store.scopedSet
-                setter
-                atomScope
-                (Atoms.Task.attachmentIdSet,
-                 taskState.Task.Id,
-                 taskState.AttachmentStateList
-                 |> List.map (fun attachmentState -> hydrateAttachmentState getter setter (atomScope, attachmentState))
-                 |> Set.ofSeq)
+            let _attachmentIdList =
+                taskState.AttachmentStateList
+                |> List.map
+                    (fun attachmentState ->
+                        hydrateAttachmentState
+                            getter
+                            setter
+                            (atomScope, AttachmentParent.Task taskState.Task.Id, attachmentState))
 
-            Store.scopedSet
-                setter
-                atomScope
-                (Atoms.Task.cellAttachmentIdMap,
-                 taskState.Task.Id,
-                 taskState.CellStateMap
-                 |> Seq.map
-                     (fun (KeyValue (dateId, cellState)) ->
-                         dateId,
-                         cellState.AttachmentStateList
-                         |> List.choose
-                             (fun attachmentState ->
-                                 Some (hydrateAttachmentState getter setter (atomScope, attachmentState)))
-                         |> Set.ofSeq)
-                 |> Map.ofSeq)
+            let _attachmentIdList =
+                taskState.CellStateMap
+                |> Seq.map
+                    (fun (KeyValue (dateId, cellState)) ->
+                        dateId,
+                        cellState.AttachmentStateList
+                        |> List.choose
+                            (fun attachmentState ->
+                                Some (
+                                    hydrateAttachmentState
+                                        getter
+                                        setter
+                                        (atomScope, AttachmentParent.Cell (taskState.Task.Id, dateId), attachmentState)
+                                ))
+                        |> Set.ofSeq)
 
             Store.scopedSet setter atomScope (Atoms.Task.sessions, taskState.Task.Id, taskState.SessionList)
         }
@@ -224,7 +225,7 @@ module Hydrate =
                                 | _ -> attachmentState.Attachment
                         })
 
-            let newInformationAttachmentIdMap =
+            let _newInformationAttachmentIdMap =
                 databaseState.InformationStateMap
                 |> Map.values
                 |> Seq.map
@@ -234,16 +235,18 @@ module Hydrate =
                             |> changeFileIds
                             |> List.map
                                 (fun attachmentState ->
-                                    hydrateAttachmentState getter setter (atomScope, attachmentState))
+                                    hydrateAttachmentState
+                                        getter
+                                        setter
+                                        (atomScope,
+                                         AttachmentParent.Information (
+                                             databaseState.Database.Id,
+                                             informationState.Information
+                                         ),
+                                         attachmentState))
 
                         informationState.Information, (attachmentIdList |> Set.ofList))
                 |> Map.ofSeq
-
-            Store.scopedSet
-                setter
-                atomScope
-                (Atoms.Database.informationAttachmentIdMap, databaseState.Database.Id, newInformationAttachmentIdMap)
-
 
             do!
                 databaseState.TaskStateMap

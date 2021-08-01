@@ -4,6 +4,7 @@ open System
 open Fable.React
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Components
+open Fluke.UI.Frontend.State.State
 open FsStore
 open FsStore.Bindings
 open FsStore.Model
@@ -18,15 +19,8 @@ open FsUi.Components
 
 
 module AddAttachmentInput =
-    [<RequireQualifiedAccess>]
-    type AttachmentPanelType =
-        | Information
-        | Task
-        | Cell
-
-
     [<ReactComponent>]
-    let rec AddAttachmentInput attachmentPanelType onAdd =
+    let rec AddAttachmentInput attachmentParent onAdd =
         let archive = Store.useValue Atoms.User.archive
         let ctrlPressed = Store.useValue Atoms.Session.ctrlPressed
 
@@ -50,11 +44,12 @@ module AddAttachmentInput =
                                     getter
                                     setter
                                     (AtomScope.Current,
+                                     attachmentParent,
                                      {
                                          Timestamp = DateTime.Now |> FlukeDateTime.FromDateTime
                                          Archived =
-                                             match attachmentPanelType with
-                                             | AttachmentPanelType.Information -> archive |> Option.defaultValue false
+                                             match attachmentParent with
+                                             | AttachmentParent.Information _ -> archive |> Option.defaultValue false
                                              | _ -> false
                                          Attachment = attachment
                                      })

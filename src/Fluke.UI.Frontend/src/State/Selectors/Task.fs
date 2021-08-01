@@ -5,6 +5,7 @@ open Fluke.Shared.Domain.Model
 open Fluke.UI.Frontend.State
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.Shared.Domain.State
+open Fluke.UI.Frontend.State.State
 open FsStore
 
 #nowarn "40"
@@ -28,13 +29,67 @@ module rec Task =
                     Duration = Store.value getter (Atoms.Task.duration taskId)
                 })
 
+    [<RequireQualifiedAccess>]
+    type TaskAttachment =
+        | Task of TaskId
+        | Cell of TaskId * DateId
+
+    let rec taskAttachmentArray =
+        Store.readSelectorFamilyInterval
+            Selectors.interval
+            [||]
+            $"{nameof Database}/{nameof taskAttachmentArray}"
+            (fun (taskId: TaskId) getter ->
+                Selectors.asyncAttachmentIdAtoms
+                |> Store.value getter
+                |> Array.choose
+                    (fun attachmentIdAtom ->
+                        let attachmentId = Store.value getter attachmentIdAtom
+                        let parent = Store.value getter (Atoms.Attachment.parent attachmentId)
+
+                        match parent with
+                        | Some (AttachmentParent.Cell (taskId', dateId)) when taskId' = taskId ->
+                            Some (attachmentId, TaskAttachment.Cell (taskId, dateId))
+                        | Some (AttachmentParent.Task taskId') when taskId' = taskId ->
+                            Some (attachmentId, TaskAttachment.Task taskId)
+                        | _ -> None))
+
+    let rec cellAttachmentIdMap =
+        Store.readSelectorFamily
+            $"{nameof Task}/{nameof cellAttachmentIdMap}"
+            (fun (taskId: TaskId) getter ->
+                let taskAttachmentArray = taskAttachmentArray taskId |> Store.value getter
+
+                taskAttachmentArray
+                |> Array.choose
+                    (fun taskAttachment ->
+                        match taskAttachment with
+                        | attachmentId, TaskAttachment.Cell (_, dateId) -> Some (dateId, attachmentId)
+                        | _ -> None)
+                |> Array.groupBy fst
+                |> Array.map (fun (dateId, items) -> dateId, items |> Array.map snd |> Set.ofArray)
+                |> Map.ofSeq)
+
+    let rec attachmentIdSet =
+        Store.readSelectorFamily
+            $"{nameof Task}/{nameof attachmentIdSet}"
+            (fun (taskId: TaskId) getter ->
+                let taskAttachmentArray = taskAttachmentArray taskId |> Store.value getter
+
+                taskAttachmentArray
+                |> Array.choose
+                    (fun taskAttachment ->
+                        match taskAttachment with
+                        | attachmentId, TaskAttachment.Task _ -> Some attachmentId
+                        | _ -> None)
+                |> Set.ofArray)
 
     let rec cellStateMap =
         Store.readSelectorFamily
             $"{nameof Task}/{nameof cellStateMap}"
             (fun (taskId: TaskId) getter ->
                 let statusMap = Store.value getter (Atoms.Task.statusMap taskId)
-                let cellAttachmentIdMap = Store.value getter (Atoms.Task.cellAttachmentIdMap taskId)
+                let cellAttachmentIdMap = Store.value getter (cellAttachmentIdMap taskId)
 
                 let sessions = Store.value getter (Atoms.Task.sessions taskId)
                 let dayStart = Store.value getter Atoms.User.dayStart
@@ -132,7 +187,7 @@ module rec Task =
                 let sessions = Store.value getter (Atoms.Task.sessions taskId)
                 let archived = Store.value getter (Atoms.Task.archived taskId)
                 let cellStateMap = Store.value getter (cellStateMap taskId)
-                let attachmentIdSet = Store.value getter (Atoms.Task.attachmentIdSet taskId)
+                let attachmentIdSet = Store.value getter (attachmentIdSet taskId)
 
                 let attachmentStateList =
                     attachmentIdSet

@@ -26,16 +26,6 @@ module rec Task =
 
     let rec sessions = atomFamilyWithSync $"{nameof Task}/{nameof sessions}" (fun (_taskId: TaskId) -> []: Session list)
 
-    let rec attachmentIdSet =
-        atomFamilyWithSync
-            $"{nameof Task}/{nameof attachmentIdSet}"
-            (fun (_taskId: TaskId) -> Set.empty: Set<AttachmentId>)
-
-    let rec cellAttachmentIdMap =
-        atomFamilyWithSync
-            $"{nameof Task}/{nameof cellAttachmentIdMap}"
-            (fun (_taskId: TaskId) -> Map.empty: Map<DateId, Set<AttachmentId>>)
-
     let rec selectionSet =
         atomFamilyWithSync $"{nameof Task}/{nameof selectionSet}" (fun (_taskId: TaskId) -> Set.empty: Set<DateId>)
 

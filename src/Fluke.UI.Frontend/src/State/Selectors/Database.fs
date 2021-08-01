@@ -126,8 +126,7 @@ module rec Database =
             (fun (databaseId: DatabaseId) getter ->
                 let archive = Store.value getter Atoms.User.archive
 
-                let informationAttachmentIdMap =
-                    Store.value getter (Atoms.Database.informationAttachmentIdMap databaseId)
+                let informationAttachmentIdMap = Store.value getter (Database.informationAttachmentIdMap databaseId)
 
                 let attachmentIdArray =
                     informationAttachmentIdMap
@@ -152,6 +151,26 @@ module rec Database =
                         attachmentIdSet
                         |> Set.filter (fun attachmentId -> archivedMap.[attachmentId] = archive)))
 
+    let rec informationAttachmentIdMap =
+        Store.readSelectorFamilyInterval
+            Selectors.interval
+            Map.empty
+            $"{nameof Database}/{nameof informationAttachmentIdMap}"
+            (fun (databaseId: DatabaseId) getter ->
+                Selectors.asyncAttachmentIdAtoms
+                |> Store.value getter
+                |> Array.choose
+                    (fun attachmentIdAtom ->
+                        let attachmentId = Store.value getter attachmentIdAtom
+                        let parent = Store.value getter (Atoms.Attachment.parent attachmentId)
+
+                        match parent with
+                        | Some (AttachmentParent.Information (databaseId', information)) when databaseId' = databaseId ->
+                            Some (information, attachmentId)
+                        | _ -> None)
+                |> Array.groupBy fst
+                |> Array.map (fun (dateId, items) -> dateId, items |> Array.map snd |> Set.ofArray)
+                |> Map.ofSeq)
 
     let rec databaseState =
         Store.readSelectorFamily
@@ -168,8 +187,7 @@ module rec Database =
                     |> List.map Task.taskState
                     |> List.map (Store.value getter)
 
-                let informationAttachmentIdMap =
-                    Store.value getter (Atoms.Database.informationAttachmentIdMap databaseId)
+                let informationAttachmentIdMap = Store.value getter (Database.informationAttachmentIdMap databaseId)
 
                 let informationStateMap =
                     informationAttachmentIdMap

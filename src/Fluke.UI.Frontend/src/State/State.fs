@@ -1,6 +1,5 @@
 namespace Fluke.UI.Frontend.State
 
-open Fable.Core
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.State
 open Fluke.Shared.Domain.UserInteraction
@@ -50,6 +49,13 @@ module State =
         | Cell
         | File
         | RawImage
+
+    [<RequireQualifiedAccess>]
+    type AttachmentParent =
+        | None
+        | Information of databaseId: DatabaseId * Information: Information
+        | Task of taskId: TaskId
+        | Cell of taskId: TaskId * dateId: DateId
 
     type DeviceId = DeviceId of guid: Guid
 

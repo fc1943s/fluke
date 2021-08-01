@@ -385,8 +385,8 @@ module TaskForm =
         let deleteTask = useDeleteTask ()
         let sessions, setSessions = Store.useState (Atoms.Task.sessions taskId)
         let taskUIFlag, setTaskUIFlag = Store.useState (Atoms.User.uiFlag UIFlagType.Task)
-        let attachmentIdSet = Store.useValue (Atoms.Task.attachmentIdSet taskId)
-        let cellAttachmentIdMap = Store.useValue (Atoms.Task.cellAttachmentIdMap taskId)
+        let attachmentIdSet = Store.useValue (Selectors.Task.attachmentIdSet taskId)
+        let cellAttachmentIdMap = Store.useValue (Selectors.Task.cellAttachmentIdMap taskId)
         let statusMap = Store.useValue (Atoms.Task.statusMap taskId)
 
         let taskDatabaseId, attachmentIdList =
@@ -410,15 +410,14 @@ module TaskForm =
         let onAttachmentAdd =
             Store.useCallbackRef
                 (fun _ setter attachmentId ->
-                    promise { Store.change setter (Atoms.Task.attachmentIdSet taskId) (Set.add attachmentId) })
+                    promise {
+                        Store.set setter (Atoms.Attachment.parent attachmentId) (Some (AttachmentParent.Task taskId)) })
 
 
         let onAttachmentDelete =
             Store.useCallbackRef
-                (fun getter setter attachmentId ->
+                (fun getter _setter attachmentId ->
                     promise {
-                        Store.change setter (Atoms.Task.attachmentIdSet taskId) (Set.remove attachmentId)
-
                         do! Store.deleteRoot getter (Atoms.Attachment.attachment attachmentId)
                         return true
                     })
@@ -751,7 +750,7 @@ module TaskForm =
                                     x.flex <- "1")
                                 [
                                     AttachmentPanel.AttachmentPanel
-                                        AddAttachmentInput.AttachmentPanelType.Task
+                                        (AttachmentParent.Task taskId)
                                         (Some onAttachmentAdd)
                                         onAttachmentDelete
                                         attachmentIdList

@@ -141,7 +141,7 @@ module rec Cell =
         Store.readSelectorFamily
             $"{nameof Cell}/{nameof attachmentIdSet}"
             (fun (taskId: TaskId, dateId: DateId) getter ->
-                let cellAttachmentIdMap = Store.value getter (Atoms.Task.cellAttachmentIdMap taskId)
+                let cellAttachmentIdMap = Store.value getter (Task.cellAttachmentIdMap taskId)
 
                 cellAttachmentIdMap
                 |> Map.tryFind dateId

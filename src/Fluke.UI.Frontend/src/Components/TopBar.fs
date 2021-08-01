@@ -117,7 +117,7 @@ module TopBar =
                             |> Array.map
                                 (fun taskIdArray ->
                                     taskIdArray
-                                    |> Array.map Atoms.Task.attachmentIdSet
+                                    |> Array.map Selectors.Task.attachmentIdSet
                                     |> Store.waitForAll
                                     |> Store.value getter)
 
@@ -126,7 +126,7 @@ module TopBar =
                             |> Array.map
                                 (fun taskIdArray ->
                                     taskIdArray
-                                    |> Array.map Atoms.Task.cellAttachmentIdMap
+                                    |> Array.map Selectors.Task.cellAttachmentIdMap
                                     |> Store.waitForAll
                                     |> Store.value getter)
 

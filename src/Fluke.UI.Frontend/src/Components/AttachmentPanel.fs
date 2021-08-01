@@ -8,7 +8,7 @@ open Fluke.UI.Frontend.Components
 
 module AttachmentPanel =
     [<ReactComponent>]
-    let AttachmentPanel attachmentPanelType onAdd onDelete attachmentIdList =
+    let AttachmentPanel attachmentParent onAdd onDelete attachmentIdList =
         //        let onDragEnd = Store.useCallback ((fun _ _ x -> promise { printfn $"x={x}" }), [||])
 //
 //        DragDrop.dragDropContext
@@ -35,7 +35,7 @@ module AttachmentPanel =
                                         |> List.map
                                             (fun attachmentId ->
                                                 Attachment.Attachment
-                                                    attachmentPanelType
+                                                    attachmentParent
                                                     (fun () -> onDelete attachmentId)
                                                     attachmentId)
                                 ]
@@ -43,5 +43,5 @@ module AttachmentPanel =
                             UI.str "No attachments found"
                     ]
 
-                AddAttachmentInput.AddAttachmentInput attachmentPanelType onAdd
+                AddAttachmentInput.AddAttachmentInput attachmentParent onAdd
             ]

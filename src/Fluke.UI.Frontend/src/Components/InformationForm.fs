@@ -47,42 +47,23 @@ module InformationForm =
                     promise {
                         match lastDatabaseSelected, information with
                         | Some lastDatabaseSelected, Some information ->
-                            Store.change
+                            Store.set
                                 setter
-                                (Atoms.Database.informationAttachmentIdMap lastDatabaseSelected)
-                                (fun informationAttachmentIdMap ->
-                                    informationAttachmentIdMap
-                                    |> Map.add
-                                        information
-                                        (informationAttachmentIdMap
-                                         |> Map.tryFind information
-                                         |> Option.defaultValue Set.empty
-                                         |> Set.add attachmentId))
+                                (Atoms.Attachment.parent attachmentId)
+                                (Some (AttachmentParent.Information (lastDatabaseSelected, information)))
                         | _ -> ()
                     })
 
         let onAttachmentDelete =
             Store.useCallbackRef
-                (fun getter setter attachmentId ->
+                (fun getter _setter attachmentId ->
                     promise {
                         let databaseIdSearch =
                             attachmentIdMap
                             |> Map.tryFindKey (fun _ attachmentIdSet -> attachmentIdSet.Contains attachmentId)
 
                         match databaseIdSearch, information with
-                        | Some databaseIdSearch, Some information ->
-                            Store.change
-                                setter
-                                (Atoms.Database.informationAttachmentIdMap databaseIdSearch)
-                                (fun informationAttachmentIdMap ->
-                                    informationAttachmentIdMap
-                                    |> Map.add
-                                        information
-                                        (informationAttachmentIdMap
-                                         |> Map.tryFind information
-                                         |> Option.defaultValue Set.empty
-                                         |> Set.remove attachmentId))
-
+                        | Some _databaseIdSearch, Some _information ->
                             do! Store.deleteRoot getter (Atoms.Attachment.attachment attachmentId)
                             return true
                         | _ -> return false
@@ -127,7 +108,11 @@ module InformationForm =
                                     x.flex <- "1")
                                 [
                                     AttachmentPanel.AttachmentPanel
-                                        AddAttachmentInput.AttachmentPanelType.Information
+                                        (AttachmentParent.Information (
+                                            (lastDatabaseSelected
+                                             |> Option.defaultValue Database.Default.Id),
+                                            information
+                                        ))
                                         (if lastDatabaseSelected.IsSome then Some onAttachmentAdd else None)
                                         onAttachmentDelete
                                         attachmentIdList

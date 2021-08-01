@@ -3,6 +3,7 @@ namespace Fluke.UI.Frontend.State.Atoms
 open Fluke.Shared
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.State
+open Fluke.UI.Frontend.State.State
 open FsStore
 
 
@@ -15,6 +16,11 @@ module rec Attachment =
 
     let inline atomFamilyWithSync atomPath defaultValueFn =
         Store.atomFamilyWithSync Fluke.collection atomPath defaultValueFn attachmentIdIdentifier
+
+    let rec parent =
+        atomFamilyWithSync
+            $"{nameof Attachment}/{nameof parent}"
+            (fun (_attachmentId: AttachmentId) -> None: AttachmentParent option)
 
     let rec timestamp =
         atomFamilyWithSync

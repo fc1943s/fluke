@@ -19,7 +19,7 @@ open FsUi.Hooks
 
 module Attachment =
     [<ReactComponent>]
-    let Attachment attachmentPanelType onDelete attachmentId =
+    let Attachment attachmentParent onDelete attachmentId =
         let attachment = Store.useValue (Atoms.Attachment.attachment attachmentId)
 
         //        let tempAttachment =
@@ -68,7 +68,7 @@ module Attachment =
                 x.borderBottomWidth <- "1px"
                 x.borderBottomColor <- "gray.16")
             [
-                AttachmentHeader.AttachmentHeader attachmentPanelType onDelete onEdit attachmentId
+                AttachmentHeader.AttachmentHeader attachmentParent onDelete onEdit attachmentId
 
                 match attachment with
                 | Some (Attachment.Image fileId) -> FileThumbnail.FileThumbnail fileId

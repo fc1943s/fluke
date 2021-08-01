@@ -74,5 +74,12 @@ module rec Selectors =
     let rec asyncTaskIdAtoms =
         Store.selectAtomSyncKeys $"{nameof asyncTaskIdAtoms}" Atoms.Task.databaseId Task.Default.Id (Guid >> TaskId)
 
+    let rec asyncAttachmentIdAtoms =
+        Store.selectAtomSyncKeys
+            $"{nameof asyncAttachmentIdAtoms}"
+            Atoms.Attachment.parent
+            AttachmentId.Default
+            (Guid >> AttachmentId)
+
     let rec asyncDeviceIdAtoms =
         Store.selectAtomSyncKeys $"{nameof asyncDeviceIdAtoms}" Atoms.Device.devicePing deviceId (Guid >> DeviceId)

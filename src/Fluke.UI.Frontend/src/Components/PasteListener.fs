@@ -1,5 +1,7 @@
 namespace Fluke.UI.Frontend.Components
 
+open System
+open Fluke.UI.Frontend.State.State
 open FsCore
 open FsStore.Model
 open FsUi.Hooks
@@ -12,7 +14,6 @@ open Fluke.Shared
 open FsJs
 open FsStore
 open FsUi.Bindings
-open System
 open Fluke.Shared.Domain.UserInteraction
 
 
@@ -30,6 +31,7 @@ module PasteListener =
                                 getter
                                 setter
                                 (AtomScope.Current,
+                                 AttachmentParent.None,
                                  {
                                      Timestamp = FlukeDateTime.FromDateTime DateTime.Now
                                      Archived = false

@@ -1,8 +1,6 @@
 namespace Fluke.UI.Frontend.State.Atoms
 
 open Fluke.Shared
-open Fluke.Shared.Domain.Model
-open Fluke.Shared.Domain.UserInteraction
 open Fluke.Shared.Domain.State
 open Fluke.UI.Frontend.State
 open FsStore
@@ -33,8 +31,3 @@ module rec Database =
         atomFamilyWithSync
             $"{nameof Database}/{nameof position}"
             (fun (_databaseId: DatabaseId) -> Database.Default.Position)
-
-    let rec informationAttachmentIdMap =
-        atomFamilyWithSync
-            $"{nameof Database}/{nameof informationAttachmentIdMap}"
-            (fun (_databaseId: DatabaseId) -> Map.empty: Map<Information, Set<AttachmentId>>)

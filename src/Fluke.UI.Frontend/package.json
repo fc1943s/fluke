@@ -19,6 +19,7 @@
     "watch:frontend": "cross-env HTTPS=true EXTEND_ESLINT=true BROWSER=none FAST_REFRESH=true PORT=33922 SKIP_PREFLIGHT_CHECK=true react-app-rewired start",
     "old-watch:frontend-parcel": "cross-env EXTEND_ESLINT=true parcel public/index.html --https --port 33922 --detailed-report",
     "watch": "concurrently \"npm:watch:*\"",
+    "analyze": "npx source-map-explorer 'cra_output/**/*.js'",
     "enable-build-watch": "yarn cra-build-watch",
     "disable-build-watch": "yarn --check-files",
     "build": "yarn build:fable && yarn build:react",
@@ -33,7 +34,7 @@
     "cypress-watch": "concurrently \"npm:watch\" \"npm:cypress\"",
     "cypress-run": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 cypress run --headed",
     "frontend-serve": "cross-env PORT=33922 NODE_ENV=production serve cra_output",
-    "test-watch": "yarn test -- --watchAll",
+    "test-watch": "yarn test --watchAll",
     "test-build-watch": "concurrently \"npm:watch:frontend-build\" \"npm:test-watch\"",
     "postinstall": "patch-package",
 
@@ -61,8 +62,8 @@
 
     "@microsoft/signalr": "6.0.0-preview.6.21355.2",
 
-    "react": "18.0.0-alpha-419cc9c37-20210726",
-    "react-dom": "18.0.0-alpha-419cc9c37-20210726",
+    "react": "18.0.0-alpha-6f3fcbd6f-20210730",
+    "react-dom": "18.0.0-alpha-6f3fcbd6f-20210730",
 
     "jotai": "~1.2",
 

@@ -23,7 +23,7 @@ module Model =
         | Error = 4
         | Critical = 5
 
-    let defaultLogLevel = if Dom.isDebug () then LogLevel.Debug else LogLevel.Info
+    let DEFAULT_LOG_LEVEL = if Dom.isDebug () then LogLevel.Debug else LogLevel.Info
 
     type LogFn = (unit -> string) -> unit
 
@@ -51,7 +51,7 @@ module Model =
                 Error = log LogLevel.Error
             }
 
-        static member inline Default = Logger.Create defaultLogLevel
+        static member inline Default = Logger.Create DEFAULT_LOG_LEVEL
 
     [<RequireQualifiedAccess>]
     type InputScope<'TValue> =
@@ -75,3 +75,8 @@ module Model =
             Current: Jotai.Atom<'TValue67> option
             Temp: Jotai.Atom<string> option
         }
+
+    [<RequireQualifiedAccess>]
+    type GunOptions =
+        | Minimal
+        | Sync of string []

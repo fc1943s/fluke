@@ -117,19 +117,11 @@ module Batcher =
 
                         let! _disposable = trigger items
                         ()
-
-                //                        fun () ->
-//                            promise {
-//                                let! _disposable = trigger items
-//                                ()
-//                            }
-//                        |> macroQueue
-                //                        macroQueue (fun () -> trigger items)
                 }
                 |> Promise.start
 
-        batcher internalBatch {| interval = interval |}
-//        fun item ->
-//            match item with
-//            | BatchType.KeysFromServer _ -> batcher internalBatch {| interval = 3000 |} item
-//            | _ -> internalBatch [| item |]
+        fun item ->
+            match item with
+            | BatchType.Set _
+            | BatchType.Subscribe _ -> internalBatch [| item |]
+            | _ -> batcher internalBatch {| interval = interval |} item

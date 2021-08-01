@@ -235,7 +235,7 @@ module StatusBar =
         let informationAttachmentIdSet =
             selectedDatabaseIdSet
             |> Set.toArray
-            |> Array.map Atoms.Database.informationAttachmentIdMap
+            |> Array.map Selectors.Database.informationAttachmentIdMap
             |> Store.waitForAll
             |> Store.useValue
             |> Array.collect (Map.values >> Seq.toArray)
@@ -252,7 +252,7 @@ module StatusBar =
 
         let taskAttachmentIdArray =
             selectedTaskIdArray
-            |> Array.map Atoms.Task.attachmentIdSet
+            |> Array.map Selectors.Task.attachmentIdSet
             |> Store.waitForAll
             |> Store.useValue
             |> Array.collect Set.toArray

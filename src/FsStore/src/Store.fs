@@ -113,7 +113,7 @@ timeout={timeout} "
     let inline createSyncEngine mapGunAtomNode =
         let mutable lastAtomPath = None
         let mutable lastUsername = None
-        let mutable lastGunPeers = None
+        let mutable lastGunOptions = None
         let mutable lastLogger = None
         let mutable lastGunAtomNode = None
         let mutable lastHub = None
@@ -123,13 +123,13 @@ timeout={timeout} "
 | createSyncEngine baseInfo:
 lastAtomPath={lastAtomPath}
 lastUsername={lastUsername}
-lastGunPeers={lastGunPeers}
+lastGunOptions={lastGunOptions}
 lastGunAtomNode={lastGunAtomNode} "
 
         {|
             GetAtomPath = fun () -> lastAtomPath
             GetUsername = fun () -> lastUsername
-            GetGunPeers = fun () -> lastGunPeers
+            GetGunOptions = fun () -> lastGunOptions
             GetLogger = fun () -> lastLogger |> Option.defaultValue Logger.Default
             GetGunAtomNode = fun () -> lastGunAtomNode
             GetHub = fun () -> lastHub
@@ -137,7 +137,7 @@ lastGunAtomNode={lastGunAtomNode} "
             SetProviders =
                 fun getter atom ->
                     if lastAtomPath.IsNone then
-                        lastAtomPath <- queryAtomPath (AtomReference.Atom (unbox atom))
+                        lastAtomPath <- queryAtomPath (AtomReference.Atom atom)
 
                     Profiling.addCount $"createSyncEngine.setProviders {lastAtomPath}"
 
@@ -149,7 +149,7 @@ lastGunAtomNode={lastGunAtomNode} "
                     | _ -> ()
 
                     lastUsername <- Store.value getter Atoms.username
-                    lastGunPeers <- Store.value getter Atoms.gunPeers
+                    lastGunOptions <- Some (Store.value getter Atoms.gunOptions)
                     lastLogger <- Some (Store.value getter Selectors.logger)
 
                     lastGunAtomNode <-
@@ -196,7 +196,7 @@ lastGunAtomNode={lastGunAtomNode} "
 
         let internalAtom = jotaiUtils.atomFamily (fun _username -> jotai.atom defaultValue) Object.compare
 
-        let baseInfo () =
+        let getBaseInfo () =
             $"""
 | atomWithSync baseInfo:
 lastValue={lastValue}
@@ -206,13 +206,14 @@ lastUserAtomId={lastUserAtomId}
 gunNodePath={gunNodePath}
 atomPath={atomPath}
 keyIdentifier={keyIdentifier}
+gunOptions={syncEngine.GetGunOptions ()}
 {syncEngine.GetBaseInfo ()}
 """
 
         Dom.log
             (fun () ->
                 $"atomFamily constructor
-                {baseInfo ()}")
+                {getBaseInfo ()}")
 
         let mutable lastSubscription = None
 
@@ -222,7 +223,7 @@ keyIdentifier={keyIdentifier}
                 Dom.log
                     (fun () ->
                         $"[wrapper.off()]
-{baseInfo ()}
+{getBaseInfo ()}
 skipping unsubscribe. jotai resubscribe glitch.")
             | Some _ ->
                 match syncEngine.GetGunAtomNode () with
@@ -234,7 +235,7 @@ skipping unsubscribe. jotai resubscribe glitch.")
                         (fun () ->
                             $"[atomFamily.unsubscribe()]
 {key}
-{baseInfo ()} (######## actually skipped) ")
+{getBaseInfo ()} (######## actually skipped) ")
 
                     if false then
                         gunAtomNode.off () |> ignore
@@ -243,13 +244,13 @@ skipping unsubscribe. jotai resubscribe glitch.")
                     Dom.log
                         (fun () ->
                             $"[wrapper.off()]
-{baseInfo ()}
+{getBaseInfo ()}
 skipping unsubscribe, no gun atom node.")
             | None ->
                 Dom.log
                     (fun () ->
                         $"[wrapper.off()]
-                                {baseInfo ()}
+                                {getBaseInfo ()}
                                 skipping unsubscribe. no last subscription found.")
 
         let setInternalFromSync setAtom =
@@ -262,7 +263,7 @@ skipping unsubscribe, no gun atom node.")
 newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
 lastValue={lastValue}
 ticks={ticks}
-{baseInfo ()}                               ")
+{getBaseInfo ()}                               ")
 
                     match syncPaused, lastValue with
                     | true, _ ->
@@ -273,14 +274,14 @@ ticks={ticks}
 newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
 lastValue={lastValue}
 ticks={ticks}
-{baseInfo ()}                                       ")
+{getBaseInfo ()}                                       ")
                     | _, Some (lastValueTicks, lastValue) when
-                        lastValueTicks > ticks
-                        || lastValue |> Object.compare (unbox newValue)
-                        || (unbox lastValue = null && unbox newValue = null)
-                        || (match lastValue |> Option.ofObjUnbox, newValue |> Option.ofObjUnbox with
-                            | Some _, None -> true
-                            | _ -> false)
+                        match lastValue |> Option.ofObjUnbox, newValue |> Option.ofObjUnbox with
+                        | _, _ when lastValueTicks > ticks -> true
+                        | lastValue, newValue when lastValue |> Object.compare newValue -> true
+                        | Some _, None -> true
+                        | None, None -> true
+                        | _ -> false
                         ->
 
                         Profiling.addCount $"{gunNodePath} on() skip"
@@ -292,7 +293,7 @@ ticks={ticks}
 newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
 lastValue={lastValue}
 ticks={ticks}
-{baseInfo ()}                                   ")
+{getBaseInfo ()}                                   ")
                     | _ ->
                         if unbox newValue = JS.undefined then
                             Dom.logFiltered
@@ -302,7 +303,7 @@ ticks={ticks}
 newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
 lastValue={lastValue}
 ticks={ticks}
-{baseInfo ()}                                       ")
+{getBaseInfo ()}                                       ")
                         else
                             try
                                 Profiling.addCount $"{gunNodePath} on() assign"
@@ -321,13 +322,13 @@ ticks={ticks}
         lastValue={lastValue} typeof _lastValue={jsTypeof _lastValue}
         newValue={newValue} typeof newValue={jsTypeof newValue}
         ticks={ticks}
-        {baseInfo ()}                                      ")
+        {getBaseInfo ()}                                      ")
 
                                         $"gun.on() value. triggering. ##
         lastValue={lastValue} typeof _lastValue={jsTypeof _lastValue}
         newValue={newValue} typeof newValue={jsTypeof newValue}
         ticks={ticks}
-        {baseInfo ()}                                        ")
+        {getBaseInfo ()}                                        ")
 
                                 //                        Browser.Dom.window?atomPath <- atomPath
                                 //                        Browser.Dom.window?lastValue <- _lastValue
@@ -358,7 +359,7 @@ ticks={ticks}
                     Dom.log
                         (fun () ->
                             $"[wrapper.on() subscribe]
-        {baseInfo ()}
+        {getBaseInfo ()}
         skipping subscribe, lastSubscription is set.")
                 | Some (key, gunAtomNode), None ->
                     let gunKeys =
@@ -370,7 +371,7 @@ ticks={ticks}
                     Dom.log
                         (fun () ->
                             $"[wrapper.on() subscribe] batch subscribing.
-        {baseInfo ()}
+        {getBaseInfo ()}
         key={key}               ")
 
                     //                    gunAtomNode.off () |> ignore
@@ -382,7 +383,7 @@ ticks={ticks}
                             promise {
                                 try
                                     match lastHubSubscription, syncEngine.GetUsername () with
-                                    | Some _, _ -> Dom.consoleError "sub already present"
+                                    | Some _, _ -> Dom.consoleError ("sub already present", key)
                                     | None, None -> Dom.consoleError "username is none (subscription)"
                                     | None, Some username ->
                                         let subscription =
@@ -393,7 +394,7 @@ ticks={ticks}
                                                     Dom.log
                                                         (fun () ->
                                                             $"[wrapper.next() HUB stream subscribe]
-                                                                                    {baseInfo ()}
+                                                                                    {getBaseInfo ()}
                                                                                     msg={msg}")
 
                                                     promise {
@@ -417,7 +418,7 @@ ticks={ticks}
                                                                     Dom.log
                                                                         (fun () ->
                                                                             $"[wrapper.next() HUB stream subscribe]. Dispose.
-                                                                                      {baseInfo ()}
+                                                                                      {getBaseInfo ()}
                                                                                       msg={msg}"))
                                                     })
 
@@ -430,11 +431,11 @@ ticks={ticks}
                             Dom.log
                                 (fun () ->
                                     $"[wrapper.on() HUB subscribe]
-        {baseInfo ()}
+        {getBaseInfo ()}
         skipping.                                   ")
 
-                        match syncEngine.GetGunPeers (), syncEngine.GetAtomPath () with
-                        | Some _, Some (AtomPath _atomPath) ->
+                        match syncEngine.GetGunOptions (), syncEngine.GetAtomPath () with
+                        | Some (GunOptions.Sync _), Some (AtomPath _atomPath) ->
                             //                                if false then
                             Gun.batchSubscribe
                                 gunAtomNode
@@ -456,7 +457,7 @@ ticks={ticks}
                                                 (fun () ->
                                                     $"debouncedPut() HUB (update from gun) SKIPPED
                 newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
-                {baseInfo ()}                           ")
+                {getBaseInfo ()}                           ")
                                         else
                                             match syncEngine.GetAtomPath (),
                                                   syncEngine.GetHub (),
@@ -483,7 +484,7 @@ ticks={ticks}
                                                                     (fun () ->
                                                                         $"subscribe() hub set from gun
                                     newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
-                                    {baseInfo ()}                           ")
+                                    {getBaseInfo ()}                           ")
 
                                                                 lastHubValue <- newValue
                                                         | response -> Dom.consoleError ("#00002 response:", response)
@@ -496,7 +497,7 @@ ticks={ticks}
                                                     newValue
                                                     (fun () ->
                                                         $"[$$$$ wrapper.on() HUB put]
-                    {baseInfo ()}
+                    {getBaseInfo ()}
                     skipping.                                                               ")
 
                                         return
@@ -504,7 +505,7 @@ ticks={ticks}
                                                 (fun () ->
                                                     Dom.log
                                                         (fun () ->
-                                                            $"[$$$$ wrapper.on() HUB put]. Dispose. {baseInfo ()} "))
+                                                            $"[$$$$ wrapper.on() HUB put]. Dispose. {getBaseInfo ()} "))
                                     })
 
                             lastSubscription <- Some DateTime.Now.Ticks
@@ -512,13 +513,13 @@ ticks={ticks}
                             Dom.log
                                 (fun () ->
                                     $"[wrapper.on() Gun subscribe]
-        {baseInfo ()}
+        {getBaseInfo ()}
         skipping.                               ")
                     | _ ->
                         Dom.log
                             (fun () ->
                                 $"[wrapper.on() subscribe]
-        {baseInfo ()}
+        {getBaseInfo ()}
         skipping. gun keys empty")
 
 
@@ -527,7 +528,7 @@ ticks={ticks}
                     Dom.log
                         (fun () ->
                             $"[wrapper.on() subscribe]
-        {baseInfo ()}
+        {getBaseInfo ()}
         skipping subscribe, no gun atom node.")
             }
 
@@ -556,7 +557,7 @@ ticks={ticks}
                                 $"atomFamily.wrapper.set() debounceGunPut promise. #3.
 before put {key} newValue={newValue}
     lastHubValue={lastHubValue}
-    {baseInfo ()}                            ")
+    {getBaseInfo ()}                            ")
 
                         match lastHubValue with
                         | Some lastHubValue when
@@ -568,7 +569,7 @@ before put {key} newValue={newValue}
                                 (fun () ->
                                     $"debouncedPut() HUB SKIPPED
 newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
-{baseInfo ()}                           ")
+{getBaseInfo ()}                           ")
                         | _ ->
                             match syncEngine.GetAtomPath (), syncEngine.GetHub (), syncEngine.GetUsername () with
                             | Some (AtomPath atomPath), Some hub, Some username ->
@@ -593,22 +594,17 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
                                     newValue
                                     (fun () ->
                                         $"[wrapper.on() HUB put]
-    {baseInfo ()}
+    {getBaseInfo ()}
     skipping.                                                               ")
 
-                        match lastGunValue with
-                        | Some lastGunValue when lastGunValue |> Object.compare newValue ->
-                            Dom.logFiltered
-                                newValue
-                                (fun () ->
-                                    $"debouncedPut() SKIPPED
-newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
-{baseInfo ()}                           ")
-                        | _ ->
+                        match syncEngine.GetGunOptions () with
+                        | Some (GunOptions.Sync _) when
+                            lastGunValue
+                            |> Object.compare (Some newValue)
+                            |> not
+                            ->
                             if lastGunValue.IsNone
-                               || lastGunValue
-                                  |> Object.compare (unbox newValue)
-                                  |> not
+                               || lastGunValue |> Object.compare newValue |> not
                                || unbox newValue = null then
 
                                 let! putResult = Gun.put gunAtomNode newValueJson
@@ -622,7 +618,7 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
                                             $"atomFamily.wrapper.set() debounceGunPut promise result.
     newValue={newValue}
     {key}
-    {baseInfo ()}                                           ")
+    {getBaseInfo ()}                                           ")
                                 else
                                     Browser.Dom.window?lastPutResult <- putResult
 
@@ -633,8 +629,15 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
                                                 $"atomFamily.wrapper.set() debounceGunPut promise put error.
      newValue={newValue} putResult={putResult}
      {key}
-                                      {baseInfo ()}         "
+                                      {getBaseInfo ()}         "
                                     | None -> ()
+                        | _ ->
+                            Dom.logFiltered
+                                newValue
+                                (fun () ->
+                                    $"debouncedPut() SKIPPED
+newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
+{getBaseInfo ()}                           ")
 
                     | None ->
                         Dom.logFiltered
@@ -642,7 +645,7 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
                             (fun () ->
                                 $"[gunEffect.debounceGunPut promise]
 skipping gun put. no gun atom node.
-  {baseInfo ()}                                 ")
+  {getBaseInfo ()}                                 ")
                 with
                 | ex -> Dom.consoleError ("[exception2]", ex, newValue)
 
@@ -656,7 +659,7 @@ skipping gun put. no gun atom node.
                                 (fun () ->
                                     $"atomFamily.wrapper.set() putFromUi. Disposed (empty)
     newValue={newValue}
-    {baseInfo ()}                                           "))
+    {getBaseInfo ()}                                           "))
             }
 
         let batchPutFromUi newValue =
@@ -692,7 +695,7 @@ skipping gun put. no gun atom node.
 wrapper={wrapper}
 userAtom={userAtom}
 result={result}
-{baseInfo ()}               ")
+{getBaseInfo ()}               ")
 
                     Dom.log
                         (fun () ->
@@ -706,7 +709,7 @@ result={result}
 wrapper={wrapper}
 userAtom={userAtom}
 result={result}
-{baseInfo ()}               ")
+{getBaseInfo ()}               ")
 
                     let userAtomId = Some (userAtom.toString ())
 
@@ -720,7 +723,7 @@ result={result}
                                     $"atomFamily.wrapper.get() subscribing
 wrapper={wrapper}
 userAtom={userAtom}
-{baseInfo ()}                       ")
+{getBaseInfo ()}                       ")
 
                             debouncedSubscribe lastWrapperSet
                         | _ ->
@@ -729,7 +732,7 @@ userAtom={userAtom}
                                     $"atomFamily.wrapper.get() skipping subscribe
 wrapper={wrapper}
 userAtom={userAtom}
-{baseInfo ()}                           ")
+{getBaseInfo ()}                           ")
 
                     lastValue <- Some (DateTime.Now.Ticks, result)
 
@@ -768,7 +771,7 @@ __x={(newValueOption, lastGunValue, lastHubValue)} y={unbox newValueOption = unb
                                                       && unbox lastGunValue = unbox lastHubValue}
                                                        z={box newValueOption = box lastGunValue
                                                           && box lastGunValue = box lastHubValue}
-{baseInfo ()}                                           ")
+{getBaseInfo ()}                                           ")
 
 
                                 if box newValueOption = box lastGunValue
@@ -781,7 +784,7 @@ wrapper={wrapper}
 userAtom={userAtom}
 oldValue={oldValue}
 newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
-{baseInfo ()}                                   ")
+{getBaseInfo ()}                                   ")
                                 else
 
                                     syncPaused <- true
@@ -824,13 +827,13 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
 
         let internalAtom = jotaiUtils.atomFamily (fun _username -> jotai.atom [||]) Object.compare
 
-        let baseInfo () =
+        let getBaseInfo () =
             $"""
 | atomWithSync baseInfo:
 {syncEngine.GetBaseInfo ()}
 """
 
-        Dom.log (fun () -> $"@@ selectAtomSyncKeys constructor {baseInfo ()}           ")
+        Dom.log (fun () -> $"@@ selectAtomSyncKeys constructor {getBaseInfo ()}           ")
 
         let mutable lastValue: Set<'TKey> option = None
 
@@ -862,7 +865,7 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
                                     wrapper={wrapper}
                                     userAtom={userAtom}
                                     result={result}
-                                    {baseInfo ()} ")
+                                    {getBaseInfo ()} ")
 
                     result)
                 (fun getter setter newValueFn ->
@@ -876,7 +879,7 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
                             (fun oldValue ->
                                 let newValue =
                                     match jsTypeof newValueFn with
-                                    | "function" -> (unbox newValueFn) oldValue |> unbox
+                                    | "function" -> (unbox newValueFn) oldValue
                                     | _ -> newValueFn
 
                                 Dom.log (fun () -> $"@@ newValue={newValue} newValueFn={newValueFn}")
@@ -933,7 +936,7 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
                     Dom.log
                         (fun () ->
                             $"@@ [atomKeys gun.on() subscribing]
-                                                       {baseInfo ()}
+                                                       {getBaseInfo ()}
                                                     skipping subscribe, lastSubscription is set.")
                 | Some (key, gunAtomNode), None ->
                     Dom.log (fun () -> $"@@ [atomKeys gun.on() subscribing] atomPath={atomPath} {key}")
@@ -941,8 +944,8 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
                     let wrappedSetAtom = wrapSetAtom setAtom
                     let batchKeysAtom = batchKeys wrappedSetAtom
 
-                    if syncEngine.GetGunPeers().IsSome then
-
+                    match syncEngine.GetGunOptions () with
+                    | Some (GunOptions.Sync _) ->
                         gunAtomNode
                             .map()
                             .on (fun data gunKey ->
@@ -952,8 +955,7 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
                                         $"
                                     @@$ atomKeys gun.on() HUB filter fetching/subscribing] @@@ gunAtomNode.map().on result
                                       data={data} typeof data={jsTypeof data} gunKey={gunKey} typeof gunKey={jsTypeof gunKey}
-                                      atomPath={atomPath} syncEngine.atomPath={syncEngine.GetAtomPath ()} key={key}
-                                           ")
+                                      atomPath={atomPath} syncEngine.atomPath={syncEngine.GetAtomPath ()} key={key} ")
 
                                 if data <> null then
                                     let newValue =
@@ -985,6 +987,11 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
                         //                                    )
 
                         lastSubscription <- Some DateTime.Now.Ticks
+                    | _ ->
+                        Dom.log
+                            (fun () ->
+                                "@@$ atomKeys gun.on() HUB filter fetching/subscribing] @@@ gunAtomNode.map().on skip.
+                                  syncEngine.GetGunOptions() not in sync")
 
                     Dom.log
                         (fun () ->
@@ -1003,33 +1010,51 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
 
                                 match collection with
                                 | Some collection ->
-                                    let! response = hub.invokeAsPromise (Sync.Request.Filter (username, collection))
-
-                                    match response with
-                                    | Sync.Response.FilterResult items ->
-                                        if items.Length > 0 then
+                                    Gun.batchHubSubscribe
+                                        hub
+                                        (Sync.Request.Filter (username, collection))
+                                        (fun (_ticks, response: Sync.Response) ->
                                             Dom.log
                                                 (fun () ->
-                                                    $"@@ atomKeys gun.on() HUB filter fetching/subscribing] @@@
-                                                setting keys locally. items.Length={items.Length}
-                                                atomPath={atomPath} syncEngine.atomPath={syncEngine.GetAtomPath ()} {key}")
+                                                    $"@@ [wrapper.next() HUB keys stream subscribe]
+                                                      {getBaseInfo ()}
+                                                      response={response}")
 
-                                            batchKeysAtom (items |> Array.map onFormat)
-                                        else
-                                            Dom.log
-                                                (fun () ->
-                                                    $"@@ atomKeys gun.on() HUB filter fetching/subscribing] @@@
-                                                skipping. items.Length=0
-                                                atomPath={atomPath} syncEngine.atomPath={syncEngine.GetAtomPath ()} {key}")
+                                            promise {
+                                                match response with
+                                                | Sync.Response.FilterResult items ->
+                                                    if items.Length > 0 then
+                                                        Dom.log
+                                                            (fun () ->
+                                                                $"@@ atomKeys gun.on() HUB filter fetching/subscribing] @@@
+                                                                  setting keys locally. items.Length={items.Length}
+                                                                  atomPath={atomPath} syncEngine.atomPath={syncEngine.GetAtomPath ()} {key}")
 
-                                        Dom.log
-                                            (fun () ->
-                                                $"@@ [wrapper.on() HUB KEYS subscribe]
-                                                    atomPath={atomPath}
-                                                    items={JS.JSON.stringify items}
-                                                            {baseInfo ()}
-                                                         ")
-                                    | response -> Dom.consoleError ("#84842 response:", response)
+                                                        batchKeysAtom (items |> Array.map onFormat)
+                                                    else
+                                                        Dom.log
+                                                            (fun () ->
+                                                                $"@@ atomKeys gun.on() HUB filter fetching/subscribing] @@@
+                                                                  skipping. items.Length=0
+                                                                  atomPath={atomPath} syncEngine.atomPath={syncEngine.GetAtomPath ()} {key}")
+
+                                                    Dom.log
+                                                        (fun () ->
+                                                            $"@@ [wrapper.on() HUB KEYS subscribe]
+                                                              atomPath={atomPath}
+                                                              items={JS.JSON.stringify items}
+                                                                      {getBaseInfo ()} ")
+                                                | response -> Dom.consoleError ("#84842 response:", response)
+
+                                                return
+                                                    Object.newDisposable
+                                                        (fun () ->
+                                                            Dom.log
+                                                                (fun () ->
+                                                                    $"[@@ wrapper.next() HUB keys stream subscribe]. Dispose.
+                                                                      {getBaseInfo ()}
+                                                                      response={response}"))
+                                            })
                                 | None -> Dom.consoleError ("#04943 invalid collection", collection)
                             with
                             | ex -> Dom.consoleError $"@@ hub.filter, error={ex.Message}"
@@ -1048,14 +1073,14 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
                         Dom.log
                             (fun () ->
                                 $"@@ [wrapper.on() RX KEYS subscribe]
-                                        {baseInfo ()}
+                                        {getBaseInfo ()}
                                      skipping.")
 
                 | None, _ ->
                     Dom.log
                         (fun () ->
                             $"@@ [atomKeys gun.on() subscribing]
-                                                       {baseInfo ()}
+                                                       {getBaseInfo ()}
                                                     skipping subscribe, no gun atom node.")
             }
 
@@ -1067,7 +1092,7 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
                 Dom.log
                     (fun () ->
                         $"@@ [atomKeys gun.off()]
-                                                    {baseInfo ()}
+                                                    {getBaseInfo ()}
                                                     skipping unsubscribe. jotai resubscribe glitch.")
             | Some _ ->
                 match syncEngine.GetGunAtomNode () with
@@ -1077,7 +1102,7 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
                         (fun () ->
                             $"@@  [atomFamily.unsubscribe()]
                                {key}
-                               {baseInfo ()}
+                               {getBaseInfo ()}
                                ############ (actually skipped)
                                ")
 
@@ -1087,13 +1112,13 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
                     Dom.log
                         (fun () ->
                             $"@@  [atomKeys gun.off()]
-                                                               {baseInfo ()}
+                                                               {getBaseInfo ()}
                                                                skipping unsubscribe, no gun atom node.")
             | None ->
                 Dom.log
                     (fun () ->
                         $"[atomKeys gun.off()]
-                                {baseInfo ()}
+                                {getBaseInfo ()}
                                 skipping unsubscribe. no last subscription found.")
 
         wrapper?onMount <- fun (setAtom: 'TKey [] -> unit) ->
