@@ -7,14 +7,12 @@ open Fluke.Shared.View
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain
 open Fluke.UI.Frontend.State
-open Fluke.Shared.Domain.UserInteraction
 open Fluke.Shared.Domain.State
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.State.State
 open FsCore.Model
 open FsJs
 open FsStore
-open FsStore.Bindings
 
 #nowarn "40"
 
@@ -22,7 +20,8 @@ open FsStore.Bindings
 module rec Session =
     let rec devicePingList =
         Store.readSelector
-            $"{nameof Session}/{nameof devicePingList}"
+            Fluke.root
+            (nameof devicePingList)
             (fun getter ->
                 let deviceIdArray =
                     Selectors.asyncDeviceIdAtoms
@@ -43,7 +42,8 @@ module rec Session =
 
     let rec databaseIdAtoms =
         Store.readSelector
-            $"{nameof Session}/{nameof databaseIdAtoms}"
+            Fluke.root
+            (nameof databaseIdAtoms)
             (fun getter ->
                 let asyncDatabaseIdAtoms = Store.value getter Selectors.asyncDatabaseIdAtoms
                 let hideTemplates = Store.value getter Atoms.User.hideTemplates
@@ -75,7 +75,8 @@ module rec Session =
 
     let rec selectedTaskIdAtoms =
         Store.readSelector
-            $"{nameof Session}/{nameof selectedTaskIdAtoms}"
+            Fluke.root
+            (nameof selectedTaskIdAtoms)
             (fun getter ->
                 let selectedDatabaseIdSet = Store.value getter Atoms.User.selectedDatabaseIdSet
 
@@ -89,7 +90,8 @@ module rec Session =
 
     let rec selectedTaskIdListByArchive =
         Store.readSelector
-            $"{nameof Session}/{nameof selectedTaskIdListByArchive}"
+            Fluke.root
+            (nameof selectedTaskIdListByArchive)
             (fun getter ->
                 let selectedDatabaseIdSet = Store.value getter Atoms.User.selectedDatabaseIdSet
 
@@ -106,7 +108,8 @@ module rec Session =
 
     let rec informationSet =
         Store.readSelector
-            $"{nameof Session}/{nameof informationSet}"
+            Fluke.root
+            (nameof informationSet)
             (fun getter ->
                 let selectedDatabaseIdSet = Store.value getter Atoms.User.selectedDatabaseIdSet
 
@@ -158,9 +161,10 @@ module rec Session =
 
     let rec activeSessions =
         Store.readSelectorInterval
+            Fluke.root
+            (nameof activeSessions)
             Selectors.interval
             []
-            $"{nameof Session}/{nameof activeSessions}"
             (fun getter ->
                 let selectedTaskIdArray =
                     Store.value getter selectedTaskIdListByArchive
@@ -190,9 +194,10 @@ module rec Session =
 
     let rec filteredTaskIdSet =
         Store.readSelectorInterval
+            Fluke.root
+            (nameof filteredTaskIdSet)
             Selectors.interval
             Set.empty
-            $"{nameof Session}/{nameof filteredTaskIdSet}"
             (fun getter ->
                 let filter = Store.value getter Atoms.User.filter
 
@@ -266,7 +271,8 @@ module rec Session =
 
     let rec filteredTaskIdCount =
         Store.readSelector
-            $"{nameof Session}/{nameof filteredTaskIdCount}"
+            Fluke.root
+            (nameof filteredTaskIdCount)
             (fun getter ->
                 let filteredTaskIdSet = Store.value getter filteredTaskIdSet
                 filteredTaskIdSet.Count)
@@ -274,9 +280,10 @@ module rec Session =
 
     let rec sortedTaskIdArray =
         Store.readSelectorInterval
+            Fluke.root
+            (nameof sortedTaskIdArray)
             Selectors.interval
             [||]
-            $"{nameof Session}/{nameof sortedTaskIdArray}"
             (fun getter ->
                 let position = Store.value getter Atoms.Session.position
 
@@ -329,16 +336,18 @@ module rec Session =
 
     let rec sortedTaskIdAtoms =
         Store.readSelector
-            $"{nameof Session}/{nameof sortedTaskIdAtoms}"
+            Fluke.root
+            (nameof sortedTaskIdAtoms)
             (fun getter ->
                 sortedTaskIdArray
-                |> Jotai.jotaiUtils.splitAtom
+                |> Store.splitAtom
                 |> Store.value getter)
 
 
     let rec sortedTaskIdCount =
         Store.readSelector
-            $"{nameof Session}/{nameof sortedTaskIdCount}"
+            Fluke.root
+            (nameof sortedTaskIdCount)
             (fun getter ->
                 let sortedTaskIdAtoms = Store.value getter sortedTaskIdAtoms
                 sortedTaskIdAtoms.Length)
@@ -346,7 +355,8 @@ module rec Session =
 
     let rec informationTaskIdArray =
         Store.readSelector
-            $"{nameof Session}/{nameof informationTaskIdArray}"
+            Fluke.root
+            (nameof informationTaskIdArray)
             (fun getter ->
                 let sortedTaskIdAtoms = Store.value getter sortedTaskIdAtoms
 
@@ -387,16 +397,18 @@ module rec Session =
 
     let rec informationTaskIdAtoms =
         Store.readSelector
-            $"{nameof Session}/{nameof informationTaskIdAtoms}"
+            Fluke.root
+            (nameof informationTaskIdAtoms)
             (fun getter ->
                 informationTaskIdArray
-                |> Jotai.jotaiUtils.splitAtom
+                |> Store.splitAtom
                 |> Store.value getter)
 
 
     let rec informationTaskIdArrayByKind =
         Store.readSelector
-            $"{nameof Session}/{nameof informationTaskIdArrayByKind}"
+            Fluke.root
+            (nameof informationTaskIdArrayByKind)
             (fun getter ->
                 let informationTaskIdAtoms = Store.value getter Session.informationTaskIdAtoms
                 //                         let informationTaskIdArray = Store.value getter Selectors.Session.informationTaskIdArray
@@ -417,16 +429,18 @@ module rec Session =
 
     let rec informationTaskIdAtomsByKind =
         Store.readSelector
-            $"{nameof Session}/{nameof informationTaskIdAtomsByKind}"
+            Fluke.root
+            (nameof informationTaskIdAtomsByKind)
             (fun getter ->
                 informationTaskIdArrayByKind
-                |> Jotai.jotaiUtils.splitAtom
+                |> Store.splitAtom
                 |> Store.value getter)
 
 
     let rec taskSelectedDateIdMap =
         Store.readSelector
-            $"{nameof Session}/{nameof taskSelectedDateIdMap}"
+            Fluke.root
+            (nameof taskSelectedDateIdMap)
             (fun getter ->
                 let sortedTaskIdArray = Store.value getter sortedTaskIdArray
 
@@ -440,8 +454,8 @@ module rec Session =
 
     let rec visibleTaskSelectedDateIdMap =
         Store.selector
-            $"{nameof Session}/{nameof visibleTaskSelectedDateIdMap}"
-            None
+            Fluke.root
+            (nameof visibleTaskSelectedDateIdMap)
             (fun getter ->
                 let taskSelectedDateIdMap = Store.value getter taskSelectedDateIdMap
                 let dateIdArray = Store.value getter Selectors.dateIdArray

@@ -5,13 +5,13 @@ open FsStore
 open Fluke.Shared
 open Fluke.UI.Frontend.State.State
 open Fluke.UI.Frontend.State
-open Fluke.Shared.Domain.UserInteraction
 
 
 module rec User =
     let rec userState =
         Store.readSelector
-            $"{nameof User}/{nameof userState}"
+            Fluke.root
+            (nameof userState)
             (fun getter ->
                 {
                     Archive = Store.value getter Atoms.User.archive

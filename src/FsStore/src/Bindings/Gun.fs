@@ -1,7 +1,6 @@
 namespace FsStore.Bindings
 
 open FsCore
-open FsCore.Model
 open FsJs
 open Fable.SignalR
 open Fable.Core
@@ -289,7 +288,7 @@ module Gun =
         let fn () = subscribe gunAtomNode (batchData fn)
         Batcher.batch (Batcher.BatchType.Subscribe fn)
 
-    let inline hubSubscribe<'A, 'R> (hub: HubConnection<'A, 'A, _, 'R, 'R>) action fn =
+    let inline hubSubscribe<'A, 'R> (hub: HubConnection<'A, 'A, _, 'R, 'R>) action fn onError =
         promise {
             let! stream = hub.streamFrom action |> Async.StartAsPromise
 
@@ -307,52 +306,15 @@ module Gun =
                                     $"[hubSubscribe.error() HUB stream subscription] action={action} ",
                                     err
                                 )
+
+                                onError err
                     }
 
             return subscription
         }
 
-    let inline batchHubSubscribe (hub: HubConnection<'A, 'A, _, 'R, 'R>) action fn =
-        let fn () = hubSubscribe hub action (batchData fn)
+    let inline batchHubSubscribe (hub: HubConnection<'A, 'A, _, 'R, 'R>) action fn onError =
+        let fn () =
+            hubSubscribe hub action (batchData fn) onError
 
         Batcher.batch (Batcher.BatchType.Subscribe fn)
-
-    let inline wrapAtomPath (Collection _collection) (atomPath: string) =
-        //        let header = $"{collection}/"
-        let header = "Fluke/"
-        let header = if atomPath.StartsWith header then "" else header
-        $"{header}{atomPath}"
-
-    let inline getGunNodePath collection (atomPath: string) (keyIdentifier: string list) =
-        let newAtomPath =
-            match keyIdentifier with
-            | [] -> atomPath
-            | keyIdentifier when keyIdentifier |> List.head |> Guid.TryParse |> fst ->
-                [
-                    match atomPath |> String.split "/" with
-                    | [| node |] ->
-                        yield node
-                        yield! keyIdentifier
-                    | nodes ->
-                        yield! nodes |> Array.take (nodes.Length - 2)
-
-                        let secondLast = nodes.[nodes.Length - 2]
-
-                        if secondLast |> Guid.TryParse |> fst then
-                            yield! keyIdentifier
-                            yield secondLast
-                        else
-                            yield secondLast
-                            yield! keyIdentifier
-
-                        yield nodes.[nodes.Length - 1]
-                ]
-                |> String.concat "/"
-            | keyIdentifier ->
-                ([
-                    atomPath
-                 ]
-                 @ keyIdentifier)
-                |> String.concat "/"
-
-        wrapAtomPath collection newAtomPath

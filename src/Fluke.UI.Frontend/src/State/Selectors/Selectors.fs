@@ -1,7 +1,6 @@
 namespace Fluke.UI.Frontend.State.Selectors
 
 open FsStore
-open FsStore.Bindings
 open System
 open Fluke.Shared
 open Fluke.Shared.Domain.Model
@@ -16,9 +15,15 @@ open Fluke.UI.Frontend.State.State
 module rec Selectors =
     let interval = 250
 
+    let readSelector name getFn =
+        Store.readSelector Fluke.root name getFn
+
+    let selectAtomSyncKeys name atom =
+        Store.selectAtomSyncKeys Fluke.root name atom Database.Default.Id (Guid >> DatabaseId)
+
     let rec dateIdArray =
-        Store.readSelector
-            $"{nameof dateIdArray}"
+        readSelector
+            (nameof dateIdArray)
             (fun getter ->
                 let position = Store.value getter Atoms.Session.position
 
@@ -39,17 +44,17 @@ module rec Selectors =
 
 
     let rec dateIdAtoms =
-        Store.readSelector
-            $"{nameof dateIdAtoms}"
+        readSelector
+            (nameof dateIdAtoms)
             (fun getter ->
                 dateIdArray
-                |> Jotai.jotaiUtils.splitAtom
+                |> Store.splitAtom
                 |> Store.value getter)
 
 
     let rec dateIdAtomsByMonth =
-        Store.readSelector
-            $"{nameof dateIdAtomsByMonth}"
+        readSelector
+            (nameof dateIdAtomsByMonth)
             (fun getter ->
                 let dateIdArray = Store.value getter dateIdArray
                 let dateIdAtoms = Store.value getter dateIdAtoms
@@ -66,20 +71,32 @@ module rec Selectors =
 
     let rec asyncDatabaseIdAtoms =
         Store.selectAtomSyncKeys
-            $"{nameof asyncDatabaseIdAtoms}"
+            Fluke.root
+            (nameof asyncDatabaseIdAtoms)
             Atoms.Database.name
             Database.Default.Id
             (Guid >> DatabaseId)
 
     let rec asyncTaskIdAtoms =
-        Store.selectAtomSyncKeys $"{nameof asyncTaskIdAtoms}" Atoms.Task.databaseId Task.Default.Id (Guid >> TaskId)
+        Store.selectAtomSyncKeys
+            Fluke.root
+            (nameof asyncTaskIdAtoms)
+            Atoms.Task.databaseId
+            Task.Default.Id
+            (Guid >> TaskId)
 
     let rec asyncAttachmentIdAtoms =
         Store.selectAtomSyncKeys
-            $"{nameof asyncAttachmentIdAtoms}"
+            Fluke.root
+            (nameof asyncAttachmentIdAtoms)
             Atoms.Attachment.parent
             AttachmentId.Default
             (Guid >> AttachmentId)
 
     let rec asyncDeviceIdAtoms =
-        Store.selectAtomSyncKeys $"{nameof asyncDeviceIdAtoms}" Atoms.Device.devicePing deviceId (Guid >> DeviceId)
+        Store.selectAtomSyncKeys
+            Fluke.root
+            (nameof asyncDeviceIdAtoms)
+            Atoms.Device.devicePing
+            deviceId
+            (Guid >> DeviceId)

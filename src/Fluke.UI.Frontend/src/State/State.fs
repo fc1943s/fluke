@@ -13,7 +13,7 @@ open FsCore.Model
 open FsJs
 
 module Fluke =
-    let collection = Collection (nameof Fluke)
+    let root = StoreRoot (nameof Fluke)
 
 
 module State =

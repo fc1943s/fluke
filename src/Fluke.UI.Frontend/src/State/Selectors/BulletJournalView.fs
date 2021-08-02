@@ -11,11 +11,12 @@ open FsStore.Bindings
 
 
 module rec BulletJournalView =
-    let rec weekCellsMap =
+    let rec bulletJournalWeekCellsMap =
         Store.readSelectorInterval
+            Fluke.root
+            (nameof bulletJournalWeekCellsMap)
             Selectors.interval
             []
-            $"{nameof BulletJournalView}/{nameof weekCellsMap}"
             (fun getter ->
                 let position = Store.value getter Atoms.Session.position
                 let sortedTaskIdAtoms = Store.value getter Session.sortedTaskIdAtoms

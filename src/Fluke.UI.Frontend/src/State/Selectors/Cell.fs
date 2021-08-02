@@ -13,7 +13,9 @@ open FsStore
 module rec Cell =
     let rec sessionStatus =
         Store.selectorFamily
-            $"{nameof Cell}/{nameof sessionStatus}"
+            Fluke.root
+            Atoms.Cell.collection
+            (nameof sessionStatus)
             (fun (taskId: TaskId, dateId: DateId) getter ->
                 let hideSchedulingOverlay = Store.value getter Atoms.User.hideSchedulingOverlay
 
@@ -38,7 +40,9 @@ module rec Cell =
 
     let rec selected =
         Store.selectorFamily
-            $"{nameof Cell}/{nameof selected}"
+            Fluke.root
+            Atoms.Cell.collection
+            (nameof selected)
             (fun (taskId: TaskId, dateId: DateId) getter ->
                 let selectionSet = Store.value getter (Atoms.Task.selectionSet taskId)
                 selectionSet.Contains dateId)
@@ -122,7 +126,9 @@ module rec Cell =
 
     let rec sessions =
         Store.readSelectorFamily
-            $"{nameof Cell}/{nameof sessions}"
+            Fluke.root
+            Atoms.Cell.collection
+            (nameof sessions)
             (fun (taskId: TaskId, dateId: DateId) getter ->
                 let sessions = Store.value getter (Atoms.Task.sessions taskId)
                 let dayStart = Store.value getter Atoms.User.dayStart
@@ -132,14 +138,18 @@ module rec Cell =
 
     let rec sessionCount =
         Store.readSelectorFamily
-            $"{nameof Cell}/{nameof sessionCount}"
+            Fluke.root
+            Atoms.Cell.collection
+            (nameof sessionCount)
             (fun (taskId: TaskId, dateId: DateId) getter ->
                 let sessions = Store.value getter (sessions (taskId, dateId))
                 sessions.Length)
 
     let rec attachmentIdSet =
         Store.readSelectorFamily
-            $"{nameof Cell}/{nameof attachmentIdSet}"
+            Fluke.root
+            Atoms.Cell.collection
+            (nameof attachmentIdSet)
             (fun (taskId: TaskId, dateId: DateId) getter ->
                 let cellAttachmentIdMap = Store.value getter (Task.cellAttachmentIdMap taskId)
 

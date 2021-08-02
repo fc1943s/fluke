@@ -18,6 +18,11 @@ module Model =
 
     and Color = Color of hex: string
 
+    type StoreRoot = StoreRoot of name: string
+
+    and StoreRoot with
+        static member inline Value (StoreRoot name) = name
+
     type Collection = Collection of collection: string
 
     and Collection with

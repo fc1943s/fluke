@@ -45,7 +45,8 @@ module SignalR =
                     .onMessage (
                         function
                         | Sync.Response.ConnectResult -> Dom.log (fun () -> "Sync.Response.ConnectResult")
-                        | Sync.Response.GetResult value -> Dom.log (fun () -> $"Sync.Response.GetResult value={value}")
+                        | Sync.Response.GetResult (key, value) ->
+                            Dom.log (fun () -> $"Sync.Response.GetResult key={key} value={value}")
                         | Sync.Response.SetResult result ->
                             Dom.log (fun () -> $"Sync.Response.SetResult result={result}")
                         | Sync.Response.FilterResult keys ->
@@ -53,11 +54,12 @@ module SignalR =
                     ))
 
 module Selectors =
-    let rec deviceInfo = Store.readSelector $"{nameof deviceInfo}" (fun _ -> Dom.deviceInfo)
+    let rec deviceInfo = Store.readSelector FsStore.root (nameof deviceInfo) (fun _ -> Dom.deviceInfo)
 
     let rec logger =
         Store.readSelector
-            $"{nameof logger}"
+            FsStore.root
+            (nameof logger)
             (fun getter ->
                 let logLevel = Store.value getter Atoms.logLevel
                 Logger.Create logLevel)
@@ -77,8 +79,8 @@ lastValue={lastValue}
 
         let rec valueWrapper =
             Store.selector
-                $"{nameof valueWrapper}"
-                None
+                FsStore.root
+                (nameof valueWrapper)
                 (fun getter ->
                     let result = Store.value getter valueAtom
                     Dom.log (fun () -> $"atomAccessors.valueWrapper.get() result={result} {getBaseInfo ()}")
@@ -99,7 +101,8 @@ lastValue={lastValue}
                     ()
 
         Store.readSelector
-            $"{nameof atomAccessors}"
+            FsStore.root
+            (nameof atomAccessors)
             (fun getter ->
                 let value = Store.value getter valueWrapper
                 let accessors = Store.value getter accessorsAtom
@@ -112,7 +115,8 @@ lastValue={lastValue}
 
     let rec hub =
         Store.readSelector
-            $"{nameof hub}"
+            FsStore.root
+            (nameof hub)
             (fun getter ->
                 let _hubTrigger = Store.value getter Atoms.hubTrigger
                 let hubUrl = Store.value getter Atoms.hubUrl
@@ -129,7 +133,8 @@ lastValue={lastValue}
 
     let rec gunPeers =
         Store.readSelector
-            $"{nameof gunPeers}"
+            FsStore.root
+            (nameof gunPeers)
             (fun getter ->
                 let gunOptions = Store.value getter Atoms.gunOptions
 
@@ -141,7 +146,8 @@ lastValue={lastValue}
 
     let rec gun =
         Store.readSelector
-            $"{nameof gun}"
+            FsStore.root
+            (nameof gun)
             (fun getter ->
                 let isTesting = Store.value getter Atoms.isTesting
                 let gunPeers = Store.value getter gunPeers
@@ -171,7 +177,8 @@ lastValue={lastValue}
 
     let rec gunNamespace =
         Store.readSelector
-            $"{nameof gunNamespace}"
+            FsStore.root
+            (nameof gunNamespace)
             (fun getter ->
                 let _gunTrigger = Store.value getter Atoms.gunTrigger
                 let gun = Store.value getter gun
@@ -188,36 +195,42 @@ lastValue={lastValue}
 
                 user)
 
-    let rec gunAtomNode =
-        Store.readSelectorFamily
-            $"{nameof gunAtomNode}"
-            (fun (username, AtomPath atomPath) getter ->
-                let gunNamespace = Store.value getter gunNamespace
+    module rec Gun =
+        let collection = Collection (nameof Gun)
 
-                match gunNamespace.is with
-                | Some { alias = Some username' } when username' = (username |> Username.ValueOrDefault) ->
-                    let nodes = atomPath |> String.split "/" |> Array.toList
+        let rec gunAtomNode =
+            Store.readSelectorFamily
+                FsStore.root
+                collection
+                (nameof gunAtomNode)
+                (fun (username, AtomPath atomPath) getter ->
+                    let gunNamespace = Store.value getter gunNamespace
 
-                    match nodes with
-                    | [] -> None
-                    | [ root ] -> Some (gunNamespace.get root)
-                    | nodes ->
-                        let lastNode = nodes |> List.last
-                        let parentAtomPath = AtomPath (nodes.[0..nodes.Length - 2] |> String.concat "/")
-                        let node = Store.value getter (gunAtomNode (username, parentAtomPath))
+                    match gunNamespace.is with
+                    | Some { alias = Some username' } when username' = (username |> Username.ValueOrDefault) ->
+                        let nodes = atomPath |> String.split "/" |> Array.toList
 
-                        node
-                        |> Option.map (fun (node: Gun.Types.IGunChainReference) -> node.get lastNode)
-                //                    (Some (gunNamespace.get nodes.Head), nodes.Tail)
-//                    ||> List.fold
-//                            (fun result node ->
-//                                result
-//                                |> Option.map (fun result -> result.get node))
-                | _ ->
-                    Dom.log
-                        (fun () ->
-                            $"gunAtomNode. Invalid username.
-                                      atomPath={atomPath}
-                                      user.is={JS.JSON.stringify gunNamespace.is}")
+                        match nodes with
+                        | [] -> None
+                        | [ root ] -> Some (gunNamespace.get root)
+                        | nodes ->
+                            let lastNode = nodes |> List.last
+                            let parentAtomPath = AtomPath (nodes.[0..nodes.Length - 2] |> String.concat "/")
+                            let node = Store.value getter (gunAtomNode (username, parentAtomPath))
 
-                    None)
+                            node
+                            |> Option.map (fun (node: Gun.Types.IGunChainReference) -> node.get lastNode)
+
+                    //                        (Some (gunNamespace.get nodes.Head), nodes.Tail)
+//                        ||> List.fold
+//                                (fun result node ->
+//                                    result
+//                                    |> Option.map (fun result -> result.get node))
+                    | _ ->
+                        Dom.log
+                            (fun () ->
+                                $"gunAtomNode. Invalid username.
+                                          atomPath={atomPath}
+                                          user.is={JS.JSON.stringify gunNamespace.is}")
+
+                        None)

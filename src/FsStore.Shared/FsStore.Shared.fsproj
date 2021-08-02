@@ -11,8 +11,5 @@
         <Content Include=".gitignore" />
         <Content Include="yarn.lock" />
     </ItemGroup>
-    <ItemGroup>
-      <ProjectReference Include="..\FsJs\FsJs.fsproj" />
-    </ItemGroup>
     <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

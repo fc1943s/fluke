@@ -15,7 +15,7 @@ module BulletJournalView =
 
     [<ReactComponent>]
     let BulletJournalView () =
-        let weekCellsMap = Store.useValue Selectors.BulletJournalView.weekCellsMap
+        let weekCellsMap = Store.useValue Selectors.BulletJournalView.bulletJournalWeekCellsMap
 
         UI.box
             (fun x -> x.flex <- "1")

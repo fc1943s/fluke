@@ -17,7 +17,9 @@ open FsStore
 module rec Database =
     let rec database =
         Store.readSelectorFamily
-            $"{nameof Database}/{nameof database}"
+            Fluke.root
+            Atoms.Database.collection
+            (nameof database)
             (fun (databaseId: DatabaseId) getter ->
                 {
                     Id = databaseId
@@ -30,7 +32,9 @@ module rec Database =
 
     let rec nodeType =
         Store.readSelectorFamily
-            $"{nameof Database}/{nameof nodeType}"
+            Fluke.root
+            Atoms.Database.collection
+            (nameof nodeType)
             (fun (databaseId: DatabaseId) getter ->
                 let database = Store.value getter (database databaseId)
                 let username = Store.value getter Atoms.username
@@ -44,7 +48,9 @@ module rec Database =
 
     let rec isReadWrite =
         Store.readSelectorFamily
-            $"{nameof Database}/{nameof isReadWrite}"
+            Fluke.root
+            Atoms.Database.collection
+            (nameof isReadWrite)
             (fun (databaseId: DatabaseId) getter ->
                 let username = Store.value getter Atoms.username
 
@@ -65,9 +71,10 @@ module rec Database =
 
     let rec taskIdAtoms =
         Store.readSelectorFamilyInterval
+            Fluke.root
+            (nameof taskIdAtoms)
             Selectors.interval
             [||]
-            $"{nameof Database}/{nameof taskIdAtoms}"
             (fun (databaseId: DatabaseId) getter ->
                 Selectors.asyncTaskIdAtoms
                 |> Store.value getter
@@ -80,7 +87,9 @@ module rec Database =
 
     let rec unarchivedTaskIdAtoms =
         Store.readSelectorFamily
-            $"{nameof Database}/{nameof unarchivedTaskIdAtoms}"
+            Fluke.root
+            Atoms.Database.collection
+            (nameof unarchivedTaskIdAtoms)
             (fun (databaseId: DatabaseId) getter ->
                 let taskIdAtoms = Store.value getter (taskIdAtoms databaseId)
 
@@ -94,7 +103,9 @@ module rec Database =
 
     let rec archivedTaskIdAtoms =
         Store.readSelectorFamily
-            $"{nameof Database}/{nameof archivedTaskIdAtoms}"
+            Fluke.root
+            Atoms.Database.collection
+            (nameof archivedTaskIdAtoms)
             (fun (databaseId: DatabaseId) getter ->
                 let taskIdAtoms = Store.value getter (taskIdAtoms databaseId)
 
@@ -108,7 +119,9 @@ module rec Database =
 
     let rec taskIdAtomsByArchive =
         Store.readSelectorFamily
-            $"{nameof Database}/{nameof taskIdAtomsByArchive}"
+            Fluke.root
+            Atoms.Database.collection
+            (nameof taskIdAtomsByArchive)
             (fun (databaseId: DatabaseId) getter ->
                 let archive = Store.value getter Atoms.User.archive
 
@@ -122,7 +135,9 @@ module rec Database =
 
     let rec informationAttachmentIdMapByArchive =
         Store.readSelectorFamily
-            $"{nameof Database}/{nameof informationAttachmentIdMapByArchive}"
+            Fluke.root
+            Atoms.Database.collection
+            (nameof informationAttachmentIdMapByArchive)
             (fun (databaseId: DatabaseId) getter ->
                 let archive = Store.value getter Atoms.User.archive
 
@@ -153,9 +168,10 @@ module rec Database =
 
     let rec informationAttachmentIdMap =
         Store.readSelectorFamilyInterval
+            Fluke.root
+            (nameof informationAttachmentIdMap)
             Selectors.interval
             Map.empty
-            $"{nameof Database}/{nameof informationAttachmentIdMap}"
             (fun (databaseId: DatabaseId) getter ->
                 Selectors.asyncAttachmentIdAtoms
                 |> Store.value getter
@@ -174,7 +190,9 @@ module rec Database =
 
     let rec databaseState =
         Store.readSelectorFamily
-            $"{nameof Database}/{nameof databaseState}"
+            Fluke.root
+            Atoms.Database.collection
+            (nameof databaseState)
             (fun (databaseId: DatabaseId) getter ->
                 let database = Store.value getter (Database.database databaseId)
 

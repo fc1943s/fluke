@@ -3,13 +3,18 @@ namespace Fluke.UI.Frontend.State.Selectors
 open Fluke.Shared
 open Fluke.UI.Frontend.State
 open Fluke.Shared.Domain.UserInteraction
+open FsCore.Model
 open FsStore
 
 
 module rec DateId =
+    let collection = Collection (nameof DateId)
+
     let isToday =
         Store.readSelectorFamily
-            $"{nameof DateId}/{nameof isToday}"
+            Fluke.root
+            collection
+            (nameof isToday)
             (fun (dateId: DateId) getter ->
                 let position = Store.value getter Atoms.Session.position
 
@@ -22,7 +27,9 @@ module rec DateId =
 
     let rec hasCellSelection =
         Store.readSelectorFamily
-            $"{nameof DateId}/{nameof hasCellSelection}"
+            Fluke.root
+            collection
+            (nameof hasCellSelection)
             (fun (dateId: DateId) getter ->
                 let visibleTaskSelectedDateIdMap = Store.value getter Session.visibleTaskSelectedDateIdMap
 

@@ -2,6 +2,7 @@ namespace Fluke.UI.Frontend.State.Atoms
 
 open Fluke.Shared.Domain.UserInteraction
 open FsStore
+open Fluke.UI.Frontend.State
 
 
 module Session =
@@ -25,7 +26,7 @@ module Session =
 //                    (fun (_eventId: EventId) -> Event.NoOp)
 //                )
 
-    let rec sessionRestored = Store.atom $"{nameof sessionRestored}" false
-    let rec position = Store.atom $"{nameof position}" (None: FlukeDateTime option)
-    let rec ctrlPressed = Store.atom $"{nameof ctrlPressed}" false
-    let rec shiftPressed = Store.atom $"{nameof shiftPressed}" false
+    let rec sessionRestored = Store.atom Fluke.root (nameof sessionRestored) false
+    let rec position = Store.atom Fluke.root (nameof position) (None: FlukeDateTime option)
+    let rec ctrlPressed = Store.atom Fluke.root (nameof ctrlPressed) false
+    let rec shiftPressed = Store.atom Fluke.root (nameof shiftPressed) false

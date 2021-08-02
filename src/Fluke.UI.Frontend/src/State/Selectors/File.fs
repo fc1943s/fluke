@@ -12,7 +12,9 @@ open FsStore
 module rec File =
     let rec byteArray =
         Store.readSelectorFamily
-            $"{nameof File}/{nameof byteArray}"
+            Fluke.root
+            Atoms.File.collection
+            (nameof byteArray)
             (fun (fileId: FileId) getter ->
                 let chunkCount = Store.value getter (Atoms.File.chunkCount fileId)
 
@@ -24,10 +26,10 @@ module rec File =
                             0 .. chunkCount - 1
                         |]
                         |> Array.map (fun i -> Atoms.File.chunk (fileId, i))
-                        |> Store.waitForAll
-                        |> Store.value getter
+                        |> Array.chunkBySize 100
+                        |> Array.collect (Store.waitForAll >> Store.value getter)
 
-                    if chunks |> Array.contains "" then
+                    if chunks |> Array.exists (String.length >> (=) 0) then
                         Dom.log
                             (fun () ->
                                 $"File.blob
@@ -56,7 +58,9 @@ module rec File =
 
     let rec blob =
         Store.readSelectorFamily
-            $"{nameof File}/{nameof blob}"
+            Fluke.root
+            Atoms.File.collection
+            (nameof blob)
             (fun (fileId: FileId) getter ->
                 let byteArray = Store.value getter (byteArray fileId)
 
@@ -66,7 +70,9 @@ module rec File =
 
     let rec objectUrl =
         Store.readSelectorFamily
-            $"{nameof File}/{nameof objectUrl}"
+            Fluke.root
+            Atoms.File.collection
+            (nameof objectUrl)
             (fun (fileId: FileId) getter ->
                 let blob = Store.value getter (blob fileId)
                 blob |> Option.map Browser.Url.URL.createObjectURL)

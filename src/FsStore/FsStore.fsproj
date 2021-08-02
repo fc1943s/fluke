@@ -8,8 +8,8 @@
         <Compile Include="src\Bindings\Batcher.fs" />
         <Compile Include="src\Bindings\Gun.fs" />
         <Compile Include="src\Bindings\Jotai.fs" />
-        <Compile Include="src\Primitives.fs" />
         <Compile Include="src\Model.fs" />
+        <Compile Include="src\Primitives.fs" />
         <Compile Include="src\Atoms.fs" />
         <Compile Include="src\Log.fs" />
         <Compile Include="src\Selectors.fs" />

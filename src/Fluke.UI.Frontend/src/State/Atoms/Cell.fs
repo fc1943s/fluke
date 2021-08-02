@@ -2,9 +2,12 @@ namespace Fluke.UI.Frontend.State.Atoms
 
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.UserInteraction
+open FsCore.Model
 
 
 module rec Cell =
+    let collection = Collection (nameof Cell)
+
     let inline cellIdentifier (taskId: TaskId) (dateId: DateId) =
         [
             taskId |> TaskId.Value |> string

@@ -117,12 +117,15 @@ module Dom =
 
         debug <> false && (debug || isDebugStatic)
 
-    let inline log fn =
+    let inline logWithFn logFn fn =
         if isDebug () then
             let result = fn ()
 
             if result |> Option.ofObjUnbox |> Option.isSome then
-                printfn $"""[{DateTime.Now |> DateTime.format "HH:mm:ss"}] {result}"""
+                logFn $"""[{DateTime.Now |> DateTime.format "HH:mm:ss"}] {result}"""
+
+    let inline log fn = logWithFn (fun x -> printfn $"{x}") fn
+    let inline logError fn = logWithFn (fun x -> eprintfn $"{x}") fn
 
     let inline logFiltered newValue fn =
         log (fun () -> if (string newValue).StartsWith "Ping " then null else fn ())

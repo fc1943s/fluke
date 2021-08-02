@@ -14,6 +14,8 @@ open FsStore.Bindings.Jotai
 [<AutoOpen>]
 module HooksMagic =
     module Store =
+        let inline useAtom atom = jotai.useAtom atom
+
         let inline useStateOption (atom: Atom<'TValue5> option) =
             let flatAtom =
                 React.useMemo (
@@ -26,7 +28,7 @@ module HooksMagic =
                     |]
                 )
 
-            let value, setValue = jotai.useAtom flatAtom
+            let value, setValue = useAtom flatAtom
 
             (if atom.IsNone then None else Some value), (if atom.IsNone then (fun _ -> ()) else setValue)
 
@@ -148,7 +150,7 @@ module HooksMagic =
                     |]
                 )
 
-            let _value, setValue = jotai.useAtom atom
+            let _value, setValue = useAtom atom
 
             let useAtomCallback =
                 React.useCallback (
@@ -166,7 +168,7 @@ module HooksMagic =
             useCallbackRef (fun getter setter () -> promise { return (getter, setter) })
 
 
-        let inline useState atom = jotai.useAtom atom
+        let inline useState atom = useAtom atom
 
         let inline useSetState atom = jotaiUtils.useUpdateAtom atom
 

@@ -2,8 +2,9 @@ namespace FsUi
 
 open FsCore.Model
 
+
 module FsUi =
-    let collection = Collection (nameof FsUi)
+    let root = StoreRoot (nameof FsUi)
 
 
 module Model =

@@ -123,7 +123,7 @@ module Hydrate =
         attachmentId
 
     let inline hydrateFile _getter setter (atomScope: AtomScope, hexString: string) =
-        let chunkSize = 256
+        let chunkSize = 6400
         let chunkCount = int (Math.Ceiling (float hexString.Length / float chunkSize))
 
         let chunks =

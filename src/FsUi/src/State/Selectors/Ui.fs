@@ -1,14 +1,16 @@
 namespace FsUi.State.Selectors
 
-open FsUi.State
 open FsStore
+open FsUi
 open FsUi.Model
+open FsUi.State
 
 
 module rec Ui =
     let rec uiState =
         Store.readSelector
-            $"{nameof Ui}/{nameof uiState}"
+            FsUi.root
+            (nameof uiState)
             (fun getter ->
                 {
                     DarkMode = Store.value getter Atoms.Ui.darkMode

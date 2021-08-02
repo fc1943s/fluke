@@ -1,21 +1,19 @@
 namespace FsStore.Shared
 
-open FsCore.Model
-
 
 module rec Sync =
     [<RequireQualifiedAccess>]
     type Request =
-        | Connect of Username
-        | Set of Username * string * string
-        | Get of Username * string
-        | Filter of Username * string
+        | Connect of username: string
+        | Set of username: string * atomPath: string * value: string
+        | Get of username: string * atomPath: string
+        | Filter of username: string * collection: string
 
     [<RequireQualifiedAccess>]
     type Response =
         | ConnectResult
-        | SetResult of bool
-        | GetResult of string option
-        | FilterResult of string []
+        | SetResult of ok: bool
+        | GetResult of atomPath: string * value: string option
+        | FilterResult of atomPathArray: string []
 
     let endpoint = $"/{nameof Sync}"

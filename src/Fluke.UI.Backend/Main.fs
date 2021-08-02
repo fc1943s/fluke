@@ -1,9 +1,10 @@
 ﻿namespace Fluke.UI.Backend
 
+open FSharp.Control
 open System.Threading
+open FsCore
 open Fable.SignalR
 open Fluke.Shared
-open FsCore.Model
 open FsStore.Shared
 open Fumble
 open Microsoft.Extensions.Logging
@@ -14,34 +15,49 @@ open Saturn
 
 module Main =
     module Model =
-        let connectionString = "Data Source=.\db.db"
+        let getConnectionString username =
+            $"Data Source=./data/{username}.sqlite3"
 
-        let createTable (table: string) =
-            connectionString
+        let createTable username =
+            getConnectionString username
             |> Sqlite.connect
             |> Sqlite.command
-                $"
-            CREATE TABLE IF NOT EXISTS {table} (
+                " CREATE TABLE IF NOT EXISTS data (
                     key string PRIMARY KEY,
                     value string
-                ) WITHOUT ROWID;
-            "
+                  ) WITHOUT ROWID; "
             |> Sqlite.executeCommand
             |> function
                 | Ok rows ->
-                    printfn $"table {table} created. rows affected %A{rows}"
+                    printfn $"table data created. rows affected %A{rows}"
                     Thread.Sleep 50
                 | Error err -> failwith $"create table error err={err}"
 
-        let insert (table: string) key value =
-            connectionString
+        let getMemoizedCreateTable () =
+            let mutable map = Map.empty
+            let table = "data"
+
+            fun username ->
+                let set =
+                    map
+                    |> Map.tryFind username
+                    |> Option.defaultValue Set.empty
+
+                if set |> Set.contains table |> not then
+                    map <- map |> Map.add username (set |> Set.add table)
+                    printfn $"creating table {table} username={username}"
+                    createTable username
+
+        let memoizedCreateTable = getMemoizedCreateTable ()
+
+        let insert username key value =
+            getConnectionString username
             |> Sqlite.connect
             |> Sqlite.command
-                $"INSERT into {table} (key, value)
-                 values (@Key, @Value)
-                 ON CONFLICT(key)
-                 DO UPDATE SET value=@Value;
-                "
+                " INSERT into data (key, value)
+                  values (@Key, @Value)
+                  ON CONFLICT(key)
+                  DO UPDATE SET value=@Value; "
             |> Sqlite.insertData [
                 {| Key = key; Value = value |}
                ]
@@ -53,10 +69,10 @@ module Main =
                     printfn $"error %A{err}"
                     false
 
-        let query (table: string) key =
-            connectionString
+        let query username key =
+            getConnectionString username
             |> Sqlite.connect
-            |> Sqlite.query $"SELECT * FROM {table} where key=@Key "
+            |> Sqlite.query " SELECT * FROM data where key=@Key "
             |> Sqlite.parameters [
                 "@Key", Sqlite.string key
                ]
@@ -74,10 +90,10 @@ module Main =
                     printfn $"error %A{err}"
                     None
 
-        let preKeyFilter (table: string) key =
-            connectionString
+        let queryTableKeys username key =
+            getConnectionString username
             |> Sqlite.connect
-            |> Sqlite.query $""" SELECT key FROM {table} where key like "%%/{key}/%%" """
+            |> Sqlite.query $""" SELECT key FROM data where key like "%%/{key}/%%" """
             |> Sqlite.execute (fun read -> {| Key = read.string "key" |})
             |> function
                 | Ok result ->
@@ -87,58 +103,67 @@ module Main =
                     printfn $"error %A{err}"
                     []
 
-        let getMemoizedCreateTable () =
-            let mutable set = Set.empty
+        let tryTestKey table key =
+            let result = Regex.Match (key, $"^.*?/{table}/([a-fA-F0-9\\-]{{36}})")
+            if result.Groups.Count = 2 then Some result.Groups.[1].Value else None
 
-            fun (table: string) ->
-                if set |> Set.contains table |> not then
-                    set <- set |> Set.add table
-                    printfn $"creating table {table}"
-                    createTable table
+        let fetchTableKeys username table =
+            queryTableKeys username table
+            |> Seq.choose (tryTestKey table)
+            |> Seq.distinct
+            |> Seq.toArray
 
-        let memoizedCreateTable = getMemoizedCreateTable ()
+
 
         let update (msg: Sync.Request) (hubContext: FableHub<Sync.Request, Sync.Response> option) =
             //            printfn $"Model.update() msg={msg}"
 
             match msg with
-            | Sync.Request.Connect (Username username) ->
+            | Sync.Request.Connect username ->
                 memoizedCreateTable username
                 printfn $"@@@ Sync.Request.Connect username={username}"
                 Sync.Response.ConnectResult
-            | Sync.Request.Set (Username username, key, value) ->
+            | Sync.Request.Set (username, key, value) ->
                 memoizedCreateTable username
                 let result = insert username key value
                 //                printfn $"set {key} {value}"
+
                 match hubContext with
-                | Some hub when result ->
-//                    hub.Clients.All.Send (Sync.Response.GetResult (key, value))
-                    ()
+                | Some _hub when result ->
+                    printfn $"Sync.Request.Set. username={username} key={key}. result=true hub.IsSome. broadcasting."
+
+                //                    (hub.Clients.All.Send (
+//                        Sync.Response.GetResult (
+//                            key,
+//                            match value with
+//                            | String.ValidString _ -> Some value
+//                            | _ -> None
+//                        )
+//                    ))
+//                        .Start ()
                 | _ -> ()
+
                 Sync.Response.SetResult result
-            | Sync.Request.Get (Username username, key) ->
+            | Sync.Request.Get (username, key) ->
                 memoizedCreateTable username
                 let result = query username key
-
-                result
-                |> Option.bind (fun x -> x.Value)
-                |> Sync.Response.GetResult
-            | Sync.Request.Filter (Username username, key) ->
+                let value = result |> Option.bind (fun x -> x.Value)
+                //                printfn $"get username={username} key={key} value={value}"
+                Sync.Response.GetResult (key, value)
+            | Sync.Request.Filter (username, collection) ->
                 memoizedCreateTable username
-                let preResult = preKeyFilter username key
 
-                let result =
-                    preResult
-                    |> Seq.choose
-                        (fun key' ->
-                            let result = Regex.Match (key', $"^.*?/{key}/([a-fA-F0-9\\-]{{36}})/")
-                            if result.Groups.Count = 2 then Some result.Groups.[1].Value else None)
-                    |> Seq.distinct
-                    |> Seq.toArray
+                let result = fetchTableKeys username collection
 
-                printfn $"@@@ filter {key} total={preResult.Length} result={result.Length}"
+                printfn $"Sync.Request.Filter username={username} collection={collection} result={result.Length}"
 
                 Sync.Response.FilterResult result
+
+        //        let update2 msg hubContext =
+//            asyncSeq {
+//                update msg hubContext
+//            }
+//            |> AsyncSeq.toAsyncEnum
 
         let invoke (msg: Sync.Request) _ = task { return update msg None }
 
@@ -147,12 +172,11 @@ module Main =
 
         [<RequireQualifiedAccess>]
         module Stream =
-            open FSharp.Control
 
-            let sendToClient (msg: Sync.Request) (_hubContext: FableHub<Sync.Request, Sync.Response>) =
+            let sendToClient (msg: Sync.Request) (hubContext: FableHub<Sync.Request, Sync.Response>) =
                 asyncSeq {
                     try
-                        update msg
+                        update msg (Some hubContext)
                     with
                     | ex -> printfn $"sendToClient exception. ex={ex}"
                 }

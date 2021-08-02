@@ -9,7 +9,9 @@ open FsStore
 module rec Attachment =
     let rec attachmentState =
         Store.readSelectorFamily
-            $"{nameof Attachment}/{nameof attachmentState}"
+            Fluke.root
+            Atoms.Attachment.collection
+            (nameof attachmentState)
             (fun (attachmentId: AttachmentId) getter ->
                 let timestamp = Store.value getter (Atoms.Attachment.timestamp attachmentId)
                 let archived = Store.value getter (Atoms.Attachment.archived attachmentId)
