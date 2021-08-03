@@ -1,186 +1,157 @@
 ﻿namespace Fluke.UI.Backend
 
+open System.Collections.Concurrent
+open System.IO
+open System.Threading.Tasks
 open FSharp.Control
-open System.Threading
 open FsCore
 open Fable.SignalR
 open Fluke.Shared
 open FsStore.Shared
-open Fumble
 open Microsoft.Extensions.Logging
-open System.Text.RegularExpressions
 open FSharp.Control.Tasks.V2
 open Saturn
+open System.Threading
+open Microsoft.Extensions.DependencyInjection
+open Microsoft.Extensions.Hosting
 
 
 module Main =
+
     module Model =
-        let getConnectionString username =
-            $"Data Source=./data/{username}.sqlite3"
+        let getPath username key =
+            let path = Path.Combine (".", "data", username, $"{key}")
+            //            printfn $"getPath. username={username} key={key} / path={path}"
+            path
 
-        let createTable username =
-            getConnectionString username
-            |> Sqlite.connect
-            |> Sqlite.command
-                " CREATE TABLE IF NOT EXISTS data (
-                    key string PRIMARY KEY,
-                    value string
-                  ) WITHOUT ROWID; "
-            |> Sqlite.executeCommand
-            |> function
-                | Ok rows ->
-                    printfn $"table data created. rows affected %A{rows}"
-                    Thread.Sleep 50
-                | Error err -> failwith $"create table error err={err}"
+        let createParentDirectory path =
+            Directory.CreateDirectory (Directory.GetParent(path).FullName)
+            |> ignore
 
-        let getMemoizedCreateTable () =
-            let mutable map = Map.empty
-            let table = "data"
+        let writeFile username key value =
+            task {
+                try
+                    let path = getPath username key
+                    createParentDirectory path
+                    do! File.WriteAllTextAsync (path, value)
+                    return true
+                with
+                | ex ->
+                    eprintfn $"writeFile error ex={ex.Message}"
+                    return false
+            }
 
-            fun username ->
-                let set =
-                    map
-                    |> Map.tryFind username
-                    |> Option.defaultValue Set.empty
+        let readFile username key =
+            task {
+                try
+                    let path = getPath username key
+                    let! result = File.ReadAllTextAsync path
+                    return result |> Option.ofObjUnbox
+                with
+                | _ex ->
+                    //                    eprintfn $"readFile error ex={ex.Message}"
+                    return None
+            }
 
-                if set |> Set.contains table |> not then
-                    map <- map |> Map.add username (set |> Set.add table)
-                    printfn $"creating table {table} username={username}"
-                    createTable username
-
-        let memoizedCreateTable = getMemoizedCreateTable ()
-
-        let insert username key value =
-            getConnectionString username
-            |> Sqlite.connect
-            |> Sqlite.command
-                " INSERT into data (key, value)
-                  values (@Key, @Value)
-                  ON CONFLICT(key)
-                  DO UPDATE SET value=@Value; "
-            |> Sqlite.insertData [
-                {| Key = key; Value = value |}
-               ]
-            |> function
-                | Ok _rows ->
-                    //                    printfn $"rows affected %A{rows.Length}"
-                    true
-                | Error err ->
-                    printfn $"error %A{err}"
-                    false
-
-        let query username key =
-            getConnectionString username
-            |> Sqlite.connect
-            |> Sqlite.query " SELECT * FROM data where key=@Key "
-            |> Sqlite.parameters [
-                "@Key", Sqlite.string key
-               ]
-            |> Sqlite.execute
-                (fun read ->
-                    {|
-                        Key = read.string "key"
-                        Value = read.stringOrNone "value"
-                    |})
-            |> function
-                | Ok result ->
-                    //                    printfn $"result %A{result}"
-                    result |> List.tryHead
-                | Error err ->
-                    printfn $"error %A{err}"
-                    None
-
-        let queryTableKeys username key =
-            getConnectionString username
-            |> Sqlite.connect
-            |> Sqlite.query $""" SELECT key FROM data where key like "%%/{key}/%%" """
-            |> Sqlite.execute (fun read -> {| Key = read.string "key" |})
-            |> function
-                | Ok result ->
-                    //                    printfn $"result %A{result}"
-                    result |> List.map (fun x -> x.Key)
-                | Error err ->
-                    printfn $"error %A{err}"
-                    []
-
-        let tryTestKey table key =
-            let result = Regex.Match (key, $"^.*?/{table}/([a-fA-F0-9\\-]{{36}})")
-            if result.Groups.Count = 2 then Some result.Groups.[1].Value else None
-
-        let fetchTableKeys username table =
-            queryTableKeys username table
-            |> Seq.choose (tryTestKey table)
-            |> Seq.distinct
-            |> Seq.toArray
+        let watchlist = ConcurrentDictionary<string * string * string, string [] option> ()
 
 
+        let fetchTableKeys username storeRoot collection =
+            let path = getPath username $"{storeRoot}/{collection}"
+            Directory.CreateDirectory path |> ignore
+
+            let result =
+                Directory.EnumerateDirectories path
+                |> Seq.map Path.GetFileName
+                |> Seq.toArray
+
+            watchlist.[(username, storeRoot, collection)] <- Some result
+
+            result
 
         let update (msg: Sync.Request) (hubContext: FableHub<Sync.Request, Sync.Response> option) =
-            //            printfn $"Model.update() msg={msg}"
+            task {
+                //            printfn $"Model.update() msg={msg}"
 
-            match msg with
-            | Sync.Request.Connect username ->
-                memoizedCreateTable username
-                printfn $"@@@ Sync.Request.Connect username={username}"
-                Sync.Response.ConnectResult
-            | Sync.Request.Set (username, key, value) ->
-                memoizedCreateTable username
-                let result = insert username key value
-                //                printfn $"set {key} {value}"
+                match msg with
+                | Sync.Request.Connect username ->
+                    printfn $"@@@ Sync.Request.Connect username={username}"
+                    return Sync.Response.ConnectResult
+                | Sync.Request.Set (username, key, value) ->
+                    let! result = writeFile username key value
+                    //                printfn $"set {key} {value}"
+                    match hubContext with
+                    | Some _hub when result ->
+                        printfn
+                            $"Sync.Request.Set. username={username} key={key}. result=true hub.IsSome. broadcasting."
 
-                match hubContext with
-                | Some _hub when result ->
-                    printfn $"Sync.Request.Set. username={username} key={key}. result=true hub.IsSome. broadcasting."
+                    //                        do!
+//                            hub.Clients.All.Send (
+//                                Sync.Response.GetResult (
+//                                    key,
+//                                    match value with
+//                                    | String.ValidString _ -> Some value
+//                                    | _ -> None
+//                                )
+//                            )
+                    | _ -> ()
 
-                //                    (hub.Clients.All.Send (
-//                        Sync.Response.GetResult (
-//                            key,
-//                            match value with
-//                            | String.ValidString _ -> Some value
-//                            | _ -> None
-//                        )
-//                    ))
-//                        .Start ()
-                | _ -> ()
+                    return Sync.Response.SetResult result
+                | Sync.Request.Get (username, key) ->
+                    let! value = readFile username key
+                    //                printfn $"get username={username} key={key} value={value}"
+                    return Sync.Response.GetResult (key, value)
+                | Sync.Request.Filter (username, storeRoot, collection) ->
+                    let result = fetchTableKeys username storeRoot collection
+                    printfn $"Sync.Request.Filter username={username} collection={collection} result={result.Length}"
+                    return Sync.Response.FilterResult ((username, storeRoot, collection), result)
 
-                Sync.Response.SetResult result
-            | Sync.Request.Get (username, key) ->
-                memoizedCreateTable username
-                let result = query username key
-                let value = result |> Option.bind (fun x -> x.Value)
-                //                printfn $"get username={username} key={key} value={value}"
-                Sync.Response.GetResult (key, value)
-            | Sync.Request.Filter (username, collection) ->
-                memoizedCreateTable username
-
-                let result = fetchTableKeys username collection
-
-                printfn $"Sync.Request.Filter username={username} collection={collection} result={result.Length}"
-
-                Sync.Response.FilterResult result
-
-        //        let update2 msg hubContext =
+            //        let update2 msg hubContext =
 //            asyncSeq {
 //                update msg hubContext
 //            }
 //            |> AsyncSeq.toAsyncEnum
+            }
 
-        let invoke (msg: Sync.Request) _ = task { return update msg None }
+        let invoke (msg: Sync.Request) _ = update msg None
 
         let send (msg: Sync.Request) (hubContext: FableHub<Sync.Request, Sync.Response>) =
-            hubContext.Clients.Caller.Send (update msg (Some hubContext))
+            task {
+                let! response = update msg (Some hubContext)
+                do! hubContext.Clients.Caller.Send response
+            }
+
+        module AsyncSeq =
+            let init x = AsyncSeq.initAsync 1L (fun _ -> x)
 
         [<RequireQualifiedAccess>]
         module Stream =
 
             let sendToClient (msg: Sync.Request) (hubContext: FableHub<Sync.Request, Sync.Response>) =
-                asyncSeq {
-                    try
-                        update msg (Some hubContext)
-                    with
-                    | ex -> printfn $"sendToClient exception. ex={ex}"
-                }
+                update msg (Some hubContext)
+                |> Async.AwaitTask
+                |> AsyncSeq.init
                 |> AsyncSeq.toAsyncEnum
+
+            type Ticker<'T, 'U when 'T: not struct and 'U: not struct> private (hub: FableHubCaller<'T, 'U>, fn) =
+                let cts = new CancellationTokenSource ()
+
+                let ticking =
+                    AsyncSeq.intervalMs 1000
+                    |> AsyncSeq.iterAsync (fun _ -> fn hub |> Async.AwaitTask)
+
+                interface IHostedService with
+                    member _.StartAsync ct =
+                        async { do Async.Start (ticking, cts.Token) }
+                        |> fun a -> upcast Async.StartAsTask (a, cancellationToken = ct)
+
+                    member _.StopAsync ct =
+                        async { do cts.Cancel () }
+                        |> fun a -> upcast Async.StartAsTask (a, cancellationToken = ct)
+
+                static member Create (services: IServiceCollection, fn) =
+                    services.AddHostedService<Ticker<'T, 'U>>
+                        (fun s -> Ticker (s.GetRequiredService<FableHubCaller<'T, 'U>> (), fn))
 
     [<EntryPoint>]
     let main _ =
@@ -197,14 +168,14 @@ module Main =
                         with_hub_options (fun options -> options.EnableDetailedErrors <- true)
 
                         with_after_routing
-                            (fun _x ->
+                            (fun _applicationBuilder ->
                                 printfn "saturn.with_after_routing()"
-                                _x)
+                                _applicationBuilder)
 
                         with_before_routing
-                            (fun _x ->
+                            (fun _applicationBuilder ->
                                 printfn "saturn.with_before_routing()"
-                                _x)
+                                _applicationBuilder)
 
                         with_on_disconnected (fun ex _hub -> task { printfn $"saturn.with_on_disconnected() ex={ex}" })
 
@@ -237,6 +208,35 @@ module Main =
                 use_developer_exceptions
                 memory_cache
                 no_router
+
+                service_config
+                    (fun serviceCollection ->
+                        Model.Stream.Ticker.Create (
+                            serviceCollection,
+                            fun (hub: FableHubCaller<Sync.Request, Sync.Response>) ->
+                                let newResults =
+                                    Model.watchlist
+                                    |> Seq.choose
+                                        (fun (KeyValue (collectionPath, lastValue)) ->
+                                            let username, storeRoot, collection = collectionPath
+                                            let result = Model.fetchTableKeys username storeRoot collection
+
+                                            match lastValue, result with
+                                            | None, _ -> None
+                                            | Some lastValue, result when lastValue = result -> None
+                                            | Some _, result ->
+                                                Model.watchlist.[collectionPath] <- Some result
+                                                Some (collectionPath, result)
+                                            | _ -> None)
+                                    |> Seq.toArray
+
+                                task {
+                                    do!
+                                        newResults
+                                        |> Array.map (Sync.Response.FilterResult >> hub.Clients.All.Send)
+                                        |> Task.WhenAll
+                                }
+                        ))
 
                 logging
                     (fun logging ->

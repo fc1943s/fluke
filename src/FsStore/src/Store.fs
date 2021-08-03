@@ -854,7 +854,6 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
         Dom.log (fun () -> $"@@ selectAtomSyncKeys constructor {getBaseInfo ()}           ")
 
         let mutable lastValue: Set<'TKey> option = None
-        let mutable lastHubSubscription = None
 
         let rec wrapper =
             Primitives.selector
@@ -1020,62 +1019,77 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
                     | Some (AtomPath atomPath), Some hub, Some (Username username) ->
                         promise {
                             try
-                                let collection =
+                                let storeRoot, collection =
                                     match atomPath |> String.split "/" |> Array.toList with
-                                    | app :: [ _ ] -> Some app
-                                    | _ :: collection :: _ -> Some collection
-                                    | _ -> None
+                                    | storeRoot :: [ _ ] -> Some storeRoot, None
+                                    | storeRoot :: collection :: _ -> Some storeRoot, Some collection
+                                    | _ -> None, None
 
-                                match lastHubSubscription, collection with
-                                | Some _, _ -> Dom.logError (fun () -> $"sub already present key={key}")
-                                | None, None -> Dom.consoleError "no collection present"
-                                | None, Some collection ->
-                                    Gun.batchHubSubscribe
-                                        hub
-                                        (Sync.Request.Filter (username, collection))
-                                        (fun (_ticks, response: Sync.Response) ->
-                                            Dom.log
-                                                (fun () ->
-                                                    $"@@ [wrapper.next() HUB keys stream subscribe]
-                                                      {getBaseInfo ()}
-                                                      response={response}")
+                                //                                hubSubscriptionMap
+                                match storeRoot, collection with
+                                | Some storeRoot, Some collection ->
+                                    let collectionPath = username, storeRoot, collection
 
-                                            promise {
-                                                match response with
-                                                | Sync.Response.FilterResult items ->
-                                                    if items.Length > 0 then
+                                    match Selectors.Hub.hubSubscriptionMap.TryGetValue collectionPath with
+                                    | true, _sub -> Dom.logError (fun () -> $"sub already present key={key}")
+                                    | _ ->
+                                        let handle items =
+                                            if items |> Array.isEmpty |> not then
+                                                Dom.log
+                                                    (fun () ->
+                                                        $"@@( atomKeys gun.on() HUB filter fetching/subscribing] @@@
+                                                                      setting keys locally. items.Length={items.Length}
+                                                                      atomPath={atomPath} syncEngine.atomPath={syncEngine.GetAtomPath ()}
+                                                                      key={key} ")
+
+                                                batchKeysAtom (items |> Array.map onFormat)
+                                            else
+                                                Dom.log
+                                                    (fun () ->
+                                                        $"@@( atomKeys gun.on() HUB filter fetching/subscribing] @@@
+                                                                      skipping. items.Length=0
+                                                                      atomPath={atomPath} syncEngine.atomPath={syncEngine.GetAtomPath ()}
+                                                                      key={key} ")
+
+
+                                        Selectors.Hub.hubSubscriptionMap.[collectionPath] <- handle
+
+                                        Gun.batchHubSubscribe
+                                            hub
+                                            (Sync.Request.Filter collectionPath)
+                                            (fun (_ticks, response: Sync.Response) ->
+                                                Dom.log
+                                                    (fun () ->
+                                                        $"@@ [wrapper.next() HUB keys stream subscribe]
+                                                          {getBaseInfo ()}
+                                                          response={response}")
+
+                                                promise {
+                                                    match response with
+                                                    | Sync.Response.FilterResult (_key2, items) ->
+                                                        handle items
+
                                                         Dom.log
                                                             (fun () ->
-                                                                $"@@ atomKeys gun.on() HUB filter fetching/subscribing] @@@
-                                                                  setting keys locally. items.Length={items.Length}
-                                                                  atomPath={atomPath} syncEngine.atomPath={syncEngine.GetAtomPath ()} {key}")
+                                                                $"@@ [wrapper.on() HUB KEYS subscribe]
+                                                                  atomPath={atomPath}
+                                                                  items={JS.JSON.stringify items}
+                                                                          {getBaseInfo ()} ")
+                                                    | response -> Dom.consoleError ("#84842 response:", response)
 
-                                                        batchKeysAtom (items |> Array.map onFormat)
-                                                    else
-                                                        Dom.log
+                                                    return
+                                                        Object.newDisposable
                                                             (fun () ->
-                                                                $"@@ atomKeys gun.on() HUB filter fetching/subscribing] @@@
-                                                                  skipping. items.Length=0
-                                                                  atomPath={atomPath} syncEngine.atomPath={syncEngine.GetAtomPath ()} {key}")
-
-                                                    Dom.log
-                                                        (fun () ->
-                                                            $"@@ [wrapper.on() HUB KEYS subscribe]
-                                                              atomPath={atomPath}
-                                                              items={JS.JSON.stringify items}
-                                                                      {getBaseInfo ()} ")
-                                                | response -> Dom.consoleError ("#84842 response:", response)
-
-                                                return
-                                                    Object.newDisposable
-                                                        (fun () ->
-                                                            Dom.log
-                                                                (fun () ->
-                                                                    $"[@@ wrapper.next() HUB keys stream subscribe]. Dispose.
-                                                                      {getBaseInfo ()}
-                                                                      response={response}"))
-                                            })
-                                        (fun _ex -> lastHubSubscription <- None)
+                                                                Dom.log
+                                                                    (fun () ->
+                                                                        $"[@@ wrapper.next() HUB keys stream subscribe]. Dispose.
+                                                                          {getBaseInfo ()}
+                                                                          response={response}"))
+                                                })
+                                            (fun _ex ->
+                                                Selectors.Hub.hubSubscriptionMap.Remove collectionPath
+                                                |> ignore)
+                                | _ -> Dom.consoleError $"#123561 invalid atom path atomPath={atomPath}"
                             with
                             | ex -> Dom.consoleError $"@@ hub.filter, error={ex.Message}"
                         }

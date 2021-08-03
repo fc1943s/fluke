@@ -68,7 +68,7 @@ module Model =
     type AtomPath =
         | AtomPath of atomPath: string
         static member inline Value (AtomPath atomPath) = atomPath
-        static member inline AtomKey atomPath =
+        static member inline AtomKey _atomPath =
             AtomPath (failwith "invalid")
 
 

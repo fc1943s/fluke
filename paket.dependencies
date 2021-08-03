@@ -31,7 +31,6 @@ nuget Myriad.Sdk ~> 0.5
 // nuget Saturn ~> 0.15
 nuget Fable.SignalR.Saturn ~> 0.11
 nuget FSharp.Control.AsyncSeq ~> 3.0
-nuget Fumble ~> 0.7
 
 // Fluke.UI.Frontend
 

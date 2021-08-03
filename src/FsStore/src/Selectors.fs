@@ -1,5 +1,6 @@
 namespace FsStore
 
+open System.Collections.Generic
 open Fable.Core.JsInterop
 open Fable.Core
 open System
@@ -18,7 +19,7 @@ open FsStore.Bindings
 module SignalR =
     open Fable.SignalR
 
-    let connect hubUrl _getter setter =
+    let connect hubUrl _getter setter fn =
         let timeout = 1000
 
         SignalR.connect<Sync.Request, Sync.Request, obj, Sync.Response, Sync.Response>
@@ -42,16 +43,17 @@ module SignalR =
                         JS.setTimeout (fun () -> Store.change setter Atoms.hubTrigger ((+) 1)) (timeout / 2)
                         |> ignore)
                     .configureLogging(LogLevel.Debug)
-                    .onMessage (
-                        function
+                    .onMessage (fun msg ->
+                        match msg with
                         | Sync.Response.ConnectResult -> Dom.log (fun () -> "Sync.Response.ConnectResult")
                         | Sync.Response.GetResult (key, value) ->
                             Dom.log (fun () -> $"Sync.Response.GetResult key={key} value={value}")
                         | Sync.Response.SetResult result ->
                             Dom.log (fun () -> $"Sync.Response.SetResult result={result}")
-                        | Sync.Response.FilterResult keys ->
-                            Dom.log (fun () -> $"Sync.Response.FilterResult keys={keys}")
-                    ))
+                        | Sync.Response.FilterResult (key, keys) ->
+                            Dom.log (fun () -> $"Sync.Response.FilterResult key={key} keys={keys}")
+
+                        fn msg))
 
 module Selectors =
     let rec deviceInfo = Store.readSelector FsStore.root (nameof deviceInfo) (fun _ -> Dom.deviceInfo)
@@ -113,6 +115,9 @@ lastValue={lastValue}
 
                 accessors)
 
+    module Hub =
+        let hubSubscriptionMap = Dictionary<string * string * string, string [] -> unit> ()
+
     let rec hub =
         Store.readSelector
             FsStore.root
@@ -125,7 +130,19 @@ lastValue={lastValue}
                 | Some (String.ValidString hubUrl) ->
                     match Store.value getter atomAccessors with
                     | Some (getter, setter) ->
-                        let hub = SignalR.connect hubUrl getter setter
+                        let hub =
+                            SignalR.connect
+                                hubUrl
+                                getter
+                                setter
+                                (fun msg ->
+                                    match msg with
+                                    | Sync.Response.FilterResult (key, keys) ->
+                                        match Hub.hubSubscriptionMap.TryGetValue key with
+                                        | true, fn -> fn keys
+                                        | _ -> ()
+                                    | _ -> ())
+
                         hub.startNow ()
                         Some hub
                     | None -> None
