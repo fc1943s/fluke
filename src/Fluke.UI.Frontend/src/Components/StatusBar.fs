@@ -369,25 +369,6 @@ module StatusBar =
     let PositionIndicator () =
         let position = Store.useValue Atoms.Session.position
 
-        let waiting, setWaiting = React.useState false
-
-        Scheduling.useScheduling
-            Scheduling.Interval
-            5000
-            (fun getter setter ->
-                promise {
-                    Store.set setter (Atoms.Device.devicePing deviceId) (Ping (string DateTime.Now.Ticks))
-
-                    let hub = Store.value getter Selectors.Hub.hub
-                    let hubUrl = Store.value getter Atoms.hubUrl
-
-                    match hub, hubUrl with
-                    | None, Some (String.ValidString _) ->
-                        if waiting then Store.change setter Atoms.hubTrigger ((+) 1)
-                        setWaiting (not waiting)
-                    | _ -> ()
-                })
-
         match position with
         | Some position ->
             UI.stack

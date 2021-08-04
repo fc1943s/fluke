@@ -123,7 +123,7 @@ module Hydrate =
         attachmentId
 
     let inline hydrateFile _getter setter (atomScope: AtomScope, hexString: string) =
-        let chunkSize = 6400
+        let chunkSize = 12800
         let chunkCount = int (Math.Ceiling (float hexString.Length / float chunkSize))
 
         let chunks =
@@ -294,7 +294,7 @@ module Hydrate =
                             x.title <- "Loading"
                             x.status <- "warning")
 
-                    let attempts = 5
+                    let attempts = 20
 
                     let rec loop attemptsLeft =
                         promise {

@@ -13,7 +13,7 @@ open Fluke.UI.Frontend.State.State
 
 
 module rec Selectors =
-    let interval = 250
+    let interval = 750
 
     let readSelector name getFn =
         Store.readSelector Fluke.root name getFn

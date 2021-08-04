@@ -7,11 +7,36 @@ open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.State
 open FsStore
 open FsUi.Hooks
+open FsJs
+open FsCore
+open Fluke.Shared
+open Fluke.UI.Frontend.State.State
 
 
 module PositionUpdater =
     [<ReactComponent>]
     let PositionUpdater () =
+        Scheduling.useScheduling
+            Scheduling.Interval
+            5000
+            (fun getter setter ->
+                promise {
+                    let hub = Store.value getter Selectors.Hub.hub
+                    let hubUrl = Store.value getter Atoms.hubUrl
+
+                    match hubUrl with
+                    | Some (String.ValidString _) ->
+                        match hub with
+                        | Some hub when hub.connectionId = None ->
+                            printfn $"position timer. hub.connectionId={hub.connectionId}. triggering"
+                            Store.change setter Atoms.hubTrigger ((+) 1)
+                        | _ -> ()
+
+                    | _ -> ()
+
+                    Store.set setter (Atoms.Device.devicePing deviceId) (Ping (string DateTime.Now.Ticks))
+                })
+
         Scheduling.useScheduling
             Scheduling.Interval
             1000

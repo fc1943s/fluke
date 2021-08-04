@@ -164,7 +164,7 @@ module Main =
                         send Model.send
                         invoke Model.invoke
                         stream_from Model.Stream.sendToClient
-                        //                        use_messagepack
+//                        use_messagepack
                         //                        with_log_level LogLevel.Trace
                         with_hub_options (fun options -> options.EnableDetailedErrors <- true)
 

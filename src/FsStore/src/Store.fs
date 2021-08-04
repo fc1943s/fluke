@@ -352,7 +352,7 @@ ticks={ticks}
 
         //        let debouncedSetInternalFromSync = JS.debounce setInternalFromSync 250
 
-        let subscribe (setAtom: 'TValue option -> unit) =
+        let rec subscribe (setAtom: 'TValue option -> unit) =
             promise {
                 lastWrapperSet <- Some setAtom
                 let wrappedSetAtom = wrapSetAtom setAtom
@@ -428,7 +428,16 @@ ticks={ticks}
                                                                                       {getBaseInfo ()}
                                                                                       msg={msg}"))
                                                     })
-                                                (fun _ex -> lastHubSubscription <- None)
+                                                (fun _ex ->
+                                                    lastHubSubscription <- None
+
+                                                    Dom.log
+                                                        (fun () ->
+                                                            $"resubscribing...
+                                                              {getBaseInfo ()} ")
+
+                                                    JS.setTimeout (fun () -> subscribe setAtom |> Promise.start) 1000
+                                                    |> ignore)
 
                                         lastHubSubscription <- Some subscription
                                 with

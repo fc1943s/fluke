@@ -14,8 +14,8 @@ module Tooltip =
 
         UI.box
             (fun x ->
+                x.``as`` <- "span"
                 x.ref <- ref
-                x.display <- "inline"
                 wrapperProps x)
             [
                 UI.tooltip

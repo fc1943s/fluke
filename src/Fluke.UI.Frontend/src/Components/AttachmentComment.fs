@@ -10,7 +10,6 @@ open FsCore
 open Fluke.Shared
 open Fable.Extras
 open Fluke.UI.Frontend.Components
-open Fluke.UI.Frontend.Hooks
 open Fable.Core
 open Fluke.UI.Frontend.State
 

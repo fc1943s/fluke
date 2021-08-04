@@ -19,14 +19,14 @@ open FsStore.Bindings
 module SignalR =
     open Fable.SignalR
 
-    let connect hubUrl _getter setter fn =
+    let inline connect hubUrl _getter setter fn =
         let timeout = 1000
 
         SignalR.connect<Sync.Request, Sync.Request, obj, Sync.Response, Sync.Response>
             (fun hub ->
                 hub
                     .withUrl($"{hubUrl}{Sync.endpoint}")
-                    //                                        .useMessagePack()
+//                    .useMessagePack()
                     .withAutomaticReconnect(
                         {
                             nextRetryDelayInMilliseconds =
@@ -235,30 +235,41 @@ lastValue={lastValue}
                     let hubTrigger = Store.value getter Atoms.hubTrigger
                     let hubUrl = Store.value getter Atoms.hubUrl
 
+                    printfn $"hub selector. hubTrigger={hubTrigger} hubUrl={hubUrl}"
+
                     match hubUrl with
                     | Some (String.ValidString hubUrl) ->
                         match Store.value getter atomAccessors with
                         | Some (getter, setter) ->
-                            let hub =
-                                SignalR.connect
-                                    hubUrl
-                                    getter
-                                    setter
-                                    (fun msg ->
-                                        match msg with
-                                        | Sync.Response.FilterStream (key, keys) ->
-                                            match hubSubscriptionMap.TryGetValue key with
-                                            | true, fn ->
-                                                Dom.log (fun () -> $"Selectors.hub onMsg msg={msg}. triggering ")
-                                                fn keys
+                            try
+                                let hub =
+                                    SignalR.connect
+                                        hubUrl
+                                        getter
+                                        setter
+                                        (fun msg ->
+                                            match msg with
+                                            | Sync.Response.FilterStream (key, keys) ->
+                                                match hubSubscriptionMap.TryGetValue key with
+                                                | true, fn ->
+                                                    Dom.log (fun () -> $"Selectors.hub onMsg msg={msg}. triggering ")
+                                                    fn keys
+                                                | _ ->
+                                                    Dom.log
+                                                        (fun () ->
+                                                            $"Selectors.hub onMsg msg={msg}. skipping. not in map ")
                                             | _ ->
                                                 Dom.log
-                                                    (fun () -> $"Selectors.hub onMsg msg={msg}. skipping. not in map ")
-                                        | _ ->
-                                            Dom.log (fun () -> $"Selectors.hub onMsg msg={msg}. skipping. not handled "))
+                                                    (fun () -> $"Selectors.hub onMsg msg={msg}. skipping. not handled "))
 
-                            printfn $"hub selector. hubTrigger={hubTrigger} hubUrl={hubUrl}"
-                            hub.startNow ()
-                            Some hub
+                                hub.startNow ()
+                                Some hub
+                            with
+                            | ex ->
+                                printfn
+                                    $"hub selector. start error. ex={ex.Message} hubTrigger={hubTrigger} hubUrl={hubUrl}"
+
+                                None
+
                         | None -> None
                     | _ -> None)
