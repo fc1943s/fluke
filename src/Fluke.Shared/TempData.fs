@@ -180,9 +180,7 @@ module TempData =
                                                 | FirstPass -> None
                                                 | SecondPass ->
                                                     taskMap
-                                                    |> Seq.map
-                                                        (fun (KeyValue (taskName, task)) -> TaskName taskName, task)
-                                                    |> Map.ofSeq
+                                                    |> Map.mapKeys (fun (taskName, task) -> TaskName taskName, task)
                                                     |> Some
 
                                             let taskState, userInteractions =

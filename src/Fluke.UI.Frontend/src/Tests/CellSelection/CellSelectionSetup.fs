@@ -181,7 +181,7 @@ module CellSelectionSetup =
                 (fun () ->
                     printfn "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ BEFORE RENDER"
 
-                    let gunNamespace = Store.useValue Selectors.gunNamespace
+                    let gunNamespace = Store.useValue Selectors.Gun.gunNamespace
                     let username, setUsername = Store.useState Atoms.username
 
                     React.useEffect (

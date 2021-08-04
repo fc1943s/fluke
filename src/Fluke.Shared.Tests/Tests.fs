@@ -234,13 +234,13 @@ module Tests =
 
             let lanes =
                 databaseState.TaskStateMap
-                |> Seq.map
-                    (fun (KeyValue (_, taskState)) ->
+                |> Map.toList
+                |> List.map
+                    (fun (_, taskState) ->
                         let taskStatusMap =
                             Rendering.renderTaskStatusMap templatesUser.DayStart props.Position dateSequence taskState
 
                         taskState, taskStatusMap)
-                |> Seq.toList
                 |> List.sortBy (fun (taskState, _) -> taskState.Task.Name |> TaskName.Value)
 
             match props.Sort with

@@ -57,11 +57,12 @@ module Sorting =
                     statusMap.Count
                 else
                     statusMap
+                    |> Map.toSeq
                     |> Seq.tryFindIndex
                         (function
-                        | KeyValue (DateId referenceDay,
-                                    (CellStatus.Pending
-                                    | CellStatus.UserStatus (_, ManualCellStatus.Scheduled))) when
+                        | DateId referenceDay,
+                          (CellStatus.Pending
+                          | CellStatus.UserStatus (_, ManualCellStatus.Scheduled)) when
                             (referenceDay |> FlukeDate.DateTime) > (position.Date |> FlukeDate.DateTime)
                             ->
                             true
@@ -166,8 +167,8 @@ module Sorting =
                 let group =
                     stateMap
                     |> Map.filter (fun dateId _ -> isToday dayStart position dateId)
-                    |> Seq.map (fun (KeyValue (dateId, status)) -> getGroup taskState (dateId, status))
-                    |> Seq.toList
+                    |> Map.toList
+                    |> List.map (getGroup taskState)
 
                 match group with
                 | [] -> -1, LaneSortType.DefaultSort

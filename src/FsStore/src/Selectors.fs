@@ -46,12 +46,15 @@ module SignalR =
                     .onMessage (fun msg ->
                         match msg with
                         | Sync.Response.ConnectResult -> Dom.log (fun () -> "Sync.Response.ConnectResult")
-                        | Sync.Response.GetResult (key, value) ->
-                            Dom.log (fun () -> $"Sync.Response.GetResult key={key} value={value}")
                         | Sync.Response.SetResult result ->
                             Dom.log (fun () -> $"Sync.Response.SetResult result={result}")
-                        | Sync.Response.FilterResult (key, keys) ->
-                            Dom.log (fun () -> $"Sync.Response.FilterResult key={key} keys={keys}")
+                        | Sync.Response.GetResult value -> Dom.log (fun () -> $"Sync.Response.GetResult value={value}")
+                        | Sync.Response.GetStream (key, value) ->
+                            Dom.log (fun () -> $"Sync.Response.GetStream key={key} value={value}")
+                        | Sync.Response.FilterResult keys ->
+                            Dom.log (fun () -> $"Sync.Response.FilterResult keys={keys}")
+                        | Sync.Response.FilterStream (key, keys) ->
+                            Dom.log (fun () -> $"Sync.Response.FilterStream key={key} keys={keys}")
 
                         fn msg))
 
@@ -115,105 +118,73 @@ lastValue={lastValue}
 
                 accessors)
 
-    module Hub =
-        let hubSubscriptionMap = Dictionary<string * string * string, string [] -> unit> ()
-
-    let rec hub =
-        Store.readSelector
-            FsStore.root
-            (nameof hub)
-            (fun getter ->
-                let _hubTrigger = Store.value getter Atoms.hubTrigger
-                let hubUrl = Store.value getter Atoms.hubUrl
-
-                match hubUrl with
-                | Some (String.ValidString hubUrl) ->
-                    match Store.value getter atomAccessors with
-                    | Some (getter, setter) ->
-                        let hub =
-                            SignalR.connect
-                                hubUrl
-                                getter
-                                setter
-                                (fun msg ->
-                                    match msg with
-                                    | Sync.Response.FilterResult (key, keys) ->
-                                        match Hub.hubSubscriptionMap.TryGetValue key with
-                                        | true, fn -> fn keys
-                                        | _ -> ()
-                                    | _ -> ())
-
-                        hub.startNow ()
-                        Some hub
-                    | None -> None
-                | _ -> None)
-
-    let rec gunPeers =
-        Store.readSelector
-            FsStore.root
-            (nameof gunPeers)
-            (fun getter ->
-                let gunOptions = Store.value getter Atoms.gunOptions
-
-                match gunOptions with
-                | GunOptions.Minimal -> [||]
-                | GunOptions.Sync gunPeers ->
-                    gunPeers
-                    |> Array.filter (String.IsNullOrWhiteSpace >> not))
-
-    let rec gun =
-        Store.readSelector
-            FsStore.root
-            (nameof gun)
-            (fun getter ->
-                let isTesting = Store.value getter Atoms.isTesting
-                let gunPeers = Store.value getter gunPeers
-
-                let gun =
-                    if isTesting then
-                        Gun.gun
-                            {
-                                Gun.GunProps.peers = None
-                                Gun.GunProps.radisk = Some false
-                                Gun.GunProps.localStorage = Some false
-                                Gun.GunProps.multicast = None
-                            }
-                    else
-                        Gun.gun
-                            {
-                                Gun.GunProps.peers = Some gunPeers
-                                Gun.GunProps.radisk = Some true
-                                Gun.GunProps.localStorage = Some false
-                                Gun.GunProps.multicast = None
-                            }
-
-                printfn $"Gun selector. gunPeers={gunPeers}. gun={gun} returning..."
-
-                gun)
-
-
-    let rec gunNamespace =
-        Store.readSelector
-            FsStore.root
-            (nameof gunNamespace)
-            (fun getter ->
-                let _gunTrigger = Store.value getter Atoms.gunTrigger
-                let gun = Store.value getter gun
-                let user = gun.user ()
-
-                printfn
-                    $"gunNamespace selector.
-                        gunPeers={gunPeers}
-                        user.is.keys={JS.Constructors.Object.keys (
-                                          user.is
-                                          |> Option.defaultValue (createObj [] |> unbox)
-                                      )}
-                        keys={user.__.sea}..."
-
-                user)
 
     module rec Gun =
         let collection = Collection (nameof Gun)
+
+        let rec gunPeers =
+            Store.readSelector
+                FsStore.root
+                (nameof gunPeers)
+                (fun getter ->
+                    let gunOptions = Store.value getter Atoms.gunOptions
+
+                    match gunOptions with
+                    | GunOptions.Minimal -> [||]
+                    | GunOptions.Sync gunPeers ->
+                        gunPeers
+                        |> Array.filter (String.IsNullOrWhiteSpace >> not))
+
+        let rec gun =
+            Store.readSelector
+                FsStore.root
+                (nameof gun)
+                (fun getter ->
+                    let isTesting = Store.value getter Atoms.isTesting
+                    let gunPeers = Store.value getter gunPeers
+
+                    let gun =
+                        if isTesting then
+                            Bindings.Gun.gun
+                                {
+                                    Gun.GunProps.peers = None
+                                    Gun.GunProps.radisk = Some false
+                                    Gun.GunProps.localStorage = Some false
+                                    Gun.GunProps.multicast = None
+                                }
+                        else
+                            Bindings.Gun.gun
+                                {
+                                    Gun.GunProps.peers = Some gunPeers
+                                    Gun.GunProps.radisk = Some true
+                                    Gun.GunProps.localStorage = Some false
+                                    Gun.GunProps.multicast = None
+                                }
+
+                    printfn $"Gun selector. gunPeers={gunPeers}. gun={gun} returning..."
+
+                    gun)
+
+
+        let rec gunNamespace =
+            Store.readSelector
+                FsStore.root
+                (nameof gunNamespace)
+                (fun getter ->
+                    let _gunTrigger = Store.value getter Atoms.gunTrigger
+                    let gun = Store.value getter gun
+                    let user = gun.user ()
+
+                    printfn
+                        $"gunNamespace selector.
+                            gunPeers={gunPeers}
+                            user.is.keys={JS.Constructors.Object.keys (
+                                              user.is
+                                              |> Option.defaultValue (createObj [] |> unbox)
+                                          )}
+                            keys={user.__.sea}..."
+
+                    user)
 
         let rec gunAtomNode =
             Store.readSelectorFamily
@@ -251,3 +222,43 @@ lastValue={lastValue}
                                           user.is={JS.JSON.stringify gunNamespace.is}")
 
                         None)
+
+
+    module Hub =
+        let hubSubscriptionMap = Dictionary<string * string * string, string [] -> unit> ()
+
+        let rec hub =
+            Store.readSelector
+                FsStore.root
+                (nameof hub)
+                (fun getter ->
+                    let hubTrigger = Store.value getter Atoms.hubTrigger
+                    let hubUrl = Store.value getter Atoms.hubUrl
+
+                    match hubUrl with
+                    | Some (String.ValidString hubUrl) ->
+                        match Store.value getter atomAccessors with
+                        | Some (getter, setter) ->
+                            let hub =
+                                SignalR.connect
+                                    hubUrl
+                                    getter
+                                    setter
+                                    (fun msg ->
+                                        match msg with
+                                        | Sync.Response.FilterStream (key, keys) ->
+                                            match hubSubscriptionMap.TryGetValue key with
+                                            | true, fn ->
+                                                Dom.log (fun () -> $"Selectors.hub onMsg msg={msg}. triggering ")
+                                                fn keys
+                                            | _ ->
+                                                Dom.log
+                                                    (fun () -> $"Selectors.hub onMsg msg={msg}. skipping. not in map ")
+                                        | _ ->
+                                            Dom.log (fun () -> $"Selectors.hub onMsg msg={msg}. skipping. not handled "))
+
+                            printfn $"hub selector. hubTrigger={hubTrigger} hubUrl={hubUrl}"
+                            hub.startNow ()
+                            Some hub
+                        | None -> None
+                    | _ -> None)

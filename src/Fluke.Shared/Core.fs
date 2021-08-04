@@ -84,11 +84,9 @@ module Map =
         ]
         |> Map.ofSeq
 
-    let inline keys (source: Map<'Key, 'T>) : seq<'Key> =
-        source |> Seq.map (fun (KeyValue (k, _)) -> k)
+    let inline keys (source: Map<'Key, 'T>) : seq<'Key> = source |> Map.toSeq |> Seq.map fst
 
-    let inline values (source: Map<'Key, 'T>) : seq<'T> =
-        source |> Seq.map (fun (KeyValue (_, v)) -> v)
+    let inline values (source: Map<'Key, 'T>) : seq<'T> = source |> Map.toSeq |> Seq.map snd
 
     let inline unionWith combiner (source1: Map<'Key, 'Value>) (source2: Map<'Key, 'Value>) =
         Map.fold
@@ -104,6 +102,14 @@ module Map =
 
     let inline union (source: Map<'Key, 'T>) (altSource: Map<'Key, 'T>) =
         unionWith (fun x _ -> x) source altSource
+
+    let inline mapKeys f (x: Map<'Key, 'T>) =
+        x |> Map.toSeq |> Seq.map f |> Map.ofSeq
+
+    let inline choose fn map =
+        map
+        |> Seq.choose (fun (KeyValue (k, v)) -> fn (k, v))
+        |> Map.ofSeq
 
     let inline mapValues f (x: Map<'Key, 'T>) = Map.map (fun _ -> f) x
 
@@ -170,5 +176,3 @@ module String =
     let inline parseIntMax max (text: string) =
         parseInt text
         |> Option.bind (fun n -> if n <= max then Some n else None)
-
-

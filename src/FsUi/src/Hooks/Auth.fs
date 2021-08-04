@@ -17,7 +17,7 @@ module Auth =
                     printfn "before leave"
                     Store.change setter Atoms.gunTrigger ((+) 1)
                     Store.change setter Atoms.hubTrigger ((+) 1)
-                    let gunNamespace = Store.value getter Selectors.gunNamespace
+                    let gunNamespace = Store.value getter Selectors.Gun.gunNamespace
                     gunNamespace.leave ()
                     Store.set setter Atoms.username None
                     Store.set setter Atoms.gunKeys Gun.GunKeys.Default
@@ -29,7 +29,7 @@ module Auth =
                 promise {
                     Store.change setter Atoms.gunTrigger ((+) 1)
                     Store.change setter Atoms.hubTrigger ((+) 1)
-                    let gunNamespace = Store.value getter Selectors.gunNamespace
+                    let gunNamespace = Store.value getter Selectors.Gun.gunNamespace
                     let keys = gunNamespace.__.sea
 
                     match keys with
@@ -46,7 +46,7 @@ module Auth =
         Store.useCallbackRef
             (fun getter _ (username, password) ->
                 promise {
-                    let gunNamespace = Store.value getter Selectors.gunNamespace
+                    let gunNamespace = Store.value getter Selectors.Gun.gunNamespace
 
                     let! ack = Gun.authUser gunNamespace username password
 
@@ -60,7 +60,7 @@ module Auth =
             (fun getter setter (password, newPassword) ->
                 promise {
                     let username = Store.value getter Atoms.username
-                    let gunNamespace = Store.value getter Selectors.gunNamespace
+                    let gunNamespace = Store.value getter Selectors.Gun.gunNamespace
 
                     match username with
                     | Some (Username username) ->
@@ -89,7 +89,7 @@ module Auth =
 
                     match username with
                     | Some (Username username) ->
-                        let gunNamespace = Store.value getter Selectors.gunNamespace
+                        let gunNamespace = Store.value getter Selectors.Gun.gunNamespace
 
                         let! ack = Gun.deleteUser gunNamespace username password
                         printfn $"ack={JS.JSON.stringify ack}"
@@ -118,7 +118,7 @@ module Auth =
                          |> not then
                         return Error "Invalid username"
                     else
-                        let gunNamespace = Store.value getter Selectors.gunNamespace
+                        let gunNamespace = Store.value getter Selectors.Gun.gunNamespace
 
                         printfn $"Auth.useSignUp. gunNamespace={JS.JSON.stringify gunNamespace}"
 

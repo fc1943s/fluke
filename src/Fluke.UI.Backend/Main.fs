@@ -11,13 +11,13 @@ open FsStore.Shared
 open Microsoft.Extensions.Logging
 open FSharp.Control.Tasks.V2
 open Saturn
+open System
 open System.Threading
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Hosting
 
 
 module Main =
-
     module Model =
         let getPath username key =
             let path = Path.Combine (".", "data", username, $"{key}")
@@ -32,8 +32,13 @@ module Main =
             task {
                 try
                     let path = getPath username key
-                    createParentDirectory path
-                    do! File.WriteAllTextAsync (path, value)
+
+                    match Guid.TryParse (Path.GetFileName path) with
+                    | true, _ when value = null -> Directory.Delete (path, true)
+                    | _ ->
+                        createParentDirectory path
+                        do! File.WriteAllTextAsync (path, value)
+
                     return true
                 with
                 | ex ->
@@ -60,16 +65,11 @@ module Main =
             let path = getPath username $"{storeRoot}/{collection}"
             Directory.CreateDirectory path |> ignore
 
-            let result =
-                Directory.EnumerateDirectories path
-                |> Seq.map Path.GetFileName
-                |> Seq.toArray
+            Directory.EnumerateDirectories path
+            |> Seq.map Path.GetFileName
+            |> Seq.toArray
 
-            watchlist.[(username, storeRoot, collection)] <- Some result
-
-            result
-
-        let update (msg: Sync.Request) (hubContext: FableHub<Sync.Request, Sync.Response> option) =
+        let update (msg: Sync.Request) (_hubContext: FableHub<Sync.Request, Sync.Response> option) =
             task {
                 //            printfn $"Model.update() msg={msg}"
 
@@ -80,10 +80,10 @@ module Main =
                 | Sync.Request.Set (username, key, value) ->
                     let! result = writeFile username key value
                     //                printfn $"set {key} {value}"
-                    match hubContext with
-                    | Some _hub when result ->
-                        printfn
-                            $"Sync.Request.Set. username={username} key={key}. result=true hub.IsSome. broadcasting."
+//                    match hubContext with
+//                    | Some _hub when result ->
+//                        printfn
+//                            $"Sync.Request.Set. username={username} key={key}. result=true hub.IsSome. broadcasting."
 
                     //                        do!
 //                            hub.Clients.All.Send (
@@ -94,17 +94,18 @@ module Main =
 //                                    | _ -> None
 //                                )
 //                            )
-                    | _ -> ()
+//                    | _ -> ()
 
                     return Sync.Response.SetResult result
                 | Sync.Request.Get (username, key) ->
                     let! value = readFile username key
                     //                printfn $"get username={username} key={key} value={value}"
-                    return Sync.Response.GetResult (key, value)
+                    return Sync.Response.GetResult value
                 | Sync.Request.Filter (username, storeRoot, collection) ->
                     let result = fetchTableKeys username storeRoot collection
+                    watchlist.[(username, storeRoot, collection)] <- Some result
                     printfn $"Sync.Request.Filter username={username} collection={collection} result={result.Length}"
-                    return Sync.Response.FilterResult ((username, storeRoot, collection), result)
+                    return Sync.Response.FilterResult result
 
             //        let update2 msg hubContext =
 //            asyncSeq {
@@ -137,7 +138,7 @@ module Main =
                 let cts = new CancellationTokenSource ()
 
                 let ticking =
-                    AsyncSeq.intervalMs 1000
+                    AsyncSeq.intervalMs 500
                     |> AsyncSeq.iterAsync (fun _ -> fn hub |> Async.AwaitTask)
 
                 interface IHostedService with
@@ -214,26 +215,23 @@ module Main =
                         Model.Stream.Ticker.Create (
                             serviceCollection,
                             fun (hub: FableHubCaller<Sync.Request, Sync.Response>) ->
-                                let newResults =
-                                    Model.watchlist
-                                    |> Seq.choose
-                                        (fun (KeyValue (collectionPath, lastValue)) ->
-                                            let username, storeRoot, collection = collectionPath
-                                            let result = Model.fetchTableKeys username storeRoot collection
-
-                                            match lastValue, result with
-                                            | None, _ -> None
-                                            | Some lastValue, result when lastValue = result -> None
-                                            | Some _, result ->
-                                                Model.watchlist.[collectionPath] <- Some result
-                                                Some (collectionPath, result)
-                                            | _ -> None)
-                                    |> Seq.toArray
-
                                 task {
                                     do!
-                                        newResults
-                                        |> Array.map (Sync.Response.FilterResult >> hub.Clients.All.Send)
+                                        Model.watchlist
+                                        |> Seq.choose
+                                            (fun (KeyValue (collectionPath, lastValue)) ->
+                                                let username, storeRoot, collection = collectionPath
+                                                let result = Model.fetchTableKeys username storeRoot collection
+
+                                                match lastValue, result with
+                                                | None, _ -> None
+                                                | Some lastValue, result when lastValue = result -> None
+                                                | Some _, result ->
+                                                    Model.watchlist.[collectionPath] <- Some result
+                                                    Some (collectionPath, result)
+                                                | _ -> None)
+                                        |> Seq.toArray
+                                        |> Seq.map (Sync.Response.FilterStream >> hub.Clients.All.Send)
                                         |> Task.WhenAll
                                 }
                         ))

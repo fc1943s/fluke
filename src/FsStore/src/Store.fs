@@ -160,7 +160,7 @@ lastGunAtomNode={lastGunAtomNode} "
                         |> Option.map (mapGunAtomNode |> Option.defaultValue id)
 
                     match lastAtomPath, lastGunAtomNode with
-                    | Some _, Some _ -> lastHub <- Store.value getter Selectors.hub
+                    | Some _, Some _ -> lastHub <- Store.value getter Selectors.Hub.hub
                     | _ -> ()
         |}
 
@@ -402,7 +402,7 @@ ticks={ticks}
 
                                                     promise {
                                                         match msg with
-                                                        | Sync.Response.GetResult (key, result) ->
+                                                        | Sync.Response.GetResult result ->
                                                             Dom.log
                                                                 (fun () ->
                                                                     $"Sync.Response.GetResult key={key} atomPath={atomPath}")
@@ -822,6 +822,11 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
 
         wrapper
 
+    [<RequireQualifiedAccess>]
+    type BatchKind =
+        | Replace
+        | Union
+
     let inline selectAtomSyncKeys
         storeRoot
         name
@@ -878,7 +883,7 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
 
                     Dom.log
                         (fun () ->
-                            $"@@ atomFamily.wrapper.get()
+                            $"@@ selectAtomSyncKeys wrapper get()
                                     wrapper={wrapper}
                                     userAtom={userAtom}
                                     result={result}
@@ -899,21 +904,31 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
                                     | "function" -> (unbox newValueFn) oldValue
                                     | _ -> newValueFn
 
-                                Dom.log (fun () -> $"@@ newValue={newValue} newValueFn={newValueFn}")
+                                Dom.log
+                                    (fun () ->
+                                        $"@@ selectAtomSyncKeys wrapper set()
+                                         newValue={newValue} newValueFn={newValueFn}
+                                         wrapper={wrapper}
+                                         userAtom={userAtom}
+                                         {getBaseInfo ()} ")
 
                                 newValue)))
 
         let mutable lastSubscription = None
 
-        let batchKeys setAtom data =
+
+        let batchKeys setAtom data kind =
             Gun.batchKeys
                 (fun itemsArray ->
                     let newSet = itemsArray |> Seq.collect snd |> Set.ofSeq
 
                     let merge =
-                        lastValue
-                        |> Option.defaultValue Set.empty
-                        |> Set.union newSet
+                        match kind with
+                        | BatchKind.Replace -> newSet
+                        | BatchKind.Union ->
+                            lastValue
+                            |> Option.defaultValue Set.empty
+                            |> Set.union newSet
 
                     lastValue <- Some merge
                     let items = merge |> Set.toArray
@@ -935,10 +950,11 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
 
                     Dom.log
                         (fun () ->
-                            $"@@ [atomKeys debouncedSet gun.on() data]
+                            $"@@ [batchKeys itemsArray callback]
                                                            atomPath={atomPath}
                                                            items.len={items.Length}
-                                                           {key} ")
+                                                           key={key}
+                                                           {getBaseInfo ()} ")
 
                     items)
                 setAtom
@@ -954,9 +970,15 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
                         (fun () ->
                             $"@@ [atomKeys gun.on() subscribing]
                                                        {getBaseInfo ()}
-                                                    skipping subscribe, lastSubscription is set.")
+                                                    skipping subscribe, lastSubscription is set.
+                                      key={key}
+                                      {getBaseInfo ()} ")
                 | Some (key, gunAtomNode), None ->
-                    Dom.log (fun () -> $"@@ [atomKeys gun.on() subscribing] atomPath={atomPath} {key}")
+                    Dom.log
+                        (fun () ->
+                            $"@@ [atomKeys gun.on() subscribing] atomPath={atomPath}
+                                      key={key}
+                                      {getBaseInfo ()} ")
 
                     let wrappedSetAtom = wrapSetAtom setAtom
                     let batchKeysAtom = batchKeys wrappedSetAtom
@@ -972,7 +994,9 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
                                         $"
                                     @@$ atomKeys gun.on() HUB filter fetching/subscribing] @@@ gunAtomNode.map().on result
                                       data={data} typeof data={jsTypeof data} gunKey={gunKey} typeof gunKey={jsTypeof gunKey}
-                                      atomPath={atomPath} syncEngine.atomPath={syncEngine.GetAtomPath ()} key={key} ")
+                                      atomPath={atomPath} syncEngine.atomPath={syncEngine.GetAtomPath ()}
+                                      key={key}
+                                      {getBaseInfo ()} ")
 
                                 if data <> null then
                                     let newValue =
@@ -981,7 +1005,7 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
                                         |]
 
 
-                                    batchKeysAtom newValue)
+                                    batchKeysAtom newValue BatchKind.Union)
 
                         //                        gunAtomNode.on
                         //                            (fun data _key ->
@@ -1007,12 +1031,17 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
                     | _ ->
                         Dom.log
                             (fun () ->
-                                "@@$ atomKeys gun.on() HUB filter fetching/subscribing] @@@ gunAtomNode.map().on skip.
-                                  syncEngine.GetGunOptions() not in sync")
+                                $"@@$ atomKeys gun.on() HUB filter fetching/subscribing] @@@ gunAtomNode.map().on skip.
+                                  syncEngine.GetGunOptions() not in sync
+                                  key={key}
+                                  {getBaseInfo ()} ")
 
                     Dom.log
                         (fun () ->
-                            $"@@ [atomKeys gun.on() HUB filter fetching/subscribing] @@@ atomPath={atomPath} syncEngine.atomPath={syncEngine.GetAtomPath ()} {key}")
+                            $"@@ [atomKeys gun.on() HUB filter fetching/subscribing] @@@
+                            atomPath={atomPath} syncEngine.atomPath={syncEngine.GetAtomPath ()}
+                            key={key}
+                            {getBaseInfo ()} ")
 
                     //                        (db?data?find {| selector = {| key = atomPath |} |})?``$``?subscribe (fun items ->
                     match syncEngine.GetAtomPath (), syncEngine.GetHub (), syncEngine.GetUsername () with
@@ -1040,16 +1069,18 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
                                                         $"@@( atomKeys gun.on() HUB filter fetching/subscribing] @@@
                                                                       setting keys locally. items.Length={items.Length}
                                                                       atomPath={atomPath} syncEngine.atomPath={syncEngine.GetAtomPath ()}
-                                                                      key={key} ")
+                                                                      key={key}
+                                                                      {getBaseInfo ()} ")
 
-                                                batchKeysAtom (items |> Array.map onFormat)
+                                                batchKeysAtom (items |> Array.map onFormat) BatchKind.Replace
                                             else
                                                 Dom.log
                                                     (fun () ->
                                                         $"@@( atomKeys gun.on() HUB filter fetching/subscribing] @@@
                                                                       skipping. items.Length=0
                                                                       atomPath={atomPath} syncEngine.atomPath={syncEngine.GetAtomPath ()}
-                                                                      key={key} ")
+                                                                      key={key}
+                                                                      {getBaseInfo ()} ")
 
 
                                         Selectors.Hub.hubSubscriptionMap.[collectionPath] <- handle
@@ -1066,7 +1097,7 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
 
                                                 promise {
                                                     match response with
-                                                    | Sync.Response.FilterResult (_key2, items) ->
+                                                    | Sync.Response.FilterResult items ->
                                                         handle items
 
                                                         Dom.log
@@ -1075,7 +1106,11 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
                                                                   atomPath={atomPath}
                                                                   items={JS.JSON.stringify items}
                                                                           {getBaseInfo ()} ")
-                                                    | response -> Dom.consoleError ("#84842 response:", response)
+                                                    | response ->
+                                                        Dom.consoleError (
+                                                            "Gun.batchHubSubscribe invalid response:",
+                                                            response
+                                                        )
 
                                                     return
                                                         Object.newDisposable
@@ -1368,6 +1403,7 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
         promise {
             let username = Store.value getter Atoms.username
             let atomPath = Internal.queryAtomPath (AtomReference.Atom atom)
+
             let gunAtomNode = gunAtomNodeFromAtomPath getter username atomPath
 
             match gunAtomNode with
@@ -1375,4 +1411,18 @@ newValue={newValue} jsTypeof-newValue={jsTypeof newValue}
                 let! _putResult = Gun.put (gunAtomNode.back ()) (unbox null)
                 ()
             | None -> ()
+
+            match username, atomPath with
+            | Some (Username username), Some (AtomPath atomPath) ->
+                let hub = Store.value getter Selectors.Hub.hub
+
+                match hub with
+                | Some hub ->
+                    let nodes = atomPath |> String.split "/"
+
+                    if nodes.Length > 3 then
+                        let rootAtomPath = nodes |> Array.take 3 |> String.concat "/"
+                        do! hub.sendAsPromise (Sync.Request.Set (username, rootAtomPath, null))
+                | _ -> ()
+            | _ -> ()
         }

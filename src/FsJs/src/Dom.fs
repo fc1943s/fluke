@@ -128,7 +128,13 @@ module Dom =
     let inline logError fn = logWithFn (fun x -> eprintfn $"{x}") fn
 
     let inline logFiltered newValue fn =
-        log (fun () -> if (string newValue).StartsWith "Ping " then null else fn ())
+        log
+            (fun () ->
+                if (string newValue).StartsWith "Ping " then
+                    null
+                else
+                    let result: string = fn ()
+                    if result.Contains "devicePing" then null else result)
 
     let inline consoleLog x = Browser.Dom.console.log x
     let inline consoleError x = Browser.Dom.console.error x

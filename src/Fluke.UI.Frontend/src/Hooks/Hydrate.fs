@@ -164,14 +164,13 @@ module Hydrate =
                 (Atoms.Task.statusMap,
                  taskState.Task.Id,
                  (taskState.CellStateMap
-                  |> Seq.choose
+                  |> Map.choose
                       (function
-                      | KeyValue (dateId,
-                                  {
-                                      Status = UserStatus (username, userStatus)
-                                  }) -> Some (dateId, (username, userStatus))
-                      | _ -> None)
-                  |> Map.ofSeq))
+                      | dateId,
+                        {
+                            Status = UserStatus (username, userStatus)
+                        } -> Some (dateId, (username, userStatus))
+                      | _ -> None)))
 
             let _attachmentIdList =
                 taskState.AttachmentStateList
@@ -184,8 +183,9 @@ module Hydrate =
 
             let _attachmentIdList =
                 taskState.CellStateMap
-                |> Seq.map
-                    (fun (KeyValue (dateId, cellState)) ->
+                |> Map.toList
+                |> List.map
+                    (fun (dateId, cellState) ->
                         dateId,
                         cellState.AttachmentStateList
                         |> List.choose
@@ -317,7 +317,18 @@ module Hydrate =
 
                     match! loop attempts with
                     | Ok databaseState ->
-                        let json = databaseState |> Json.encodeFormatted
+                        let newDatabaseState =
+                            {|
+                                Database = databaseState.Database
+                                InformationStateMap = databaseState.InformationStateMap
+                                TaskStateMap =
+                                    databaseState.TaskStateMap
+                                    |> Map.toList
+                                    |> List.sortBy (fun (_, taskState) -> taskState.Task.Name |> TaskName.Value)
+                                FileMap = databaseState.FileMap
+                            |}
+
+                        let json = newDatabaseState |> Json.encodeFormatted
 
                         let timestamp =
                             (FlukeDateTime.FromDateTime DateTime.Now)

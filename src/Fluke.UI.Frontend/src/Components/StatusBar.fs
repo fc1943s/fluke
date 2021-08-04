@@ -378,7 +378,7 @@ module StatusBar =
                 promise {
                     Store.set setter (Atoms.Device.devicePing deviceId) (Ping (string DateTime.Now.Ticks))
 
-                    let hub = Store.value getter Selectors.hub
+                    let hub = Store.value getter Selectors.Hub.hub
                     let hubUrl = Store.value getter Atoms.hubUrl
 
                     match hub, hubUrl with
