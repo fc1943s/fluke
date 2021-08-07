@@ -245,7 +245,7 @@ module Main =
                 logging
                     (fun logging ->
 //                        logging.SetMinimumLevel LogLevel.Debug |> ignore
-                        logging.SetMinimumLevel LogLevel.Trace |> ignore
+                        logging.SetMinimumLevel LogLevel.Debug |> ignore
 
 //                        logging.AddFilter ("Microsoft.", LogLevel.Warning)
 //                        |> ignore

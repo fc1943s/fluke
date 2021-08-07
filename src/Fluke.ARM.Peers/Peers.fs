@@ -168,7 +168,7 @@ module Peers =
                                 "dotnet tool restore"
                                 "dotnet paket restore"
                                 "echo starting build..."
-                                "dotnet build -v diag"
+                                "dotnet build -v d"
                                 "while true; do dotnet run && break"
                                 "sleep 30"
                                 "done"
