@@ -244,10 +244,12 @@ module Main =
 
                 logging
                     (fun logging ->
-                        logging.SetMinimumLevel LogLevel.Debug |> ignore
+//                        logging.SetMinimumLevel LogLevel.Debug |> ignore
+                        logging.SetMinimumLevel LogLevel.Trace |> ignore
 
-                        logging.AddFilter ("Microsoft.", LogLevel.Warning)
-                        |> ignore)
+//                        logging.AddFilter ("Microsoft.", LogLevel.Warning)
+//                        |> ignore
+                        )
 
                 force_ssl
             //                                    return result
