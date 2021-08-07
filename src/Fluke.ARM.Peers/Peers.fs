@@ -139,10 +139,10 @@ module Peers =
                 add_instances [
                     containerInstance {
                         name (nameof containerInstance)
-                        image "mcr.microsoft.com/dotnet/sdk:6.0-alpine"
+                        image "mcr.microsoft.com/dotnet/sdk:6.0"
 
                         env_vars [
-                            "DATA_PATH", $"/data/{fileShareId}/{containerId}-hubdata"
+                            "FLUKE_HUB_DATA_PATH", $"/data/{fileShareId}/{containerId}-hubdata"
                             "HTTPS_KEY", "/app/key.pem"
                             "HTTPS_CERT", "/app/cert.pem"
                         ]
@@ -157,17 +157,18 @@ module Peers =
                         add_volume_mount fileShareId $"/data/{fileShareId}"
                         add_volume_mount ``share-fluke-hub-peer`` "/app"
 
-
                         command_line [
                             "/bin/sh"
                             "-c"
                             [
                                 "cd /app"
-                                "apk add --no-cache git"
+                                "rm -rf fluke"
                                 "git clone https://github.com/fc1943s/fluke.git"
                                 "cd fluke/src/Fluke.UI.Backend"
                                 "dotnet tool restore"
                                 "dotnet paket restore"
+                                "dotnet build"
+                                "echo starting..."
                                 "while true; do dotnet run && break"
                                 "sleep 30"
                                 "done"

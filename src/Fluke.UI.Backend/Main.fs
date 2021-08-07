@@ -20,7 +20,13 @@ open Microsoft.Extensions.Hosting
 module Main =
     module Model =
         let getPath username key =
-            let path = Path.Combine (".", "data", username, $"{key}")
+
+            let root =
+                match Environment.GetEnvironmentVariable "FLUKE_HUB_DATA_PATH" with
+                | String.ValidString path -> path
+                | _ -> "."
+
+            let path = Path.Combine (root, "data", username, $"{key}")
             //            printfn $"getPath. username={username} key={key} / path={path}"
             path
 
@@ -164,7 +170,7 @@ module Main =
                         send Model.send
                         invoke Model.invoke
                         stream_from Model.Stream.sendToClient
-//                        use_messagepack
+                        //                        use_messagepack
                         //                        with_log_level LogLevel.Trace
                         with_hub_options (fun options -> options.EnableDetailedErrors <- true)
 
@@ -247,6 +253,6 @@ module Main =
             //                                    return result
             }
 
-        printfn "starting..."
+        printfn "starting app..."
         run app
         0
