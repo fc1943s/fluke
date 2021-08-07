@@ -7,7 +7,7 @@
     </PropertyGroup>
     <ItemGroup>
         <Content Include=".farmer/farmer-deploy.json" />
-        <Compile Include="GunPeers.fs" />
+        <Compile Include="Peers.fs" />
         <Compile Include="Program.fs" />
         <Content Include=".gitignore" />
         <Content Include="paket.references" />

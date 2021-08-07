@@ -181,6 +181,6 @@ module AddAttachmentInput =
                             ]
                     ]
                 match onAdd with
-                | Some onAdd -> AttachmentsClipboard.AttachmentsClipboard onAdd
+                | Some onAdd -> AttachmentsClipboard.AttachmentsClipboard attachmentParent onAdd
                 | None -> nothing
             ]

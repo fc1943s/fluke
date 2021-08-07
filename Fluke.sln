@@ -50,7 +50,7 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Fluke.UI.Electron.Main", "s
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Fluke.UI.Electron.Renderer", "src\Fluke.UI.Electron.Renderer\Fluke.UI.Electron.Renderer.fsproj", "{DE6C9323-1B25-46AB-AB98-9672EECDAB54}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Fluke.ARM.GunPeers", "src\Fluke.ARM.GunPeers\Fluke.ARM.GunPeers.fsproj", "{58CFC8EC-F12B-453F-B8CD-E1211D03B2A3}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Fluke.ARM.Peers", "src\Fluke.ARM.Peers\Fluke.ARM.Peers.fsproj", "{58CFC8EC-F12B-453F-B8CD-E1211D03B2A3}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Fluke.UI.Electron", "src\Fluke.UI.Electron\Fluke.UI.Electron.fsproj", "{CC388BCE-38BF-4FD3-BA14-99BB6A505289}"
 EndProject

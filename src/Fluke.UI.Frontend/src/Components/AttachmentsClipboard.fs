@@ -1,6 +1,7 @@
 namespace Fluke.UI.Frontend.Components
 
 open Fable.React
+open Fluke.UI.Frontend.State.State
 open FsStore
 open FsUi.Bindings
 open Fluke.Shared
@@ -10,7 +11,7 @@ open Feliz
 
 module AttachmentsClipboard =
     [<ReactComponent>]
-    let rec AttachmentsClipboard onAdd =
+    let rec AttachmentsClipboard attachmentParent onAdd =
         let archive = Store.useValue Atoms.User.archive
         let clipboardVisible = Store.useValue Atoms.User.clipboardVisible
         let clipboardAttachmentIdMap = Store.useValue Atoms.User.clipboardAttachmentIdMap
@@ -28,7 +29,12 @@ module AttachmentsClipboard =
                 (fun _ setter attachmentId ->
                     promise {
                         Store.change setter Atoms.User.clipboardAttachmentIdMap (Map.remove attachmentId)
-                        Store.set setter (Atoms.Attachment.archived attachmentId) archive
+
+                        match attachmentParent with
+                        | AttachmentParent.Information _ ->
+                            Store.set setter (Atoms.Attachment.archived attachmentId) archive
+                        | _ -> ()
+
                         do! onAdd attachmentId
                     })
 

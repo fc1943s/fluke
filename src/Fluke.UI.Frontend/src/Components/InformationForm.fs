@@ -41,6 +41,14 @@ module InformationForm =
 
         let lastDatabaseSelected, setLastDatabaseSelected = Store.useState Atoms.User.lastDatabaseSelected
 
+        let isReadWrite =
+            Store.useValue (
+                Selectors.Database.isReadWrite (
+                    lastDatabaseSelected
+                    |> Option.defaultValue Database.Default.Id
+                )
+            )
+
         let onAttachmentAdd =
             Store.useCallbackRef
                 (fun _ setter attachmentId ->
@@ -58,12 +66,15 @@ module InformationForm =
             Store.useCallbackRef
                 (fun getter _setter attachmentId ->
                     promise {
-                        let databaseIdSearch =
+                        let databaseIdList =
                             attachmentIdMap
-                            |> Map.tryFindKey (fun _ attachmentIdSet -> attachmentIdSet.Contains attachmentId)
+                            |> Map.toSeq
+                            |> Seq.filter (fun (_, attachmentIdSet) -> attachmentIdSet.Contains attachmentId)
+                            |> Seq.map fst
+                            |> Seq.toList
 
-                        match databaseIdSearch, information with
-                        | Some _databaseIdSearch, Some _information ->
+                        match databaseIdList, information with
+                        | _ :: _, Some _information ->
                             do! Store.deleteRoot getter (Atoms.Attachment.attachment attachmentId)
                             return true
                         | _ -> return false
@@ -95,11 +106,12 @@ module InformationForm =
 
                         match information with
                         | Some information when
-                            information
-                            |> Information.Name
-                            |> InformationName.Value
-                            |> String.IsNullOrWhiteSpace
-                            |> not
+                            isReadWrite
+                            && information
+                               |> Information.Name
+                               |> InformationName.Value
+                               |> String.IsNullOrWhiteSpace
+                               |> not
                             ->
                             str "Attachments",
                             (UI.stack
@@ -113,7 +125,7 @@ module InformationForm =
                                              |> Option.defaultValue Database.Default.Id),
                                             information
                                         ))
-                                        (if lastDatabaseSelected.IsSome then Some onAttachmentAdd else None)
+                                        (Some onAttachmentAdd)
                                         onAttachmentDelete
                                         attachmentIdList
                                 ])

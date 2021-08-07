@@ -38,6 +38,5 @@ module MonthResponsiveCell =
 
                 props x)
             [
-
                 dateId |> DateId.Format DateIdFormat.Month |> str
             ]

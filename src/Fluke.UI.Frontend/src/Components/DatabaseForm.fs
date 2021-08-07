@@ -63,8 +63,6 @@ module DatabaseForm =
 
                                 Store.resetTempValue setter (Atoms.Database.name databaseId)
 
-                                Store.set setter (Atoms.User.uiFlag UIFlagType.Database) UIFlag.None
-
                                 do! onSave database
                             | None -> ()
                     })

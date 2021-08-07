@@ -51,45 +51,35 @@ module Content =
         React.suspense (
             [
                 PositionUpdater.PositionUpdater ()
+                PasteListener.PasteListener ()
 
-                UI.stack
-                    (fun x ->
-                        x.spacing <- "0"
-                        x.flex <- "1"
-                        x.maxWidth <- "100vw")
-                    [
-                        PasteListener.PasteListener ()
-
-                        TopBar.TopBar ()
-
-                        if userColor.IsNone then
-                            LoadingSpinner.LoadingSpinner ()
-                        else
-                            UI.flex
-                                (fun x -> x.flex <- "1")
+                if userColor.IsNone then
+                    LoadingSpinner.LoadingSpinner ()
+                else
+                    UI.flex
+                        (fun x -> x.flex <- "1")
+                        [
+                            React.suspense (
                                 [
-                                    React.suspense (
-                                        [
-                                            LeftDock.LeftDock ()
-                                        ],
-                                        LoadingSpinner.LoadingSpinner ()
-                                    )
-                                    React.suspense (
-                                        [
-                                            ViewTabs.ViewTabs ()
-                                        ],
-                                        LoadingSpinner.LoadingSpinner ()
-                                    )
-                                    React.suspense (
-                                        [
-                                            RightDock.RightDock ()
-                                        ],
-                                        LoadingSpinner.LoadingSpinner ()
-                                    )
-                                ]
+                                    LeftDock.LeftDock ()
+                                ],
+                                LoadingSpinner.LoadingSpinner ()
+                            )
+                            React.suspense (
+                                [
+                                    ViewTabs.ViewTabs ()
+                                ],
+                                LoadingSpinner.LoadingSpinner ()
+                            )
+                            React.suspense (
+                                [
+                                    RightDock.RightDock ()
+                                ],
+                                LoadingSpinner.LoadingSpinner ()
+                            )
+                        ]
 
-                            StatusBar.StatusBar ()
-                    ]
+                    StatusBar.StatusBar ()
 
                 React.suspense (
                     [
@@ -116,10 +106,19 @@ module Content =
                 x.height <- if deviceInfo.IsExtension then "590px" else null
                 x.width <- if deviceInfo.IsExtension then "790px" else null)
             [
-                match sessionRestored with
-                | false -> LoadingSpinner.LoadingSpinner ()
-                | true ->
-                    match username with
-                    | None -> LoginScreen.LoginScreen ()
-                    | Some _ -> LoggedContent ()
+                UI.stack
+                    (fun x ->
+                        x.spacing <- "0"
+                        x.flex <- "1"
+                        x.maxWidth <- "100vw")
+                    [
+                        TopBar.TopBar ()
+
+                        match sessionRestored with
+                        | false -> LoadingSpinner.LoadingSpinner ()
+                        | true ->
+                            match username with
+                            | None -> LoginScreen.LoginScreen ()
+                            | Some _ -> LoggedContent ()
+                    ]
             ]

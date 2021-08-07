@@ -26,8 +26,8 @@ module rec File =
                             0 .. chunkCount - 1
                         |]
                         |> Array.map (fun i -> Atoms.File.chunk (fileId, i))
-                        |> Array.chunkBySize 100
-                        |> Array.collect (Store.waitForAll >> Store.value getter)
+                        |> Store.waitForAll
+                        |> Store.value getter
 
                     if chunks |> Array.exists (String.length >> (=) 0) then
                         Dom.log

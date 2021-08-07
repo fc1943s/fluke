@@ -370,6 +370,7 @@ module TopBar =
     let TopBar () =
         let deviceInfo = Store.useValue Selectors.deviceInfo
         let logout = Auth.useLogout ()
+        let username = Store.useValue Atoms.username
 
         let onLogoClick =
             Store.useCallbackRef
@@ -459,33 +460,59 @@ module TopBar =
                                         |}
                                 ]
 
-                        RandomizeButton ()
+                        if username.IsSome then
+                            RandomizeButton ()
+
+                        if username.IsSome then
+                            Tooltip.wrap
+                                (str "Toggle Archive")
+                                [
+                                    TransparentIconButton.TransparentIconButton
+                                        {|
+                                            Props =
+                                                fun x ->
+                                                    x.icon <- Icons.ri.RiArchiveLine |> Icons.render
+                                                    x.height <- "27px"
+                                                    x.fontSize <- "17px"
+
+                                                    if archive = Some true then
+                                                        x._active <- JS.newObj (fun x -> x.backgroundColor <- "gray.30")
+                                                        x.backgroundColor <- "gray.30"
+
+                                                    x.onClick <-
+                                                        fun _ ->
+                                                            promise {
+                                                                setArchive (
+                                                                    match archive with
+                                                                    | Some archive -> Some (not archive)
+                                                                    | None -> Some false
+                                                                )
+                                                            }
+                                        |}
+                                ]
 
                         Tooltip.wrap
-                            (str "Toggle Archive")
+                            (React.fragment [
+                                str "LessPass"
+                                ExternalLink.externalLinkIcon
+                             ])
                             [
-                                TransparentIconButton.TransparentIconButton
-                                    {|
-                                        Props =
-                                            fun x ->
-                                                x.icon <- Icons.ri.RiArchiveLine |> Icons.render
-                                                x.height <- "27px"
-                                                x.fontSize <- "17px"
-
-                                                if archive = Some true then
-                                                    x._active <- JS.newObj (fun x -> x.backgroundColor <- "gray.30")
-                                                    x.backgroundColor <- "gray.30"
-
-                                                x.onClick <-
-                                                    fun _ ->
-                                                        promise {
-                                                            setArchive (
-                                                                match archive with
-                                                                | Some archive -> Some (not archive)
-                                                                | None -> Some false
-                                                            )
-                                                        }
-                                    |}
+                                UI.link
+                                    (fun x ->
+                                        x.href <- "https://lesspass.com/"
+                                        x.isExternal <- true
+                                        x.display <- "block")
+                                    [
+                                        TransparentIconButton.TransparentIconButton
+                                            {|
+                                                Props =
+                                                    fun x ->
+                                                        x.tabIndex <- -1
+                                                        x.icon <- Icons.cg.CgKeyhole |> Icons.render
+                                                        x.fontSize <- "17px"
+                                                        x.height <- "27px"
+                                            |}
+                                    ]
                             ]
 
                         Tooltip.wrap
@@ -512,19 +539,20 @@ module TopBar =
                                     ]
                             ]
 
-                        Tooltip.wrap
-                            (str "Logout")
-                            [
-                                TransparentIconButton.TransparentIconButton
-                                    {|
-                                        Props =
-                                            fun x ->
-                                                x.icon <- Icons.hi.HiLogout |> Icons.render
-                                                x.fontSize <- "17px"
-                                                x.height <- "27px"
-                                                x.onClick <- fun _ -> promise { do! logout () }
-                                    |}
-                            ]
+                        if username.IsSome then
+                            Tooltip.wrap
+                                (str "Logout")
+                                [
+                                    TransparentIconButton.TransparentIconButton
+                                        {|
+                                            Props =
+                                                fun x ->
+                                                    x.icon <- Icons.hi.HiLogout |> Icons.render
+                                                    x.fontSize <- "17px"
+                                                    x.height <- "27px"
+                                                    x.onClick <- fun _ -> promise { do! logout () }
+                                        |}
+                                ]
 
                         if deviceInfo.IsElectron then
                             Tooltip.wrap

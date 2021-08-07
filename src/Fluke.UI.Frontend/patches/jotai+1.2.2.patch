@@ -1,0 +1,78 @@
+diff --git a/node_modules/jotai/utils.js b/node_modules/jotai/utils.js
+index 07eebde..7b607bf 100644
+--- a/node_modules/jotai/utils.js
++++ b/node_modules/jotai/utils.js
+@@ -191,38 +191,45 @@ function atomFamily(initializeAtom, areEqual) {
+   return createAtom;
+ }
+ 
+-var getWeakCacheItem = function getWeakCacheItem(cache, deps) {
+-  var dep = deps[0],
+-      rest = deps.slice(1);
+-  var entry = cache.get(dep);
+ 
+-  if (!entry) {
+-    return;
+-  }
+-
+-  if (!rest.length) {
+-    return entry[1];
+-  }
+-
+-  return getWeakCacheItem(entry[0], rest);
+-};
+-var setWeakCacheItem = function setWeakCacheItem(cache, deps, item) {
+-  var dep = deps[0],
+-      rest = deps.slice(1);
+-  var entry = cache.get(dep);
+-
+-  if (!entry) {
+-    entry = [new WeakMap()];
+-    cache.set(dep, entry);
++export const getWeakCacheItem = (
++  cache,
++  deps
++) => {
++  while (true) {
++    const [dep, ...rest] = deps
++    const entry = cache.get(dep)
++    if (!entry) {
++      return
++    }
++    if (!rest.length) {
++      return entry[1]
++    }
++    cache = entry[0]
++    deps = rest
+   }
++}
+ 
+-  if (!rest.length) {
+-    entry[1] = item;
+-    return;
++export const setWeakCacheItem = (
++  cache,
++  deps,
++  item
++) => {
++  while (true) {
++    const [dep, ...rest] = deps
++    let entry = cache.get(dep)
++    if (!entry) {
++      entry = [new WeakMap()]
++      cache.set(dep, entry)
++    }
++    if (!rest.length) {
++      entry[1] = item
++      return
++    }
++    cache = entry[0]
++    deps = rest
+   }
+-
+-  setWeakCacheItem(entry[0], rest, item);
+-};
++}
+ 
+ var selectAtomCache = new WeakMap();
+ function selectAtom(anAtom, selector, equalityFn) {

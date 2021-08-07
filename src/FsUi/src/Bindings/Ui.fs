@@ -237,6 +237,7 @@ module UI =
                   Textarea: obj
                   Tooltip: obj
                   useDisclosure: unit -> Disclosure
+                  useMenuContext: unit -> obj
                   useMenuButton: obj -> IChakraProps
                   useToast: unit -> System.Func<obj, unit> |} =
         jsNative
@@ -482,6 +483,9 @@ module UI =
         abstract description : string with get, set
         abstract duration : int with get, set
         abstract isClosable : bool with get, set
+
+    let inline useDisclosure () =
+        react.useDisclosure ()
 
     let useToast () =
         let toast = react.useToast ()

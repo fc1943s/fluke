@@ -182,6 +182,14 @@ module Theme =
                                     {|
                                         color = if input.DarkMode then "#333 !important" else "#CCC !important"
                                     |}
+                                ``.markdown-container a`` = {| textDecoration = "underline" |}
+                                ``.markdown-container blockquote`` =
+                                    {|
+                                        borderLeft = "1px solid #888"
+                                        paddingLeft = "6px"
+                                        marginTop = "6px"
+                                        marginBottom = "6px"
+                                    |}
                                 ``.markdown-container h1`` =
                                     {|
                                         display = "inline-flex"
@@ -190,14 +198,6 @@ module Theme =
                                         marginTop = "3px"
                                         marginBottom = "7px"
                                         paddingBottom = "7px"
-                                    |}
-                                ``.markdown-container a`` = {| textDecoration = "underline" |}
-                                ``.markdown-container blockquote`` =
-                                    {|
-                                        borderLeft = "1px solid #888"
-                                        paddingLeft = "6px"
-                                        marginTop = "6px"
-                                        marginBottom = "6px"
                                     |}
                                 ``.markdown-container hr`` =
                                     {|
@@ -210,13 +210,18 @@ module Theme =
                                         marginTop = "6px"
                                         marginBottom = "6px"
                                     |}
+                                ``.markdown-container pre`` =
+                                    {|
+                                        fontSize = "0.75em"
+                                        lineHeight = "1.2em"
+                                    |}
+                                ``.markdown-container li ul`` = {| marginLeft = "17px" |}
+                                ``.markdown-container li + li`` = {| marginTop = "8px" |}
                                 ``.markdown-container td, .markdown-container th`` =
                                     {|
                                         border = "1px solid #888"
                                         padding = "6px"
                                     |}
-                                ``.markdown-container li ul`` = {| marginLeft = "17px" |}
-                                ``.markdown-container li + li`` = {| marginTop = "8px" |}
                                 ``.markdown-container ul + p`` = {| marginTop = "20px" |}
                                 ``.markdown-container ul`` = {| listStylePosition = "inside" |}
                             |}

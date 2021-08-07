@@ -11,6 +11,7 @@ open FsJs
 open FsCore
 open Fluke.Shared
 open Fluke.UI.Frontend.State.State
+open Fable.Core.JsInterop
 
 
 module PositionUpdater =
@@ -28,10 +29,14 @@ module PositionUpdater =
                     | Some (String.ValidString _) ->
                         match hub with
                         | Some hub when hub.connectionId = None ->
-                            printfn $"position timer. hub.connectionId={hub.connectionId}. triggering"
-                            Store.change setter Atoms.hubTrigger ((+) 1)
-                        | _ -> ()
+                            printfn
+                                $"position timer. hub.connectionId={hub.connectionId}. triggering hubTrigger **skipped** window.hubTrigger()"
 
+                            match Dom.window () with
+                            | Some window -> window?hubTrigger <- fun () -> Store.change setter Atoms.hubTrigger ((+) 1)
+                            | None -> ()
+                        //                            Store.change setter Atoms.hubTrigger ((+) 1)
+                        | _ -> ()
                     | _ -> ()
 
                     Store.set setter (Atoms.Device.devicePing deviceId) (Ping (string DateTime.Now.Ticks))

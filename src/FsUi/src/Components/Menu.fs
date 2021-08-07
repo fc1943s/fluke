@@ -3,14 +3,20 @@ namespace FsUi.Components
 open Fable.Core
 open Fable.React
 open Feliz
+open FsStore
 open FsUi.Bindings
 open FsJs
-
+open FsCore
 
 module Menu =
     [<ReactComponent>]
     let FakeMenuButton (cmp: (UI.IChakraProps -> unit) -> ReactElement) (props: UI.IChakraProps -> unit) =
-        let menuButtonProps = UI.react.useMenuButton (box {|  |})
+        let menuContext = UI.react.useMenuContext ()
+
+        let menuButtonProps =
+            match menuContext |> Option.ofObjUnbox with
+            | Some _ -> UI.react.useMenuButton (box {|  |})
+            | None -> React.useMemo ((fun () -> JS.newObj (fun _ -> ())), [||])
 
         cmp
             (fun x ->

@@ -15,7 +15,7 @@ module Popover =
                    Body: UI.Disclosure * (unit -> IRefValue<unit>) -> ReactElement list
                    Props: UI.IChakraProps -> unit |})
         =
-        let disclosure = UI.react.useDisclosure ()
+        let disclosure = UI.useDisclosure ()
 
         let initialFocusRef = React.useRef ()
 

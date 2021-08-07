@@ -16,6 +16,23 @@ module AttachmentHeader =
         let attachmentState = Store.useValue (Selectors.Attachment.attachmentState attachmentId)
         let setArchived = Store.useSetState (Atoms.Attachment.archived attachmentId)
 
+        let copyAttachmentClipboard =
+            Store.useCallbackRef
+                (fun _ _ _ ->
+                    promise {
+                        match Browser.Navigator.navigator.clipboard with
+                        | Some clipboard ->
+                            match attachmentState with
+                            | Some attachmentState ->
+                                match attachmentState.Attachment with
+                                | Attachment.Comment (Comment.Comment comment) -> do! clipboard.writeText comment
+                                | Attachment.Image _fileId ->
+                                    printfn "TODO: implement download image then copy to clipboard"
+                                | _ -> ()
+                            | None -> ()
+                        | None -> ()
+                    })
+
         UI.flex
             (fun x -> x.color <- "whiteAlpha.600")
             [
@@ -34,6 +51,16 @@ module AttachmentHeader =
                                         |> FlukeDateTime.Stringify
                                     )
                                 ]
+
+                            InputLabelIconButton.InputLabelIconButton
+                                (fun x ->
+                                    x.icon <- Icons.bs.BsClipboard |> Icons.render
+                                    x.onClick <- copyAttachmentClipboard
+                                    x.fontSize <- "11px"
+                                    x.height <- "15px"
+                                    x.color <- "whiteAlpha.700"
+                                    x.marginTop <- "-5px"
+                                    x.marginLeft <- "6px")
 
                             Menu.Menu
                                 {|

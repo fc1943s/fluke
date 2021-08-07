@@ -9,6 +9,7 @@ open FsStore.Bindings
 
 module Atoms =
     let rec logLevel = Store.atomWithStorage FsStore.root (nameof logLevel) DEFAULT_LOG_LEVEL
+    let rec showDebug = Store.atomWithStorage FsStore.root (nameof showDebug) false
     let rec gunOptions = Store.atomWithStorage FsStore.root (nameof gunOptions) (GunOptions.Sync [||])
     let rec hubUrl = Store.atomWithStorage FsStore.root (nameof hubUrl) (None: string option)
     let rec gunTrigger = Store.atom FsStore.root (nameof gunTrigger) 0

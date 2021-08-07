@@ -38,7 +38,10 @@ module PasteListener =
                                      Attachment = attachment
                                  })
 
-                        Store.change setter Atoms.User.clipboardAttachmentIdMap (Map.add attachmentId false)
+                        Store.change
+                            setter
+                            Atoms.User.clipboardAttachmentIdMap
+                            (fun map -> map |> Map.add attachmentId false)
                     })
 
         let toast = UI.useToast ()

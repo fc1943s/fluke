@@ -521,8 +521,6 @@ module TaskForm =
                             Store.resetTempValue setter (Atoms.Task.missedAfter taskId)
                             Store.resetTempValue setter (Atoms.Task.pendingAfter taskId)
 
-                            Store.set setter (Atoms.User.uiFlag UIFlagType.Task) UIFlag.None
-
                             do! onSave task
                     })
 

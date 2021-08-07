@@ -115,10 +115,11 @@ module Batcher =
                 |> Promise.start
 
         fun item ->
-            match item with
+//            match item with/--
             //            | BatchType.Set _
-            | BatchType.Subscribe _ ->
+//            | BatchType.Subscribe _ -> /--
                 //                macroQueue2 (fun () ->
-                internalBatch [| item |]
+//                internalBatch [| item |] /--
             //                )
-            | _ -> batcher internalBatch {| interval = interval |} item
+//            | _ ->/--
+                batcher internalBatch {| interval = interval |} item

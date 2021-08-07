@@ -100,7 +100,7 @@ module DatabaseSelector =
                                             ]
                                     |}
                         Body =
-                            fun onHide ->
+                            fun onHide1 ->
                                 [
                                     UI.stack
                                         (fun x ->
@@ -126,7 +126,7 @@ module DatabaseSelector =
                                                                         fun () ->
                                                                             promise {
                                                                                 onChange databaseId
-                                                                                onHide ()
+                                                                                onHide1 ()
                                                                             }
                                                                     Checked = index = i
                                                                 |}
@@ -170,7 +170,7 @@ module DatabaseSelector =
                                                                 ]
                                                         |}
                                             Body =
-                                                fun onHide ->
+                                                fun onHide2 ->
                                                     [
                                                         DatabaseForm.DatabaseForm
                                                             Database.Default.Id
@@ -178,7 +178,8 @@ module DatabaseSelector =
                                                                 promise {
                                                                     do! hydrateDatabase (AtomScope.Current, database)
                                                                     onChange database.Id
-                                                                    onHide ()
+                                                                    onHide1 ()
+                                                                    onHide2 ()
                                                                 })
                                                     ]
                                         |}

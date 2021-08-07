@@ -16,47 +16,6 @@ open FsStore.Bindings
 #nowarn "40"
 
 
-module SignalR =
-    open Fable.SignalR
-
-    let inline connect hubUrl _getter setter fn =
-        let timeout = 1000
-
-        SignalR.connect<Sync.Request, Sync.Request, obj, Sync.Response, Sync.Response>
-            (fun hub ->
-                hub
-                    .withUrl($"{hubUrl}{Sync.endpoint}")
-//                    .useMessagePack()
-                    .withAutomaticReconnect(
-                        {
-                            nextRetryDelayInMilliseconds =
-                                fun _context ->
-                                    Dom.log (fun () -> "SignalR.connect(). withAutomaticReconnect")
-                                    Some timeout
-                        }
-                    )
-                    .onReconnecting(fun ex -> Dom.log (fun () -> $"SignalR.connect(). onReconnecting ex={ex}"))
-                    .onReconnected(fun ex -> Dom.log (fun () -> $"SignalR.connect(). onReconnected ex={ex}"))
-                    .onClose(fun ex ->
-                        Dom.log (fun () -> $"SignalR.connect(). onClose ex={ex}")
-
-                        JS.setTimeout (fun () -> Store.change setter Atoms.hubTrigger ((+) 1)) (timeout / 2)
-                        |> ignore)
-                    .configureLogging(LogLevel.Debug)
-                    .onMessage (fun msg ->
-                        match msg with
-                        | Sync.Response.ConnectResult -> Dom.log (fun () -> "Sync.Response.ConnectResult")
-                        | Sync.Response.SetResult result ->
-                            Dom.log (fun () -> $"Sync.Response.SetResult result={result}")
-                        | Sync.Response.GetResult value -> Dom.log (fun () -> $"Sync.Response.GetResult value={value}")
-                        | Sync.Response.GetStream (key, value) ->
-                            Dom.log (fun () -> $"Sync.Response.GetStream key={key} value={value}")
-                        | Sync.Response.FilterResult keys ->
-                            Dom.log (fun () -> $"Sync.Response.FilterResult keys={keys}")
-                        | Sync.Response.FilterStream (key, keys) ->
-                            Dom.log (fun () -> $"Sync.Response.FilterStream key={key} keys={keys}")
-
-                        fn msg))
 
 module Selectors =
     let rec deviceInfo = Store.readSelector FsStore.root (nameof deviceInfo) (fun _ -> Dom.deviceInfo)
@@ -224,30 +183,61 @@ lastValue={lastValue}
                         None)
 
 
+
     module Hub =
+        open Fable.SignalR
+
         let hubSubscriptionMap = Dictionary<string * string * string, string [] -> unit> ()
 
-        let rec hub =
+
+        let rec hubConnection =
             Store.readSelector
                 FsStore.root
-                (nameof hub)
+                (nameof hubConnection)
                 (fun getter ->
-                    let hubTrigger = Store.value getter Atoms.hubTrigger
+                    let timeout = 2000
+
                     let hubUrl = Store.value getter Atoms.hubUrl
 
-                    printfn $"hub selector. hubTrigger={hubTrigger} hubUrl={hubUrl}"
+                    printfn $"hub connection selector. hubUrl={hubUrl}"
 
                     match hubUrl with
                     | Some (String.ValidString hubUrl) ->
-                        match Store.value getter atomAccessors with
-                        | Some (getter, setter) ->
-                            try
-                                let hub =
-                                    SignalR.connect
-                                        hubUrl
-                                        getter
-                                        setter
-                                        (fun msg ->
+                        let connection =
+                            SignalR.connect<Sync.Request, Sync.Request, obj, Sync.Response, Sync.Response>
+                                (fun hub ->
+                                    hub
+                                        .withUrl($"{hubUrl}{Sync.endpoint}")
+                                        //                    .useMessagePack()
+                                        .withAutomaticReconnect(
+                                            {
+                                                nextRetryDelayInMilliseconds =
+                                                    fun _context ->
+                                                        Dom.log (fun () -> "SignalR.connect(). withAutomaticReconnect")
+                                                        Some timeout
+                                            }
+                                        )
+                                        .onReconnecting(fun ex ->
+                                            Dom.log (fun () -> $"SignalR.connect(). onReconnecting ex={ex}"))
+                                        .onReconnected(fun ex ->
+                                            Dom.log (fun () -> $"SignalR.connect(). onReconnected ex={ex}"))
+                                        .onClose(fun ex -> Dom.log (fun () -> $"SignalR.connect(). onClose ex={ex}"))
+                                        .configureLogging(LogLevel.Debug)
+                                        .onMessage (fun msg ->
+                                            match msg with
+                                            | Sync.Response.ConnectResult ->
+                                                Dom.log (fun () -> "Sync.Response.ConnectResult")
+                                            | Sync.Response.SetResult result ->
+                                                Dom.log (fun () -> $"Sync.Response.SetResult result={result}")
+                                            | Sync.Response.GetResult value ->
+                                                Dom.log (fun () -> $"Sync.Response.GetResult value={value}")
+                                            | Sync.Response.GetStream (key, value) ->
+                                                Dom.log (fun () -> $"Sync.Response.GetStream key={key} value={value}")
+                                            | Sync.Response.FilterResult keys ->
+                                                Dom.log (fun () -> $"Sync.Response.FilterResult keys={keys}")
+                                            | Sync.Response.FilterStream (key, keys) ->
+                                                Dom.log (fun () -> $"Sync.Response.FilterStream key={key} keys={keys}")
+
                                             match msg with
                                             | Sync.Response.FilterStream (key, keys) ->
                                                 match hubSubscriptionMap.TryGetValue key with
@@ -260,16 +250,28 @@ lastValue={lastValue}
                                                             $"Selectors.hub onMsg msg={msg}. skipping. not in map ")
                                             | _ ->
                                                 Dom.log
-                                                    (fun () -> $"Selectors.hub onMsg msg={msg}. skipping. not handled "))
+                                                    (fun () -> $"Selectors.hub onMsg msg={msg}. skipping. not handled ")))
 
-                                hub.startNow ()
-                                Some hub
-                            with
-                            | ex ->
-                                printfn
-                                    $"hub selector. start error. ex={ex.Message} hubTrigger={hubTrigger} hubUrl={hubUrl}"
+                        connection.startNow ()
+                        Some connection
+                    | _ -> None)
 
-                                None
 
-                        | None -> None
+
+        let rec hub =
+            Store.readSelector
+                FsStore.root
+                (nameof hub)
+                (fun getter ->
+                    let hubTrigger = Store.value getter Atoms.hubTrigger
+                    let hubConnection = Store.value getter hubConnection
+
+                    match hubConnection with
+                    | Some hubConnection ->
+                        printfn $"hub selector. hubTrigger={hubTrigger} hubConnection.connectionId={hubConnection.connectionId}"
+                        Some hubConnection
+//                        match Store.value getter atomAccessors with
+//                        | Some (getter, setter) ->
+//                            Some hubConnection
+//                        | None -> None
                     | _ -> None)

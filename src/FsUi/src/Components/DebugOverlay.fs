@@ -6,7 +6,6 @@ open Fable.React
 open Feliz
 open FsJs
 open FsStore
-open FsStore.Model
 open FsUi.Bindings
 open FsUi.Hooks
 
@@ -17,8 +16,7 @@ module DebugOverlay =
     let DebugOverlay () =
         let text, setText = React.useState ""
         let oldJson, setOldJson = React.useState ""
-        let logLevel = Store.useValue Atoms.logLevel
-        let isDebug = logLevel <= LogLevel.Debug
+        let showDebug = Store.useValue Atoms.showDebug
 
         let isTesting = Store.useValue Atoms.isTesting
         let deviceInfo = Store.useValue Selectors.deviceInfo
@@ -30,10 +28,10 @@ module DebugOverlay =
             (fun _ _ ->
                 promise {
                     match Dom.window () with
-                    | Some window -> if not window?Debug then window?Debug <- isDebug
+                    | Some window -> if not window?Debug then window?showDebug <- showDebug
                     | None -> ()
 
-                    if isTesting || not isDebug then
+                    if isTesting || not showDebug then
                         ()
                     else
                         let json =
@@ -81,16 +79,16 @@ module DebugOverlay =
             UI.box
                 (fun x ->
                     x.width <- "min-content"
-                    x.height <- if isDebug then "60%" else "initial"
+                    x.height <- if showDebug then "60%" else "initial"
                     x.position <- "fixed"
                     x.right <- "24px"
                     x.bottom <- "0"
                     x.fontSize <- "9px"
                     x.backgroundColor <- "#44444455"
                     x.zIndex <- 4
-                    x.overflow <- if isDebug then "scroll" else "initial")
+                    x.overflow <- if showDebug then "scroll" else "initial")
                 [
-                    if isDebug then
+                    if showDebug then
                         Html.pre [
                             prop.id "diag"
                             prop.children [ str text ]

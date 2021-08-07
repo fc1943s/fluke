@@ -56,10 +56,11 @@ module rec Selectors =
         readSelector
             (nameof dateIdAtomsByMonth)
             (fun getter ->
-                let dateIdArray = Store.value getter dateIdArray
                 let dateIdAtoms = Store.value getter dateIdAtoms
 
-                dateIdArray
+                dateIdAtoms
+                |> Store.waitForAll
+                |> Store.value getter
                 |> Array.indexed
                 |> Array.groupBy
                     (fun (_, dateId) ->
