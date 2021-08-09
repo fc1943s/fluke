@@ -1,4 +1,4 @@
-version 6.0.0-rc001
+version 6.0.0-rc011
 framework: net6.0
 storage: none
 source https://api.nuget.org/v3/index.json
@@ -27,11 +27,6 @@ nuget Myriad.Core ~> 0.5
 nuget Myriad.Plugins ~> 0.5
 nuget Myriad.Sdk ~> 0.5
 
-// Fluke.UI.Backend
-// nuget Saturn ~> 0.15
-nuget Fable.SignalR.Saturn ~> 0.11
-nuget FSharp.Control.AsyncSeq ~> 3.0
-
 // Fluke.UI.Frontend
 
 // Fluke.UI.Electron.Main
@@ -47,6 +42,3 @@ nuget YoloDev.Expecto.TestSdk ~> 0.12
 nuget Fake.Core.Target ~> 5.20 prerelease
 nuget Fake.DotNet.Cli ~> 5.20 prerelease
 nuget Fake.IO.FileSystem ~> 5.20 prerelease
-
-// Deploy
-nuget Farmer ~> 1.6
