@@ -50,8 +50,12 @@ module Auth =
 
                     let! ack =
                         match username, password with
-                        | "", keys -> Gun.authKeys gunNamespace keys
-                        | username, password -> Gun.authUser gunNamespace username password
+                        | "", keys ->
+                            printfn "keys sign in"
+                            Gun.authKeys gunNamespace (keys |> Json.decode<Gun.GunKeys>)
+                        | username, password ->
+                            printfn "user pass sign in"
+                            Gun.authUser gunNamespace username password
 
                     match ack with
                     | { err = None } -> return! postSignIn (Username username)
@@ -117,9 +121,11 @@ module Auth =
                 promise {
                     if username = "" || password = "" then
                         return Error "Required fields"
-                    elif JSe.RegExp(@"^[^0-9][a-zA-Z0-9]+$").Test username
+                    elif JSe
+                             .RegExp(@"^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$")
+                             .Test username
                          |> not then
-                        return Error "Invalid username"
+                        return Error "Invalid email address"
                     else
                         let gunNamespace = Store.value getter Selectors.Gun.gunNamespace
 

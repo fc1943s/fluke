@@ -1,7 +1,6 @@
 namespace FsStore
 
 open System.Collections.Generic
-open Fable.Core.JsInterop
 open Fable.Core
 open System
 open FsCore
@@ -137,11 +136,8 @@ lastValue={lastValue}
                     printfn
                         $"gunNamespace selector.
                             gunPeers={gunPeers}
-                            user.is.keys={JS.Constructors.Object.keys (
-                                              user.is
-                                              |> Option.defaultValue (createObj [] |> unbox)
-                                          )}
-                            keys={user.__.sea}..."
+                            user().is={user.is |> JS.objectKeys}
+                            user().__.sea={user.__.sea |> JS.objectKeys}..."
 
                     user)
 
@@ -268,9 +264,11 @@ lastValue={lastValue}
 
                     match hubConnection with
                     | Some hubConnection ->
-                        printfn $"hub selector. hubTrigger={hubTrigger} hubConnection.connectionId={hubConnection.connectionId}"
+                        printfn
+                            $"hub selector. hubTrigger={hubTrigger} hubConnection.connectionId={hubConnection.connectionId}"
+
                         Some hubConnection
-//                        match Store.value getter atomAccessors with
+                    //                        match Store.value getter atomAccessors with
 //                        | Some (getter, setter) ->
 //                            Some hubConnection
 //                        | None -> None

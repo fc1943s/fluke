@@ -94,7 +94,7 @@ module LoginScreen =
                                 Props =
                                     fun x ->
                                         x.autoFocus <- true
-                                        x.placeholder <- "Username"
+                                        x.placeholder <- "Email"
                                         x.onChange <- (fun (e: KeyboardEvent) -> promise { setUsernameField e.Value })
                             |}
 

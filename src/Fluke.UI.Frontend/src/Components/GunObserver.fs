@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open FsJs
 open Feliz
 open FsStore
 open FsUi.Bindings
@@ -80,7 +81,7 @@ module GunObserver =
 
                 printfn "before newRecall"
 
-                printfn $"gunKeys={JS.JSON.stringify gunKeys}"
+                printfn $"gunKeys={gunKeys |> Some |> JS.objectKeys}"
                 setSessionRestored true
 
                 printfn "after newRecall"),

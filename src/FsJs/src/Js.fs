@@ -98,6 +98,10 @@ module JS =
                 else
                     Some obj)
 
+    let inline objectKeys obj =
+        JS.Constructors.Object.keys (obj |> Option.defaultValue (createObj [] |> unbox))
+        |> Seq.toArray
+
 
 [<AutoOpen>]
 module JsMagic =
