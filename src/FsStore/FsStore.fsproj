@@ -23,7 +23,7 @@
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\FsJs\FsJs.fsproj" />
-      <ProjectReference Include="..\FsStore.Shared\FsStore.Shared.fsproj" />
+      <ProjectReference Include="..\..\..\FsBeacon\src\FsBeacon.Shared\FsBeacon.Shared.fsproj" />
     </ItemGroup>
     <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

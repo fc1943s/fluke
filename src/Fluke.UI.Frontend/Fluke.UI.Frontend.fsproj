@@ -162,11 +162,16 @@
         <None Include="build.fsx" />
         <Content Include="yarn.lock" />
         <Content Include="config.xml" />
+        <Compile Remove="node_modules\**" />
+        <None Remove="node_modules\**" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Fluke.Shared\Fluke.Shared.fsproj" />
         <ProjectReference Include="..\FsStore\FsStore.fsproj" />
         <ProjectReference Include="..\FsUi\FsUi.fsproj" />
+    </ItemGroup>
+    <ItemGroup>
+      <EmbeddedResource Remove="node_modules\**" />
     </ItemGroup>
     <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

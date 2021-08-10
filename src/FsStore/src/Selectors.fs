@@ -8,7 +8,7 @@ open FsCore
 open FsCore.Model
 open FsStore.Bindings.Jotai
 open FsStore.Model
-open FsStore.Shared
+open FsBeacon.Shared
 open Microsoft.FSharp.Core.Operators
 open FsJs
 open FsStore.Bindings
