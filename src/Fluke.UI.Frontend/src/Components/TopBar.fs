@@ -460,10 +460,12 @@ module TopBar =
                                         |}
                                 ]
 
-                        if username.IsSome then
-                            RandomizeButton ()
+                        match username with
+                        | Some _ -> RandomizeButton ()
+                        | _ -> nothing
 
-                        if username.IsSome then
+                        match username with
+                        | Some _ ->
                             Tooltip.wrap
                                 (str "Toggle Archive")
                                 [
@@ -490,6 +492,7 @@ module TopBar =
                                                             }
                                         |}
                                 ]
+                        | _ -> nothing
 
                         Tooltip.wrap
                             (React.fragment [

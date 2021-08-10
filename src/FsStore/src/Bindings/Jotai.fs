@@ -29,7 +29,7 @@ module Jotai =
             (GetFn -> JS.Promise<'TValue>) * (GetFn -> SetFn -> 'TValue -> JS.Promise<unit>) option -> Atom<'TValue>
 
         abstract atom : (GetFn -> 'TValue) * (GetFn -> SetFn -> 'TValue -> unit) option -> Atom<'TValue>
-        abstract useAtom : Atom<'TValue> -> AtomScope -> 'TValue * ('TValue -> unit)
+        abstract useAtom : Atom<'TValue> -> 'TValue * ('TValue -> unit)
 
     let jotai: IJotai = importAll "jotai"
 

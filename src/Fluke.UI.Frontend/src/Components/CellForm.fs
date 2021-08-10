@@ -68,6 +68,8 @@ module CellForm =
                                         [
                                             str $"""Task: {taskName}"""
                                         ]
+                                else
+                                    nothing
 
                                 if visibleTaskSelectedDateIdMap
                                    |> Map.values
@@ -82,6 +84,8 @@ module CellForm =
                                                          |> DateId.ValueOrDefault
                                                          |> FlukeDate.Stringify}"
                                         ]
+                                else
+                                    nothing
 
                                 UI.stack
                                     (fun x ->

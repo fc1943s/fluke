@@ -54,7 +54,7 @@ module AttachmentHeader =
 
                             InputLabelIconButton.InputLabelIconButton
                                 (fun x ->
-                                    x.icon <- Icons.bs.BsClipboard |> Icons.render
+                                    x.icon <- Icons.hi.HiOutlineClipboard |> Icons.render
                                     x.onClick <- copyAttachmentClipboard
                                     x.fontSize <- "11px"
                                     x.height <- "15px"

@@ -7,7 +7,7 @@ open Fable.Core
 open System
 open FsCore.Model
 open FsStore.Model
-open FsStore.Shared
+open FsBeacon.Shared
 open Microsoft.FSharp.Core.Operators
 open FsCore
 open FsJs

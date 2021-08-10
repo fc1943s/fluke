@@ -68,6 +68,7 @@ module CellMenu =
         let cellColorCompleted = Store.useValue Atoms.User.cellColorCompleted
         let cellColorDismissed = Store.useValue Atoms.User.cellColorDismissed
         let cellColorScheduled = Store.useValue Atoms.User.cellColorScheduled
+        let visibleTaskSelectedDateIdMap = Store.useValue Selectors.Session.visibleTaskSelectedDateIdMap
 
         let onClick =
             Store.useCallbackRef
@@ -231,9 +232,14 @@ module CellMenu =
                                     | _ -> nothing
                                 ]
 
-                        if not floating then
-                            nothing
-                        else
+
+                        if floating
+                           && visibleTaskSelectedDateIdMap.Count <= 1
+                           && visibleTaskSelectedDateIdMap
+                              |> Map.values
+                              |> Seq.fold Set.union Set.empty
+                              |> Set.count
+                              <= 1 then
                             Tooltip.wrap
                                 (str "Details")
                                 [
@@ -257,6 +263,8 @@ module CellMenu =
                                                     | None -> ()
                                                 }))
                                 ]
+                        else
+                            nothing
 
                         UI.str "Complete" |> wrapButtonTooltip Completed
 

@@ -142,6 +142,7 @@ module LeftDock =
                     items, itemsMap),
                 [|
                     box exportUserSettings
+                    box exportUserKey
                     box importUserSettings
                     box importDatabase
                 |]
