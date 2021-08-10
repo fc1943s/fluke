@@ -7,6 +7,11 @@ open FsJs
 
 
 module Jotai =
+    [<RequireQualifiedAccess>]
+    type AtomScope =
+        | Current
+        | Temp
+
     type Atom<'TValue> =
         abstract member toString : unit -> string
         abstract member onMount : (('TValue -> unit) -> unit -> unit) with get, set
@@ -24,7 +29,7 @@ module Jotai =
             (GetFn -> JS.Promise<'TValue>) * (GetFn -> SetFn -> 'TValue -> JS.Promise<unit>) option -> Atom<'TValue>
 
         abstract atom : (GetFn -> 'TValue) * (GetFn -> SetFn -> 'TValue -> unit) option -> Atom<'TValue>
-        abstract useAtom : Atom<'TValue> -> 'TValue * ('TValue -> unit)
+        abstract useAtom : Atom<'TValue> -> AtomScope -> 'TValue * ('TValue -> unit)
 
     let jotai: IJotai = importAll "jotai"
 
@@ -37,6 +42,7 @@ module Jotai =
         abstract selectAtom : Atom<'TValue> -> ('TValue -> 'U) -> CompareFn<'TValue> -> Atom<'U>
         abstract splitAtom : Atom<'TValue []> -> Atom<Atom<'TValue> []>
         abstract useAtomValue : Atom<'TValue> -> 'TValue
+        abstract useHydrateAtoms : (Atom<'TValue> * 'TValue) [] -> AtomScope -> unit
         abstract useUpdateAtom : Atom<'TValue> -> ('TValue -> unit)
         abstract useAtomCallback : (GetFn * SetFn * 'TArg -> JS.Promise<'TValue>) -> ('TArg -> JS.Promise<'TValue>)
         abstract waitForAll : Atom<'T> [] -> Atom<'T []>

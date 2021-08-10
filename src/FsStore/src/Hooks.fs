@@ -14,7 +14,7 @@ open FsStore.Bindings.Jotai
 [<AutoOpen>]
 module HooksMagic =
     module Store =
-        let inline useAtom atom = jotai.useAtom atom
+        let inline useAtom atom = jotai.useAtom atom AtomScope.Current
 
         let inline useStateOption (atom: Atom<'TValue5> option) =
             let flatAtom =
@@ -175,3 +175,4 @@ module HooksMagic =
 //    let inline useSetStatePrev<'T> atom =
 //        let setter = jotaiUtils.useUpdateAtom<'T> atom
 //        fun (value: 'T -> 'T) -> setter (unbox value)
+

@@ -48,7 +48,10 @@ module Auth =
                 promise {
                     let gunNamespace = Store.value getter Selectors.Gun.gunNamespace
 
-                    let! ack = Gun.authUser gunNamespace username password
+                    let! ack =
+                        match username, password with
+                        | "", keys -> Gun.authKeys gunNamespace keys
+                        | username, password -> Gun.authUser gunNamespace username password
 
                     match ack with
                     | { err = None } -> return! postSignIn (Username username)

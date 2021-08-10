@@ -190,7 +190,7 @@ module Theme =
                                         marginTop = "6px"
                                         marginBottom = "6px"
                                     |}
-                                ``.markdown-container h1`` =
+                                ``.markdown-container h1, .markdown-container h2, .markdown-container h3, .markdown-container h4, .markdown-container h5, .markdown-container h6`` =
                                     {|
                                         display = "inline-flex"
                                         borderBottomColor = "#999"
@@ -198,6 +198,22 @@ module Theme =
                                         marginTop = "3px"
                                         marginBottom = "7px"
                                         paddingBottom = "7px"
+                                    |}
+                                ``.markdown-container h4`` =
+                                    {|
+                                        fontSize = "1.1rem"
+                                    |}
+                                ``.markdown-container h3`` =
+                                    {|
+                                        fontSize = "1.2rem"
+                                    |}
+                                ``.markdown-container h2`` =
+                                    {|
+                                        fontSize = "1.3rem"
+                                    |}
+                                ``.markdown-container h1`` =
+                                    {|
+                                        fontSize = "1.4rem"
                                     |}
                                 ``.markdown-container hr`` =
                                     {|

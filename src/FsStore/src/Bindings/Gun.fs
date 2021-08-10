@@ -47,6 +47,7 @@ module Gun =
             abstract create : alias: string * pass: string * cb: (UserResult -> unit) -> unit
             abstract delete : alias: string * pass: string * cb: (UserResult -> unit) -> unit
             abstract auth : alias: string * pass: string * cb: (UserResult -> unit) * ?opt: {| change: string |} -> unit
+            abstract auth : keys: string * cb: (UserResult -> unit) * ?opt: {| change: string |} -> unit
 
             [<Emit("$0._")>]
             abstract __ : {| sea: GunKeys option |}
@@ -146,6 +147,16 @@ module Gun =
                 with
                 | ex ->
                     printfn "authUser error: {ex}"
+                    err ex)
+
+    let inline authKeys (user: IGunUser) keys =
+        Promise.create
+            (fun res err ->
+                try
+                    user.auth (keys, res)
+                with
+                | ex ->
+                    printfn "authKeys error: {ex}"
                     err ex)
 
     let inline changeUserPassword (user: IGunUser) username password newPassword =

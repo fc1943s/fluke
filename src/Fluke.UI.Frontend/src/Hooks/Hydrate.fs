@@ -350,6 +350,37 @@ module Hydrate =
 
     type SettingsState = { Ui: UiState; User: UserState }
 
+    let inline useExportUserKey () =
+        let toast = UI.useToast ()
+
+        Store.useCallbackRef
+            (fun getter _ () ->
+                promise {
+                    let username = Store.value getter Atoms.username
+
+                    match username with
+                    | Some username ->
+                        let gunNamespace = Store.value getter Selectors.Gun.gunNamespace
+                        let keys = gunNamespace.__.sea
+                        let json = keys |> Json.encodeFormatted
+
+                        let timestamp =
+                            (FlukeDateTime.FromDateTime DateTime.Now)
+                            |> FlukeDateTime.Stringify
+
+                        Dom.download
+                            json
+                            $"{username |> Username.ValueOrDefault}-{timestamp}-keys.json"
+                            "application/json"
+
+                        toast
+                            (fun x ->
+                                x.description <- "User keys exported successfully"
+                                x.title <- "Success"
+                                x.status <- "success")
+                    | None -> ()
+                })
+
     let inline useExportUserSettings () =
         let toast = UI.useToast ()
 
@@ -382,7 +413,10 @@ module Hydrate =
                             (FlukeDateTime.FromDateTime DateTime.Now)
                             |> FlukeDateTime.Stringify
 
-                        Dom.download json $"{username |> Username.ValueOrDefault}-{timestamp}.json" "application/json"
+                        Dom.download
+                            json
+                            $"{username |> Username.ValueOrDefault}-{timestamp}-settings.json"
+                            "application/json"
 
                         toast
                             (fun x ->

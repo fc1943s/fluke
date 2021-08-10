@@ -22,6 +22,7 @@ module LeftDock =
         let deviceInfo = Store.useValue Selectors.deviceInfo
         let leftDockSize, setLeftDockSize = Store.useState Atoms.User.leftDockSize
         let exportUserSettings = Hydrate.useExportUserSettings ()
+        let exportUserKey = Hydrate.useExportUserKey ()
         let importUserSettings = Hydrate.useImportUserSettings ()
         let importDatabase = Hydrate.useImportDatabase ()
 
@@ -67,6 +68,12 @@ module LeftDock =
                                                     Icons.bi.BiExport
                                                     "Export User Settings"
                                                     (Some exportUserSettings)
+                                                    (fun _ -> ())
+
+                                                MenuItem.MenuItem
+                                                    Icons.fi.FiKey
+                                                    "Export User Private Keys"
+                                                    (Some exportUserKey)
                                                     (fun _ -> ())
                                             ]
                                         )
