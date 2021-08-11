@@ -7,6 +7,7 @@ open FsCore.Model
 open FsJs
 open FsStore
 open FsStore.Bindings
+open FsStore.Bindings.Gun.Types
 
 
 module Auth =
@@ -17,8 +18,8 @@ module Auth =
                     printfn "before leave"
                     Store.change setter Atoms.gunTrigger ((+) 1)
                     Store.change setter Atoms.hubTrigger ((+) 1)
-                    let gunNamespace = Store.value getter Selectors.Gun.gunNamespace
-                    gunNamespace.leave ()
+                    let gun = Store.value getter Selectors.Gun.gun
+                    gun.user().leave ()
                     Store.set setter Atoms.username None
                     Store.set setter Atoms.gunKeys Gun.GunKeys.Default
                 })
@@ -29,15 +30,16 @@ module Auth =
                 promise {
                     Store.change setter Atoms.gunTrigger ((+) 1)
                     Store.change setter Atoms.hubTrigger ((+) 1)
-                    let gunNamespace = Store.value getter Selectors.Gun.gunNamespace
-                    let keys = gunNamespace.__.sea
+                    let gun = Store.value getter Selectors.Gun.gun
+                    let user = gun.user ()
+                    let keys = user.__.sea
 
                     match keys with
                     | Some keys ->
                         Store.set setter Atoms.gunKeys keys
                         Store.set setter Atoms.username (Some username)
                         return Ok (username, keys)
-                    | None -> return Error $"No keys found for user {gunNamespace.is}"
+                    | None -> return Error $"No keys found for user {user.is}"
                 })
 
     let inline useSignIn () =
@@ -46,16 +48,27 @@ module Auth =
         Store.useCallbackRef
             (fun getter _ (username, password) ->
                 promise {
-                    let gunNamespace = Store.value getter Selectors.Gun.gunNamespace
+                    let gun = Store.value getter Selectors.Gun.gun
+                    let user = gun.user ()
 
                     let! ack =
                         match username, password with
                         | "", keys ->
                             printfn "keys sign in"
-                            Gun.authKeys gunNamespace (keys |> Json.decode<Gun.GunKeys>)
+
+                            let keys =
+                                try
+                                    keys |> Json.decode<Gun.GunKeys>
+                                with
+                                | ex ->
+                                    printfn $"keys decode error: {ex.Message}"
+                                    Gun.GunKeys.Default
+
+                            Gun.authKeys user keys
+
                         | username, password ->
-                            printfn "user pass sign in"
-                            Gun.authUser gunNamespace username password
+                            printfn "user/pass sign in"
+                            Gun.authUser user username password
 
                     match ack with
                     | { err = None } -> return! postSignIn (Username username)
@@ -67,11 +80,12 @@ module Auth =
             (fun getter setter (password, newPassword) ->
                 promise {
                     let username = Store.value getter Atoms.username
-                    let gunNamespace = Store.value getter Selectors.Gun.gunNamespace
+                    let gun = Store.value getter Selectors.Gun.gun
+                    let user = gun.user ()
 
                     match username with
                     | Some (Username username) ->
-                        let! ack = Gun.changeUserPassword gunNamespace username password newPassword
+                        let! ack = Gun.changeUserPassword user username password newPassword
 
                         return!
                             promise {
@@ -96,9 +110,10 @@ module Auth =
 
                     match username with
                     | Some (Username username) ->
-                        let gunNamespace = Store.value getter Selectors.Gun.gunNamespace
+                        let gun = Store.value getter Selectors.Gun.gun
+                        let user = gun.user ()
 
-                        let! ack = Gun.deleteUser gunNamespace username password
+                        let! ack = Gun.deleteUser user username password
                         printfn $"ack={JS.JSON.stringify ack}"
 
                         return!
@@ -112,6 +127,18 @@ module Auth =
                             }
                     | _ -> return Error "Invalid username"
                 })
+
+    let inline putHashed (gun: IGunNode) data =
+        promise {
+            let! hash = Gun.sea.work data None None (Some {| name = Some "SHA-256" |})
+
+            match! Gun.put (gun.get("#").get hash) data with
+            | true -> return Ok hash
+            | false -> return Error $"put error. data={data} hash={hash}"
+        //                                    "hash#atomPath"
+        //                                    "atomPath#hash"
+//                                    setImmutableUsername pub username
+        }
 
     let inline useSignUp () =
         let signIn = useSignIn ()
@@ -127,18 +154,14 @@ module Auth =
                          |> not then
                         return Error "Invalid email address"
                     else
-                        let gunNamespace = Store.value getter Selectors.Gun.gunNamespace
+                        let gun = Store.value getter Selectors.Gun.gun
+                        let user = gun.user ()
 
-                        printfn $"Auth.useSignUp. gunNamespace={JS.JSON.stringify gunNamespace}"
+                        printfn $"Auth.useSignUp. user.is={user.is |> JS.objectKeys}"
 
-                        let! ack = Gun.createUser gunNamespace username password
+                        let! ack = Gun.createUser user username password
 
                         printfn $"Auth.useSignUp. Gun.createUser signUpAck={JS.JSON.stringify ack}"
-                        Dom.consoleLog ("ack", ack)
-
-                        match Dom.window () with
-                        | Some window -> window?signUpAck <- ack
-                        | None -> ()
 
                         return!
                             promise {
@@ -146,10 +169,16 @@ module Auth =
                                 | {
                                       err = None
                                       ok = Some 0
-                                      pub = Some _
+                                      pub = Some pub
                                   } ->
-                                    match! signIn (username, password) with
-                                    | Ok (username, keys) -> return Ok (username, keys)
+
+                                    let! usernameHash = putHashed user username
+
+                                    match usernameHash with
+                                    | Ok usernameHash ->
+                                        match! signIn (username, password) with
+                                        | Ok (username, keys) -> return Ok (username, keys)
+                                        | Error error -> return Error error
                                     | Error error -> return Error error
                                 | { err = Some err } -> return Error err
                                 | _ -> return Error $"Invalid ack: {JS.JSON.stringify ack}"

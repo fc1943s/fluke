@@ -16,7 +16,7 @@ module App =
         (if wrap then RootWrapper.RootWrapper else React.fragment)
             [
                 RouterObserver.RouterObserver ()
-                //                GunObserver.GunObserver ()
+                GunObserver.GunObserver ()
 
                 CtrlListener.CtrlListener ()
                 ShiftListener.ShiftListener ()

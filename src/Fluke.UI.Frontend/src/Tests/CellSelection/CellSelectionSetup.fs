@@ -181,26 +181,28 @@ module CellSelectionSetup =
                 (fun () ->
                     printfn "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ BEFORE RENDER"
 
-                    let gunNamespace = Store.useValue Selectors.Gun.gunNamespace
+                    let gun = Store.useValue Selectors.Gun.gun
                     let username, setUsername = Store.useState Atoms.username
 
                     React.useEffect (
                         (fun () ->
                             promise {
-                                if gunNamespace.__.sea.IsNone then
+                                let user = gun.user ()
+
+                                if user.__.sea.IsNone then
                                     let username =
                                         Templates.templatesUser.Username
                                         |> Username.ValueOrDefault
 
-                                    let! _ = Gun.createUser gunNamespace username username
-                                    let! _ = Gun.authUser gunNamespace username username
+                                    let! _ = Gun.createUser user username username
+                                    let! _ = Gun.authUser user username username
 
                                     RTL.act (fun () -> setUsername (Some Templates.templatesUser.Username))
                             }
                             |> Promise.start),
                         [|
                             box username
-                            box gunNamespace
+                            box gun
                         |]
                     )
 

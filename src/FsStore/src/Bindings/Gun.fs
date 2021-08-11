@@ -11,17 +11,17 @@ open System
 module Gun =
     type GunKeys =
         {
-            pub: string
-            epub: string
-            priv: string
-            epriv: string
+            pub: string option
+            epub: string option
+            priv: string option
+            epriv: string option
         }
         static member inline Default =
             {
-                pub = ""
-                epub = ""
-                priv = ""
-                epriv = ""
+                pub = None
+                epub = None
+                priv = None
+                epriv = None
             }
 
     type UserResult =
@@ -36,14 +36,26 @@ module Gun =
             wait: bool
         }
 
+
     type IGunUserPub =
         {
-            alias: string option
+            alias: GunUserAlias option
             pub: string option
         }
 
+    and [<Erase; RequireQualifiedAccess>] GunUserAlias =
+        | Alias of username: string
+        | GunKeys of keys: GunKeys
+
     module rec Types =
+        type IGunNode =
+            abstract get : string -> IGunChainReference
+
+        module GunOps =
+            let inline private (|HasAuth|) x = (^a:(member A:string) x)
+
         type IGunUser =
+            inherit IGunNode
             abstract create : alias: string * pass: string * cb: (UserResult -> unit) -> unit
             abstract delete : alias: string * pass: string * cb: (UserResult -> unit) -> unit
             abstract auth : alias: string * pass: string * cb: (UserResult -> unit) * ?opt: {| change: string |} -> unit
@@ -52,7 +64,6 @@ module Gun =
             [<Emit("$0._")>]
             abstract __ : {| sea: GunKeys option |}
 
-            abstract get : string -> IGunChainReference
             abstract leave : unit -> unit
 
             abstract recall :
@@ -79,7 +90,7 @@ module Gun =
             }
 
         type IGunChainReference =
-            abstract get : string -> IGunChainReference
+            inherit IGunNode
             abstract map : unit -> IGunChainReference
             abstract off : unit -> IGunChainReference
             abstract back : unit -> IGunChainReference
@@ -98,7 +109,13 @@ module Gun =
         abstract sign : data: string -> keys: GunKeys -> JS.Promise<string>
         abstract verify : data: string -> pub: string -> JS.Promise<obj>
         abstract decrypt : data: obj -> keys: GunKeys -> JS.Promise<string>
-    //        abstract work : data:string -> keys:GunKeys -> JS.Promise<string>
+
+        abstract work :
+            data: string ->
+            keys: GunKeys option ->
+            x: unit option ->
+            crypto: {| name: string option |} option ->
+            JS.Promise<string>
 
     type GunProps =
         {
@@ -184,18 +201,21 @@ module Gun =
         promise {
             let! decrypted =
                 promise {
-                    try
-                        let! verified = sea.verify data keys.pub
+                    match keys with
+                    | { pub = Some pub } ->
+                        try
+                            let! verified = sea.verify data pub
 
-                        if verified |> Option.ofObjUnbox |> Option.isNone then
-                            return JS.undefined
-                        else
-                            let! decrypted = sea.decrypt verified keys
-                            return decrypted
-                    with
-                    | ex ->
-                        Dom.consoleError ("userDecode decrypt exception", ex, data)
-                        return null
+                            if verified |> Option.ofObjUnbox |> Option.isNone then
+                                return JS.undefined
+                            else
+                                let! decrypted = sea.decrypt verified keys
+                                return decrypted
+                        with
+                        | ex ->
+                            Dom.consoleError ("userDecode decrypt exception", ex, data)
+                            return null
+                    | _ -> return null
                 }
 
             let decoded =

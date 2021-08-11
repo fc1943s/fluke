@@ -1,13 +1,16 @@
 namespace Fluke.UI.Frontend.Components
 
-open FsJs
+open Fable.Core.JsInterop
+open Fable.Core
+open FsCore.Model
 open Feliz
+open FsJs
 open FsStore
+open FsStore.Bindings
 open FsUi.Bindings
 open FsUi.Hooks
 open Fluke.UI.Frontend.State
 open Fable.React
-open Fable.Core
 
 
 module GunObserver =
@@ -15,9 +18,9 @@ module GunObserver =
     [<ReactComponent>]
     let GunObserver () =
         let gun = Store.useValue Selectors.Gun.gun
-        let gunNamespace = Store.useValue Selectors.Gun.gunNamespace
         //        let appKeys = Gun.gunHooks.useGunKeys Browser.Dom.window?SEA (fun () -> null) false
-        let gunKeys, setGunKeys = Store.useState Atoms.gunKeys
+        let setUsername = Store.useSetState Atoms.username
+        let setGunKeys = Store.useSetState Atoms.gunKeys
 
         //        let gunState =
 //            Gun.gunHooks.useGunState
@@ -40,56 +43,57 @@ module GunObserver =
 
         //        let setUsername = Recoil.useSetState Atoms.username
 
-        let setSessionRestored = Store.useSetState Atoms.Session.sessionRestored
+        //        let setSessionRestored = Store.useSetState Atoms.Session.sessionRestored
 
         printfn "GunObserver.render: Constructor"
 
 
-        React.useEffect (
-            (fun () ->
-                //                let recall = Browser.Dom.window.sessionStorage.getItem "recall"
-//                printfn $"recall {recall}"
+        //        React.useEffect (
+//            (fun () ->
+//                //                let recall = Browser.Dom.window.sessionStorage.getItem "recall"
+////                printfn $"recall {recall}"
+////
+////                match recall with
+////                | null
+////                | "" -> setSessionRestored true
+////                | _ -> ()
+////
+////                printfn "before recall"
+////
+////                try
+////                    if true then
+////                        gunNamespace.ref.recall (
+////                            {| sessionStorage = true |},
+////                            (fun ack ->
+////                                match ack.put with
+////                                | Some put -> setUsername (Some (UserInteraction.Username put.alias))
+////                                | None -> printfn "Empty ack"
+////
+////                                setKeys (Some ack.sea)
+////
+////                                setSessionRestored true
+////
+////                                printfn "ACK:"
+////                                Browser.Dom.console.log ack
+////                                Browser.Dom.window?recallAck <- ack
+////                                Dom.set "ack" ack)
+////                        )
+////                with ex -> printfn $"ERROR: {ex}"
 //
-//                match recall with
-//                | null
-//                | "" -> setSessionRestored true
-//                | _ -> ()
+//                //                printfn "after recall"
 //
-//                printfn "before recall"
+//                printfn "before newRecall"
 //
-//                try
-//                    if true then
-//                        gunNamespace.ref.recall (
-//                            {| sessionStorage = true |},
-//                            (fun ack ->
-//                                match ack.put with
-//                                | Some put -> setUsername (Some (UserInteraction.Username put.alias))
-//                                | None -> printfn "Empty ack"
+//                printfn $"gunKeys={gunKeys |> Some |> JS.objectKeys}"
+//                setSessionRestored true
 //
-//                                setKeys (Some ack.sea)
-//
-//                                setSessionRestored true
-//
-//                                printfn "ACK:"
-//                                Browser.Dom.console.log ack
-//                                Browser.Dom.window?recallAck <- ack
-//                                Dom.set "ack" ack)
-//                        )
-//                with ex -> printfn $"ERROR: {ex}"
-
-                //                printfn "after recall"
-
-                printfn "before newRecall"
-
-                printfn $"gunKeys={gunKeys |> Some |> JS.objectKeys}"
-                setSessionRestored true
-
-                printfn "after newRecall"),
-            [|
-                box gunNamespace
-                box gunKeys
-            |]
-        )
+//                printfn "after newRecall"),
+//            [|
+//                box gunNamespace
+//                box  setSessionRestored
+//                box gunKeys
+//            |]
+//        )
 
         React.useDisposableEffect (
             (fun disposed ->
@@ -97,26 +101,49 @@ module GunObserver =
                     "auth",
                     (fun () ->
                         if not disposed then
-                            match gunNamespace.is with
-                            | Some { alias = Some username } ->
+                            let user = gun.user ()
+
+                            match user.is with
+                            | Some {
+                                       alias = Some (Gun.GunUserAlias.Alias username)
+                                   } ->
                                 printfn $"GunObserver.render: .on(auth) effect. setUsername. username={username}"
 
-                                let keys = gunNamespace.__.sea
+                                let keys = user.__.sea
 
                                 match keys with
-                                | Some keys -> setGunKeys keys
-                                | None -> failwith $"No keys found for user {gunNamespace.is}"
+                                | Some keys ->
+                                    setUsername (Some (Username username))
+                                    setGunKeys keys
+                                | None -> failwith $"GunObserver.render: No keys found for user {username}"
 
                             //                                gunState.put ({| username = username |} |> toPlainJsObj)
                             //                                |> Promise.start
                             //                                setUsername (Some (UserInteraction.Username username))
-                            | _ -> printfn $"GunObserver.render: Auth occurred without username: {gunNamespace.is}"
+                            | Some {
+                                       alias = Some (Gun.GunUserAlias.GunKeys { pub = Some pub })
+                                   } ->
+                                match Dom.window () with
+                                | Some window -> window?gun <- gun
+                                | None -> ()
+
+                                // @@@@ getImmutableUsername pub
+                                let username = pub
+                                printfn $"GunObserver.render: fetched username: {username} (still a key)"
+                            | _ ->
+                                match Dom.window () with
+                                | Some window -> window?gun <- gun
+                                | None -> ()
+
+                                // @@@@ getImmutableUsername pub
+
+                                printfn
+                                    $"GunObserver.render: Auth occurred without username: {user.is |> JS.objectKeys}"
                         else
-                            printfn $"GunObserver.render: already disposed gunNamespace={gunNamespace}")
+                            printfn $"GunObserver.render: already disposed gun={gun}")
                 )),
             [|
-            //                box gun
-            //                box gunNamespace
+                box gun
             |]
         )
 

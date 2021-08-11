@@ -360,9 +360,8 @@ module Hydrate =
 
                     match username with
                     | Some username ->
-                        let gunNamespace = Store.value getter Selectors.Gun.gunNamespace
-                        let keys = gunNamespace.__.sea
-                        let json = keys |> Json.encodeFormatted
+                        let gunKeys = Store.value getter Atoms.gunKeys
+                        let json = gunKeys |> Json.encodeFormatted
 
                         let timestamp =
                             (FlukeDateTime.FromDateTime DateTime.Now)
@@ -378,7 +377,7 @@ module Hydrate =
                                 x.description <- "User keys exported successfully"
                                 x.title <- "Success"
                                 x.status <- "success")
-                    | None -> ()
+                    | None -> eprintf $"invalid username: {username}"
                 })
 
     let inline useExportUserSettings () =
@@ -423,7 +422,7 @@ module Hydrate =
                                 x.description <- "User settings exported successfully"
                                 x.title <- "Success"
                                 x.status <- "success")
-                    | None -> ()
+                    | None -> eprintf $"invalid username: {username}"
                 })
 
     let inline useImportUserSettings () =

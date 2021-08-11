@@ -136,10 +136,28 @@ lastValue={lastValue}
                     printfn
                         $"gunNamespace selector.
                             gunPeers={gunPeers}
+                            user().is.alias={user.is
+                                             |> Option.map
+                                                 (fun x ->
+                                                     match x.alias with
+                                                     | Some (Gun.GunUserAlias.Alias username) -> username
+                                                     | _ -> null)}
                             user().is={user.is |> JS.objectKeys}
                             user().__.sea={user.__.sea |> JS.objectKeys}..."
 
-                    user)
+                    user :> Gun.Types.IGunNode)
+
+        let getRecursiveNode (gunNode: Gun.Types.IGunNode) nodes getter username =
+            match nodes with
+            | [] -> None
+            | [ root ] -> Some (gunNode.get root)
+            | nodes ->
+                let lastNode = nodes |> List.last
+                let parentAtomPath = AtomPath (nodes.[0..nodes.Length - 2] |> String.concat "/")
+                let node = Store.value getter (gunAtomNode (username, parentAtomPath))
+
+                node
+                |> Option.map (fun (node: Gun.Types.IGunChainReference) -> node.get lastNode)
 
         let rec gunAtomNode =
             Store.readSelectorFamily
@@ -147,34 +165,39 @@ lastValue={lastValue}
                 collection
                 (nameof gunAtomNode)
                 (fun (username, AtomPath atomPath) getter ->
-                    let gunNamespace = Store.value getter gunNamespace
+                    let gun = Store.value getter gun
+                    let gunKeys = Store.value getter Atoms.gunKeys
 
-                    match gunNamespace.is with
-                    | Some { alias = Some username' } when username' = (username |> Username.ValueOrDefault) ->
-                        let nodes = atomPath |> String.split "/" |> Array.toList
+                    let nodes = atomPath |> String.split "/" |> Array.toList
 
-                        match nodes with
-                        | [] -> None
-                        | [ root ] -> Some (gunNamespace.get root)
-                        | nodes ->
-                            let lastNode = nodes |> List.last
-                            let parentAtomPath = AtomPath (nodes.[0..nodes.Length - 2] |> String.concat "/")
-                            let node = Store.value getter (gunAtomNode (username, parentAtomPath))
-
-                            node
-                            |> Option.map (fun (node: Gun.Types.IGunChainReference) -> node.get lastNode)
-
-                    //                        (Some (gunNamespace.get nodes.Head), nodes.Tail)
+                    //                    let getNodeOld () =
+//                        (Some (gunNamespace.get nodes.Head), nodes.Tail)
 //                        ||> List.fold
 //                                (fun result node ->
 //                                    result
 //                                    |> Option.map (fun result -> result.get node))
+
+                    let user = gun.user ()
+
+                    let getNode () =
+                        getRecursiveNode user nodes getter username
+
+                    match user.is with
+                    | Some {
+                               alias = Some (Gun.GunUserAlias.GunKeys gunKeys')
+                           } when gunKeys' = gunKeys ->
+
+                        getNode ()
+                    | Some {
+                               alias = Some (Gun.GunUserAlias.Alias username')
+                           } when username' = (username |> Username.ValueOrDefault) -> getNode ()
                     | _ ->
                         Dom.log
                             (fun () ->
                                 $"gunAtomNode. Invalid username.
+                                          username={username}
                                           atomPath={atomPath}
-                                          user.is={JS.JSON.stringify gunNamespace.is}")
+                                          user.is={JS.JSON.stringify user.is}")
 
                         None)
 
