@@ -14,7 +14,7 @@ open FsUi.Components
 
 module FilterForm =
     let inline SchedulingInput (scheduling: Scheduling option) setScheduling =
-        UI.box
+        Ui.box
             (fun x -> x.display <- "inline")
             [
                 InputLabel.InputLabel
@@ -25,7 +25,7 @@ module FilterForm =
                         Props = fun x -> x.marginBottom <- "5px"
                     |}
 
-                UI.stack
+                Ui.stack
                     (fun x ->
                         x.direction <- "row"
                         x.spacing <- "15px")
@@ -64,7 +64,7 @@ module FilterForm =
                 Items =
                     [
                         str "Filter",
-                        (UI.stack
+                        (Ui.stack
                             (fun x -> x.spacing <- "15px")
                             [
                                 Input.LeftIconInput
@@ -99,7 +99,7 @@ module FilterForm =
                             ])
 
                         str "Task",
-                        (UI.stack
+                        (Ui.stack
                             (fun x -> x.spacing <- "15px")
                             [
                                 SchedulingInput

@@ -61,10 +61,10 @@ module AddAttachmentInput =
                         | _ -> ()
                     })
 
-        UI.stack
+        Ui.stack
             (fun x -> x.spacing <- "0")
             [
-                UI.flex
+                Ui.flex
                     (fun _ -> ())
                     [
 
@@ -122,7 +122,7 @@ module AddAttachmentInput =
                                     |}
                             ]
 
-                        UI.stack
+                        Ui.stack
                             (fun x ->
                                 x.spacing <- "0"
                                 x.paddingTop <- "1px"
@@ -134,7 +134,7 @@ module AddAttachmentInput =
                                         Icon = Some (Icons.fa.FaPlus |> Icons.render, Button.IconPosition.Left)
                                         Props =
                                             fun x ->
-                                                UI.setTestId x "Add Attachment"
+                                                Ui.setTestId x "Add Attachment"
                                                 x.borderBottomLeftRadius <- "0"
                                                 x.borderTopLeftRadius <- "0"
                                                 if onAdd.IsNone then x.disabled <- true
@@ -143,12 +143,12 @@ module AddAttachmentInput =
                                         Children = []
                                     |}
 
-                                UI.spacer (fun _ -> ()) []
+                                Ui.spacer (fun _ -> ()) []
 
                                 Tooltip.wrap
                                     (str "Clipboard")
                                     [
-                                        UI.box
+                                        Ui.box
                                             (fun _ -> ())
                                             [
                                                 Button.Button
@@ -161,7 +161,7 @@ module AddAttachmentInput =
                                                             )
                                                         Props =
                                                             fun x ->
-                                                                UI.setTestId x "Clipboard"
+                                                                Ui.setTestId x "Clipboard"
 
                                                                 if onAdd.IsNone then x.disabled <- true
                                                                 x.borderBottomLeftRadius <- "0"
@@ -173,7 +173,7 @@ module AddAttachmentInput =
                                                                             setClipboardVisible (not clipboardVisible) }
                                                         Children =
                                                             [
-                                                                UI.str (string clipboardAttachmentIdMap.Count)
+                                                                Ui.str (string clipboardAttachmentIdMap.Count)
                                                             ]
                                                     |}
                                             ]

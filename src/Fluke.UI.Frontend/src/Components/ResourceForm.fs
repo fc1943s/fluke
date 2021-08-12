@@ -15,7 +15,7 @@ open FsUi.Components
 module ResourceForm =
     [<ReactComponent>]
     let ResourceForm (resource: Resource) (onSave: Resource -> JS.Promise<unit>) =
-        let toast = UI.useToast ()
+        let toast = Ui.useToast ()
         let resourceName, setResourceName = React.useState resource.Name
 
         let onSave =
@@ -29,10 +29,10 @@ module ResourceForm =
                             do! onSave resource
                     })
 
-        UI.stack
+        Ui.stack
             (fun x -> x.spacing <- "18px")
             [
-                UI.stack
+                Ui.stack
                     (fun x -> x.spacing <- "15px")
                     [
                         Input.Input

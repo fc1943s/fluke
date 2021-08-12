@@ -13,7 +13,7 @@ open FsUi.Components
 module FileThumbnail =
     [<ReactComponent>]
     let ImageThumbnail children =
-        UI.flex
+        Ui.flex
             (fun x ->
                 x.width <- "75px"
                 x.height <- "75px"

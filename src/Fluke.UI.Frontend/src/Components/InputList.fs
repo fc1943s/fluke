@@ -10,7 +10,7 @@ open FsUi.Components
 module InputList =
     [<ReactComponent>]
     let InputList inputProps inputCustomProps atomValue setAtomValue =
-        let inputList, (inputProps: UI.IChakraProps) =
+        let inputList, (inputProps: Ui.IChakraProps) =
             React.useMemo (
                 (fun () ->
                     let inputList =
@@ -21,14 +21,14 @@ module InputList =
                             |]
                         | inputList -> inputList
 
-                    inputList, JS.newObj inputProps),
+                    inputList, Js.newObj inputProps),
                 [|
                     box atomValue
                     box inputProps
                 |]
             )
 
-        UI.stack
+        Ui.stack
             (fun x ->
                 x.flex <- "1"
                 x.spacing <- "0")
@@ -37,7 +37,7 @@ module InputList =
                     inputList
                     |> Array.mapi
                         (fun i value ->
-                            UI.flex
+                            Ui.flex
                                 (fun x ->
                                     x.position <- "relative"
                                     x.flex <- "1")

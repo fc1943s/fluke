@@ -10,8 +10,8 @@ module TempAudio =
             0
             1000
         ]
-        |> List.map (JS.setTimeout (fun () -> JS.playAudio "../sounds/ding.wav"))
+        |> List.map (JS.setTimeout (fun () -> Js.playAudio "../sounds/ding.wav"))
         |> ignore
 
     let inline playTick () =
-        JS.playAudioVolume 1. "../sounds/tick.wav"
+        Js.playAudioVolume 1. "../sounds/tick.wav"

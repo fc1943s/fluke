@@ -12,7 +12,7 @@ module TaskCells =
     let TaskCells index taskIdAtom =
         let dateIdAtoms = Store.useValue Selectors.Selectors.dateIdAtoms
 
-        UI.flex
+        Ui.flex
             (fun x -> x.backgroundColor <- "#212121")
             [
                 React.suspense (

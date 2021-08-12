@@ -8,7 +8,7 @@ open Fluke.UI.Frontend.State.State
 
 module Logo =
     let inline Logo () =
-        UI.simpleGrid
+        Ui.simpleGrid
             (fun x ->
                 x.columns <- 2
                 x.borderWidth <- "1px"
@@ -27,7 +27,7 @@ module Logo =
                     |> List.map Option.get
                     |> List.map
                         (fun color ->
-                            UI.box
+                            Ui.box
                                 (fun x ->
                                     x.height <- "7px"
                                     x.width <- "7px"

@@ -54,13 +54,13 @@ module SchedulingSelector =
              | Manual WithoutSuggestion -> Some value
              | _ -> Some (Manual WithoutSuggestion))
             [
-                UI.stack
+                Ui.stack
                     (fun x ->
                         x.spacing <- "0"
                         x.alignItems <- "center"
                         x.direction <- "row")
                     [
-                        UI.str "Manual"
+                        Ui.str "Manual"
 
                         Hint.Hint
                             (fun x ->
@@ -78,13 +78,13 @@ module SchedulingSelector =
              | Manual WithSuggestion -> Some value
              | _ -> Some (Manual WithSuggestion))
             [
-                UI.stack
+                Ui.stack
                     (fun x ->
                         x.spacing <- "0"
                         x.alignItems <- "center"
                         x.direction <- "row")
                     [
-                        UI.str "Suggested"
+                        Ui.str "Suggested"
 
                         Hint.Hint
                             (fun x ->
@@ -103,18 +103,18 @@ module SchedulingSelector =
              | Recurrency (Offset (Days _)) -> Some value
              | _ -> Some (Recurrency (Offset (Days 1))))
             [
-                UI.stack
+                Ui.stack
                     (fun x ->
                         x.alignItems <- "center"
                         x.direction <- "row")
                     [
-                        UI.str "Every"
+                        Ui.str "Every"
                         NumberInput
                             (match value with
                              | Recurrency (Offset (Days n)) -> Some n
                              | _ -> Some 1)
                             (fun value -> setValue (Recurrency (Offset (Days value))))
-                        UI.str "days"
+                        Ui.str "days"
                     ]
             ]
 
@@ -126,18 +126,18 @@ module SchedulingSelector =
              | Recurrency (Offset (Weeks _)) -> Some value
              | _ -> Some (Recurrency (Offset (Weeks 1))))
             [
-                UI.stack
+                Ui.stack
                     (fun x ->
                         x.alignItems <- "center"
                         x.direction <- "row")
                     [
-                        UI.str "Every"
+                        Ui.str "Every"
                         NumberInput
                             (match value with
                              | Recurrency (Offset (Weeks n)) -> Some n
                              | _ -> Some 1)
                             (fun value -> setValue (Recurrency (Offset (Weeks value))))
-                        UI.str "weeks"
+                        Ui.str "weeks"
                     ]
             ]
 
@@ -149,30 +149,30 @@ module SchedulingSelector =
              | Recurrency (Offset (Months _)) -> Some value
              | _ -> Some (Recurrency (Offset (Months 1))))
             [
-                UI.stack
+                Ui.stack
                     (fun x ->
                         x.alignItems <- "center"
                         x.direction <- "row")
                     [
-                        UI.str "Every"
+                        Ui.str "Every"
                         NumberInput
                             (match value with
                              | Recurrency (Offset (Months n)) -> Some n
                              | _ -> Some 1)
                             (fun value -> setValue (Recurrency (Offset (Months value))))
-                        UI.str "months"
+                        Ui.str "months"
                     ]
             ]
 
 
     [<ReactComponent>]
     let FixedWeeklyRadio value setValue weekStart =
-        UI.stack
+        Ui.stack
             (fun x ->
                 x.alignItems <- "center"
                 x.direction <- "row")
             [
-                UI.str "Weekly: "
+                Ui.str "Weekly: "
 
                 yield!
                     Enum.ToList<DayOfWeek> ()
@@ -182,7 +182,7 @@ module SchedulingSelector =
                     )
                     |> Seq.map
                         (fun dayOfWeek ->
-                            UI.stack
+                            Ui.stack
                                 (fun x ->
                                     x.alignItems <- "center"
                                     x.spacing <- "2px")
@@ -229,21 +229,21 @@ module SchedulingSelector =
                                                             | _ -> Recurrency (Fixed [ Weekly dayOfWeek ])
                                                         )
                                                     })
-                                    UI.str (Enum.name dayOfWeek)
+                                    Ui.str (Enum.name dayOfWeek)
                                 ])
             ]
 
 
     [<ReactComponent>]
     let FixedMonthlyRadio value setValue =
-        UI.stack
+        Ui.stack
             (fun x ->
                 x.alignItems <- "center"
                 x.direction <- "row")
             [
-                UI.str "Monthly: "
+                Ui.str "Monthly: "
 
-                UI.stack
+                Ui.stack
                     (fun _ -> ())
                     [
                         yield!
@@ -259,7 +259,7 @@ module SchedulingSelector =
                             |> List.map (
                                 List.map
                                     (fun day ->
-                                        UI.stack
+                                        Ui.stack
                                             (fun x ->
                                                 x.alignItems <- "center"
                                                 x.spacing <- "2px")
@@ -309,12 +309,12 @@ module SchedulingSelector =
                                                                         | _ -> Recurrency (Fixed [ Monthly day ])
                                                                     )
                                                                 })
-                                                UI.str (day |> Day.Value |> string)
+                                                Ui.str (day |> Day.Value |> string)
                                             ])
                             )
                             |> List.map
                                 (fun x ->
-                                    UI.stack
+                                    Ui.stack
                                         (fun x -> x.direction <- "row")
                                         [
                                             yield! x
@@ -353,12 +353,12 @@ module SchedulingSelector =
                 |> List.map fst
                 |> List.mapi
                     (fun i row ->
-                        UI.stack
+                        Ui.stack
                             (fun x ->
                                 x.alignItems <- "center"
                                 x.direction <- "row")
                             [
-                                UI.box
+                                Ui.box
                                     (fun _ -> ())
                                     [
                                         str "Yearly: "
@@ -433,7 +433,7 @@ module SchedulingSelector =
                                         | _ -> nothing
                                     ]
 
-                                UI.radioGroup
+                                Ui.radioGroup
                                     (fun x ->
                                         x.onChange <-
                                             fun (radioValueSelected: string) ->
@@ -472,10 +472,10 @@ module SchedulingSelector =
                                             | _ -> None
                                             |> Json.encode)
                                     [
-                                        UI.stack
+                                        Ui.stack
                                             (fun _ -> ())
                                             [
-                                                UI.stack
+                                                Ui.stack
                                                     (fun x -> x.direction <- "row")
                                                     [
                                                         yield!
@@ -509,7 +509,7 @@ module SchedulingSelector =
                                                     |> List.map (
                                                         List.map
                                                             (fun dayNumber ->
-                                                                UI.stack
+                                                                Ui.stack
                                                                     (fun x ->
                                                                         x.alignItems <- "center"
                                                                         x.spacing <- "2px")
@@ -532,7 +532,7 @@ module SchedulingSelector =
                                                     )
                                                     |> List.map
                                                         (fun x ->
-                                                            UI.stack
+                                                            Ui.stack
                                                                 (fun x -> x.direction <- "row")
                                                                 [
                                                                     yield! x
@@ -573,7 +573,7 @@ module SchedulingSelector =
                 Body =
                     fun _onHide ->
                         [
-                            UI.radioGroup
+                            Ui.radioGroup
                                 (fun x ->
                                     x.overflow <- "auto"
                                     x.maxHeight <- "350px"
@@ -584,7 +584,7 @@ module SchedulingSelector =
 
                                     x.value <- scheduling |> Json.encode)
                                 [
-                                    UI.stack
+                                    Ui.stack
                                         (fun x ->
                                             x.spacing <- "18px"
                                             x.padding <- "5px")

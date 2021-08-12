@@ -54,14 +54,14 @@ module InformationName =
                                      None)
                     })
 
-        UI.flex
+        Ui.flex
             (fun x ->
                 x.position <- "relative"
                 x.height <- $"{cellSize}px"
                 x.alignItems <- "center"
                 x.lineHeight <- $"{cellSize}px")
             [
-                UI.box
+                Ui.box
                     (fun x ->
                         x.whiteSpace <- "nowrap"
                         x.color <- TempUI.informationColor information)

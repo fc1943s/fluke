@@ -14,7 +14,7 @@ module AttachmentIndicator =
         let cellSize = Store.useValue Atoms.User.cellSize
         let userColor = Store.useValue Atoms.User.userColor
 
-        UI.box
+        Ui.box
             (fun x ->
                 x.height <- $"{cellSize}px"
                 x.lineHeight <- $"{cellSize}px"
@@ -23,7 +23,7 @@ module AttachmentIndicator =
                 x.right <- "0px"
 
                 x._after <-
-                    JS.newObj
+                    Js.newObj
                         (fun x ->
                             x.content <- "\"\""
                             x.borderTopWidth <- $"{min (cellSize / 2) 10}px"

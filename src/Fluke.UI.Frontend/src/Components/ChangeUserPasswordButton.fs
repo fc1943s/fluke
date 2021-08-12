@@ -13,7 +13,7 @@ module ChangeUserPasswordButton =
     [<ReactComponent>]
     let rec ChangeUserPasswordButton () =
         let changePassword = Auth.useChangePassword ()
-        let toast = UI.useToast ()
+        let toast = Ui.useToast ()
         let passwordField, setPasswordField = React.useState ""
         let newPasswordField, setNewPasswordField = React.useState ""
         let newPassword2Field, setNewPassword2Field = React.useState ""

@@ -25,7 +25,7 @@ module Databases =
     let icons =
         {|
             check =
-                UI.icon
+                Ui.icon
                     (fun x ->
                         x.``as`` <- Icons.md.MdCheckBox
                         x.tabIndex <- 0
@@ -36,7 +36,7 @@ module Databases =
                         x.color <- "gray.87")
                     []
             halfCheck =
-                UI.icon
+                Ui.icon
                     (fun x ->
                         x.``as`` <- Icons.md.MdIndeterminateCheckBox
                         x.tabIndex <- 0
@@ -47,7 +47,7 @@ module Databases =
                         x.color <- "gray.87")
                     []
             uncheck =
-                UI.icon
+                Ui.icon
                     (fun x ->
                         x.``as`` <- Icons.md.MdCheckBoxOutlineBlank
                         x.tabIndex <- 0
@@ -58,7 +58,7 @@ module Databases =
                         x.color <- "gray.87")
                     []
             expandOpen =
-                UI.icon
+                Ui.icon
                     (fun x ->
                         x.``as`` <- Icons.fa.FaChevronDown
                         x.height <- "16px"
@@ -67,7 +67,7 @@ module Databases =
                         x.color <- "gray.87")
                     []
             expandClose =
-                UI.icon
+                Ui.icon
                     (fun x ->
                         x.``as`` <- Icons.fa.FaChevronRight
                         x.height <- "16px"
@@ -76,14 +76,14 @@ module Databases =
                         x.color <- "gray.87")
                     []
             parentClose =
-                UI.icon
+                Ui.icon
                     (fun x ->
                         x.``as`` <- Icons.fi.FiDatabase
                         x.marginLeft <- "-11px"
                         x.color <- "gray.87")
                     []
             parentOpen =
-                UI.icon
+                Ui.icon
                     (fun x ->
                         x.``as`` <- Icons.fi.FiDatabase
                         x.marginLeft <- "-11px"
@@ -125,7 +125,7 @@ module Databases =
             icon =
                 if input.IsEmptyNode then
                     box (
-                        UI.box
+                        Ui.box
                             (fun x ->
                                 x.marginLeft <- "-10px"
                                 x.height <- "10px")
@@ -140,13 +140,13 @@ module Databases =
                      else
                          nothing)
                     [
-                        UI.box
+                        Ui.box
                             (fun x ->
                                 x.display <- "inline"
                                 x.marginLeft <- "-2px"
                                 x.lineHeight <- "19px")
                             [
-                                UI.box
+                                Ui.box
                                     (fun x ->
                                         x.fontSize <- "main"
                                         x.paddingTop <- "1px"
@@ -161,7 +161,7 @@ module Databases =
 
                                 match input.DatabaseId with
                                 | Some databaseId ->
-                                    UI.box
+                                    Ui.box
                                         (fun x ->
                                             x.display <- "inline"
                                             x.fontSize <- "main"
@@ -173,7 +173,7 @@ module Databases =
                                         [
                                             match labelText with
                                             | Some label ->
-                                                UI.box
+                                                Ui.box
                                                     (fun x -> x.display <- "inline")
                                                     [
                                                         str (label |> Seq.item 2)
@@ -186,7 +186,7 @@ module Databases =
 
                                 match input.IsEmptyNode, input.DatabaseId with
                                 | _, Some _
-                                | true, _ -> UI.box (fun x -> x.height <- "14px") []
+                                | true, _ -> Ui.box (fun x -> x.height <- "14px") []
                                 | _ -> nothing
                             ]
                     ]
@@ -264,7 +264,7 @@ module Databases =
                     {|
                         Props =
                             fun x ->
-                                UI.setTestId x "Add Database"
+                                Ui.setTestId x "Add Database"
                                 x.icon <- Icons.fi.FiPlus |> Icons.render
                                 x.fontSize <- "17px"
 
@@ -531,10 +531,10 @@ module Databases =
                 |]
             )
 
-        UI.stack
+        Ui.stack
             props
             [
-                UI.flex
+                Ui.flex
                     (fun x ->
                         x.marginLeft <- "6px"
                         x.flex <- "1")

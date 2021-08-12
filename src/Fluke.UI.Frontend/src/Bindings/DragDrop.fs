@@ -2,7 +2,6 @@ namespace Fluke.UI.Frontend.Bindings
 
 open Fable.React
 open Fable.Core.JsInterop
-open Fable.Core
 open FsJs
 open FsUi.Bindings
 
@@ -19,14 +18,14 @@ module DragDrop =
     let inline droppable props containerProps children =
         let content =
             [
-                JS.invoke
+                Js.invoke
                     (fun provided snapshot ->
                         Browser.Dom.window?provided <- provided
                         Browser.Dom.window?snapshot <- snapshot
 
                         printfn $"provided={provided} snapshot={snapshot}"
 
-                        UI.box
+                        Ui.box
                             (fun x ->
                                 x.ref <- provided?innerRef
                                 x <+ provided?droppableProps
@@ -44,14 +43,14 @@ module DragDrop =
     let inline draggable props containerProps children =
         let content =
             [
-                JS.invoke
+                Js.invoke
                     (fun provided snapshot ->
                         Browser.Dom.window?provided2 <- provided
                         Browser.Dom.window?snapshot2 <- snapshot
 
                         printfn $"@ provided={provided} snapshot={snapshot}"
 
-                        UI.box
+                        Ui.box
                             (fun x ->
                                 x.ref <- provided?innerRef
                                 x <+ provided?draggableProps

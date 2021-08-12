@@ -52,7 +52,7 @@ module rec File =
                         Some (
                             chunks
                             |> String.concat ""
-                            |> JS.hexStringToByteArray
+                            |> Js.hexStringToByteArray
                         ))
 
 
@@ -65,7 +65,7 @@ module rec File =
                 let byteArray = Store.value getter (byteArray fileId)
 
                 byteArray
-                |> Option.map (fun bytes -> JS.uint8ArrayToBlob (JSe.Uint8Array (unbox<uint8 []> bytes)) "image/png"))
+                |> Option.map (fun bytes -> Js.uint8ArrayToBlob (JSe.Uint8Array (unbox<uint8 []> bytes)) "image/png"))
 
 
     let rec objectUrl =

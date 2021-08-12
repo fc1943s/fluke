@@ -16,7 +16,7 @@ module AreaForm =
 
     [<ReactComponent>]
     let AreaForm (area: Area) (onSave: Area -> JS.Promise<unit>) =
-        let toast = UI.useToast ()
+        let toast = Ui.useToast ()
         let areaName, setAreaName = React.useState area.Name
 
         let onSave =
@@ -30,10 +30,10 @@ module AreaForm =
                             do! onSave area
                     })
 
-        UI.stack
+        Ui.stack
             (fun x -> x.spacing <- "18px")
             [
-                UI.stack
+                Ui.stack
                     (fun x -> x.spacing <- "15px")
                     [
                         Input.Input

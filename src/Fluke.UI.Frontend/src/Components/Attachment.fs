@@ -59,7 +59,7 @@ module Attachment =
                     })
 
 
-        UI.stack
+        Ui.stack
             (fun x ->
                 x.flex <- "1"
                 x.spacing <- "6px"
@@ -73,13 +73,13 @@ module Attachment =
                 match attachment with
                 | Some (Attachment.Image fileId) -> FileThumbnail.FileThumbnail fileId
                 | Some (Attachment.Comment (Comment.Comment comment)) ->
-                    UI.box
+                    Ui.box
                         (fun _ -> ())
                         [
                             if not editing then
                                 AttachmentComment.AttachmentComment comment
                             else
-                                UI.flex
+                                Ui.flex
                                     (fun x -> x.position <- "relative")
                                     [
                                         Input.Input
@@ -123,7 +123,7 @@ module Attachment =
                                                 Props = fun x -> x.autoFocus <- true
                                             |}
 
-                                        UI.stack
+                                        Ui.stack
                                             (fun x ->
                                                 x.direction <- "row"
                                                 x.spacing <- "2px"

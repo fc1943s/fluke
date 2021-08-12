@@ -18,11 +18,11 @@ module DockButton =
                    Atom: Atom<TempUI.DockType option>
                    OnClick: TempUI.DockType option -> JS.Promise<unit>
                    DockType: TempUI.DockType
-                   Props: UI.IChakraProps -> unit |})
+                   Props: Ui.IChakraProps -> unit |})
         =
         let atom, setAtom = Store.useState input.Atom
 
-        UI.button
+        Ui.button
             (fun x ->
                 x.height <- "100%"
                 x.borderRadius <- "0"
@@ -41,7 +41,7 @@ module DockButton =
 
                 input.Props x)
             [
-                UI.icon
+                Ui.icon
                     (fun x ->
                         x.``as`` <- input.Icon
                         x.marginRight <- "6px")

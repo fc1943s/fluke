@@ -32,7 +32,7 @@ module TopBar =
 
     [<ReactComponent>]
     let RandomizeButton () =
-        let toast = UI.useToast ()
+        let toast = Ui.useToast ()
         let randomizeProject, setRandomizeProject = Store.useState Atoms.User.randomizeProject
 
         let randomizeProjectAttachment, setRandomizeProjectAttachment =
@@ -265,7 +265,7 @@ module TopBar =
             onRandom
             (fun (_disclosure, _fetchInitialFocusRef) ->
                 [
-                    UI.stack
+                    Ui.stack
                         (fun x -> x.spacing <- "10px")
                         [
                             Checkbox.Checkbox
@@ -355,7 +355,7 @@ module TopBar =
 
                             match lastResult with
                             | Some (length, title, description) ->
-                                UI.box
+                                Ui.box
                                     (fun _ -> ())
                                     [
                                         str $"Last result (sample size: {length}):"
@@ -383,13 +383,13 @@ module TopBar =
 
         let archive, setArchive = Store.useState Atoms.User.archive
 
-        UI.flex
+        Ui.flex
             (fun x ->
                 x.height <- "29px"
                 x.alignItems <- "center"
                 x.backgroundColor <- "gray.10")
             [
-                UI.flex
+                Ui.flex
                     (fun x ->
                         x.cursor <- "pointer"
                         x.paddingLeft <- "7px"
@@ -400,16 +400,16 @@ module TopBar =
                     [
                         Logo.Logo ()
 
-                        UI.box
+                        Ui.box
                             (fun x -> x.marginLeft <- "5px")
                             [
                                 str "Fluke"
                             ]
                     ]
 
-                UI.spacer (fun x -> x.style <- JS.newObj (fun x -> x.WebkitAppRegion <- "drag")) []
+                Ui.spacer (fun x -> x.style <- Js.newObj (fun x -> x.WebkitAppRegion <- "drag")) []
 
-                UI.stack
+                Ui.stack
                     (fun x ->
                         x.margin <- "1px"
                         x.spacing <- "1px"
@@ -478,7 +478,7 @@ module TopBar =
                                                     x.fontSize <- "17px"
 
                                                     if archive = Some true then
-                                                        x._active <- JS.newObj (fun x -> x.backgroundColor <- "gray.30")
+                                                        x._active <- Js.newObj (fun x -> x.backgroundColor <- "gray.30")
                                                         x.backgroundColor <- "gray.30"
 
                                                     x.onClick <-
@@ -500,7 +500,7 @@ module TopBar =
                                 ExternalLink.externalLinkIcon
                              ])
                             [
-                                UI.link
+                                Ui.link
                                     (fun x ->
                                         x.href <- "https://lesspass.com/"
                                         x.isExternal <- true
@@ -524,7 +524,7 @@ module TopBar =
                                 ExternalLink.externalLinkIcon
                              ])
                             [
-                                UI.link
+                                Ui.link
                                     (fun x ->
                                         x.href <- "https://github.com/fc1943s/fluke"
                                         x.isExternal <- true

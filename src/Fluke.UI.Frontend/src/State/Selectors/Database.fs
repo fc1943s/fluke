@@ -289,7 +289,7 @@ module rec Database =
                             Database = database
                             InformationStateMap = informationStateMap
                             TaskStateMap = taskStateMap
-                            FileMap = fileMap |> Map.mapValues JS.byteArrayToHexString
+                            FileMap = fileMap |> Map.mapValues Js.byteArrayToHexString
                         }
 
                     if databaseState.TaskStateMap

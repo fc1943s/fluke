@@ -26,17 +26,17 @@ module Settings =
                 (Some (InputAtom (AtomReference.Atom Atoms.gunOptions)))
                 (Some (InputScope.Temp defaultSerializer))
 
-        UI.box
+        Ui.box
             (fun x -> x.display <- "inline")
             [
                 InputLabel.InputLabel
                     {|
                         Hint =
                             Some (
-                                UI.box
+                                Ui.box
                                     (fun _ -> ())
                                     [
-                                        UI.str "Add a relay peer to sync data between devices"
+                                        Ui.str "Add a relay peer to sync data between devices"
 
                                         br []
 
@@ -54,7 +54,7 @@ module Settings =
                         Props = fun x -> x.marginBottom <- "5px"
                     |}
 
-                UI.stack
+                Ui.stack
                     (fun x ->
                         x.direction <- "row"
                         x.spacing <- "15px")
@@ -110,7 +110,7 @@ module Settings =
                 (Some (InputAtom (AtomReference.Atom Atoms.hubUrl)))
                 (Some (InputScope.Temp defaultSerializer))
 
-        UI.box
+        Ui.box
             (fun x -> x.display <- "inline")
             [
                 InputLabel.InputLabel
@@ -121,7 +121,7 @@ module Settings =
                         Props = fun x -> x.marginBottom <- "5px"
                     |}
 
-                UI.stack
+                Ui.stack
                     (fun x ->
                         x.direction <- "row"
                         x.spacing <- "15px")
@@ -185,7 +185,7 @@ module Settings =
                 Items =
                     [
                         str "User",
-                        (UI.stack
+                        (Ui.stack
                             (fun x -> x.spacing <- "10px")
                             [
                                 Input.Input
@@ -269,7 +269,7 @@ module Settings =
                             ])
 
                         str "View",
-                        (UI.stack
+                        (Ui.stack
                             (fun x -> x.spacing <- "10px")
                             [
                                 Dropdown.EnumDropdown<DayOfWeek>
@@ -345,7 +345,7 @@ module Settings =
                             ])
 
                         str "Cell Colors",
-                        (UI.stack
+                        (Ui.stack
                             (fun x -> x.spacing <- "10px")
                             [
                                 Dropdown.ColorDropdownAtom
@@ -388,7 +388,7 @@ module Settings =
                             ])
 
                         str "Connection",
-                        (UI.stack
+                        (Ui.stack
                             (fun x -> x.spacing <- "10px")
                             [
                                 GunPeersInput ()

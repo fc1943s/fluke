@@ -15,7 +15,7 @@ module ImageModal =
                 UIFlagValue = uiFlagValue
                 Trigger =
                     fun trigger _ ->
-                        UI.box
+                        Ui.box
                             (fun x ->
                                 x.``as`` <- "img"
                                 x.cursor <- "pointer"
@@ -25,10 +25,10 @@ module ImageModal =
                             []
                 Content =
                     fun onHide _ ->
-                        UI.box
+                        Ui.box
                             (fun _ -> ())
                             [
-                                UI.box
+                                Ui.box
                                     (fun x ->
                                         x.``as`` <- "img"
                                         x.cursor <- "pointer"

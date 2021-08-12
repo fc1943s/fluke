@@ -33,7 +33,7 @@ module DatabaseNodeMenu =
                 Trigger =
                     InputLabelIconButton.InputLabelIconButton
                         (fun x ->
-                            x.``as`` <- UI.react.MenuButton
+                            x.``as`` <- Ui.react.MenuButton
                             x.icon <- Icons.bs.BsThreeDots |> Icons.render
                             x.fontSize <- "11px"
                             x.disabled <- disabled

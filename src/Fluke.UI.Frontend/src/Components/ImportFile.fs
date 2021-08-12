@@ -14,10 +14,10 @@ module ImportFile =
         let inputRef = React.useRef<HTMLInputElement> null
         let files, setFiles = React.useState (None: FileList option)
 
-        UI.stack
+        Ui.stack
             (fun x -> x.spacing <- "15px")
             [
-                UI.box
+                Ui.box
                     (fun x ->
                         x.paddingBottom <- "5px"
                         x.marginRight <- "24px"
@@ -26,7 +26,7 @@ module ImportFile =
                         str label
                     ]
 
-                UI.input
+                Ui.input
                     (fun x ->
                         x.``type`` <- "file"
                         x.padding <- "10px"
@@ -35,7 +35,7 @@ module ImportFile =
                         x.onChange <- fun x -> promise { x?target?files |> Option.ofObj |> setFiles })
                     []
 
-                UI.box
+                Ui.box
                     (fun _ -> ())
                     [
                         Button.Button

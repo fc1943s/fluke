@@ -1,7 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
 open Browser.Types
-open Fable.Core
 open Fable.React
 open Feliz
 open Fluke.Shared.Domain.Model
@@ -71,9 +70,9 @@ module Cell =
 //                                do! setSelected (taskId, dateId, newSelected)
                     })
 
-        UI.center
+        Ui.center
             (fun x ->
-                UI.setTestId
+                Ui.setTestId
                     x
                     $"cell-{taskId}-{(dateId
                                       |> DateId.ValueOrDefault
@@ -111,12 +110,12 @@ module Cell =
                 x.borderColor <- if selected then "#ffffffAA" else "transparent"
 
                 if isReadWrite then
-                    x._hover <- JS.newObj (fun x -> x.borderColor <- "#ffffff55")
+                    x._hover <- Js.newObj (fun x -> x.borderColor <- "#ffffff55")
                     x.cursor <- "pointer")
             [
                 match rightDock, cellUIFlag with
                 | Some TempUI.DockType.Cell, UIFlag.Cell (taskId', dateId') when taskId' = taskId && dateId' = dateId ->
-                    UI.icon
+                    Ui.icon
                         (fun x ->
                             x.``as`` <- Icons.ti.TiPin
                             x.fontSize <- $"{cellSize - 4}px"
@@ -173,7 +172,7 @@ module Cell =
                             ] //
                 |} //
         else //
-            UI.box
+            Ui.box
                 (fun x ->
                     x.onClick <-
                         fun _ ->

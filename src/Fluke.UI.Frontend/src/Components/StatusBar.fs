@@ -13,7 +13,6 @@ open FsUi.Bindings
 open FsUi.Hooks
 open Fluke.Shared
 open Fluke.Shared.Domain
-open Fluke.UI.Frontend.State.State
 open FsUi.Components
 
 
@@ -29,7 +28,7 @@ module StatusBar =
 
         let devicePingList = Store.useValue Selectors.Session.devicePingList
 
-        UI.box
+        Ui.box
             (fun _ -> ())
             [
                 str $"Now: {now.ToString ()}"
@@ -74,18 +73,18 @@ module StatusBar =
     let UserIndicator () =
         let username = Store.useValue Atoms.username
 
-        UI.stack
+        Ui.stack
             (fun x ->
                 x.direction <- "row"
                 x.spacing <- "4px")
             [
-                UI.icon (fun x -> x.``as`` <- Icons.fa.FaRegUser) []
+                Ui.icon (fun x -> x.``as`` <- Icons.fa.FaRegUser) []
 
                 match username with
                 | Some (Username username) ->
-                    UI.str "User:"
+                    Ui.str "User:"
 
-                    UI.box
+                    Ui.box
                         (fun x -> x.userSelect <- "text")
                         [
                             str username
@@ -101,19 +100,19 @@ module StatusBar =
         let (Minute sessionDuration) = Store.useValue Atoms.User.sessionDuration
         let (Minute sessionBreakDuration) = Store.useValue Atoms.User.sessionBreakDuration
 
-        UI.stack
+        Ui.stack
             (fun x ->
                 x.direction <- "row"
                 x.spacing <- "4px")
             [
-                UI.icon (fun x -> x.``as`` <- Icons.gi.GiHourglass) []
-                UI.str "Sessions:"
+                Ui.icon (fun x -> x.``as`` <- Icons.gi.GiHourglass) []
+                Ui.str "Sessions:"
 
-                UI.box
+                Ui.box
                     (fun x -> x.userSelect <- "text")
                     [
                         match activeSessions with
-                        | [] -> UI.str "No active sessions"
+                        | [] -> Ui.str "No active sessions"
                         | activeSessions ->
                             let getSessionInfo (TempUI.ActiveSession (taskName, Minute duration)) =
                                 let left = sessionDuration - duration
@@ -151,26 +150,26 @@ module StatusBar =
                                         Tooltip.wrap
                                             (str "Session Details")
                                             [
-                                                UI.box
+                                                Ui.box
                                                     (fun x -> x.cursor <- "pointer")
                                                     [
                                                         let sessionInfo = getSessionInfo activeSessions.Head
 
-                                                        UI.stack
+                                                        Ui.stack
                                                             (fun x ->
                                                                 x.color <- sessionInfo.Color
                                                                 x.direction <- "row"
                                                                 x.spacing <- "0"
                                                                 x.display <- "inline")
                                                             [
-                                                                UI.box
+                                                                Ui.box
                                                                     (fun x -> x.display <- "inline")
                                                                     [
                                                                         str
                                                                             $"{sessionInfo.SessionType}: {activeSessions.Length} active ("
                                                                     ]
 
-                                                                UI.box
+                                                                Ui.box
                                                                     (fun x ->
                                                                         x.display <- "inline-block"
                                                                         x.textOverflow <- "ellipsis"
@@ -182,7 +181,7 @@ module StatusBar =
                                                                         str sessionInfo.TaskName
                                                                     ]
 
-                                                                UI.box
+                                                                Ui.box
                                                                     (fun x -> x.display <- "inline")
                                                                     [
                                                                         str
@@ -197,10 +196,10 @@ module StatusBar =
                                     Body =
                                         fun (_disclosure, _fetchInitialFocusRef) ->
                                             [
-                                                UI.stack
+                                                Ui.stack
                                                     (fun x -> x.spacing <- "10px")
                                                     [
-                                                        UI.box
+                                                        Ui.box
                                                             (fun x -> x.fontSize <- "1.3rem")
                                                             [
                                                                 str "Session Details"
@@ -212,7 +211,7 @@ module StatusBar =
                                                                 (fun session ->
                                                                     let sessionInfo = getSessionInfo session
 
-                                                                    UI.flex
+                                                                    Ui.flex
                                                                         (fun x -> x.color <- sessionInfo.Color)
                                                                         [
                                                                             str
@@ -342,16 +341,16 @@ module StatusBar =
                 |]
             )
 
-        UI.stack
+        Ui.stack
             (fun x ->
                 x.direction <- "row"
                 x.spacing <- "4px")
             [
-                UI.icon (fun x -> x.``as`` <- Icons.bi.BiTask) []
+                Ui.icon (fun x -> x.``as`` <- Icons.bi.BiTask) []
 
-                UI.str "Tasks:"
+                Ui.str "Tasks:"
 
-                UI.box
+                Ui.box
                     (fun x -> x.userSelect <- "text")
                     [
 
@@ -371,16 +370,16 @@ module StatusBar =
 
         match position with
         | Some position ->
-            UI.stack
+            Ui.stack
                 (fun x ->
                     x.direction <- "row"
                     x.spacing <- "4px")
                 [
-                    UI.icon (fun x -> x.``as`` <- Icons.fa.FaRegClock) []
+                    Ui.icon (fun x -> x.``as`` <- Icons.fa.FaRegClock) []
 
-                    UI.str "Position:"
+                    Ui.str "Position:"
 
-                    UI.box
+                    Ui.box
                         (fun x -> x.userSelect <- "text")
                         [
                             Tooltip.wrap
@@ -394,12 +393,12 @@ module StatusBar =
 
     [<ReactComponent>]
     let StatusBar () =
-        UI.simpleGrid
+        Ui.simpleGrid
             (fun x ->
                 x.display <-
                     unbox (
-                        JS.newObj
-                            (fun (x: UI.IBreakpoints<string>) ->
+                        Js.newObj
+                            (fun (x: Ui.IBreakpoints<string>) ->
                                 x.``base`` <- "grid"
                                 x.md <- "flex")
                     )

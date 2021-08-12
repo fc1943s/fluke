@@ -25,13 +25,13 @@ module DockPanel =
         =
         let setAtom = Store.useSetState input.Atom
 
-        UI.flex
+        Ui.flex
             (fun x ->
                 x.flexDirection <- "column"
                 x.overflow <- "hidden"
                 x.flex <- "1")
             [
-                UI.flex
+                Ui.flex
                     (fun x ->
                         x.paddingLeft <- "9px"
                         x.paddingTop <- "1px"
@@ -41,14 +41,14 @@ module DockPanel =
                         x.borderBottomColor <- "gray.16"
                         x.alignItems <- "center")
                     [
-                        UI.icon
+                        Ui.icon
                             (fun x ->
                                 x.``as`` <- input.Icon
                                 x.marginRight <- "6px")
                             []
                         str input.Name
 
-                        UI.spacer (fun _ -> ()) []
+                        Ui.spacer (fun _ -> ()) []
 
                         yield!
                             input.RightIcons
@@ -65,7 +65,7 @@ module DockPanel =
                                                         {|
                                                             Props =
                                                                 fun x ->
-                                                                    x.``as`` <- UI.react.MenuButton
+                                                                    x.``as`` <- Ui.react.MenuButton
                                                                     x.fontSize <- "14px"
                                                                     x.icon <- icon
                                                         |}
@@ -86,7 +86,7 @@ module DockPanel =
                             ]
                     ]
 
-                UI.flex
+                Ui.flex
                     (fun x ->
                         x.flexDirection <- "column"
                         x.zIndex <- 2

@@ -87,7 +87,7 @@ module InformationForm =
                 Items =
                     [
                         str "Info",
-                        (UI.stack
+                        (Ui.stack
                             (fun x -> x.spacing <- "15px")
                             [
                                 DatabaseSelector.DatabaseSelector
@@ -114,7 +114,7 @@ module InformationForm =
                                |> not
                             ->
                             str "Attachments",
-                            (UI.stack
+                            (Ui.stack
                                 (fun x ->
                                     x.spacing <- "10px"
                                     x.flex <- "1")

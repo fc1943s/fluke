@@ -84,7 +84,7 @@ module AttachmentComment =
             |]
         )
 
-        UI.box
+        Ui.box
             (fun x ->
                 x.userSelect <- "text"
                 x.overflow <- "auto"
@@ -97,7 +97,7 @@ module AttachmentComment =
                 match youtubeImgList with
                 | [] -> nothing
                 | youtubeImgList ->
-                    UI.flex
+                    Ui.flex
                         (fun x ->
                             x.marginTop <- "10px"
                             x.overflow <- "auto")

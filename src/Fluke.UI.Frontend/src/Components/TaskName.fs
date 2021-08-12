@@ -29,7 +29,7 @@ module TaskName =
         let startSession = TaskForm.useStartSession ()
         let deleteTask = TaskForm.useDeleteTask ()
 
-        UI.flex
+        Ui.flex
             (fun x ->
                 x.flex <- "1"
                 x.alignItems <- "center"
@@ -37,7 +37,7 @@ module TaskName =
                 x.position <- "relative"
                 x.height <- $"{cellSize}px")
             [
-                UI.box
+                Ui.box
                     (fun x ->
                         //                        x.backgroundColor <- if hovered then "#292929" else null
                         x.color <- if hasSelection then "#ff5656" else null
@@ -63,7 +63,7 @@ module TaskName =
                                         Trigger =
                                             InputLabelIconButton.InputLabelIconButton
                                                 (fun x ->
-                                                    x.``as`` <- UI.react.MenuButton
+                                                    x.``as`` <- Ui.react.MenuButton
                                                     x.icon <- Icons.bs.BsThreeDots |> Icons.render
                                                     x.fontSize <- "11px"
                                                     x.height <- "15px"

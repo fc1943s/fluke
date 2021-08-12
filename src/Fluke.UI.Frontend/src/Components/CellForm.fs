@@ -56,14 +56,14 @@ module CellForm =
                 Items =
                     [
                         str "Info",
-                        (UI.stack
+                        (Ui.stack
                             (fun x -> x.spacing <- "10px")
                             [
                                 if visibleTaskSelectedDateIdMap
                                    |> Map.keys
                                    |> Seq.length
                                    <= 1 then
-                                    UI.box
+                                    Ui.box
                                         (fun x -> x.userSelect <- "text")
                                         [
                                             str $"""Task: {taskName}"""
@@ -76,7 +76,7 @@ module CellForm =
                                    |> Seq.fold Set.union Set.empty
                                    |> Set.count
                                    <= 1 then
-                                    UI.box
+                                    Ui.box
                                         (fun x -> x.userSelect <- "text")
                                         [
                                             str
@@ -87,18 +87,18 @@ module CellForm =
                                 else
                                     nothing
 
-                                UI.stack
+                                Ui.stack
                                     (fun x ->
                                         x.direction <- "row"
                                         x.alignItems <- "center")
                                     [
-                                        UI.str "Status: "
+                                        Ui.str "Status: "
                                         CellMenu.CellMenu taskIdAtom dateIdAtom None false
                                     ]
                             ])
 
                         str "Attachments",
-                        (UI.stack
+                        (Ui.stack
                             (fun x ->
                                 x.spacing <- "10px"
                                 x.flex <- "1")
@@ -137,7 +137,7 @@ module CellForm =
         match taskIdAtom, dateIdAtom with
         | Some taskIdAtom, Some dateIdAtom -> CellForm taskIdAtom dateIdAtom
         | _ ->
-            UI.box
+            Ui.box
                 (fun x -> x.padding <- "15px")
                 [
                     str "No cell selected"

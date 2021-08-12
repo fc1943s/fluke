@@ -25,7 +25,7 @@ module CellStatusUserIndicator =
 
         match showUser, sessionStatus with
         | true, UserStatus _ ->
-            UI.box
+            Ui.box
                 (fun x ->
                     x.height <- $"{cellSize}px"
                     x.lineHeight <- $"{cellSize}px"
@@ -34,7 +34,7 @@ module CellStatusUserIndicator =
                     //                x.width <- "100%"
 
                     x._after <-
-                        (JS.newObj
+                        (Js.newObj
                             (fun x ->
 
                                 x.borderBottomColor <-

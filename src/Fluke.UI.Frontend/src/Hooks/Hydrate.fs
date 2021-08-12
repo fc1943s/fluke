@@ -126,7 +126,7 @@ module Hydrate =
         let chunkCount = int (Math.Ceiling (float hexString.Length / float chunkSize))
 
         let chunks =
-            JS.chunkString
+            Js.chunkString
                 hexString
                 {|
                     size = chunkSize
@@ -282,7 +282,7 @@ module Hydrate =
         }
 
     let inline useExportDatabase () =
-        let toast = UI.useToast ()
+        let toast = Ui.useToast ()
 
         Store.useCallbackRef
             (fun getter _ databaseId ->
@@ -350,7 +350,7 @@ module Hydrate =
     type SettingsState = { Ui: UiState; User: UserState }
 
     let inline useExportUserKey () =
-        let toast = UI.useToast ()
+        let toast = Ui.useToast ()
 
         Store.useCallbackRef
             (fun getter _ () ->
@@ -380,7 +380,7 @@ module Hydrate =
                 })
 
     let inline useExportUserSettings () =
-        let toast = UI.useToast ()
+        let toast = Ui.useToast ()
 
         Store.useCallbackRef
             (fun getter _ () ->
@@ -425,7 +425,7 @@ module Hydrate =
                 })
 
     let inline useImportUserSettings () =
-        let toast = UI.useToast ()
+        let toast = Ui.useToast ()
 
         Store.useCallbackRef
             (fun getter setter files ->
@@ -465,7 +465,7 @@ module Hydrate =
                 })
 
     let inline useImportDatabase () =
-        let toast = UI.useToast ()
+        let toast = Ui.useToast ()
 
         Store.useCallbackRef
             (fun getter setter files ->

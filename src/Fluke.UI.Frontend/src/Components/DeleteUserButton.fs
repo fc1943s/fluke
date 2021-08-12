@@ -12,7 +12,7 @@ module DeleteUserButton =
     [<ReactComponent>]
     let rec DeleteUserButton () =
         let deleteUser = Auth.useDeleteUser ()
-        let toast = UI.useToast ()
+        let toast = Ui.useToast ()
         let passwordField, setPasswordField = React.useState ""
 
         let confirmClick () =

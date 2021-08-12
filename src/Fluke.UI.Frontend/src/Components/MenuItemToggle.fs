@@ -11,7 +11,7 @@ open FsUi.Bindings
 module MenuItemToggle =
     [<ReactComponent>]
     let MenuItemToggle key value setValue label =
-        UI.menuOptionGroup
+        Ui.menuOptionGroup
             (fun x ->
                 x.``type`` <- "checkbox"
 
@@ -22,13 +22,13 @@ module MenuItemToggle =
 
                 x.onChange <- fun (checks: string []) -> promise { setValue (checks |> Array.contains key) })
             [
-                UI.menuItemOption
+                Ui.menuItemOption
                     (fun x ->
                         x.closeOnSelect <- true
                         x.value <- key
                         x.marginTop <- "2px"
                         x.marginBottom <- "2px"
-                        x._hover <- JS.newObj (fun x -> x.backgroundColor <- "gray.10"))
+                        x._hover <- Js.newObj (fun x -> x.backgroundColor <- "gray.10"))
                     [
                         str label
                     ]

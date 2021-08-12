@@ -24,7 +24,7 @@ module DatabaseForm =
 
     [<ReactComponent>]
     let rec DatabaseForm (databaseId: DatabaseId) (onSave: Database -> JS.Promise<unit>) =
-        let toast = UI.useToast ()
+        let toast = Ui.useToast ()
         let logLevel = Store.useValue Atoms.logLevel
 
         let onSave =
@@ -74,10 +74,10 @@ module DatabaseForm =
                 Items =
                     [
                         str $"""{if databaseId = Database.Default.Id then "Add" else "Edit"} Database""",
-                        (UI.stack
+                        (Ui.stack
                             (fun x -> x.spacing <- "15px")
                             [
-                                if logLevel <= LogLevel.Debug then UI.str $"{databaseId}" else nothing
+                                if logLevel <= LogLevel.Debug then Ui.str $"{databaseId}" else nothing
 
                                 Input.Input
                                     {|
@@ -101,12 +101,12 @@ module DatabaseForm =
                                                     $"""new-database-%s{DateTime.Now |> DateTime.format "yyyy-MM-dd"}"""
                                     |}
 
-                                UI.stack
+                                Ui.stack
                                     (fun x ->
                                         x.direction <- "row"
                                         x.alignItems <- "center")
                                     [
-                                        UI.str "Access:"
+                                        Ui.str "Access:"
 
                                         DatabaseAccessIndicator.DatabaseAccessIndicator ()
                                     ]

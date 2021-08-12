@@ -33,15 +33,15 @@ module AttachmentHeader =
                         | None -> ()
                     })
 
-        UI.flex
+        Ui.flex
             (fun x -> x.color <- "whiteAlpha.600")
             [
-                UI.box
+                Ui.box
                     (fun x -> x.lineHeight <- "16px")
                     [
                         match attachmentState with
                         | Some attachmentState ->
-                            UI.box
+                            Ui.box
                                 (fun x ->
                                     x.userSelect <- "text"
                                     x.display <- "inline")
@@ -68,7 +68,7 @@ module AttachmentHeader =
                                     Trigger =
                                         InputLabelIconButton.InputLabelIconButton
                                             (fun x ->
-                                                x.``as`` <- UI.react.MenuButton
+                                                x.``as`` <- Ui.react.MenuButton
                                                 x.icon <- Icons.bs.BsThreeDots |> Icons.render
                                                 x.fontSize <- "11px"
                                                 x.height <- "15px"

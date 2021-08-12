@@ -10,12 +10,12 @@ module TempFileThumbnail =
     [<ReactComponent>]
     let TempFileThumbnail onDelete onAdd fileId =
 
-        UI.box
+        Ui.box
             (fun x -> x.position <- "relative")
             [
                 FileThumbnail.FileThumbnail fileId
 
-                UI.stack
+                Ui.stack
                     (fun x ->
                         x.direction <- "row"
                         x.spacing <- "2px"

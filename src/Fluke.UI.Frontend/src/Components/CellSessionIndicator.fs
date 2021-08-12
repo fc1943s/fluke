@@ -18,7 +18,7 @@ module CellSessionIndicator =
         let sessionStatus = Store.useValue (Selectors.Cell.sessionStatus (taskId, dateId))
         let sessionCount = Store.useValue (Selectors.Cell.sessionCount (taskId, dateId))
 
-        UI.box
+        Ui.box
             (fun x ->
                 x.fontSize <- "11px"
 

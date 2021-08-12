@@ -20,7 +20,7 @@ module TaskPriority =
             |> Option.map (Priority.toTag >> (+) 1 >> string)
             |> Option.defaultValue ""
 
-        UI.box
+        Ui.box
             (fun x ->
                 x.position <- "relative"
                 x.height <- $"{cellSize}px"

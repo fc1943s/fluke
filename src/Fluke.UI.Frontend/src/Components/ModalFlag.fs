@@ -53,16 +53,16 @@ module ModalFlag =
             nothing
         else
             Modal.Modal (
-                JS.newObj
+                Js.newObj
                     (fun x ->
                         x.isOpen <- uiVisibleFlag
                         x.onClose <- onHide
 
                         x.children <-
                             [
-                                UI.box
+                                Ui.box
                                     (fun x ->
-                                        UI.setTestId x input.UIFlagType
+                                        Ui.setTestId x input.UIFlagType
                                         x.minWidth <- "max-content")
                                     [
                                         content

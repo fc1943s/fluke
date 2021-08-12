@@ -149,18 +149,18 @@ module LeftDock =
             )
 
 
-        UI.flex
+        Ui.flex
             (fun x ->
                 x.overflowY <- "auto"
                 x.overflowX <- "hidden")
             [
-                UI.box
+                Ui.box
                     (fun x ->
                         x.width <- "24px"
                         x.position <- "relative"
                         x.margin <- "1px")
                     [
-                        UI.stack
+                        Ui.stack
                             (fun x ->
                                 x.spacing <- "1px"
                                 x.direction <- "row"
@@ -214,12 +214,12 @@ module LeftDock =
                                     |}
                             |}
                             [
-                                UI.flex
+                                Ui.flex
                                     (fun x ->
                                         x.width <-
                                             unbox (
-                                                JS.newObj
-                                                    (fun (x: UI.IBreakpoints<string>) ->
+                                                Js.newObj
+                                                    (fun (x: Ui.IBreakpoints<string>) ->
                                                         x.``base`` <- "calc(100vw - 52px)"
                                                         x.md <- "auto")
                                             )

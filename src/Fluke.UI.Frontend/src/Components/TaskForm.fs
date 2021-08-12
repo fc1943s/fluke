@@ -44,7 +44,7 @@ module TaskForm =
     let MissedAfterInput (missedAfter: FlukeTime option) setMissedAfter =
         let dayStart = Store.useValue Atoms.User.dayStart
 
-        UI.box
+        Ui.box
             (fun x -> x.display <- "inline")
             [
                 InputLabel.InputLabel
@@ -55,7 +55,7 @@ module TaskForm =
                         Props = fun x -> x.marginBottom <- "5px"
                     |}
 
-                UI.stack
+                Ui.stack
                     (fun x ->
                         x.direction <- "row"
                         x.spacing <- "15px")
@@ -114,7 +114,7 @@ module TaskForm =
     let PendingAfterInput (pendingAfter: FlukeTime option) setPendingAfter =
         let dayStart = Store.useValue Atoms.User.dayStart
 
-        UI.box
+        Ui.box
             (fun x -> x.display <- "inline")
             [
                 InputLabel.InputLabel
@@ -125,7 +125,7 @@ module TaskForm =
                         Props = fun x -> x.marginBottom <- "5px"
                     |}
 
-                UI.stack
+                Ui.stack
                     (fun x ->
                         x.direction <- "row"
                         x.spacing <- "15px")
@@ -181,7 +181,7 @@ module TaskForm =
             ]
 
     let inline DurationInput (duration: Minute option) setDuration =
-        UI.box
+        Ui.box
             (fun x -> x.display <- "inline")
             [
                 InputLabel.InputLabel
@@ -192,7 +192,7 @@ module TaskForm =
                         Props = fun x -> x.marginBottom <- "5px"
                     |}
 
-                UI.stack
+                Ui.stack
                     (fun x ->
                         x.direction <- "row"
                         x.spacing <- "15px")
@@ -251,7 +251,7 @@ module TaskForm =
                 |]
             )
 
-        UI.box
+        Ui.box
             (fun x -> x.display <- "inline")
             [
                 InputLabel.InputLabel
@@ -262,7 +262,7 @@ module TaskForm =
                         Props = fun x -> x.marginBottom <- "5px"
                     |}
 
-                UI.stack
+                Ui.stack
                     (fun x ->
                         x.direction <- "row"
                         x.spacing <- "15px")
@@ -278,7 +278,7 @@ module TaskForm =
 
                         match priorityNumber with
                         | Some priorityNumber ->
-                            UI.slider
+                            Ui.slider
                                 (fun x ->
                                     x.min <- 1
                                     x.max <- 10
@@ -309,16 +309,16 @@ module TaskForm =
                                         elif priorityNumber <= 9 then "#e44c07"
                                         else "#a13c0e"
 
-                                    UI.sliderTrack
+                                    Ui.sliderTrack
                                         (fun x -> x.backgroundColor <- $"{bgColor}55")
                                         [
-                                            UI.sliderFilledTrack (fun x -> x.backgroundColor <- bgColor) []
+                                            Ui.sliderFilledTrack (fun x -> x.backgroundColor <- bgColor) []
                                         ]
 
-                                    UI.sliderThumb (fun _ -> ()) []
+                                    Ui.sliderThumb (fun _ -> ()) []
                                 ]
 
-                            UI.str (string priorityNumber)
+                            Ui.str (string priorityNumber)
                         | None -> nothing
                     ]
             ]
@@ -355,7 +355,7 @@ module TaskForm =
                     {|
                         Props =
                             fun x ->
-                                UI.setTestId x "Add Task"
+                                Ui.setTestId x "Add Task"
                                 x.icon <- Icons.fi.FiPlus |> Icons.render
                                 x.fontSize <- "17px"
 
@@ -379,7 +379,7 @@ module TaskForm =
 
     [<ReactComponent>]
     let rec TaskForm (taskId: TaskId) (onSave: Task -> JS.Promise<unit>) =
-        let toast = UI.useToast ()
+        let toast = Ui.useToast ()
         let logLevel = Store.useValue Atoms.logLevel
         let startSession = useStartSession ()
         let deleteTask = useDeleteTask ()
@@ -545,18 +545,18 @@ module TaskForm =
                     [
                         if taskId <> Task.Default.Id then
                             str "Info",
-                            (UI.stack
+                            (Ui.stack
                                 (fun x -> x.spacing <- "15px")
                                 [
-                                    UI.str $"Cell Status Count: {statusMap |> Map.count}"
-                                    UI.str
+                                    Ui.str $"Cell Status Count: {statusMap |> Map.count}"
+                                    Ui.str
                                         $"Cell Attachment Count: {cellAttachmentIdMap
                                                                   |> Map.values
                                                                   |> Seq.map Set.count
                                                                   |> Seq.sum}"
                                 ])
 
-                        (UI.box
+                        (Ui.box
                             (fun _ -> ())
                             [
                                 str $"""{if taskId = Task.Default.Id then "Add" else "Edit"} Task"""
@@ -587,10 +587,10 @@ module TaskForm =
                                         |}
 
                             ]),
-                        (UI.stack
+                        (Ui.stack
                             (fun x -> x.spacing <- "15px")
                             [
-                                if logLevel <= LogLevel.Debug then UI.str $"{taskId}" else nothing
+                                if logLevel <= LogLevel.Debug then Ui.str $"{taskId}" else nothing
 
                                 DatabaseSelector.DatabaseSelector
                                     taskDatabaseId
@@ -625,7 +625,7 @@ module TaskForm =
                                     |}
 
 
-                                UI.box
+                                Ui.box
                                     (fun x -> x.display <- "inline")
                                     [
                                         InputLabel.InputLabel
@@ -661,7 +661,7 @@ module TaskForm =
                             ])
 
                         if taskId <> Task.Default.Id then
-                            (UI.box
+                            (Ui.box
                                 (fun _ -> ())
                                 [
                                     str "Sessions"
@@ -693,20 +693,20 @@ module TaskForm =
 
                                 ]),
                             (match sessions with
-                             | [] -> UI.str "No sessions found"
+                             | [] -> Ui.str "No sessions found"
                              | sessions ->
-                                 UI.stack
+                                 Ui.stack
                                      (fun _ -> ())
                                      [
                                          yield!
                                              sessions
                                              |> List.map
                                                  (fun (Session start) ->
-                                                     UI.flex
+                                                     Ui.flex
                                                          (fun x ->
                                                              x.key <- $"session-{start |> FlukeDateTime.Stringify}")
                                                          [
-                                                             UI.box
+                                                             Ui.box
                                                                  (fun _ -> ())
                                                                  [
                                                                      str (start |> FlukeDateTime.Stringify)
@@ -717,7 +717,7 @@ module TaskForm =
                                                                              Trigger =
                                                                                  InputLabelIconButton.InputLabelIconButton
                                                                                      (fun x ->
-                                                                                         x.``as`` <- UI.react.MenuButton
+                                                                                         x.``as`` <- Ui.react.MenuButton
 
                                                                                          x.icon <-
                                                                                              Icons.bs.BsThreeDots
@@ -742,7 +742,7 @@ module TaskForm =
                                      ])
 
                             str "Attachments",
-                            (UI.stack
+                            (Ui.stack
                                 (fun x ->
                                     x.spacing <- "10px"
                                     x.flex <- "1")

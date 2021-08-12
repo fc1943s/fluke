@@ -70,8 +70,8 @@ module DatabaseSelector =
                 |]
             )
 
-        UI.box
-            (fun x -> UI.setTestId x (nameof DatabaseSelector))
+        Ui.box
+            (fun x -> Ui.setTestId x (nameof DatabaseSelector))
             [
                 InputLabel.InputLabel
                     {|
@@ -102,7 +102,7 @@ module DatabaseSelector =
                         Body =
                             fun onHide1 ->
                                 [
-                                    UI.stack
+                                    Ui.stack
                                         (fun x ->
                                             x.flex <- "1"
                                             x.spacing <- "1px"

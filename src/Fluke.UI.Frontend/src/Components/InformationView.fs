@@ -14,27 +14,27 @@ module InformationView =
     let InformationTree information taskIdAtoms =
         let cellSize = Store.useValue Atoms.User.cellSize
 
-        UI.box
+        Ui.box
             (fun x -> x.paddingLeft <- $"{cellSize}px")
             [
                 InformationName.InformationName information
 
                 // Task Name
-                UI.box
+                Ui.box
                     (fun x -> x.flex <- "1")
                     [
                         yield!
                             taskIdAtoms
                             |> Array.map
                                 (fun taskIdAtom ->
-                                    UI.stack
+                                    Ui.stack
                                         (fun x ->
                                             x.position <- "relative"
                                             x.direction <- "row"
                                             x.spacing <- "10px"
                                             x.paddingLeft <- $"{cellSize}px")
                                         [
-                                            UI.box
+                                            Ui.box
                                                 (fun x ->
                                                     x.position <- "absolute"
                                                     x.left <- "10px"
@@ -58,12 +58,12 @@ module InformationView =
 
         let cellSize = Store.useValue Atoms.User.cellSize
 
-        UI.flex
+        Ui.flex
             (fun x ->
                 x.direction <- "column"
                 x.flex <- "1")
             [
-                UI.box
+                Ui.box
                     (fun x ->
                         x.height <- $"{cellSize}px"
                         x.lineHeight <- $"{cellSize}px"
@@ -72,7 +72,7 @@ module InformationView =
                         str informationKindName
                     ]
 
-                UI.box
+                Ui.box
                     (fun _ -> ())
                     [
                         yield! groups |> Array.map InformationTreeWrapper
@@ -95,10 +95,10 @@ module InformationView =
         let _informationKindName, groups = Store.useValue kindInformationTaskIdAtom
         let cellSize = Store.useValue Atoms.User.cellSize
 
-        UI.box
+        Ui.box
             (fun _ -> ())
             [
-                UI.box
+                Ui.box
                     (fun x ->
                         x.position <- "relative"
                         x.height <- $"{cellSize}px"
@@ -108,10 +108,10 @@ module InformationView =
                     groups
                     |> Array.map
                         (fun informationTaskIdAtom ->
-                            UI.box
+                            Ui.box
                                 (fun _ -> ())
                                 [
-                                    UI.box
+                                    Ui.box
                                         (fun x ->
                                             x.position <- "relative"
                                             x.height <- $"{cellSize}px"
@@ -129,10 +129,10 @@ module InformationView =
         let informationTaskIdAtomsByKind = Store.useValue Selectors.Session.informationTaskIdAtomsByKind
         let cellSize = Store.useValue Atoms.User.cellSize
 
-        UI.flex
+        Ui.flex
             (fun x -> x.flex <- "1")
             [
-                UI.flex
+                Ui.flex
                     (fun x ->
                         x.direction <- "column"
                         x.flex <- "1"
@@ -141,10 +141,10 @@ module InformationView =
                         x.maxWidth <- "400px")
                     [
                         yield!
-                            UI.box (fun x -> x.minHeight <- $"{cellSize}px") []
+                            Ui.box (fun x -> x.minHeight <- $"{cellSize}px") []
                             |> List.replicate 3
 
-                        UI.flex
+                        Ui.flex
                             (fun x -> x.direction <- "column")
                             [
                                 yield!
@@ -153,12 +153,12 @@ module InformationView =
                             ]
                     ]
                 // Column: Grid
-                UI.box
+                Ui.box
                     (fun _ -> ())
                     [
                         GridHeader.GridHeader ()
 
-                        UI.box
+                        Ui.box
                             (fun _ -> ())
                             [
                                 yield!

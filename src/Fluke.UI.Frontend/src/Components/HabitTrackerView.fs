@@ -22,23 +22,23 @@ module HabitTrackerView =
         let cellSize = Store.useValue Atoms.User.cellSize
         let informationTaskIdAtoms = Store.useValue Selectors.Session.informationTaskIdAtoms
 
-        UI.flex
+        Ui.flex
             (fun x -> x.flex <- "1")
             [
-                UI.flex
+                Ui.flex
                     (fun x ->
                         x.direction <- "column"
                         x.paddingRight <- "10px"
                         x.paddingLeft <- "4px")
                     [
                         yield!
-                            UI.box (fun x -> x.minHeight <- $"{cellSize}px") []
+                            Ui.box (fun x -> x.minHeight <- $"{cellSize}px") []
                             |> List.replicate 3
 
-                        UI.flex
+                        Ui.flex
                             (fun _ -> ())
                             [
-                                UI.box
+                                Ui.box
                                     (fun x -> x.paddingRight <- "10px")
                                     [
                                         yield!
@@ -53,7 +53,7 @@ module HabitTrackerView =
                                                     ))
                                     ]
                                 // Column: Priority
-                                UI.box
+                                Ui.box
                                     (fun x ->
                                         x.paddingRight <- "10px"
                                         x.textAlign <- "center")
@@ -70,14 +70,14 @@ module HabitTrackerView =
                                                     ))
                                     ]
                                 // Column: Task Name
-                                UI.box
+                                Ui.box
                                     (fun x -> x.flex <- "1")
                                     [
                                         yield!
                                             sortedTaskIdAtoms
                                             |> Array.map
                                                 (fun taskIdAtom ->
-                                                    UI.box
+                                                    Ui.box
                                                         (fun x -> x.height <- $"{cellSize}px")
                                                         [
                                                             React.suspense (
@@ -94,14 +94,14 @@ module HabitTrackerView =
                             informationTaskIdAtoms
                             |> Array.map
                                 (fun informationTaskIdAtom ->
-                                    UI.flex
+                                    Ui.flex
                                         (fun x -> x.direction <- "column")
                                         [
                                             InformationNameWrapper informationTaskIdAtom
                                         ])
                     ]
 
-                UI.box
+                Ui.box
                     (fun _ -> ())
                     [
                         GridHeader.GridHeader ()

@@ -15,7 +15,7 @@ open FsUi.Components
 module ProjectForm =
     [<ReactComponent>]
     let ProjectForm (project: Project) (onSave: Project -> JS.Promise<unit>) =
-        let toast = UI.useToast ()
+        let toast = Ui.useToast ()
         let projectName, setProjectName = React.useState project.Name
         let area, setArea = React.useState project.Area
 
@@ -31,12 +31,12 @@ module ProjectForm =
                             do! onSave project
                     })
 
-        UI.stack
+        Ui.stack
             (fun x -> x.spacing <- "18px")
             [
                 AreaSelector.AreaSelector area setArea
 
-                UI.stack
+                Ui.stack
                     (fun x -> x.spacing <- "15px")
                     [
                         Input.Input

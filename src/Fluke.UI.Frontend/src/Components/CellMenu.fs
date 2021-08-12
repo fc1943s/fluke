@@ -43,10 +43,9 @@ module CellMenu =
     let CellMenu taskIdAtom dateIdAtom (onClose: (unit -> unit) option) (floating: bool) =
         let taskId, dateId = Store.useValueTuple taskIdAtom dateIdAtom
         let username = Store.useValue Atoms.username
-        let toast = UI.useToast ()
+        let toast = Ui.useToast ()
         let cellSize = Store.useValue Atoms.User.cellSize
         let sessionStatus, setSessionStatus = Store.useState (Selectors.Cell.sessionStatus (taskId, dateId))
-        let visibleTaskSelectedDateIdMap = Store.useValue Selectors.Session.visibleTaskSelectedDateIdMap
         let darkMode = Store.useValue Atoms.Ui.darkMode
 
         let postponedUntil, setPostponedUntil =
@@ -159,7 +158,7 @@ module CellMenu =
                         | _ -> ()
                     })
 
-        UI.stack
+        Ui.stack
             (fun x ->
                 x.spacing <- "0"
 
@@ -175,7 +174,7 @@ module CellMenu =
 
                     x.boxShadow <- $"0px 0px 2px 1px #{if darkMode then 262626 else 777}")
             [
-                UI.stack
+                Ui.stack
                     (fun x ->
                         x.direction <- if floating then "column" else "row"
                         x.borderColor <- "gray.77"
@@ -184,14 +183,14 @@ module CellMenu =
                         x.width <- $"{cellSize (* * 2*) }px")
                     [
                         let wrapButton icon color onClick =
-                            UI.iconButton
+                            Ui.iconButton
                                 (fun x ->
-                                    UI.setTestId x $"cell-button-{color}"
+                                    Ui.setTestId x $"cell-button-{color}"
                                     x.icon <- icon
                                     x.display <- "flex"
                                     x.color <- "#dddddd"
-                                    x._hover <- JS.newObj (fun x -> x.opacity <- 0.8)
-                                    x._active <- JS.newObj (fun x -> x.opacity <- 0.5)
+                                    x._hover <- Js.newObj (fun x -> x.opacity <- 0.8)
+                                    x._active <- Js.newObj (fun x -> x.opacity <- 0.5)
                                     x.variant <- "outline"
                                     x.backgroundColor <- color
                                     x.border <- "0"
@@ -266,13 +265,13 @@ module CellMenu =
                         else
                             nothing
 
-                        UI.str "Complete" |> wrapButtonTooltip Completed
+                        Ui.str "Complete" |> wrapButtonTooltip Completed
 
-                        UI.box
+                        Ui.box
                             (fun _ -> ())
                             [
-                                UI.str "Dismiss"
-                                UI.box
+                                Ui.str "Dismiss"
+                                Ui.box
                                     (fun _ -> ())
                                     [
                                     //                                        str """???"""
@@ -280,7 +279,7 @@ module CellMenu =
                             ]
                         |> wrapButtonTooltip Dismissed
 
-                        UI.box
+                        Ui.box
                             (fun _ -> ())
                             [
                                 PostponeTooltipText dateIdAtom
@@ -296,10 +295,10 @@ module CellMenu =
                             postponeUntilLater
                             (fun (_disclosure, fetchInitialFocusRef) ->
                                 [
-                                    UI.stack
+                                    Ui.stack
                                         (fun x -> x.spacing <- "10px")
                                         [
-                                            UI.box
+                                            Ui.box
                                                 (fun x ->
                                                     x.paddingBottom <- "5px"
                                                     x.marginRight <- "24px"
@@ -346,13 +345,13 @@ module CellMenu =
                                         ]
                                 ])
 
-                        UI.stack
+                        Ui.stack
                             (fun x ->
                                 x.padding <- "4px"
                                 x.spacing <- "8px")
                             [
-                                UI.str "Schedule"
-                                UI.str
+                                Ui.str "Schedule"
+                                Ui.str
                                     """Manually schedule a task,
 overriding any other behavior.
 """

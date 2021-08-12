@@ -14,12 +14,12 @@ module MonthResponsiveCell =
     open Domain.UserInteraction
 
     [<ReactComponent>]
-    let MonthResponsiveCell (dateIdAtom: Atom<DateId>) (props: UI.IChakraProps -> unit) =
+    let MonthResponsiveCell (dateIdAtom: Atom<DateId>) (props: Ui.IChakraProps -> unit) =
         let dateId = Store.useValue dateIdAtom
         let weekStart = Store.useValue Atoms.User.weekStart
         let cellSize = Store.useValue Atoms.User.cellSize
 
-        UI.box
+        Ui.box
             (fun x ->
                 x.whiteSpace <- "nowrap"
                 x.textAlign <- "center"

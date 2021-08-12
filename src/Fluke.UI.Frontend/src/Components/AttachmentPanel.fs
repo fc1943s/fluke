@@ -14,12 +14,12 @@ module AttachmentPanel =
 //        DragDrop.dragDropContext
 //            onDragEnd
 //            [
-        UI.stack
+        Ui.stack
             (fun x ->
                 x.spacing <- "15px"
                 x.flex <- "1")
             [
-                UI.stack
+                Ui.stack
                     (fun x ->
                         x.flex <- "1"
                         x.display <- "contents"
@@ -27,7 +27,7 @@ module AttachmentPanel =
                         x.flexBasis <- 0)
                     [
                         if attachmentIdList |> List.isEmpty |> not then
-                            UI.box
+                            Ui.box
                                 (fun _ -> ())
                                 [
                                     yield!
@@ -40,7 +40,7 @@ module AttachmentPanel =
                                                     attachmentId)
                                 ]
                         else
-                            UI.str "No attachments found"
+                            Ui.str "No attachments found"
                     ]
 
                 AddAttachmentInput.AddAttachmentInput attachmentParent onAdd

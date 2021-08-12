@@ -8,28 +8,28 @@ open Fluke.UI.Frontend.Bindings; open FsStore; open FsUi.Bindings
 module DatabaseAccessIndicator =
     [<ReactComponent>]
     let DatabaseAccessIndicator () =
-        UI.stack
+        Ui.stack
             (fun x ->
                 x.direction <- "row"
                 x.spacing <- "15px")
             [
-                UI.stack
+                Ui.stack
                     (fun x ->
                         x.direction <- "row"
                         x.spacing <- "4px"
                         x.alignItems <- "center")
                     [
-                        UI.circle
+                        Ui.circle
                             (fun x ->
                                 x.width <- "10px"
                                 x.height <- "10px"
                                 x.backgroundColor <- "#0f0")
                             []
 
-                        UI.str "Private"
+                        Ui.str "Private"
 
                     ]
-                UI.iconButton
+                Ui.iconButton
                     (fun x ->
                         x.icon <- Icons.bs.BsThreeDots |> Icons.render
                         x.disabled <- true

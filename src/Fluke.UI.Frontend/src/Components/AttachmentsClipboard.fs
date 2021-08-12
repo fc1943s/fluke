@@ -41,11 +41,11 @@ module AttachmentsClipboard =
         if not clipboardVisible then
             nothing
         else
-            UI.box
+            Ui.box
                 (fun _ -> ())
                 [
                     if clipboardAttachmentIdMap.Count = 0 then
-                        UI.box
+                        Ui.box
                             (fun x -> x.padding <- "10px")
                             [
                                 str "Empty clipboard"

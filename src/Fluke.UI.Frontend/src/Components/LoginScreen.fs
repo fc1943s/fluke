@@ -19,7 +19,7 @@ open FsUi.Model
 module LoginScreen =
     [<ReactComponent>]
     let LoginScreen () =
-        let toast = UI.useToast ()
+        let toast = Ui.useToast ()
         let usernameField, setUsernameField = React.useState ""
         let passwordField, setPasswordField = React.useState ""
         let password2Field, setPassword2Field = React.useState ""
@@ -79,10 +79,10 @@ module LoginScreen =
                                 return false
                     })
 
-        UI.center
+        Ui.center
             (fun x -> x.flex <- "1")
             [
-                UI.stack
+                Ui.stack
                     (fun _ -> ())
                     [
                         Input.Input
@@ -115,7 +115,7 @@ module LoginScreen =
                             false
                             signUpClick
                             (fun visible setVisible ->
-                                UI.hStack
+                                Ui.hStack
                                     (fun x -> x.alignItems <- "stretch")
                                     [
                                         Button.Button

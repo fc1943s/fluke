@@ -17,14 +17,14 @@ module BulletJournalView =
     let BulletJournalView () =
         let weekCellsMap = Store.useValue Selectors.BulletJournalView.bulletJournalWeekCellsMap
 
-        UI.box
+        Ui.box
             (fun x -> x.flex <- "1")
             [
                 yield!
                     weekCellsMap
                     |> List.map
                         (fun week ->
-                            UI.flex
+                            Ui.flex
                                 (fun x ->
                                     x.flex <- "1"
                                     x.marginTop <- "15px"
@@ -47,13 +47,13 @@ module BulletJournalView =
                                                                 || not cell.AttachmentStateList.IsEmpty
                                                                 || cell.Status <> State.Disabled)
 
-                                                    UI.box
+                                                    Ui.box
                                                         (fun x ->
                                                             x.flex <- "1"
                                                             x.paddingLeft <- "10px"
                                                             x.paddingRight <- "10px")
                                                         [
-                                                            UI.box
+                                                            Ui.box
                                                                 (fun x ->
                                                                     x.visibility <-
                                                                         if visibleCells.Length = 0 then
@@ -84,7 +84,7 @@ module BulletJournalView =
                                                                 visibleCells
                                                                 |> Array.map
                                                                     (fun cell ->
-                                                                        UI.flex
+                                                                        Ui.flex
                                                                             (fun _ -> ())
                                                                             [
                                                                                 Cell.Cell
@@ -93,7 +93,7 @@ module BulletJournalView =
                                                                                         DateIdAtom = cell.DateIdAtom
                                                                                         SemiTransparent = false
                                                                                     |}
-                                                                                UI.box
+                                                                                Ui.box
                                                                                     (fun x -> x.paddingLeft <- "4px")
                                                                                     [
                                                                                         TaskName.TaskName

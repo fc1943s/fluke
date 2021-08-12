@@ -15,10 +15,10 @@ module GridHeader =
         let dateIdAtoms = Store.useValue Selectors.Selectors.dateIdAtoms
         let dateIdAtomsByMonth = Store.useValue Selectors.Selectors.dateIdAtomsByMonth
 
-        UI.box
+        Ui.box
             (fun _ -> ())
             [
-                UI.flex
+                Ui.flex
                     (fun _ -> ())
                     [
                         yield!
@@ -35,7 +35,7 @@ module GridHeader =
                                             (fun x -> x.width <- $"{cellWidth}px"))
                     ]
 
-                UI.flex
+                Ui.flex
                     (fun _ -> ())
                     [
                         yield!
@@ -43,7 +43,7 @@ module GridHeader =
                             |> Array.map (Day.Day TempUI.DateIdFormat.DayOfWeek)
                     ]
 
-                UI.flex
+                Ui.flex
                     (fun _ -> ())
                     [
                         yield!

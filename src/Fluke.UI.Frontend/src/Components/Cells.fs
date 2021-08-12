@@ -7,7 +7,7 @@ open FsUi.Bindings
 module Cells =
     [<ReactComponent>]
     let Cells taskIdAtoms =
-        UI.box
+        Ui.box
             (fun _ -> ())
             [
                 yield! taskIdAtoms |> Array.mapi TaskCells.TaskCells

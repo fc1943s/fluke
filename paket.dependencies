@@ -26,3 +26,18 @@ nuget YoloDev.Expecto.TestSdk ~> 0.12
 nuget Fake.Core.Target ~> 5.20 prerelease
 nuget Fake.DotNet.Cli ~> 5.20 prerelease
 nuget Fake.IO.FileSystem ~> 5.20 prerelease
+
+
+
+// FsJs
+nuget Fable.DateFunctions ~> 3.6
+nuget Fable.Extras ~> 0.4
+nuget Thoth.Json ~> 6.0
+
+// FsStore
+nuget Fable.SignalR ~> 0.11
+nuget Fable.Jester ~> 0.33
+nuget Fable.ReactTestingLibrary ~> 0.33
+
+// FsUi
+nuget Feliz.Router ~> 3.8

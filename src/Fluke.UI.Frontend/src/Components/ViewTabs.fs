@@ -78,7 +78,7 @@ module ViewTabs =
 
         printfn $"ViewTabs.render. current view={view}. tabIndex={tabIndex} lastTabIndex={lastTabIndex.current}"
 
-        UI.tabs
+        Ui.tabs
             (fun x ->
                 x.isLazy <- true
 
@@ -92,12 +92,12 @@ module ViewTabs =
                 x.flex <- "1"
                 x.overflow <- "auto")
             [
-                UI.flex
+                Ui.flex
                     (fun x ->
                         x.margin <- "1px"
                         x.overflowX <- "auto")
                     [
-                        UI.tabList
+                        Ui.tabList
                             (fun x ->
                                 x.flex <- "1 1 auto"
                                 x.display <- "flex"
@@ -112,25 +112,25 @@ module ViewTabs =
                                     tabs
                                     |> List.map
                                         (fun tab ->
-                                            UI.tab
+                                            Ui.tab
                                                 (fun x ->
                                                     x.alignSelf <- "stretch"
                                                     x.padding <- "12px"
                                                     x.color <- "gray.45"
 
                                                     x._hover <-
-                                                        JS.newObj
+                                                        Js.newObj
                                                             (fun x ->
                                                                 x.borderBottomWidth <- "2px"
                                                                 x.borderBottomColor <- "gray.45")
 
                                                     x._selected <-
-                                                        JS.newObj
+                                                        Js.newObj
                                                             (fun x ->
                                                                 x.color <- "gray.77"
                                                                 x.borderColor <- "gray.77"))
                                                 [
-                                                    UI.icon
+                                                    Ui.icon
                                                         (fun x ->
                                                             x.``as`` <- tab.Icon
                                                             x.marginRight <- "6px")
@@ -138,7 +138,7 @@ module ViewTabs =
                                                     str tab.Name
                                                 ])
 
-                                UI.spacer (fun _ -> ()) []
+                                Ui.spacer (fun _ -> ()) []
 
                                 Menu.Menu
                                     {|
@@ -148,7 +148,7 @@ module ViewTabs =
                                                 {|
                                                     Props =
                                                         fun x ->
-                                                            x.``as`` <- UI.react.MenuButton
+                                                            x.``as`` <- Ui.react.MenuButton
                                                             x.fontSize <- "14px"
                                                             x.icon <- Icons.bs.BsThreeDotsVertical |> Icons.render
                                                             x.alignSelf <- "center"
@@ -164,7 +164,7 @@ module ViewTabs =
                             ]
                     ]
 
-                UI.tabPanels
+                Ui.tabPanels
                     (fun x ->
                         x.flex <- "1"
                         x.display <- "flex"
@@ -175,7 +175,7 @@ module ViewTabs =
                             tabs
                             |> List.map
                                 (fun tab ->
-                                    UI.tabPanel
+                                    Ui.tabPanel
                                         (fun x ->
                                             x.display <- "flex"
                                             x.padding <- "0"
@@ -187,13 +187,13 @@ module ViewTabs =
                                                && (view <> View.View.Information
                                                    || informationSet.IsEmpty) then
                                                 if filteredTaskIdCount = 0 then
-                                                    UI.box
+                                                    Ui.box
                                                         (fun x -> x.padding <- "7px")
                                                         [
                                                             str "No tasks found. Add tasks in the Databases panel."
                                                         ]
                                                 else
-                                                    UI.flex
+                                                    Ui.flex
                                                         (fun x -> x.flex <- "1")
                                                         [
                                                             LoadingSpinner.LoadingSpinner ()

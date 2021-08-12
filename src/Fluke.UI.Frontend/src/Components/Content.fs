@@ -56,7 +56,7 @@ module Content =
                 if userColor.IsNone then
                     LoadingSpinner.LoadingSpinner ()
                 else
-                    UI.flex
+                    Ui.flex
                         (fun x -> x.flex <- "1")
                         [
                             React.suspense (
@@ -99,14 +99,14 @@ module Content =
         let deviceInfo = Store.useValue Selectors.deviceInfo
         let username = Store.useValue Atoms.username
 
-        UI.flex
+        Ui.flex
             (fun x ->
                 x.flex <- "1"
                 x.minHeight <- "100vh"
                 x.height <- if deviceInfo.IsExtension then "590px" else null
                 x.width <- if deviceInfo.IsExtension then "790px" else null)
             [
-                UI.stack
+                Ui.stack
                     (fun x ->
                         x.spacing <- "0"
                         x.flex <- "1"

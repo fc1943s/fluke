@@ -53,9 +53,9 @@ module AreaSelector =
                 |]
             )
 
-        UI.box
+        Ui.box
             (fun x ->
-                UI.setTestId x (nameof AreaSelector)
+                Ui.setTestId x (nameof AreaSelector)
                 x.display <- "inline")
             [
                 InputLabel.InputLabel
@@ -100,7 +100,7 @@ module AreaSelector =
                         Body =
                             fun onHide ->
                                 [
-                                    UI.stack
+                                    Ui.stack
                                         (fun x ->
                                             x.flex <- "1"
                                             x.spacing <- "1px"
@@ -127,7 +127,7 @@ module AreaSelector =
                                                                              |> Icons.renderWithProps
                                                                                  (fun x -> x.marginTop <- "3px")
                                                                          else
-                                                                             UI.box (fun x -> x.width <- "11px") []),
+                                                                             Ui.box (fun x -> x.width <- "11px") []),
                                                                         Button.IconPosition.Left
                                                                     )
                                                                 Props =

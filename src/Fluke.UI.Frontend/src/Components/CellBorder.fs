@@ -36,7 +36,7 @@ module CellBorder =
 
         match borderLeftWidth, borderLeftColor with
         | Some borderLeftWidth, Some borderLeftColor ->
-            UI.box
+            Ui.box
                 (fun x ->
                     x.position <- "absolute"
                     x.top <- "-1px"
@@ -45,7 +45,7 @@ module CellBorder =
                     x.width <- $"{cellSize}px"
 
                     if isReadWrite then
-                        x._hover <- JS.newObj (fun x -> x.borderLeftWidth <- "0")
+                        x._hover <- Js.newObj (fun x -> x.borderLeftWidth <- "0")
 
                     x.borderLeftWidth <- borderLeftWidth
                     x.borderLeftColor <- borderLeftColor)

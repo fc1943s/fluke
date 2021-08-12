@@ -53,7 +53,7 @@ module DatabaseLeafIcon =
             )
 
 
-        UI.stack
+        Ui.stack
             (fun x ->
                 x.display <- "inline"
                 x.spacing <- "4px"
@@ -63,7 +63,7 @@ module DatabaseLeafIcon =
                 match isPrivate with
                 | false ->
                     Tooltip.wrap
-                        (UI.box
+                        (Ui.box
                             (fun _ -> ())
                             [
                                 str $"Owner: {owner |> Username.ValueOrDefault}"
@@ -75,10 +75,10 @@ module DatabaseLeafIcon =
                                                           |> String.concat ", "}"""
                             ])
                         [
-                            UI.box
+                            Ui.box
                                 (fun _ -> ())
                                 [
-                                    UI.icon
+                                    Ui.icon
                                         (fun x ->
                                             x.``as`` <- Icons.hi.HiUsers
                                             x.color <- "_orange"
@@ -90,10 +90,10 @@ module DatabaseLeafIcon =
                     Tooltip.wrap
                         (str "Private")
                         [
-                            UI.box
+                            Ui.box
                                 (fun _ -> ())
                                 [
-                                    UI.icon
+                                    Ui.icon
                                         (fun x ->
                                             x.``as`` <- Icons.fa.FaUserShield
                                             x.color <- "_green"
@@ -107,10 +107,10 @@ module DatabaseLeafIcon =
                     Tooltip.wrap
                         (str $"Database paused at position {position |> FlukeDateTime.Stringify}")
                         [
-                            UI.box
+                            Ui.box
                                 (fun _ -> ())
                                 [
-                                    UI.icon
+                                    Ui.icon
                                         (fun x ->
                                             x.``as`` <- Icons.bs.BsPauseFill
                                             x.color <- "_orange"
@@ -122,10 +122,10 @@ module DatabaseLeafIcon =
                     Tooltip.wrap
                         (str "Live Database")
                         [
-                            UI.box
+                            Ui.box
                                 (fun _ -> ())
                                 [
-                                    UI.icon
+                                    Ui.icon
                                         (fun x ->
                                             x.``as`` <- Icons.bs.BsPlayFill
                                             x.color <- "_green"

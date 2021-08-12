@@ -14,7 +14,7 @@ module AttachmentList =
 //                droppableId = nameof AttachmentList
 //                direction = "horizontal"
 //            |}
-        UI.stack
+        Ui.stack
             (fun x ->
                 //                x.display <- "flex"
                 x.direction <- "row"
@@ -32,7 +32,7 @@ module AttachmentList =
 //                                    index = i
 //                                |}
 //                                (fun x -> ())
-                            UI.box
+                            Ui.box
                                 (fun _ -> ())
                                 [
                                     AttachmentThumbnail.AttachmentThumbnail

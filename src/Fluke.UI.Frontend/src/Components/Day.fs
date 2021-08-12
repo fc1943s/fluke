@@ -20,7 +20,7 @@ module Day =
         let weekStart = Store.useValue Atoms.User.weekStart
         let cellSize = Store.useValue Atoms.User.cellSize
 
-        UI.box
+        Ui.box
             (fun x ->
                 x.color <-
                     if hasCellSelection then "#ff5656"

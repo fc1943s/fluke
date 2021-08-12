@@ -30,7 +30,7 @@ module SearchForm =
     let SearchResultItem anchor searchResultText =
         let navigateAnchor = Store.useCallbackRef Navigate.navigateAnchor
 
-        UI.box
+        Ui.box
             (fun x ->
                 x.overflow <- "auto"
                 x.maxHeight <- "50px"
@@ -56,7 +56,7 @@ module SearchForm =
         let searchResults, setSearchResults = React.useState []
         let searchText, setSearchText = Store.useState Atoms.User.searchText
         let loading, setLoading = React.useState (searchText.Length > 0)
-        let toast = UI.useToast ()
+        let toast = Ui.useToast ()
 
         let search =
             Store.useCallbackRef
@@ -197,7 +197,7 @@ module SearchForm =
 
         let debouncedSearch =
             React.useMemo (
-                (fun () -> JS.debounce (search >> Promise.start) 1000),
+                (fun () -> Js.debounce (search >> Promise.start) 1000),
                 [|
                     box search
                 |]
@@ -211,16 +211,16 @@ module SearchForm =
             |]
         )
 
-        UI.stack
+        Ui.stack
             (fun x ->
                 x.spacing <- "10px"
                 x.padding <- "15px")
             [
-                UI.box
+                Ui.box
                     (fun x -> x.position <- "relative")
                     [
                         if loading then
-                            UI.flex
+                            Ui.flex
                                 (fun x ->
                                     x.position <- "absolute"
                                     x.top <- "0"
@@ -255,7 +255,7 @@ module SearchForm =
                     ]
 
                 if searchResults.IsEmpty then
-                    UI.str "No results"
+                    Ui.str "No results"
                 else
                     yield!
                         searchResults
@@ -276,11 +276,11 @@ module SearchForm =
                         |> List.map (fun (header, results) -> header, results |> List.map snd)
                         |> List.map
                             (fun (header, results) ->
-                                UI.box
+                                Ui.box
                                     (fun x -> x.marginBottom <- "10px")
                                     [
-                                        UI.str header
-                                        UI.box
+                                        Ui.str header
+                                        Ui.box
                                             (fun x -> x.marginLeft <- "25px")
                                             [
                                                 yield!
