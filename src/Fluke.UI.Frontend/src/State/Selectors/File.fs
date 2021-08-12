@@ -1,8 +1,8 @@
 namespace Fluke.UI.Frontend.State.Selectors
 
 open Fable.Extras
-open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.State
+open FsCore.Model
 open FsJs
 open FsStore
 

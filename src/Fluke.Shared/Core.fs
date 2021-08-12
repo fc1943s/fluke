@@ -5,16 +5,6 @@ open System
 open Microsoft.FSharp.Reflection
 
 
-[<AutoOpen>]
-module CoreMagic =
-    type Guid with
-        static member inline NewTicksGuid () =
-            let ticks = string DateTime.Now.Ticks
-            let guid = Guid.NewGuid () |> string
-
-            Guid $"{ticks.[0..7]}-{ticks.[8..11]}-{ticks.[12..15]}-{guid.[19..]}"
-
-
 module Union =
     let inline ToList<'T> =
         FSharpType.GetUnionCases typeof<'T>

@@ -1,5 +1,7 @@
 namespace Fluke.UI.Frontend.State.Selectors
 
+open FsCore.Model
+open FsJs
 open FsStore
 open System
 open Fluke.Shared
@@ -99,5 +101,5 @@ module rec Selectors =
             Fluke.root
             (nameof asyncDeviceIdAtoms)
             Atoms.Device.devicePing
-            deviceId
+            Dom.deviceId
             (Guid >> DeviceId)

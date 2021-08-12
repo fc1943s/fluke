@@ -56,7 +56,6 @@ module UserInteraction =
         | Image of fileId: FileId
         | List of list: Attachment list
 
-    and FileId = FileId of guid: Guid
 
     and [<RequireQualifiedAccess>] Comment = Comment of comment: string
 
@@ -98,13 +97,10 @@ module UserInteraction =
     and AttachmentId = AttachmentId of guid: Guid
 
     and AttachmentId with
-        static member inline NewId () = AttachmentId (Guid.NewTicksGuid ())
+        static member inline NewId () = AttachmentId (Guid.newTicksGuid ())
         static member inline Value (AttachmentId guid) = guid
         static member inline Default = AttachmentId Guid.Empty
 
-    and FileId with
-        static member inline NewId () = FileId (Guid.NewTicksGuid ())
-        static member inline Value (FileId guid) = guid
 
 
     and FlukeDate with

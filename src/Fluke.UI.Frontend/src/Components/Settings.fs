@@ -331,7 +331,7 @@ module Settings =
 
                                 CheckboxInput.CheckboxInput
                                     {|
-                                        Atom = Atoms.User.systemUiFont
+                                        Atom = Atoms.Ui.systemUiFont
                                         Label = Some "System UI Font"
                                         Props = fun _ -> ()
                                     |}

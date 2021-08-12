@@ -4,13 +4,12 @@ open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.State
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.Shared.View
-open FsCore
 open System
 open Fluke.Shared
 open Fluke.Shared.Domain
 open Fluke.UI.Frontend
 open FsCore.Model
-open FsJs
+
 
 module Fluke =
     let root = StoreRoot (nameof Fluke)
@@ -56,30 +55,6 @@ module State =
         | Information of databaseId: DatabaseId * Information: Information
         | Task of taskId: TaskId
         | Cell of taskId: TaskId * dateId: DateId
-
-    type DeviceId = DeviceId of guid: Guid
-
-    and DeviceId with
-        static member inline NewId () = DeviceId (Guid.NewTicksGuid ())
-        static member inline Value (DeviceId guid) = guid
-
-    type Ping = Ping of ticksText: string
-
-    and Ping with
-        static member inline Value (Ping ticks) = int64 ticks
-
-
-    let deviceId =
-        match Dom.window () with
-        | Some window ->
-            match window.localStorage.getItem "deviceId" with
-            | String.ValidString deviceId -> DeviceId (Guid deviceId)
-            | _ ->
-                let deviceId = DeviceId.NewId ()
-                window.localStorage.setItem ("deviceId", deviceId |> DeviceId.Value |> string)
-                deviceId
-        | None -> DeviceId.NewId ()
-
 
     let uiFlagDefault = UIFlag.None
     let uiVisibleFlagDefault = false
@@ -142,7 +117,6 @@ module State =
             SelectedDatabaseIdSet: Set<DatabaseId>
             SessionBreakDuration: Minute
             SessionDuration: Minute
-            SystemUiFont: bool
             UIFlagMap: Map<UIFlagType, UIFlag>
             UIVisibleFlagMap: Map<UIFlagType, bool>
             UserColor: Color option
@@ -212,7 +186,6 @@ module State =
                 SelectedDatabaseIdSet = Set.empty
                 SessionBreakDuration = Minute 5
                 SessionDuration = Minute 25
-                SystemUiFont = true
                 UIFlagMap =
                     Union.ToList<UIFlagType>
                     |> List.map (fun uiFlagType -> uiFlagType, uiFlagDefault)

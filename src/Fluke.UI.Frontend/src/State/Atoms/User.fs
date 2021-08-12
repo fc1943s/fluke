@@ -84,7 +84,6 @@ module rec User =
     let rec selectedDatabaseIdSet = atomWithSync (nameof selectedDatabaseIdSet) UserState.Default.SelectedDatabaseIdSet
     let rec sessionBreakDuration = atomWithSync (nameof sessionBreakDuration) UserState.Default.SessionBreakDuration
     let rec sessionDuration = atomWithSync (nameof sessionDuration) UserState.Default.SessionDuration
-    let rec systemUiFont = Store.atomWithStorageSync Fluke.root (nameof systemUiFont) UserState.Default.SystemUiFont
     let rec userColor = atomWithSync (nameof userColor) (None: Color option)
     let rec view = atomWithSync (nameof view) UserState.Default.View
     let rec weekStart = atomWithSync (nameof weekStart) UserState.Default.WeekStart

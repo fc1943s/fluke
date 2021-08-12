@@ -77,7 +77,6 @@ module Hydrate =
             set Atoms.User.selectedDatabaseIdSet userState.SelectedDatabaseIdSet
             set Atoms.User.sessionBreakDuration userState.SessionBreakDuration
             set Atoms.User.sessionDuration userState.SessionDuration
-            set Atoms.User.systemUiFont userState.SystemUiFont
             set Atoms.User.view userState.View
             set Atoms.User.weekStart userState.WeekStart
 

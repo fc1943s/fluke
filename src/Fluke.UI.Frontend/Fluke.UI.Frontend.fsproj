@@ -41,7 +41,6 @@
         <Compile Include="src\State\Selectors\Cell.fs" />
         <Compile Include="src\State\Selectors\DateId.fs" />
         <Compile Include="src\State\Selectors\BulletJournalView.fs" />
-        <Compile Include="src\Hooks\Theme.fs" />
         <Compile Include="src\Hooks\Hydrate.fs" />
         <Compile Include="src\Hooks\Navigate.fs" />
         <Compile Include="src\Components\ModalFlagTrigger.fs" />
@@ -113,9 +112,7 @@
         <Compile Include="src\Components\PositionUpdater.fs" />
         <Compile Include="src\Components\RouterObserver.fs" />
         <Compile Include="src\Components\KeyboardListener.fs" />
-        <Compile Include="src\Components\GunObserver.fs" />
         <Compile Include="src\Components\Content.fs" />
-        <Compile Include="src\Components\RootWrapper.fs" />
         <Compile Include="src\App.fs" />
         <Compile Include="src\Main.fs" />
         <Content Include="src\wdyr.js" />

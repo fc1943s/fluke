@@ -5,12 +5,12 @@ open Fable.React
 open Feliz
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.State
+open FsCore.Model
 open FsStore
 open FsUi.Hooks
 open FsJs
 open FsCore
 open Fluke.Shared
-open Fluke.UI.Frontend.State.State
 open Fable.Core.JsInterop
 
 
@@ -39,7 +39,7 @@ module PositionUpdater =
                         | _ -> ()
                     | _ -> ()
 
-                    Store.set setter (Atoms.Device.devicePing deviceId) (Ping (string DateTime.Now.Ticks))
+                    Store.set setter (Atoms.Device.devicePing Dom.deviceId) (Ping (string DateTime.Now.Ticks))
                 })
 
         Scheduling.useScheduling
