@@ -57,13 +57,13 @@
 
     "@pmmmwh/react-refresh-webpack-plugin": "~0.4",
 
-    "gun": "amark/gun.git#master",
+    "gun": "amark/gun.git#manhattan",
     "@peculiar/asn1-schema": "~2.0",
 
     "@microsoft/signalr": "6.0.0-preview.6.21355.2",
 
-    "react": "18.0.0-alpha-64931821a-20210808",
-    "react-dom": "18.0.0-alpha-64931821a-20210808",
+    "react": "18.0.0-alpha-88d121899-20210811",
+    "react-dom": "18.0.0-alpha-88d121899-20210811",
 
     "jotai": "~1.3",
 

@@ -52,13 +52,13 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Fluke.UI.Electron.Renderer"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Fluke.UI.Electron", "src\Fluke.UI.Electron\Fluke.UI.Electron.fsproj", "{CC388BCE-38BF-4FD3-BA14-99BB6A505289}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsJs", "src\FsJs\FsJs.fsproj", "{EF0780FA-954E-4785-859E-38BFD80F7352}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsJs", "..\FsBeacon\src\FsJs\FsJs.fsproj", "{EF0780FA-954E-4785-859E-38BFD80F7352}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsStore", "src\FsStore\FsStore.fsproj", "{4430A080-9A5C-4C2F-A336-E4FED9FBFB31}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsStore", "..\FsBeacon\src\FsStore\FsStore.fsproj", "{4430A080-9A5C-4C2F-A336-E4FED9FBFB31}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsUi", "src\FsUi\FsUi.fsproj", "{B24CE8A4-7DC8-403C-B113-AF38CEF62054}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsUi", "..\FsBeacon\src\FsUi\FsUi.fsproj", "{B24CE8A4-7DC8-403C-B113-AF38CEF62054}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsCore", "src\FsCore\FsCore.fsproj", "{ACEBF3B5-938A-49C6-A2ED-BAA88670E694}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsCore", "..\FsBeacon\src\FsCore\FsCore.fsproj", "{ACEBF3B5-938A-49C6-A2ED-BAA88670E694}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

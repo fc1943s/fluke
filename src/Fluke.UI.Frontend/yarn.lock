@@ -10823,9 +10823,9 @@ growly@^1.3.0:
   resolved "https://registry.yarnpkg.com/growly/-/growly-1.3.0.tgz#f10748cbe76af964b7c96c93c6bcc28af120c081"
   integrity sha1-8QdIy+dq+WS3yWyTxrzCivEgwIE=
 
-gun@amark/gun.git#master:
-  version "0.2020.1232"
-  resolved "https://codeload.github.com/amark/gun/tar.gz/8c8b51371656ff346166e93d57e115676d0aa7c1"
+gun@amark/gun.git#manhattan:
+  version "0.2020.520"
+  resolved "https://codeload.github.com/amark/gun/tar.gz/f2c8c9a1e821321e86667706c129d97e7bf555c7"
   dependencies:
     ws "^7.2.1"
   optionalDependencies:
@@ -17723,14 +17723,14 @@ react-dev-utils@^11.0.3:
     strip-ansi "6.0.0"
     text-table "0.2.0"
 
-react-dom@18.0.0-alpha-64931821a-20210808:
-  version "18.0.0-alpha-64931821a-20210808"
-  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-18.0.0-alpha-64931821a-20210808.tgz#03f7f55ea62a026947c059ac5d57728d591604bf"
-  integrity sha512-3Sbj3g4lkoU45XAI8SjZ6OM3HoOXiiI4aOj2rSfvtzUMTKNfTtDpdzuYMxd8dA+FsmTxZcHWBldbbq/iu1lvhw==
+react-dom@18.0.0-alpha-88d121899-20210811:
+  version "18.0.0-alpha-88d121899-20210811"
+  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-18.0.0-alpha-88d121899-20210811.tgz#71c2c46303911796f11ea6a6999dad6efe92ee12"
+  integrity sha512-sNuiFpSNvjGAHOYIddbgPFM5TnKKzJOxJInaP1JReGdV8CcuEfalHE+UZlQJ6t2yIaLPYr1GQgINhPldod/3IA==
   dependencies:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
-    scheduler "0.21.0-alpha-64931821a-20210808"
+    scheduler "0.21.0-alpha-88d121899-20210811"
 
 react-error-overlay@^6.0.9:
   version "6.0.9"
@@ -17914,10 +17914,10 @@ react-style-singleton@^2.1.0:
     invariant "^2.2.4"
     tslib "^1.0.0"
 
-react@18.0.0-alpha-64931821a-20210808:
-  version "18.0.0-alpha-64931821a-20210808"
-  resolved "https://registry.yarnpkg.com/react/-/react-18.0.0-alpha-64931821a-20210808.tgz#49d54d81937affd37955880aae4ec447b93909cf"
-  integrity sha512-lr1082PineVMBL24BUJHAo4Mlh7ViXis/aw7bDeZvlDUnCR0KmPTEwwjmczJQqnTSFLLWL1uCnSR7hy1TOcwwA==
+react@18.0.0-alpha-88d121899-20210811:
+  version "18.0.0-alpha-88d121899-20210811"
+  resolved "https://registry.yarnpkg.com/react/-/react-18.0.0-alpha-88d121899-20210811.tgz#8a3ac734f446b3e1a4b3334d705b9981f6855254"
+  integrity sha512-tNagq0wzxetvITZ8wxXjFe84vmo34fLLvvhIn89xPLqnZUIrfXAdk90/mlHVN+dP9IgvoeyqAwcVl2WYwZoE8A==
   dependencies:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
@@ -18691,10 +18691,10 @@ saxes@^5.0.1:
   dependencies:
     xmlchars "^2.2.0"
 
-scheduler@0.21.0-alpha-64931821a-20210808:
-  version "0.21.0-alpha-64931821a-20210808"
-  resolved "https://registry.yarnpkg.com/scheduler/-/scheduler-0.21.0-alpha-64931821a-20210808.tgz#f2d53f1f173b095cea199d6c805b920d9259e3ed"
-  integrity sha512-zu4AoSsI+qzZTYV476m8a7qHJxQyJPvOp98tr6XSUKhLNznEiPHiDt8dKI0znTM2jAWdpbruoczblddmmlPjNA==
+scheduler@0.21.0-alpha-88d121899-20210811:
+  version "0.21.0-alpha-88d121899-20210811"
+  resolved "https://registry.yarnpkg.com/scheduler/-/scheduler-0.21.0-alpha-88d121899-20210811.tgz#49c417013ae9c481d9ea02fecbb63cc5901b1630"
+  integrity sha512-eL+dL4CjI3bbgBOsMooTkliWp7HpsjG6Y7byXYkgfGzw2CvuWafjXh01h7Q4Pi4vHxyPfEbhQnEImG9m4pGgjA==
   dependencies:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"

@@ -98,14 +98,14 @@ module GunObserver =
         React.useDisposableEffect (
             (fun disposed ->
                 gun.on (
-                    "auth",
+                    Gun.GunEvent "auth",
                     (fun () ->
                         if not disposed then
                             let user = gun.user ()
 
                             match user.is with
                             | Some {
-                                       alias = Some (Gun.GunUserAlias.Alias username)
+                                       alias = Some (Gun.GunUserAlias.Alias (Gun.Alias username))
                                    } ->
                                 printfn $"GunObserver.render: .on(auth) effect. setUsername. username={username}"
 
@@ -127,7 +127,24 @@ module GunObserver =
                                 | Some window -> window?gun <- gun
                                 | None -> ()
 
-                                // @@@@ getImmutableUsername pub
+                                gun
+                                    .get(Gun.GunNodeSlice $"#{nameof Gun.data}")
+                                    .get(Gun.RadQuery {| ``.`` = {| ``*`` = pub |} |})
+                                    .map()
+                                    .once (fun encryptedUsername k ->
+                                        printfn $"@@@@@@@@@ encryptedUsername={encryptedUsername} k={k} pub={pub}"
+
+                                        match encryptedUsername with
+                                        | Gun.GunValue.NodeReference gunNodeSlice ->
+                                            gun
+                                                .user(pub)
+                                                .get(Gun.GunNodeSlice (nameof Gun.data))
+                                                .get(gunNodeSlice)
+                                                .once (fun a b ->
+                                                    printfn $"gun once! a={a} b={b}"
+                                                    ())
+                                        | _ -> ())
+
                                 let username = pub
                                 printfn $"GunObserver.render: fetched username: {username} (still a key)"
                             | _ ->

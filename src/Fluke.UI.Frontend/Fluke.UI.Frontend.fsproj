@@ -167,8 +167,8 @@
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Fluke.Shared\Fluke.Shared.fsproj" />
-        <ProjectReference Include="..\FsStore\FsStore.fsproj" />
-        <ProjectReference Include="..\FsUi\FsUi.fsproj" />
+        <ProjectReference Include="..\..\..\FsBeacon\src\FsStore\FsStore.fsproj" />
+        <ProjectReference Include="..\..\..\FsBeacon\src\FsUi\FsUi.fsproj" />
     </ItemGroup>
     <ItemGroup>
       <EmbeddedResource Remove="node_modules\**" />

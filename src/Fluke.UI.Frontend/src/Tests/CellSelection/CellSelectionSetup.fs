@@ -194,8 +194,8 @@ module CellSelectionSetup =
                                         Templates.templatesUser.Username
                                         |> Username.ValueOrDefault
 
-                                    let! _ = Gun.createUser user username username
-                                    let! _ = Gun.authUser user username username
+                                    let! _ = Gun.createUser user (Gun.Alias username) (Gun.Pass username)
+                                    let! _ = Gun.authUser user (Gun.Alias username) (Gun.Pass username)
 
                                     RTL.act (fun () -> setUsername (Some Templates.templatesUser.Username))
                             }

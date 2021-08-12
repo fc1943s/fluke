@@ -1,6 +1,7 @@
 namespace Fluke.UI.Frontend.Components
 
 open FsCore.Model
+open FsStore.Bindings.Gun
 open FsStore.Model
 open FsUi.State
 open Browser.Types
@@ -9,7 +10,6 @@ open Feliz
 open System
 open Fluke.Shared.Domain
 open FsStore
-open FsStore.Bindings
 open FsUi.Bindings
 open Fluke.UI.Frontend.State
 open Fluke.Shared.Domain.Model
@@ -24,7 +24,7 @@ module Settings =
         let tempGunOptions =
             Store.useTempAtom
                 (Some (InputAtom (AtomReference.Atom Atoms.gunOptions)))
-                (Some (InputScope.Temp Gun.defaultSerializer))
+                (Some (InputScope.Temp defaultSerializer))
 
         UI.box
             (fun x -> x.display <- "inline")
@@ -94,10 +94,12 @@ module Settings =
                                     | _ -> false)
                             (fun _ -> ())
                             (match tempGunOptions.TempValue, tempGunOptions.CurrentValue with
-                             | GunOptions.Sync gunPeers, _ -> gunPeers
-                             | _, GunOptions.Sync gunPeers -> gunPeers
+                             | GunOptions.Sync gunPeers, _ -> gunPeers |> Array.map GunPeer.Value
+                             | _, GunOptions.Sync gunPeers -> gunPeers |> Array.map GunPeer.Value
                              | _ -> [||])
-                            (GunOptions.Sync >> tempGunOptions.SetTempValue)
+                            (Array.map GunPeer
+                             >> GunOptions.Sync
+                             >> tempGunOptions.SetTempValue)
                     ]
             ]
 
@@ -106,7 +108,7 @@ module Settings =
         let tempHubUrl =
             Store.useTempAtom
                 (Some (InputAtom (AtomReference.Atom Atoms.hubUrl)))
-                (Some (InputScope.Temp Gun.defaultSerializer))
+                (Some (InputScope.Temp defaultSerializer))
 
         UI.box
             (fun x -> x.display <- "inline")
