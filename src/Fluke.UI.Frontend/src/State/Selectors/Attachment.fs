@@ -10,7 +10,6 @@ module rec Attachment =
     let rec attachmentState =
         Store.readSelectorFamily
             Fluke.root
-            Atoms.Attachment.collection
             (nameof attachmentState)
             (fun (attachmentId: AttachmentId) getter ->
                 let timestamp = Store.value getter (Atoms.Attachment.timestamp attachmentId)

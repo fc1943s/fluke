@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open FsCore
 open FsJs
 open Fable.React
 open Feliz

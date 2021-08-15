@@ -590,7 +590,7 @@ module TaskForm =
                         (Ui.stack
                             (fun x -> x.spacing <- "15px")
                             [
-                                if logLevel <= LogLevel.Debug then Ui.str $"{taskId}" else nothing
+                                if logLevel <= Dom.LogLevel.Debug then Ui.str $"{taskId}" else nothing
 
                                 DatabaseSelector.DatabaseSelector
                                     taskDatabaseId

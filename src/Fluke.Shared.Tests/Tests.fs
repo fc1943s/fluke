@@ -1,5 +1,6 @@
 namespace Fluke.Shared
 
+open FsCore
 open Expecto
 open Fluke.Shared
 open Expecto.Flip

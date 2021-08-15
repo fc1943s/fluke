@@ -6,6 +6,7 @@ open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.State
 open FsStore
 open FsUi.Bindings
+open FsCore
 open Fluke.UI.Frontend.State
 open System
 open Fluke.Shared.Domain

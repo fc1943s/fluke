@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Tests.CellSelection
 
+open FsCore
 open Fable.ReactTestingLibrary
 open Fable.Jester
 open Feliz

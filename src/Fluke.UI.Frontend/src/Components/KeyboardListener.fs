@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open FsCore
 open Feliz
 open Fable.React
 open Fluke.UI.Frontend.State
@@ -55,7 +56,7 @@ module ShiftListener =
 
                     match e.ctrlKey, e.altKey, e.key with
                     | true, true, "I" ->
-                        Dom.log (fun () -> "RouterObserver.onKeyDown() View.Information")
+                        Dom.Logger.Default.Debug (fun () -> "RouterObserver.onKeyDown() View.Information")
                         setView View.View.Information
                     | true, true, "H" -> setView View.View.HabitTracker
                     | true, true, "P" -> setView View.View.Priority

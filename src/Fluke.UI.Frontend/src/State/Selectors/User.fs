@@ -1,8 +1,8 @@
 namespace Fluke.UI.Frontend.State.Selectors
 
+open FsCore
 open FsUi.State
 open FsStore
-open Fluke.Shared
 open Fluke.UI.Frontend.State.State
 open Fluke.UI.Frontend.State
 
@@ -16,7 +16,7 @@ module rec User =
                 {
                     Archive = Store.value getter Atoms.User.archive
                     AccordionHiddenFlagMap =
-                        Union.ToList<AccordionType>
+                        Reflection.unionCases<AccordionType>
                         |> List.map
                             (fun accordionType ->
                                 accordionType, Store.value getter (Atoms.User.accordionHiddenFlag accordionType))
@@ -64,11 +64,11 @@ module rec User =
                     SessionBreakDuration = Store.value getter Atoms.User.sessionBreakDuration
                     SessionDuration = Store.value getter Atoms.User.sessionDuration
                     UIFlagMap =
-                        Union.ToList<UIFlagType>
+                        Reflection.unionCases<UIFlagType>
                         |> List.map (fun uiFlagType -> uiFlagType, Store.value getter (Atoms.User.uiFlag uiFlagType))
                         |> Map.ofList
                     UIVisibleFlagMap =
-                        Union.ToList<UIFlagType>
+                        Reflection.unionCases<UIFlagType>
                         |> List.map
                             (fun uiFlagType -> uiFlagType, Store.value getter (Atoms.User.uiVisibleFlag uiFlagType))
                         |> Map.ofList

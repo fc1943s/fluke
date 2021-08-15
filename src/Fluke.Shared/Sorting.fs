@@ -1,5 +1,7 @@
 namespace Fluke.Shared
 
+open FsCore
+
 
 module Sorting =
     open Domain.Model

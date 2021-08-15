@@ -133,7 +133,7 @@ module Hydrate =
                     unicodeAware = false
                 |}
 
-        Dom.log
+        Dom.Logger.Default.Debug
             (fun () ->
                 $"hydrateFile.
         base64.Length={hexString.Length}

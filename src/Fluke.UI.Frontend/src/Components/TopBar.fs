@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open FsCore
 open Feliz
 open Fable.Core.JsInterop
 open Fable.React
@@ -232,7 +233,6 @@ module TopBar =
                             toast (fun x -> x.description <- "No data found")
                             return false
                         else
-
                             let anchor = anchorArray |> Seq.random
                             do! Navigate.navigateAnchor getter setter anchor
 

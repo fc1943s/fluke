@@ -1,6 +1,7 @@
 namespace Fluke.UI.Frontend.Components
 
 open Feliz
+open FsCore
 open Fable.React
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.UserInteraction

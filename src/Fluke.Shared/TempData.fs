@@ -1,6 +1,7 @@
 namespace Fluke.Shared
 
 open Fluke.Shared
+open FsCore
 
 
 module LintTests =

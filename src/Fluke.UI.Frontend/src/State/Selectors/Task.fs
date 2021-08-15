@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.State.Selectors
 
+open FsCore
 open Fluke.Shared
 open Fluke.Shared.Domain.Model
 open Fluke.UI.Frontend.State
@@ -17,7 +18,6 @@ module rec Task =
     let rec task =
         Store.readSelectorFamily
             Fluke.root
-            Atoms.Task.collection
             (nameof task)
             (fun (taskId: TaskId) getter ->
                 {
@@ -60,7 +60,6 @@ module rec Task =
     let rec cellAttachmentIdMap =
         Store.readSelectorFamily
             Fluke.root
-            Atoms.Task.collection
             (nameof cellAttachmentIdMap)
             (fun (taskId: TaskId) getter ->
                 let taskAttachmentArray = taskAttachmentArray taskId |> Store.value getter
@@ -78,7 +77,6 @@ module rec Task =
     let rec attachmentIdSet =
         Store.readSelectorFamily
             Fluke.root
-            Atoms.Task.collection
             (nameof attachmentIdSet)
             (fun (taskId: TaskId) getter ->
                 let taskAttachmentArray = taskAttachmentArray taskId |> Store.value getter
@@ -94,7 +92,6 @@ module rec Task =
     let rec cellStateMap =
         Store.readSelectorFamily
             Fluke.root
-            Atoms.Task.collection
             (nameof cellStateMap)
             (fun (taskId: TaskId) getter ->
                 let statusMap = Store.value getter (Atoms.Task.statusMap taskId)
@@ -164,7 +161,6 @@ module rec Task =
     let rec filteredCellStateMap =
         Store.readSelectorFamily
             Fluke.root
-            Atoms.Task.collection
             (nameof filteredCellStateMap)
             (fun (taskId: TaskId) getter ->
                 let dateIdArray = Store.value getter Selectors.dateIdArray
@@ -192,7 +188,6 @@ module rec Task =
     let rec taskState =
         Store.readSelectorFamily
             Fluke.root
-            Atoms.Task.collection
             (nameof taskState)
             (fun (taskId: TaskId) getter ->
 
@@ -284,7 +279,6 @@ module rec Task =
     let rec lastSession =
         Store.readSelectorFamily
             Fluke.root
-            Atoms.Task.collection
             (nameof lastSession)
             (fun (taskId: TaskId) getter ->
                 let dateIdArray = Store.value getter Selectors.dateIdArray
@@ -305,7 +299,6 @@ module rec Task =
     let rec activeSession =
         Store.readSelectorFamily
             Fluke.root
-            Atoms.Task.collection
             (nameof activeSession)
             (fun (taskId: TaskId) getter ->
                 let position = Store.value getter Atoms.Session.position
@@ -337,7 +330,6 @@ module rec Task =
     let rec showUser =
         Store.readSelectorFamily
             Fluke.root
-            Atoms.Task.collection
             (nameof showUser)
             (fun (taskId: TaskId) getter ->
                 let cellStateMap = Store.value getter (cellStateMap taskId)
@@ -358,7 +350,6 @@ module rec Task =
     let rec hasSelection =
         Store.readSelectorFamily
             Fluke.root
-            Atoms.Task.collection
             (nameof hasSelection)
             (fun (taskId: TaskId) getter ->
                 let dateIdArray = Store.value getter Selectors.dateIdArray

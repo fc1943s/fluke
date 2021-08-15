@@ -124,7 +124,6 @@
         <Compile Include="src\Tests\CellSelection\VerticalShiftPressed.test.fs" />
         <Compile Include="src\Tests\CellSelection\BoxSelection.test.fs" />
         <Compile Include="src\Tests\Full.spec.fs" />
-        <Compile Include="src\Tests\Iframe.spec.fs" />
         <Content Include="src\setupProxy.js" />
         <Content Include="public\sounds\tick.wav" />
         <Content Include="public\sounds\ding.wav" />

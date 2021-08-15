@@ -13,7 +13,6 @@ module rec File =
     let rec byteArray =
         Store.readSelectorFamily
             Fluke.root
-            Atoms.File.collection
             (nameof byteArray)
             (fun (fileId: FileId) getter ->
                 let chunkCount = Store.value getter (Atoms.File.chunkCount fileId)
@@ -30,7 +29,7 @@ module rec File =
                         |> Store.value getter
 
                     if chunks |> Array.exists (String.length >> (=) 0) then
-                        Dom.log
+                        Dom.Logger.Default.Debug
                             (fun () ->
                                 $"File.blob
                                         incomplete blob. skipping
@@ -41,7 +40,7 @@ module rec File =
 
                         None
                     else
-                        Dom.log
+                        Dom.Logger.Default.Debug
                             (fun () ->
                                 $"File.blob
                                     chunkCount={chunkCount}
@@ -59,7 +58,6 @@ module rec File =
     let rec blob =
         Store.readSelectorFamily
             Fluke.root
-            Atoms.File.collection
             (nameof blob)
             (fun (fileId: FileId) getter ->
                 let byteArray = Store.value getter (byteArray fileId)
@@ -71,7 +69,6 @@ module rec File =
     let rec objectUrl =
         Store.readSelectorFamily
             Fluke.root
-            Atoms.File.collection
             (nameof objectUrl)
             (fun (fileId: FileId) getter ->
                 let blob = Store.value getter (blob fileId)

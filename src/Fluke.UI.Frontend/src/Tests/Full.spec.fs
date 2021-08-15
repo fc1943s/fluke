@@ -44,17 +44,17 @@ module Full =
                     Cy2.selectorFocusTypeText "input[placeholder='Confirm Password']" password
                     Cy2.clickText "Confirm"
 
-                    Cy2.waitFor "User registered successfully" (Some {| timeout = cypressTimeout |})
+                    Cy2.waitFor "User registered successfully"
 
                     Cy.wait 10000
 
                     Cy.window ()
                     |> Promise.iter (fun window -> window?Debug <- true)
 
-                    Cy2.waitFor (nameof Databases) (Some {| timeout = cypressTimeout |})
+                    Cy2.waitFor (nameof Databases)
 
                     Cy2.clickText (nameof Databases)
-                    Cy2.waitFor "Lane Rendering" (Some {| timeout = cypressTimeout |})
+                    Cy2.waitFor "Lane Rendering"
 
                     Cy.wait 2000
 
@@ -65,7 +65,7 @@ module Full =
                     Cy2.selectorTypeText "input[placeholder^=new-database-]" dbName None
                     Cy2.clickText "Save"
 
-                    Cy2.waitFor dbName (Some {| timeout = cypressTimeout |})
+                    Cy2.waitFor dbName
 
                     Cy.wait 2000
 
@@ -127,7 +127,7 @@ module Full =
 
                     Cy.wait 15000
 
-                    Cy2.waitFor $"{dbName}_edit" (Some {| timeout = cypressTimeout |})
+                    Cy2.waitFor $"{dbName}_edit"
 
                     Cy2.clickText $"{dbName}_edit"
 
@@ -145,19 +145,19 @@ module Full =
 
                     Cy.wait 6000
 
-                    Cy2.waitFor "1 of 1 visible" (Some {| timeout = cypressTimeout |})
-                    Cy2.waitFor taskName (Some {| timeout = cypressTimeout |})
+                    Cy2.waitFor "1 of 1 visible"
+                    Cy2.waitFor taskName
 
                     Cy2.clickSelectorChildFromText taskName ".chakra-button"
                     Cy2.clickText "Start Session"
-                    Cy2.waitFor $"Session: 1 active ({taskName})" (Some {| timeout = cypressTimeout |})
+                    Cy2.waitFor $"Session: 1 active ({taskName})"
 
 
                     Cy.wait 6000
 
                     Cy2.clickText "Habit Tracker View"
                     Cy.wait 200
-                    Cy2.waitFor "1 of 1 visible" (Some {| timeout = cypressTimeout |})
+                    Cy2.waitFor "1 of 1 visible"
 
                     Cy.wait 6000
 
@@ -168,22 +168,22 @@ module Full =
 
                     Cy2.clickSelectorChildFromText
                         (DateTime.Now
-                          |> FlukeDate.FromDateTime
-                          |> FlukeDate.Stringify
-                          |> String.substring 0 9)
+                         |> FlukeDate.FromDateTime
+                         |> FlukeDate.Stringify
+                         |> String.substring 0 9)
                         ".chakra-button"
 
                     Cy2.clickText "Delete Session"
                     Cy2.clickText "Confirm"
 
-                    Cy2.waitFor "0 of 1 visible" (Some {| timeout = cypressTimeout |})
+                    Cy2.waitFor "0 of 1 visible"
 
                     Cy.wait 6000
 
                     Cy2.clickText "Priority View"
                     Cy.wait 200
 
-                    Cy2.waitFor "1 of 1 visible" (Some {| timeout = cypressTimeout |})
+                    Cy2.waitFor "1 of 1 visible"
 
                     Cy2.clickTestId "[data-testid^='cell-']"
 
@@ -204,12 +204,12 @@ module Full =
 
                     Cy2.clickTestId "[data-testid='Add Attachment']"
 
-                    Cy2.waitFor "newcomment" (Some {| timeout = cypressTimeout |})
+                    Cy2.waitFor "newcomment"
 
                     Cy2.clickText "Bullet Journal View"
                     Cy.wait 200
 
-                    Cy2.waitFor "1 of 1 visible" (Some {| timeout = cypressTimeout |})
+                    Cy2.waitFor "1 of 1 visible"
 
                     Cy2.clickTestId "[data-testid^='cell-']"
 
@@ -217,7 +217,7 @@ module Full =
                         $"[data-testid='cell-button-{Color.Value UserState.Default.CellColorDisabled
                                                      |> Option.get}']"
 
-                    Cy2.waitFor "1 of 1 visible" (Some {| timeout = cypressTimeout |})
+                    Cy2.waitFor "1 of 1 visible"
 
                     Cy.window ()
                     |> Promise.iter (fun window -> window?Debug <- false)

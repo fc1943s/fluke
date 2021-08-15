@@ -13,7 +13,6 @@ module rec Information =
     let rec attachmentIdMap =
         Store.readSelectorFamily
             Fluke.root
-            collection
             (nameof attachmentIdMap)
             (fun (information: Information) getter ->
                 let selectedDatabaseIdArray =

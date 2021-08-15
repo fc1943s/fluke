@@ -9,6 +9,7 @@ open Fluke.Shared
 open Fluke.Shared.Domain
 open Fluke.UI.Frontend
 open FsCore.Model
+open FsCore
 
 
 module Fluke =
@@ -129,7 +130,7 @@ module State =
             {
                 Archive = None
                 AccordionHiddenFlagMap =
-                    Union.ToList<AccordionType>
+                    Reflection.unionCases<AccordionType>
                     |> List.map (fun accordionType -> accordionType, accordionHiddenFlagDefault)
                     |> Map.ofList
                 CellColorDisabled = Color "#595959"
@@ -187,11 +188,11 @@ module State =
                 SessionBreakDuration = Minute 5
                 SessionDuration = Minute 25
                 UIFlagMap =
-                    Union.ToList<UIFlagType>
+                    Reflection.unionCases<UIFlagType>
                     |> List.map (fun uiFlagType -> uiFlagType, uiFlagDefault)
                     |> Map.ofList
                 UIVisibleFlagMap =
-                    Union.ToList<UIFlagType>
+                    Reflection.unionCases<UIFlagType>
                     |> List.map (fun uiFlagType -> uiFlagType, uiVisibleFlagDefault)
                     |> Map.ofList
                 UserColor = None

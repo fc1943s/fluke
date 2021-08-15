@@ -77,7 +77,10 @@ module DatabaseForm =
                         (Ui.stack
                             (fun x -> x.spacing <- "15px")
                             [
-                                if logLevel <= LogLevel.Debug then Ui.str $"{databaseId}" else nothing
+                                if logLevel <= Dom.LogLevel.Debug then
+                                    Ui.str $"{databaseId}"
+                                else
+                                    nothing
 
                                 Input.Input
                                     {|

@@ -29,5 +29,5 @@ module App =
 
                 Content.Content ()
 
-                DebugOverlay.DebugOverlay ()
+                DebugPanel.DebugPanel DebugPanel.DebugPanelDisplay.Overlay
             ]

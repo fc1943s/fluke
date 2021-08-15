@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.State.Selectors
 
+open FsCore
 open Fluke.Shared
 open Fluke.UI.Frontend.State
 open Fluke.Shared.Domain.UserInteraction
@@ -13,7 +14,6 @@ module rec DateId =
     let isToday =
         Store.readSelectorFamily
             Fluke.root
-            collection
             (nameof isToday)
             (fun (dateId: DateId) getter ->
                 let position = Store.value getter Atoms.Session.position
@@ -28,7 +28,6 @@ module rec DateId =
     let rec hasCellSelection =
         Store.readSelectorFamily
             Fluke.root
-            collection
             (nameof hasCellSelection)
             (fun (dateId: DateId) getter ->
                 let visibleTaskSelectedDateIdMap = Store.value getter Session.visibleTaskSelectedDateIdMap

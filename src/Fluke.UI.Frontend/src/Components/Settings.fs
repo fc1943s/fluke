@@ -1,5 +1,7 @@
 namespace Fluke.UI.Frontend.Components
 
+open FsCore
+open FsJs
 open FsCore.Model
 open FsStore.Bindings.Gun
 open FsStore.Model
@@ -317,7 +319,7 @@ module Settings =
                                         Props = fun x -> x.label <- str "Font Size"
                                     |}
 
-                                Dropdown.EnumDropdown<LogLevel>
+                                Dropdown.EnumDropdown<Dom.LogLevel>
                                     logLevel
                                     setLogLevel
                                     (fun x -> x.label <- str "Log Level")

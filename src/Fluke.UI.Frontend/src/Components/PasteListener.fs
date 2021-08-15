@@ -23,7 +23,7 @@ module PasteListener =
             Store.useCallbackRef
                 (fun getter setter attachment ->
                     promise {
-                        Dom.log (fun () -> $"pasted image attachment={attachment}")
+                        Dom.Logger.Default.Debug (fun () -> $"pasted image attachment={attachment}")
 
                         let attachmentId =
                             Hydrate.hydrateAttachmentState

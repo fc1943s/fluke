@@ -261,7 +261,7 @@ module rec Session =
                     |> Array.map (fun taskState -> taskState.Task.Id)
 
 
-                Dom.log
+                Dom.Logger.Default.Debug
                     (fun () ->
                         $"filteredTaskIdArray.Length={filteredTaskIdArray.Length}
                         selectedTaskStateArray.Length={selectedTaskStateArray.Length}")
@@ -291,7 +291,8 @@ module rec Session =
                 | Some position ->
                     let filteredTaskIdSet = Store.value getter filteredTaskIdSet
 
-                    Dom.log (fun () -> $"sortedTaskIdArray. filteredTaskIdSet.Count={filteredTaskIdSet.Count}")
+                    Dom.Logger.Default.Debug
+                        (fun () -> $"sortedTaskIdArray. filteredTaskIdSet.Count={filteredTaskIdSet.Count}")
 
                     let filteredTaskIdArray = filteredTaskIdSet |> Set.toArray
 
@@ -326,7 +327,7 @@ module rec Session =
                                 Lanes = lanes
                             |}
 
-                    Dom.log (fun () -> $"sortedTaskIdArray. result.Length={result.Length}")
+                    Dom.Logger.Default.Debug (fun () -> $"sortedTaskIdArray. result.Length={result.Length}")
 
                     result
                     |> List.map (fun (taskState, _) -> taskState.Task.Id)

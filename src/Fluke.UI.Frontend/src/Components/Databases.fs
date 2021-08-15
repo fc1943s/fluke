@@ -378,7 +378,7 @@ module Databases =
                 |]
             )
 
-        let isTesting = Store.useValue Atoms.isTesting
+        let deviceInfo = Store.useValue Selectors.deviceInfo
         let selectedDatabaseIdSet, setSelectedDatabaseIdSet = Store.useState Atoms.User.selectedDatabaseIdSet
 
         let nodes, newExpandedDatabaseGuidArray, newSelectedDatabaseGuidArray =
@@ -459,7 +459,7 @@ module Databases =
                                             database
                                             |> Option.map (fun database -> database.Id)
                                         Disabled = disabled
-                                        IsTesting = isTesting
+                                        IsTesting = deviceInfo.IsTesting
                                         Value = newValue
                                         IsEmptyNode = isEmptyNode
                                         Label = label
@@ -491,7 +491,7 @@ module Databases =
                     box databaseMap
                     box expandedDatabaseIdSet
                     box selectedDatabaseIdSet
-                    box isTesting
+                    box deviceInfo
                 |]
             )
 

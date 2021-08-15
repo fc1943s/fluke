@@ -1,5 +1,6 @@
 namespace Fluke.Shared
 
+open FsCore
 open System
 open Domain.Model
 open Domain.UserInteraction

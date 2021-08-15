@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.State.Selectors
 
+open FsCore
 open System
 open Fluke.Shared
 open Fluke.Shared.Domain.Model
@@ -18,7 +19,6 @@ module rec Database =
     let rec database =
         Store.readSelectorFamily
             Fluke.root
-            Atoms.Database.collection
             (nameof database)
             (fun (databaseId: DatabaseId) getter ->
                 {
@@ -33,7 +33,6 @@ module rec Database =
     let rec nodeType =
         Store.readSelectorFamily
             Fluke.root
-            Atoms.Database.collection
             (nameof nodeType)
             (fun (databaseId: DatabaseId) getter ->
                 let database = Store.value getter (database databaseId)
@@ -49,7 +48,6 @@ module rec Database =
     let rec isReadWrite =
         Store.readSelectorFamily
             Fluke.root
-            Atoms.Database.collection
             (nameof isReadWrite)
             (fun (databaseId: DatabaseId) getter ->
                 let username = Store.value getter Atoms.username
@@ -88,7 +86,6 @@ module rec Database =
     let rec unarchivedTaskIdAtoms =
         Store.readSelectorFamily
             Fluke.root
-            Atoms.Database.collection
             (nameof unarchivedTaskIdAtoms)
             (fun (databaseId: DatabaseId) getter ->
                 let taskIdAtoms = Store.value getter (taskIdAtoms databaseId)
@@ -104,7 +101,6 @@ module rec Database =
     let rec archivedTaskIdAtoms =
         Store.readSelectorFamily
             Fluke.root
-            Atoms.Database.collection
             (nameof archivedTaskIdAtoms)
             (fun (databaseId: DatabaseId) getter ->
                 let taskIdAtoms = Store.value getter (taskIdAtoms databaseId)
@@ -120,7 +116,6 @@ module rec Database =
     let rec taskIdAtomsByArchive =
         Store.readSelectorFamily
             Fluke.root
-            Atoms.Database.collection
             (nameof taskIdAtomsByArchive)
             (fun (databaseId: DatabaseId) getter ->
                 let archive = Store.value getter Atoms.User.archive
@@ -136,7 +131,6 @@ module rec Database =
     let rec informationAttachmentIdMapByArchive =
         Store.readSelectorFamily
             Fluke.root
-            Atoms.Database.collection
             (nameof informationAttachmentIdMapByArchive)
             (fun (databaseId: DatabaseId) getter ->
                 let archive = Store.value getter Atoms.User.archive
@@ -191,7 +185,6 @@ module rec Database =
     let rec databaseState =
         Store.readSelectorFamily
             Fluke.root
-            Atoms.Database.collection
             (nameof databaseState)
             (fun (databaseId: DatabaseId) getter ->
                 let database = Store.value getter (Database.database databaseId)

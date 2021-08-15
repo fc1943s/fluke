@@ -17,6 +17,8 @@ open Fable.Core.JsInterop
 module PositionUpdater =
     [<ReactComponent>]
     let PositionUpdater () =
+        let deviceInfo = Store.useValue Selectors.deviceInfo
+
         Scheduling.useScheduling
             Scheduling.Interval
             5000
@@ -39,7 +41,7 @@ module PositionUpdater =
                         | _ -> ()
                     | _ -> ()
 
-                    Store.set setter (Atoms.Device.devicePing Dom.deviceId) (Ping (string DateTime.Now.Ticks))
+                    Store.set setter (Atoms.Device.devicePing deviceInfo.DeviceId) (Ping (string DateTime.Now.Ticks))
                 })
 
         Scheduling.useScheduling
@@ -71,10 +73,9 @@ module PositionUpdater =
                                     Second = Second 0
                                 }
 
-                            let isTesting = Store.value getter Atoms.isTesting
                             let position = Store.value getter Atoms.Session.position
 
-                            if (not isTesting || position.IsNone)
+                            if (not deviceInfo.IsTesting || position.IsNone)
                                && Some newPosition <> position then
                                 Some newPosition
                             else

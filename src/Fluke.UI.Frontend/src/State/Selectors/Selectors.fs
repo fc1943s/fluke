@@ -9,7 +9,6 @@ open Fluke.Shared.Domain.Model
 open Fluke.UI.Frontend.State
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.Shared.Domain.State
-open Fluke.UI.Frontend.State.State
 
 #nowarn "40"
 
@@ -101,5 +100,5 @@ module rec Selectors =
             Fluke.root
             (nameof asyncDeviceIdAtoms)
             Atoms.Device.devicePing
-            Dom.deviceId
+            Dom.deviceInfo.DeviceId
             (Guid >> DeviceId)

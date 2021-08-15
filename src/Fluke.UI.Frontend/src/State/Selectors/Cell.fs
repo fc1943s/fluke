@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.State.Selectors
 
+open FsCore
 open Fluke.Shared
 open Fluke.Shared.Domain.Model
 open Fluke.UI.Frontend.State
@@ -14,7 +15,7 @@ module rec Cell =
     let rec sessionStatus =
         Store.selectorFamily
             Fluke.root
-            Atoms.Cell.collection
+            (Some Atoms.Cell.collection)
             (nameof sessionStatus)
             (fun (taskId: TaskId, dateId: DateId) getter ->
                 let hideSchedulingOverlay = Store.value getter Atoms.User.hideSchedulingOverlay
@@ -41,7 +42,7 @@ module rec Cell =
     let rec selected =
         Store.selectorFamily
             Fluke.root
-            Atoms.Cell.collection
+            (Some Atoms.Cell.collection)
             (nameof selected)
             (fun (taskId: TaskId, dateId: DateId) getter ->
                 let selectionSet = Store.value getter (Atoms.Task.selectionSet taskId)
@@ -127,7 +128,6 @@ module rec Cell =
     let rec sessions =
         Store.readSelectorFamily
             Fluke.root
-            Atoms.Cell.collection
             (nameof sessions)
             (fun (taskId: TaskId, dateId: DateId) getter ->
                 let sessions = Store.value getter (Atoms.Task.sessions taskId)
@@ -139,7 +139,6 @@ module rec Cell =
     let rec sessionCount =
         Store.readSelectorFamily
             Fluke.root
-            Atoms.Cell.collection
             (nameof sessionCount)
             (fun (taskId: TaskId, dateId: DateId) getter ->
                 let sessions = Store.value getter (sessions (taskId, dateId))
@@ -148,7 +147,6 @@ module rec Cell =
     let rec attachmentIdSet =
         Store.readSelectorFamily
             Fluke.root
-            Atoms.Cell.collection
             (nameof attachmentIdSet)
             (fun (taskId: TaskId, dateId: DateId) getter ->
                 let cellAttachmentIdMap = Store.value getter (Task.cellAttachmentIdMap taskId)

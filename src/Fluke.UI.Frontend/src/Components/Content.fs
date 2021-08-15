@@ -14,7 +14,7 @@ module Content =
     let LoggedContent () =
         let userColor = Store.useValue Atoms.User.userColor
 
-        Dom.log (fun () -> $"Content.render. userColor={userColor}")
+        Dom.Logger.Default.Debug (fun () -> $"Content.render. userColor={userColor}")
 
         //        let asyncTaskIdAtoms = Store.useValue Selectors.asyncTaskIdAtoms
 //        let archive = Store.useValue Atoms.User.archive
