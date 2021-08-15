@@ -52,13 +52,15 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Fluke.UI.Electron.Renderer"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Fluke.UI.Electron", "src\Fluke.UI.Electron\Fluke.UI.Electron.fsproj", "{CC388BCE-38BF-4FD3-BA14-99BB6A505289}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsJs", "..\FsBeacon\src\FsJs\FsJs.fsproj", "{EF0780FA-954E-4785-859E-38BFD80F7352}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsJs", "paket-files\github.com\fc1943s\FsBeacon\src\FsJs\FsJs.fsproj", "{EF0780FA-954E-4785-859E-38BFD80F7352}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsStore", "..\FsBeacon\src\FsStore\FsStore.fsproj", "{4430A080-9A5C-4C2F-A336-E4FED9FBFB31}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsStore", "paket-files\github.com\fc1943s\FsBeacon\src\FsStore\FsStore.fsproj", "{4430A080-9A5C-4C2F-A336-E4FED9FBFB31}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsUi", "..\FsBeacon\src\FsUi\FsUi.fsproj", "{B24CE8A4-7DC8-403C-B113-AF38CEF62054}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsUi", "paket-files\github.com\fc1943s\FsBeacon\src\FsUi\FsUi.fsproj", "{B24CE8A4-7DC8-403C-B113-AF38CEF62054}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsCore", "..\FsBeacon\src\FsCore\FsCore.fsproj", "{ACEBF3B5-938A-49C6-A2ED-BAA88670E694}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsCore", "paket-files\github.com\fc1943s\FsBeacon\src\FsCore\FsCore.fsproj", "{ACEBF3B5-938A-49C6-A2ED-BAA88670E694}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsBeacon.Shared", "paket-files\github.com\fc1943s\FsBeacon\src\FsBeacon.Shared\FsBeacon.Shared.fsproj", "{BB754674-A178-4E7C-BEA9-A43427243C4D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -106,6 +108,10 @@ Global
 		{ACEBF3B5-938A-49C6-A2ED-BAA88670E694}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ACEBF3B5-938A-49C6-A2ED-BAA88670E694}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ACEBF3B5-938A-49C6-A2ED-BAA88670E694}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BB754674-A178-4E7C-BEA9-A43427243C4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB754674-A178-4E7C-BEA9-A43427243C4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB754674-A178-4E7C-BEA9-A43427243C4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB754674-A178-4E7C-BEA9-A43427243C4D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{1BC0C538-C979-4F53-AE78-01857D7AB278} = {74A00DAC-A1C6-400D-8181-30373D536EB9}
@@ -118,5 +124,6 @@ Global
 		{4430A080-9A5C-4C2F-A336-E4FED9FBFB31} = {74A00DAC-A1C6-400D-8181-30373D536EB9}
 		{B24CE8A4-7DC8-403C-B113-AF38CEF62054} = {74A00DAC-A1C6-400D-8181-30373D536EB9}
 		{ACEBF3B5-938A-49C6-A2ED-BAA88670E694} = {74A00DAC-A1C6-400D-8181-30373D536EB9}
+		{BB754674-A178-4E7C-BEA9-A43427243C4D} = {74A00DAC-A1C6-400D-8181-30373D536EB9}
 	EndGlobalSection
 EndGlobal

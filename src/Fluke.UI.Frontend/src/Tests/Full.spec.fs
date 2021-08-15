@@ -3,101 +3,18 @@ namespace Fluke.UI.Frontend.Tests
 open Fable.Core.JsInterop
 open System
 open Fluke.Shared.Domain.UserInteraction
-open Fluke.UI.Frontend.Bindings
+open FsJs.Bindings.Cypress
+open FsCore
 open FsCore.Model
 open Fluke.UI.Frontend.State.State
+open Fluke.UI.Frontend.Components
 
 
 module Full =
-    open Cypress
-    open Fluke.UI.Frontend.Components
-
-    module Cy2 =
-        let typeText (fn: unit -> Cy.Chainable2<_>) (text: string) =
-            Cy.wait 200
-            fn().clear {| force = false |} |> ignore
-            fn().should "be.empty" null null
-
-            text
-            |> Seq.iter
-                (fun letter ->
-                    Cy.wait 50
-
-                    fn().first().click (Some {| force = false |})
-                    |> ignore
-
-                    fn().first().``type`` (string letter) {| force = false |}
-                    |> ignore
-
-                    Cy.wait 50)
-
-            fn().should "have.value" text null
-
-        let waitFocus selector wait =
-            //            Cy.wait 50
-            Cy.get(selector).should "have.focus" |> ignore
-
-            match wait with
-            | Some ms -> Cy.wait ms
-            | None -> ()
-
-        let selectorTypeText selector text wait =
-            waitFocus selector wait
-            typeText (fun () -> Cy.get selector) text
-
-        let selectorFocusTypeText selector text =
-            Cy.get(selector).first().focus ()
-            typeText (fun () -> Cy.get selector) text
-
-        let clickTestId selector =
-            Cy
-                .get(selector)
-                .first()
-                .click (Some {| force = false |})
-            |> ignore
-
-        let selectorFocusTypeTextWithinSelector parent selector text =
-            Cy.get(parent).get(selector).first().focus ()
-            typeText (fun () -> Cy.get(parent).get selector) text
-
-        let clickTextWithinSelector selector text =
-            (Cy.get(selector).contains text None)
-                .click (Some {| force = false |})
-            |> ignore
-
-        let clickText text =
-            (Cy.contains text None)
-                .click (Some {| force = false |})
-            |> ignore
-
-        let clickSelectorChildFromText text selector =
-            (Cy.contains text None)
-                .find(selector)
-                .click (Some {| force = false |})
-            |> ignore
-
-        let clickSelector selector =
-            (Cy.get selector).first().click None |> ignore
-
-        let waitForWithinSelector selector text options =
-            (Cy.get(selector).contains text options)
-                .should "be.visible"
-            |> ignore
-
-        let waitFor text options =
-            (Cy.contains text options).should "be.visible"
-            |> ignore
-
-        let expectLocation expected =
-            Cy
-                .location()
-                .should (fun location -> expect(location.href).``to``.contain expected)
-
     describe
         "tests"
         (fun () ->
             let homeUrl = "https://localhost:33922"
-            let timeout = 200000
             before (fun () -> Cy.visit homeUrl)
 
             it
@@ -106,8 +23,8 @@ module Full =
                     Cy.window ()
                     |> Promise.iter (fun window -> window?indexedDB?deleteDatabase "radata")
 
-                    let username = "x"
-                    let password = "x"
+                    let username = "x@x"
+                    let password = "x@x"
                     let dbName = "db1"
                     let taskName = "task1"
 
@@ -116,10 +33,10 @@ module Full =
 
                     Cy.focused().click None |> ignore
 
-                    Cy2.selectorTypeText "input[placeholder=Username]" username None
+                    Cy2.selectorTypeText "input[placeholder=Email]" username None
                     Cy2.selectorFocusTypeText "input[placeholder=Password]" password
                     Cy2.clickText "Login"
-                    Cy2.waitFor "Wrong user or password" (Some {| timeout = timeout |})
+                    Cy2.waitFor "Wrong user or password"
 
                     //                    Cy.wait 250
 
@@ -127,17 +44,17 @@ module Full =
                     Cy2.selectorFocusTypeText "input[placeholder='Confirm Password']" password
                     Cy2.clickText "Confirm"
 
-                    Cy2.waitFor "User registered successfully" (Some {| timeout = timeout |})
+                    Cy2.waitFor "User registered successfully" (Some {| timeout = cypressTimeout |})
 
                     Cy.wait 10000
 
                     Cy.window ()
                     |> Promise.iter (fun window -> window?Debug <- true)
 
-                    Cy2.waitFor (nameof Databases) (Some {| timeout = timeout |})
+                    Cy2.waitFor (nameof Databases) (Some {| timeout = cypressTimeout |})
 
                     Cy2.clickText (nameof Databases)
-                    Cy2.waitFor "Lane Rendering" (Some {| timeout = timeout |})
+                    Cy2.waitFor "Lane Rendering" (Some {| timeout = cypressTimeout |})
 
                     Cy.wait 2000
 
@@ -148,7 +65,7 @@ module Full =
                     Cy2.selectorTypeText "input[placeholder^=new-database-]" dbName None
                     Cy2.clickText "Save"
 
-                    Cy2.waitFor dbName (Some {| timeout = timeout |})
+                    Cy2.waitFor dbName (Some {| timeout = cypressTimeout |})
 
                     Cy.wait 2000
 
@@ -188,8 +105,8 @@ module Full =
 
                     Cy2.clickTextWithinSelector "[data-testid=InformationSelector]" "Save"
 
-                    //                    Cy2.waitForWithinSelector "[data-testid=DatabaseSelector]" "Select..." (Some {| timeout = timeout |})
-//                    Cy2.waitForWithinSelector "[data-testid=DatabaseSelector]" dbName (Some {| timeout = timeout |})
+                    //                    Cy2.waitForWithinSelector "[data-testid=DatabaseSelector]" "Select..." (Some {| timeout = cypressTimeout |})
+//                    Cy2.waitForWithinSelector "[data-testid=DatabaseSelector]" dbName (Some {| timeout = cypressTimeout |})
 //                    Cy.wait 3000
 //                    Cy.wait 3000
 
@@ -210,7 +127,7 @@ module Full =
 
                     Cy.wait 15000
 
-                    Cy2.waitFor $"{dbName}_edit" (Some {| timeout = timeout |})
+                    Cy2.waitFor $"{dbName}_edit" (Some {| timeout = cypressTimeout |})
 
                     Cy2.clickText $"{dbName}_edit"
 
@@ -228,19 +145,19 @@ module Full =
 
                     Cy.wait 6000
 
-                    Cy2.waitFor "1 of 1 visible" (Some {| timeout = timeout |})
-                    Cy2.waitFor taskName (Some {| timeout = timeout |})
+                    Cy2.waitFor "1 of 1 visible" (Some {| timeout = cypressTimeout |})
+                    Cy2.waitFor taskName (Some {| timeout = cypressTimeout |})
 
                     Cy2.clickSelectorChildFromText taskName ".chakra-button"
                     Cy2.clickText "Start Session"
-                    Cy2.waitFor $"Session: 1 active ({taskName})" (Some {| timeout = timeout |})
+                    Cy2.waitFor $"Session: 1 active ({taskName})" (Some {| timeout = cypressTimeout |})
 
 
                     Cy.wait 6000
 
                     Cy2.clickText "Habit Tracker View"
                     Cy.wait 200
-                    Cy2.waitFor "1 of 1 visible" (Some {| timeout = timeout |})
+                    Cy2.waitFor "1 of 1 visible" (Some {| timeout = cypressTimeout |})
 
                     Cy.wait 6000
 
@@ -250,23 +167,23 @@ module Full =
                     Cy.wait 6000
 
                     Cy2.clickSelectorChildFromText
-                        ((DateTime.Now
+                        (DateTime.Now
                           |> FlukeDate.FromDateTime
-                          |> FlukeDate.Stringify)
-                            .Substring (0, 9))
+                          |> FlukeDate.Stringify
+                          |> String.substring 0 9)
                         ".chakra-button"
 
                     Cy2.clickText "Delete Session"
                     Cy2.clickText "Confirm"
 
-                    Cy2.waitFor "0 of 1 visible" (Some {| timeout = timeout |})
+                    Cy2.waitFor "0 of 1 visible" (Some {| timeout = cypressTimeout |})
 
                     Cy.wait 6000
 
                     Cy2.clickText "Priority View"
                     Cy.wait 200
 
-                    Cy2.waitFor "1 of 1 visible" (Some {| timeout = timeout |})
+                    Cy2.waitFor "1 of 1 visible" (Some {| timeout = cypressTimeout |})
 
                     Cy2.clickTestId "[data-testid^='cell-']"
 
@@ -287,12 +204,12 @@ module Full =
 
                     Cy2.clickTestId "[data-testid='Add Attachment']"
 
-                    Cy2.waitFor "newcomment" (Some {| timeout = timeout |})
+                    Cy2.waitFor "newcomment" (Some {| timeout = cypressTimeout |})
 
                     Cy2.clickText "Bullet Journal View"
                     Cy.wait 200
 
-                    Cy2.waitFor "1 of 1 visible" (Some {| timeout = timeout |})
+                    Cy2.waitFor "1 of 1 visible" (Some {| timeout = cypressTimeout |})
 
                     Cy2.clickTestId "[data-testid^='cell-']"
 
@@ -300,7 +217,7 @@ module Full =
                         $"[data-testid='cell-button-{Color.Value UserState.Default.CellColorDisabled
                                                      |> Option.get}']"
 
-                    Cy2.waitFor "1 of 1 visible" (Some {| timeout = timeout |})
+                    Cy2.waitFor "1 of 1 visible" (Some {| timeout = cypressTimeout |})
 
                     Cy.window ()
                     |> Promise.iter (fun window -> window?Debug <- false)

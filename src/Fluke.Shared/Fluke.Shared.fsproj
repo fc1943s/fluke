@@ -26,7 +26,7 @@
         <Content Include="myriad.toml" />
     </ItemGroup>
     <ItemGroup>
-      <ProjectReference Include="..\..\..\FsBeacon\src\FsCore\FsCore.fsproj" />
+      <ProjectReference Include="..\..\paket-files\github.com\fc1943s\FsBeacon\src\FsCore\FsCore.fsproj" />
     </ItemGroup>
     <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

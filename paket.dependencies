@@ -5,6 +5,8 @@ source https://api.nuget.org/v3/index.json
 
 nuget FSharp.Core ~> 5.0
 
+git https://github.com/fc1943s/FsBeacon.git main build: pwsh build.ps1
+
 
 // group Fluke.Shared
 nuget Myriad.Core ~> 0.5

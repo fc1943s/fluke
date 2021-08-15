@@ -33,6 +33,7 @@
     "cypress": "cypress open",
     "cypress-watch": "concurrently \"npm:watch\" \"npm:cypress\"",
     "cypress-run": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 cypress run --headed",
+
     "frontend-serve": "cross-env PORT=33922 NODE_ENV=production serve cra_output",
     "test-watch": "yarn test --watchAll",
     "test-build-watch": "concurrently \"npm:watch:frontend-build\" \"npm:test-watch\"",
@@ -57,7 +58,7 @@
 
     "@pmmmwh/react-refresh-webpack-plugin": "~0.4",
 
-    "gun": "amark/gun.git#manhattan",
+    "gun": "amark/gun.git#master",
     "@peculiar/asn1-schema": "~2.0",
 
     "@microsoft/signalr": "6.0.0-preview.6.21355.2",

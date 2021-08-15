@@ -220,7 +220,7 @@ module UserInteraction =
             match attachment with
             | Attachment.Comment (Comment.Comment comment) ->
                 if comment.Length > 60 then
-                    $"{comment.Substring (0, 60)}..."
+                    $"{comment |> String.substring 0 60}..."
                 else
                     comment
             | Attachment.Image fileId -> $"Image ID: {fileId |> FileId.Value}"

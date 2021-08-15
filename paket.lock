@@ -824,3 +824,7 @@ NUGET
       Expecto (>= 9.0 < 10.0)
       FSharp.Core (>= 4.6)
       System.Collections.Immutable (>= 1.5 < 5.1)
+GIT
+  remote: https://github.com/fc1943s/FsBeacon.git
+     (2173bb384c46444e7ce1d61a8b44d911763bca66)
+      build: pwsh build.ps1

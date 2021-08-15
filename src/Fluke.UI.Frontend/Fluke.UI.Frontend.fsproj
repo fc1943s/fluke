@@ -15,7 +15,6 @@
         <Compile Include="src\Bindings\CheckboxTree.fs" />
         <Compile Include="src\Bindings\Resizable.fs" />
         <Compile Include="src\Bindings\Markdown.fs" />
-        <Compile Include="src\Bindings\Cypress.fs" />
         <Compile Include="src\Bindings\DragDrop.fs" />
         <Folder Include="src\Core" />
         <Compile Include="src\TempAudio.fs" />
@@ -125,6 +124,7 @@
         <Compile Include="src\Tests\CellSelection\VerticalShiftPressed.test.fs" />
         <Compile Include="src\Tests\CellSelection\BoxSelection.test.fs" />
         <Compile Include="src\Tests\Full.spec.fs" />
+        <Compile Include="src\Tests\Iframe.spec.fs" />
         <Content Include="src\setupProxy.js" />
         <Content Include="public\sounds\tick.wav" />
         <Content Include="public\sounds\ding.wav" />
@@ -164,8 +164,8 @@
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Fluke.Shared\Fluke.Shared.fsproj" />
-        <ProjectReference Include="..\..\..\FsBeacon\src\FsStore\FsStore.fsproj" />
-        <ProjectReference Include="..\..\..\FsBeacon\src\FsUi\FsUi.fsproj" />
+        <ProjectReference Include="..\..\paket-files\github.com\fc1943s\FsBeacon\src\FsStore\FsStore.fsproj" />
+        <ProjectReference Include="..\..\paket-files\github.com\fc1943s\FsBeacon\src\FsUi\FsUi.fsproj" />
     </ItemGroup>
     <ItemGroup>
       <EmbeddedResource Remove="node_modules\**" />

@@ -2,62 +2,10 @@ namespace Fluke.Shared
 
 open System.IO
 open System
-open Microsoft.FSharp.Reflection
-
-
-module Union =
-    let inline ToList<'T> =
-        FSharpType.GetUnionCases typeof<'T>
-        |> Array.toList
-        |> List.map (fun unionCaseInfo -> FSharpValue.MakeUnion (unionCaseInfo, [||]) :?> 'T)
-
-
-module private ListIter =
-    let inline length (target: ^X when ^X: (member length : int)) = (^X: (member length : int) target)
-
-    let inline item (target: ^X when ^X: (member item : int -> ^Y)) (index: int) =
-        (^X: (member item : int -> ^Y) target, index)
 
 
 module Async =
     let inline lift (value: 'T) = async { return value }
-
-
-module Seq =
-    let inline intersperse sep list =
-        seq {
-            let mutable notFirst = false
-
-            for element in list do
-                if notFirst then yield sep
-
-                yield element
-                notFirst <- true
-        }
-
-    let inline ofItems items =
-        seq {
-            for i = 0 to (ListIter.length items) - 1 do
-                yield (ListIter.item items) i
-        }
-
-    let inline random items =
-        let len = items |> Seq.length
-        items |> Seq.item (Random().Next (0, len))
-
-
-module List =
-    let inline removeAt index list =
-        list
-        |> List.indexed
-        |> List.filter (fun (i, _) -> i <> index)
-        |> List.map snd
-
-    let inline intersperse element source : list<'T> =
-        source
-        |> List.toSeq
-        |> Seq.intersperse element
-        |> Seq.toList
 
 
 module Result =
@@ -65,43 +13,6 @@ module Result =
         match result with
         | Ok result -> result
         | Error _ -> def
-
-
-module Map =
-    let inline singleton key value =
-        [
-            key, value
-        ]
-        |> Map.ofSeq
-
-    let inline keys (source: Map<'Key, 'T>) : seq<'Key> = source |> Map.toSeq |> Seq.map fst
-
-    let inline values (source: Map<'Key, 'T>) : seq<'T> = source |> Map.toSeq |> Seq.map snd
-
-    let inline unionWith combiner (source1: Map<'Key, 'Value>) (source2: Map<'Key, 'Value>) =
-        Map.fold
-            (fun m k v' ->
-                Map.add
-                    k
-                    (match Map.tryFind k m with
-                     | Some v -> combiner v v'
-                     | None -> v')
-                    m)
-            source1
-            source2
-
-    let inline union (source: Map<'Key, 'T>) (altSource: Map<'Key, 'T>) =
-        unionWith (fun x _ -> x) source altSource
-
-    let inline mapKeys f (x: Map<'Key, 'T>) =
-        x |> Map.toSeq |> Seq.map f |> Map.ofSeq
-
-    let inline choose fn map =
-        map
-        |> Seq.choose (fun (KeyValue (k, v)) -> fn (k, v))
-        |> Map.ofSeq
-
-    let inline mapValues f (x: Map<'Key, 'T>) = Map.map (fun _ -> f) x
 
 
 module Set =
