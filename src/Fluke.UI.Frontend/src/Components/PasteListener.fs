@@ -9,7 +9,7 @@ open Feliz
 open Fable.React
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Hooks
-open Fluke.Shared
+open FsStore.Hooks
 open FsJs
 open FsStore
 open FsUi.Bindings
@@ -47,7 +47,7 @@ module PasteListener =
 
         let handlePasteEvent =
             Store.useCallbackRef
-                (fun getter setter (e: Browser.Types.Event) ->
+                (fun _getter setter (e: Browser.Types.Event) ->
                     promise {
 
                         let! blobs =
@@ -84,11 +84,8 @@ module PasteListener =
                             |> Array.map
                                 (fun blob ->
                                     promise {
-                                        let! bytes = Js.blobToUint8Array blob
-                                        let hexString = Js.byteArrayToHexString (bytes.Values () |> Seq.toArray)
-
-                                        let fileId = Hydrate.hydrateFile getter setter (AtomScope.Current, hexString)
-
+                                        let! hexString = Js.blobToHexString blob
+                                        let fileId = Hydrate.hydrateFile setter (AtomScope.Current, hexString)
                                         let attachment = Attachment.Image fileId
                                         do! onFilePasted attachment
                                     })

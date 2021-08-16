@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Hooks
 
+open FsStore
 open FsCore
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.State
@@ -14,7 +15,7 @@ open Fluke.Shared.Domain.UserInteraction
 open Fable.Core
 open FsCore.Model
 open FsJs
-open FsStore
+open FsStore.Hooks
 open FsStore.Model
 open FsUi.Model
 open FsUi.State
@@ -121,33 +122,6 @@ module Hydrate =
         Store.scopedSet setter atomScope (Atoms.Attachment.attachment, attachmentId, Some attachmentState.Attachment)
         attachmentId
 
-    let inline hydrateFile _getter setter (atomScope: AtomScope, hexString: string) =
-        let chunkSize = 12800
-        let chunkCount = int (Math.Ceiling (float hexString.Length / float chunkSize))
-
-        let chunks =
-            Js.chunkString
-                hexString
-                {|
-                    size = chunkSize
-                    unicodeAware = false
-                |}
-
-        Dom.Logger.Default.Debug
-            (fun () ->
-                $"hydrateFile.
-        base64.Length={hexString.Length}
-        chunkCount={chunkCount}
-        chunks.[0].Length={chunks.[0].Length}
-        ")
-
-        let fileId = FileId.NewId ()
-        Store.set setter (Atoms.File.chunkCount fileId) chunkCount
-
-        chunks
-        |> Array.iteri (fun i chunk -> Store.scopedSet setter atomScope (Atoms.File.chunk, (fileId, i), chunk))
-
-        fileId
 
 
     let inline hydrateTaskState getter setter (atomScope, databaseId, taskState: TaskState) =
@@ -209,7 +183,7 @@ module Hydrate =
                 |> Map.toList
                 |> List.map
                     (fun (fileId, hexString) ->
-                        let newFileId = hydrateFile getter setter (atomScope, hexString)
+                        let newFileId = Hydrate.hydrateFile setter (atomScope, hexString)
                         fileId, newFileId)
                 |> Map.ofList
 

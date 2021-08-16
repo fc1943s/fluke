@@ -23,15 +23,12 @@
         <Compile Include="src\State\State.fs" />
         <Compile Include="src\State\Atoms\Session.fs" />
         <Compile Include="src\State\Atoms\User.fs" />
-        <Compile Include="src\State\Atoms\Device.fs" />
         <Compile Include="src\State\Atoms\Database.fs" />
-        <Compile Include="src\State\Atoms\File.fs" />
         <Compile Include="src\State\Atoms\Attachment.fs" />
         <Compile Include="src\State\Atoms\Task.fs" />
         <Compile Include="src\State\Atoms\Cell.fs" />
         <Compile Include="src\State\Selectors\Selectors.fs" />
         <Compile Include="src\State\Selectors\User.fs" />
-        <Compile Include="src\State\Selectors\File.fs" />
         <Compile Include="src\State\Selectors\Attachment.fs" />
         <Compile Include="src\State\Selectors\Task.fs" />
         <Compile Include="src\State\Selectors\Database.fs" />

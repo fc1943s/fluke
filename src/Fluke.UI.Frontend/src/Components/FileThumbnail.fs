@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open FsStore.State
 open Fluke.UI.Frontend.Components
 open FsCore.Model
 open FsStore

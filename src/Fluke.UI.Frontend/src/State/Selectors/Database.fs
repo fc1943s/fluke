@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.State.Selectors
 
+open FsStore.State
 open FsCore
 open System
 open Fluke.Shared
@@ -252,7 +253,7 @@ module rec Database =
 
                 let byteArrayArray =
                     fileIdList
-                    |> List.map File.byteArray
+                    |> List.map Selectors.File.byteArray
                     |> List.toArray
                     |> Store.waitForAll
                     |> Store.value getter
