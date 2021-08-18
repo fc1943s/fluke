@@ -2,7 +2,7 @@ namespace Fluke.UI.Frontend.State.Atoms
 
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.UserInteraction
-open FsCore.Model
+open FsCore.BaseModel
 
 
 module rec Cell =

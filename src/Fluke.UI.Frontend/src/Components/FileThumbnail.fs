@@ -2,8 +2,9 @@ namespace Fluke.UI.Frontend.Components
 
 open FsStore.State
 open Fluke.UI.Frontend.Components
-open FsCore.Model
+open FsCore.BaseModel
 open FsStore
+open FsStore.Hooks
 open FsUi.Bindings
 open Fluke.UI.Frontend.State
 open Feliz

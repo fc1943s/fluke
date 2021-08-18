@@ -5,6 +5,7 @@ open Fable.React
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.State.State
 open FsStore
+open FsStore.Hooks
 open FsUi.Bindings
 open Fluke.UI.Frontend.State
 open FsUi.Components

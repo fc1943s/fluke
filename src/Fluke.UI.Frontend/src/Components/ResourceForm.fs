@@ -6,6 +6,7 @@ open Fable.React
 open Feliz
 open Fluke.Shared.Domain.Model
 open FsStore
+open FsStore.Hooks
 open FsUi.Bindings
 open Fable.Core
 open Fluke.Shared
@@ -23,7 +24,7 @@ module ResourceForm =
                 (fun _ _ _ ->
                     promise {
                         match resourceName with
-                        | ResourceName String.InvalidString -> toast (fun x -> x.description <- "Invalid name")
+                        | ResourceName String.Invalid -> toast (fun x -> x.description <- "Invalid name")
                         | _ ->
                             let resource: Resource = { Name = resourceName }
                             do! onSave resource

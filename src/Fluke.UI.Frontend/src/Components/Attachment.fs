@@ -7,6 +7,7 @@ open Fluke.Shared.Domain
 open Fluke.Shared.Domain.UserInteraction
 open FsCore
 open FsStore
+open FsStore.Hooks
 open FsStore.Bindings
 open FsStore.Model
 open FsUi.Bindings
@@ -52,7 +53,7 @@ module Attachment =
                         let attachment = Store.getTempValue getter (Atoms.Attachment.attachment attachmentId)
 
                         match attachment with
-                        | Some (Attachment.Comment (Comment.Comment (String.ValidString _))) ->
+                        | Some (Attachment.Comment (Comment.Comment (String.Valid _))) ->
                             Store.set setter (Atoms.Attachment.attachment attachmentId) attachment
                             do! reset ()
                         | _ -> ()

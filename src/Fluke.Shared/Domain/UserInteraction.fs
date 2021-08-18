@@ -3,6 +3,7 @@ namespace Fluke.Shared.Domain
 open FsCore
 open System
 open Fluke.Shared
+open FsCore.BaseModel
 
 module UserInteraction =
 #if !FABLE_COMPILER

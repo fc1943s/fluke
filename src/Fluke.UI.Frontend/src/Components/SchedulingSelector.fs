@@ -9,6 +9,7 @@ open Feliz
 open Fluke.Shared.Domain.Model
 open FsJs
 open FsStore
+open FsStore.Hooks
 open FsUi.Bindings
 open Fluke.UI.Frontend.State
 open FsUi.Components

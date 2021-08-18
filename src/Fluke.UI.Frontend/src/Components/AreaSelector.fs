@@ -6,6 +6,7 @@ open Fable.React
 open Feliz
 open Fluke.Shared.Domain.Model
 open FsStore
+open FsStore.Hooks
 open FsUi.Bindings
 open Fluke.UI.Frontend.State
 open Fluke.Shared
@@ -93,7 +94,7 @@ module AreaSelector =
                                         Children =
                                             [
                                                 match area.Name |> AreaName.Value with
-                                                | String.ValidString name -> str name
+                                                | String.Valid name -> str name
                                                 | _ -> str "Select..."
                                             ]
                                     |}

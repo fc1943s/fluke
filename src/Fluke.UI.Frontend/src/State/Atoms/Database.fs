@@ -1,9 +1,8 @@
 namespace Fluke.UI.Frontend.State.Atoms
 
-open Fluke.Shared
 open Fluke.Shared.Domain.State
 open Fluke.UI.Frontend.State
-open FsCore.Model
+open FsCore.BaseModel
 open FsStore
 
 

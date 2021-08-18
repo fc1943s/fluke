@@ -7,6 +7,7 @@ open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
 open FsStore
+open FsStore.Hooks
 open FsUi.Bindings
 open Fluke.Shared.Domain
 open Fluke.Shared.Domain.Model
@@ -69,7 +70,7 @@ module InformationName =
                         match information
                               |> Information.Name
                               |> InformationName.Value with
-                        | String.ValidString name ->
+                        | String.Valid name ->
                             React.fragment [
                                 str name
 

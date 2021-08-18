@@ -4,10 +4,10 @@ open Fable.ReactTestingLibrary
 open Fable.Jester
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.UserInteraction
-open Fluke.Shared
 open Microsoft.FSharp.Core.Operators
 open Fluke.UI.Frontend.State
 open FsStore
+open FsStore.Hooks
 
 
 module HorizontalShiftPressed =

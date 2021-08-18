@@ -2,6 +2,7 @@ namespace Fluke.UI.Frontend.Tests.Core
 
 open Feliz
 open FsStore
+open FsStore.Hooks
 open FsStore.Model
 open FsUi.Bindings
 open Fable.Jester

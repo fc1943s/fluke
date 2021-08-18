@@ -1,5 +1,7 @@
 namespace Fluke.UI.Frontend.State.Selectors
 
+open FsCore.BaseModel
+open FsStore.Bindings
 open FsStore.State
 open FsCore
 open System
@@ -12,6 +14,7 @@ open Fluke.Shared.Domain.State
 open Fluke.UI.Frontend.State.State
 open FsJs
 open FsStore
+open FsStore.Hooks
 
 #nowarn "40"
 
@@ -37,11 +40,11 @@ module rec Database =
             (nameof nodeType)
             (fun (databaseId: DatabaseId) getter ->
                 let database = Store.value getter (database databaseId)
-                let username = Store.value getter Atoms.username
+                let alias = Store.value getter Selectors.Gun.alias
 
                 match database.Owner with
                 | owner when owner = Templates.templatesUser.Username -> DatabaseNodeType.Template
-                | owner when Some owner = username -> DatabaseNodeType.Owned
+                | Username owner when Some (Gun.Alias owner) = alias -> DatabaseNodeType.Owned
                 | _ -> DatabaseNodeType.Shared)
 
 
@@ -51,18 +54,18 @@ module rec Database =
             Fluke.root
             (nameof isReadWrite)
             (fun (databaseId: DatabaseId) getter ->
-                let username = Store.value getter Atoms.username
+                let alias = Store.value getter Selectors.Gun.alias
 
                 let access =
-                    match username with
-                    | Some username ->
+                    match alias with
+                    | Some (Gun.Alias alias) ->
                         let database = Store.value getter (database databaseId)
 
-                        if username <> Templates.templatesUser.Username
+                        if Username alias <> Templates.templatesUser.Username
                            && database.Owner = Templates.templatesUser.Username then
                             None
                         else
-                            getAccess database username
+                            getAccess database (Username alias)
                     | None -> None
 
                 access = Some Access.ReadWrite)

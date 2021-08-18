@@ -4,6 +4,7 @@ open Feliz
 open Fable.React
 open FsJs
 open FsStore
+open FsStore.Hooks
 open FsStore.Model
 open FsUi.Bindings
 

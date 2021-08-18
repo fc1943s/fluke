@@ -6,8 +6,8 @@ open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Bindings
 open FsJs
 open FsStore
+open FsStore.Hooks
 open FsUi.Bindings
-open Fluke.Shared
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.TempUI

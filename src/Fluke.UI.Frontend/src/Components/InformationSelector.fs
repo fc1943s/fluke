@@ -7,6 +7,7 @@ open Feliz
 open Fluke.Shared.Domain
 open Fluke.Shared.Domain.Model
 open FsStore
+open FsStore.Hooks
 open FsUi.Bindings
 open Fluke.UI.Frontend.State
 open Fluke.Shared
@@ -159,8 +160,7 @@ module InformationSelector =
                                         Children =
                                             [
                                                 match informationName with
-                                                | String.ValidString _ ->
-                                                    str $"{informationSelected}: {informationName}"
+                                                | String.Valid _ -> str $"{informationSelected}: {informationName}"
                                                 | _ -> str "Select..."
                                             ]
                                     |}

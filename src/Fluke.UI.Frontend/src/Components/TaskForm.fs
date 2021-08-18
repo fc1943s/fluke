@@ -3,6 +3,7 @@ namespace Fluke.UI.Frontend.Components
 open FsJs
 open Browser.Types
 open FsStore
+open FsStore.Hooks
 open FsCore
 open Fable.React
 open Feliz
@@ -468,13 +469,13 @@ module TaskForm =
                         if taskDatabaseId = Database.Default.Id then
                             toast (fun x -> x.description <- "Invalid database")
                         elif (match taskName |> TaskName.Value with
-                              | String.InvalidString -> true
+                              | String.Invalid -> true
                               | _ -> false) then
                             toast (fun x -> x.description <- "Invalid name")
                         elif (match taskInformation
                                     |> Information.Name
                                     |> InformationName.Value with
-                              | String.InvalidString -> true
+                              | String.Invalid -> true
                               | _ -> false) then
                             toast (fun x -> x.description <- "Invalid information")
                         else
@@ -537,7 +538,7 @@ module TaskForm =
                         return true
                     })
 
-        Accordion.Accordion
+        Accordion.AccordionAtom
             {|
                 Props = fun x -> x.flex <- "1"
                 Atom = Atoms.User.accordionHiddenFlag AccordionType.TaskForm
@@ -590,7 +591,10 @@ module TaskForm =
                         (Ui.stack
                             (fun x -> x.spacing <- "15px")
                             [
-                                if logLevel <= Dom.LogLevel.Debug then Ui.str $"{taskId}" else nothing
+                                if logLevel <= Logger.LogLevel.Debug then
+                                    Ui.str $"{taskId}"
+                                else
+                                    nothing
 
                                 DatabaseSelector.DatabaseSelector
                                     taskDatabaseId

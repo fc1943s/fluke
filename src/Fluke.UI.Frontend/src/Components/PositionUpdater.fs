@@ -6,8 +6,9 @@ open Fable.React
 open Feliz
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.State
-open FsCore.Model
+open FsCore.BaseModel
 open FsStore
+open FsStore.Hooks
 open FsUi.Hooks
 open FsJs
 open FsCore
@@ -29,7 +30,7 @@ module PositionUpdater =
                     let hubUrl = Store.value getter Atoms.hubUrl
 
                     match hubUrl with
-                    | Some (String.ValidString _) ->
+                    | Some (String.Valid _) ->
                         match hub with
                         | Some hub when hub.connectionId = None ->
                             printfn

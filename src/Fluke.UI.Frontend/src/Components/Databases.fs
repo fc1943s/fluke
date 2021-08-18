@@ -13,6 +13,7 @@ open Fable.React
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.Bindings
 open FsStore
+open FsStore.Hooks
 open FsStore.Bindings
 open FsUi.Bindings
 open Fluke.UI.Frontend.State
@@ -228,14 +229,14 @@ module Databases =
             (fun i nodes ->
                 let rec loop depth list =
                     match list with
-                    | [ String.ValidString head ] ->
+                    | [ String.Valid head ] ->
                         let id =
                             match ids |> Array.tryItem i with
                             | Some (Some id) -> NodeValue.Leaf id
                             | _ -> NodeValue.Empty
 
                         Node (id, head, [||], Some i)
-                    | String.ValidString head :: tail ->
+                    | String.Valid head :: tail ->
                         let fullPath = nodes |> List.take depth |> String.concat "/"
                         let nodeId = fullPath |> Crypto.getTextGuidHash
 

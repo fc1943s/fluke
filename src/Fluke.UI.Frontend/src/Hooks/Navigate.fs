@@ -8,6 +8,7 @@ open Fluke.Shared.Domain.UserInteraction
 open Fluke.Shared.Domain
 open Fluke.UI.Frontend.TempUI
 open FsStore
+open FsStore.Hooks
 
 
 module Navigate =

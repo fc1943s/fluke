@@ -1,11 +1,11 @@
 namespace Fluke.UI.Frontend.State.Atoms
 
-open Fluke.Shared
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.State.State
-open FsCore.Model
+open FsCore.BaseModel
 open FsStore
+open FsStore.Hooks
 
 
 module rec Attachment =

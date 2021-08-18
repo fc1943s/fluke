@@ -6,6 +6,7 @@ open Fable.React
 open Feliz
 open Fluke.Shared.Domain.Model
 open FsStore
+open FsStore.Hooks
 open FsUi.Bindings
 open Fable.Core
 open Fluke.Shared
@@ -24,8 +25,8 @@ module ProjectForm =
                 (fun _ _ _ ->
                     promise {
                         match projectName, area.Name with
-                        | ProjectName String.InvalidString, _ -> toast (fun x -> x.description <- "Invalid name")
-                        | _, AreaName String.InvalidString -> toast (fun x -> x.description <- "Invalid area")
+                        | ProjectName String.Invalid, _ -> toast (fun x -> x.description <- "Invalid name")
+                        | _, AreaName String.Invalid -> toast (fun x -> x.description <- "Invalid area")
                         | _ ->
                             let project: Project = { Name = projectName; Area = area }
                             do! onSave project

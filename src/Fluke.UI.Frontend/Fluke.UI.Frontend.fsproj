@@ -16,7 +16,6 @@
         <Compile Include="src\Bindings\Resizable.fs" />
         <Compile Include="src\Bindings\Markdown.fs" />
         <Compile Include="src\Bindings\DragDrop.fs" />
-        <Folder Include="src\Core" />
         <Compile Include="src\TempAudio.fs" />
         <Compile Include="src\TempUI.fs" />
         <Compile Include="src\Templates.fs" />

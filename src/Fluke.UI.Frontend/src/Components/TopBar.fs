@@ -10,6 +10,7 @@ open Fluke.UI.Frontend.Hooks
 open Fluke.Shared
 open FsJs
 open FsStore
+open FsStore.Hooks
 open FsUi.Bindings
 open Fluke.UI.Frontend.State.State
 open FsUi.Components
@@ -370,7 +371,7 @@ module TopBar =
     let TopBar () =
         let deviceInfo = Store.useValue Selectors.deviceInfo
         let logout = Auth.useLogout ()
-        let username = Store.useValue Atoms.username
+        let alias = Store.useValue Selectors.Gun.alias
 
         let onLogoClick =
             Store.useCallbackRef
@@ -460,11 +461,11 @@ module TopBar =
                                         |}
                                 ]
 
-                        match username with
+                        match alias with
                         | Some _ -> RandomizeButton ()
                         | _ -> nothing
 
-                        match username with
+                        match alias with
                         | Some _ ->
                             Tooltip.wrap
                                 (str "Toggle Archive")
@@ -542,7 +543,7 @@ module TopBar =
                                     ]
                             ]
 
-                        if username.IsSome then
+                        if alias.IsSome then
                             Tooltip.wrap
                                 (str "Logout")
                                 [

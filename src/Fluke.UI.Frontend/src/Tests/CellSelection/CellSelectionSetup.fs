@@ -4,9 +4,10 @@ open FsCore
 open Fable.ReactTestingLibrary
 open Fable.Jester
 open Feliz
-open FsCore.Model
+open FsCore.BaseModel
 open FsJs
 open FsStore
+open FsStore.Hooks
 open FsStore.Bindings
 open FsStore.Model
 open FsUi.Bindings
@@ -183,7 +184,7 @@ module CellSelectionSetup =
                     printfn "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ BEFORE RENDER"
 
                     let gun = Store.useValue Selectors.Gun.gun
-//                    let alias, setAlias = Store.useState Selectors.Gun.alias
+                    //                    let alias, setAlias = Store.useState Selectors.Gun.alias
 
                     React.useEffect (
                         (fun () ->
@@ -198,12 +199,12 @@ module CellSelectionSetup =
                                     let! _ = Gun.createUser user (Gun.Alias alias) (Gun.Pass alias)
                                     let! _ = Gun.authUser user (Gun.Alias alias) (Gun.Pass alias)
 
-//                                    RTL.act (fun () -> setAlias (Some Templates.templatesUser.Username))
+                                    //                                    RTL.act (fun () -> setAlias (Some Templates.templatesUser.Username))
                                     ()
                             }
                             |> Promise.start),
                         [|
-//                            box alias
+                            //                            box alias
                             box gun
                         |]
                     )

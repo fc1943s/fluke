@@ -1,7 +1,8 @@
 namespace Fluke.UI.Frontend.Components
 
 open FsCore
-open FsCore.Model
+open FsCore.BaseModel
+open FsStore.Bindings
 open FsUi.State
 open System
 open Fable.React
@@ -13,6 +14,7 @@ open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend
 open FsJs
 open FsStore
+open FsStore.Hooks
 open FsUi.Bindings
 open Fluke.Shared.Domain
 open Fluke.UI.Frontend.Hooks
@@ -43,7 +45,7 @@ module CellMenu =
     [<ReactComponent>]
     let CellMenu taskIdAtom dateIdAtom (onClose: (unit -> unit) option) (floating: bool) =
         let taskId, dateId = Store.useValueTuple taskIdAtom dateIdAtom
-        let username = Store.useValue Atoms.username
+        let alias = Store.useValue Selectors.Gun.alias
         let toast = Ui.useToast ()
         let cellSize = Store.useValue Atoms.User.cellSize
         let sessionStatus, setSessionStatus = Store.useState (Selectors.Cell.sessionStatus (taskId, dateId))
@@ -97,9 +99,9 @@ module CellMenu =
             Store.useCallbackRef
                 (fun _ _ _ ->
                     promise {
-                        match username, postponedUntil with
-                        | Some username, Some postponedUntil ->
-                            setSessionStatus (UserStatus (username, Postponed (Some postponedUntil)))
+                        match alias, postponedUntil with
+                        | Some (Gun.Alias alias), Some postponedUntil ->
+                            setSessionStatus (UserStatus (Username alias, Postponed (Some postponedUntil)))
 
                             match onClose with
                             | Some onClose -> onClose ()
@@ -220,15 +222,15 @@ module CellMenu =
                             Tooltip.wrap
                                 tooltipLabel
                                 [
-                                    match username with
-                                    | Some username ->
+                                    match alias with
+                                    | Some (Gun.Alias alias) ->
                                         wrapButtonStatus
                                             (match sessionStatus with
                                              | UserStatus (_, sessionStatus) when sessionStatus = status ->
                                                  Icons.hi.HiOutlineCheck |> Icons.render |> Some
                                              | _ -> None)
                                             color
-                                            (UserStatus (username, status))
+                                            (UserStatus (Username alias, status))
                                     | _ -> nothing
                                 ]
 

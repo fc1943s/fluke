@@ -1,6 +1,7 @@
 namespace Fluke.UI.Frontend.Hooks
 
 open FsStore
+open FsStore.Hooks
 open FsCore
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.State
@@ -13,13 +14,30 @@ open Fable.SimpleHttp
 open System
 open Fluke.Shared.Domain.UserInteraction
 open Fable.Core
-open FsCore.Model
+open FsCore.BaseModel
 open FsJs
-open FsStore.Hooks
+open FsStore.Bindings
 open FsStore.Model
 open FsUi.Model
 open FsUi.State
 open FsUi.Bindings
+
+
+module Result =
+    let choose =
+        function
+        | Ok value -> Some value
+        | _ -> None
+
+    let chooseError =
+        function
+        | Error error -> Some error
+        | _ -> None
+
+    let isError =
+        function
+        | Error _ -> true
+        | _ -> false
 
 
 module Hydrate =
@@ -178,81 +196,92 @@ module Hydrate =
         promise {
             do! hydrateDatabase getter setter (atomScope, databaseState.Database)
 
-            let newFileIdMap =
+            let hydrateOperationList =
                 databaseState.FileMap
                 |> Map.toList
                 |> List.map
                     (fun (fileId, hexString) ->
                         let newFileId = Hydrate.hydrateFile setter (atomScope, hexString)
-                        fileId, newFileId)
-                |> Map.ofList
 
-            let changeFileIds attachmentStateList =
-                attachmentStateList
-                |> List.map
-                    (fun attachmentState ->
-                        { attachmentState with
-                            Attachment =
-                                match attachmentState.Attachment with
-                                | Attachment.Image fileId -> Attachment.Image newFileIdMap.[fileId]
-                                | _ -> attachmentState.Attachment
-                        })
+                        match newFileId with
+                        | Some newFileId -> Ok (fileId, newFileId)
+                        | None -> Error $"Error hydrating file {fileId}")
 
-            let _newInformationAttachmentIdMap =
-                databaseState.InformationStateMap
-                |> Map.values
-                |> Seq.map
-                    (fun informationState ->
-                        let attachmentIdList =
-                            informationState.AttachmentStateList
-                            |> changeFileIds
-                            |> List.map
-                                (fun attachmentState ->
-                                    hydrateAttachmentState
-                                        getter
-                                        setter
-                                        (atomScope,
-                                         AttachmentParent.Information (
-                                             databaseState.Database.Id,
-                                             informationState.Information
-                                         ),
-                                         attachmentState))
+            match hydrateOperationList |> List.filter Result.isError with
+            | _ :: _ as errors -> return errors |> List.choose Result.chooseError |> Error
+            | _ ->
+                let newFileIdMap =
+                    hydrateOperationList
+                    |> List.choose Result.choose
+                    |> Map.ofList
 
-                        informationState.Information, (attachmentIdList |> Set.ofList))
-                |> Map.ofSeq
+                let changeFileIds attachmentStateList =
+                    attachmentStateList
+                    |> List.map
+                        (fun attachmentState ->
+                            { attachmentState with
+                                Attachment =
+                                    match attachmentState.Attachment with
+                                    | Attachment.Image fileId -> Attachment.Image newFileIdMap.[fileId]
+                                    | _ -> attachmentState.Attachment
+                            })
 
-            do!
-                databaseState.TaskStateMap
-                |> Map.values
-                |> Seq.map
-                    (fun taskState ->
-                        let newTaskState =
-                            { taskState with
-                                CellStateMap =
-                                    taskState.CellStateMap
-                                    |> Map.map
-                                        (fun _ cellState ->
-                                            { cellState with
-                                                AttachmentStateList = cellState.AttachmentStateList |> changeFileIds
-                                            })
-                                AttachmentStateList = taskState.AttachmentStateList |> changeFileIds
-                            }
+                let _newInformationAttachmentIdMap =
+                    databaseState.InformationStateMap
+                    |> Map.values
+                    |> Seq.map
+                        (fun informationState ->
+                            let attachmentIdList =
+                                informationState.AttachmentStateList
+                                |> changeFileIds
+                                |> List.map
+                                    (fun attachmentState ->
+                                        hydrateAttachmentState
+                                            getter
+                                            setter
+                                            (atomScope,
+                                             AttachmentParent.Information (
+                                                 databaseState.Database.Id,
+                                                 informationState.Information
+                                             ),
+                                             attachmentState))
 
-                        hydrateTaskState getter setter (atomScope, databaseState.Database.Id, newTaskState))
-                |> Promise.all
-                |> Promise.ignore
+                            informationState.Information, (attachmentIdList |> Set.ofList))
+                    |> Map.ofSeq
+
+                do!
+                    databaseState.TaskStateMap
+                    |> Map.values
+                    |> Seq.map
+                        (fun taskState ->
+                            let newTaskState =
+                                { taskState with
+                                    CellStateMap =
+                                        taskState.CellStateMap
+                                        |> Map.map
+                                            (fun _ cellState ->
+                                                { cellState with
+                                                    AttachmentStateList = cellState.AttachmentStateList |> changeFileIds
+                                                })
+                                    AttachmentStateList = taskState.AttachmentStateList |> changeFileIds
+                                }
+
+                            hydrateTaskState getter setter (atomScope, databaseState.Database.Id, newTaskState))
+                    |> Promise.all
+                    |> Promise.ignore
+
+                return Ok ()
         }
 
     let inline hydrateTemplates getter setter =
         promise {
             let databaseStateMap = TestUser.fetchTemplatesDatabaseStateMap ()
 
-            do!
+            return!
                 databaseStateMap
                 |> Map.values
                 |> Seq.map (fun databaseState -> hydrateDatabaseState getter setter (AtomScope.Current, databaseState))
                 |> Promise.all
-                |> Promise.ignore
         }
 
     let inline useExportDatabase () =
@@ -329,28 +358,25 @@ module Hydrate =
         Store.useCallbackRef
             (fun getter _ () ->
                 promise {
-                    let username = Store.value getter Atoms.username
+                    let alias = Store.value getter Selectors.Gun.alias
 
-                    match username with
-                    | Some username ->
-                        let gunKeys = Store.value getter Atoms.gunKeys
-                        let json = gunKeys |> Json.encodeFormatted
+                    match alias with
+                    | Some (Gun.Alias alias) ->
+                        let privateKeys = Store.value getter Selectors.Gun.privateKeys
+                        let json = privateKeys |> Json.encodeFormatted
 
                         let timestamp =
                             (FlukeDateTime.FromDateTime DateTime.Now)
                             |> FlukeDateTime.Stringify
 
-                        Dom.download
-                            json
-                            $"{username |> Username.ValueOrDefault}-{timestamp}-keys.json"
-                            "application/json"
+                        Dom.download json $"{alias}-{timestamp}-keys.json" "application/json"
 
                         toast
                             (fun x ->
                                 x.description <- "User keys exported successfully"
                                 x.title <- "Success"
                                 x.status <- "success")
-                    | None -> eprintf $"invalid username: {username}"
+                    | None -> eprintf $"invalid username: {alias}"
                 })
 
     let inline useExportUserSettings () =
@@ -365,10 +391,10 @@ module Hydrate =
                             x.title <- "Loading"
                             x.status <- "warning")
 
-                    let username = Store.value getter Atoms.username
+                    let alias = Store.value getter Selectors.Gun.alias
 
-                    match username with
-                    | Some username ->
+                    match alias with
+                    | Some (Gun.Alias alias) ->
                         let _ = Store.value getter Selectors.User.userState
                         let _ = Store.value getter Selectors.Ui.uiState
 
@@ -385,17 +411,14 @@ module Hydrate =
                             (FlukeDateTime.FromDateTime DateTime.Now)
                             |> FlukeDateTime.Stringify
 
-                        Dom.download
-                            json
-                            $"{username |> Username.ValueOrDefault}-{timestamp}-settings.json"
-                            "application/json"
+                        Dom.download json $"{alias}-{timestamp}-settings.json" "application/json"
 
                         toast
                             (fun x ->
                                 x.description <- "User settings exported successfully"
                                 x.title <- "Success"
                                 x.status <- "success")
-                    | None -> eprintf $"invalid username: {username}"
+                    | None -> eprintf $"invalid alias: {alias}"
                 })
 
     let inline useImportUserSettings () =
@@ -404,10 +427,10 @@ module Hydrate =
         Store.useCallbackRef
             (fun getter setter files ->
                 promise {
-                    let username = Store.value getter Atoms.username
+                    let alias = Store.value getter Selectors.Gun.alias
 
-                    match username, files with
-                    | Some _username, Some (files: FileList) when files.length = 1 ->
+                    match alias, files with
+                    | Some _alias, Some (files: FileList) when files.length = 1 ->
                         let! files =
                             files
                             |> Seq.ofItems
@@ -444,10 +467,10 @@ module Hydrate =
         Store.useCallbackRef
             (fun getter setter files ->
                 promise {
-                    let username = Store.value getter Atoms.username
+                    let alias = Store.value getter Selectors.Gun.alias
 
-                    match username, files with
-                    | Some username, Some (files: FileList) when files.length > 0 ->
+                    match alias, files with
+                    | Some (Gun.Alias alias), Some (files: FileList) when files.length > 0 ->
                         let! files =
                             files
                             |> Seq.ofItems
@@ -482,12 +505,12 @@ module Hydrate =
                                                 {
                                                     Id = DatabaseId.NewId ()
                                                     Name = databaseName
-                                                    Owner = username
+                                                    Owner = Username alias
                                                     SharedWith = DatabaseAccess.Private []
                                                     Position = databaseState.Database.Position
                                                 }
 
-                                            do!
+                                            return!
                                                 hydrateDatabaseState
                                                     getter
                                                     setter
@@ -512,7 +535,7 @@ module Hydrate =
                                                                                      { cellState with
                                                                                          Status =
                                                                                              UserStatus (
-                                                                                                 username,
+                                                                                                 Username alias,
                                                                                                  status
                                                                                              )
                                                                                      }

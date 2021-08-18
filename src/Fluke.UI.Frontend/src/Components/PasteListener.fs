@@ -23,7 +23,8 @@ module PasteListener =
             Store.useCallbackRef
                 (fun getter setter attachment ->
                     promise {
-                        Dom.Logger.Default.Debug (fun () -> $"pasted image attachment={attachment}")
+                        let logger = Store.value getter Selectors.logger
+                        logger.Debug (fun () -> $"pasted image attachment={attachment}")
 
                         let attachmentId =
                             Hydrate.hydrateAttachmentState
@@ -47,8 +48,9 @@ module PasteListener =
 
         let handlePasteEvent =
             Store.useCallbackRef
-                (fun _getter setter (e: Browser.Types.Event) ->
+                (fun getter setter (e: Browser.Types.Event) ->
                     promise {
+                        let logger = Store.value getter Selectors.logger
 
                         let! blobs =
                             match Browser.Navigator.navigator.clipboard with
@@ -69,7 +71,7 @@ module PasteListener =
                                         return Some blobs
                                     with
                                     | ex ->
-                                        Dom.consoleError ("handlePasteEvent clipboard error", ex)
+                                        logger.Error (fun () -> $"handlePasteEvent clipboard error={ex}")
                                         return None
                                 }
                             | None ->
@@ -86,8 +88,16 @@ module PasteListener =
                                     promise {
                                         let! hexString = Js.blobToHexString blob
                                         let fileId = Hydrate.hydrateFile setter (AtomScope.Current, hexString)
-                                        let attachment = Attachment.Image fileId
-                                        do! onFilePasted attachment
+
+                                        match fileId with
+                                        | Some fileId ->
+                                            let attachment = Attachment.Image fileId
+                                            do! onFilePasted attachment
+                                        | None ->
+                                            toast
+                                                (fun x ->
+                                                    x.description <-
+                                                        $"Error hydrating file. hexString.Length={hexString.Length}")
                                     })
                             |> Promise.all
                             |> Promise.ignore
@@ -101,13 +111,16 @@ module PasteListener =
                 |]
             )
 
-        React.useDisposableEffect (
-            (fun disposed ->
-                if not disposed then
+        let isMountedRef = React.useIsMountedRef ()
+
+        React.useEffect (
+            (fun () ->
+                if isMountedRef.current then
                     Browser.Dom.document.addEventListener ("paste", handle)
                 else
                     Browser.Dom.document.removeEventListener ("paste", handle)),
             [|
+                box isMountedRef
                 box handle
             |]
         )

@@ -2,7 +2,7 @@ namespace Fluke.UI.Frontend.Components
 
 open FsCore
 open FsJs
-open FsCore.Model
+open FsCore.BaseModel
 open FsStore.Bindings.Gun
 open FsStore.Model
 open FsUi.State
@@ -12,6 +12,7 @@ open Feliz
 open System
 open Fluke.Shared.Domain
 open FsStore
+open FsStore.Hooks
 open FsUi.Bindings
 open Fluke.UI.Frontend.State
 open Fluke.Shared.Domain.Model
@@ -180,7 +181,7 @@ module Settings =
         let userColor, setUserColor = Store.useState Atoms.User.userColor
         let logLevel, setLogLevel = Store.useState Atoms.logLevel
 
-        Accordion.Accordion
+        Accordion.AccordionAtom
             {|
                 Props = props
                 Atom = Atoms.User.accordionHiddenFlag AccordionType.Settings
@@ -319,7 +320,7 @@ module Settings =
                                         Props = fun x -> x.label <- str "Font Size"
                                     |}
 
-                                Dropdown.EnumDropdown<Dom.LogLevel>
+                                Dropdown.EnumDropdown<Logger.LogLevel>
                                     logLevel
                                     setLogLevel
                                     (fun x -> x.label <- str "Log Level")

@@ -2,8 +2,9 @@ namespace Fluke.UI.Frontend.State.Atoms
 
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.State.State
-open FsCore.Model
+open FsCore.BaseModel
 open FsStore
+open FsStore.Hooks
 
 
 module rec User =

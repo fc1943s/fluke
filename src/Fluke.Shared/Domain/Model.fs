@@ -145,8 +145,7 @@ module Model =
     and InformationName with
         static member inline Value informationName =
             match informationName with
-            | Project (AreaName (String.ValidString areaName), ProjectName (String.ValidString name)) ->
-                $"{areaName}/{name}"
+            | Project (AreaName (String.Valid areaName), ProjectName (String.Valid name)) -> $"{areaName}/{name}"
             | Area (AreaName name) -> name
             | Resource (ResourceName name) -> name
             | _ -> ""

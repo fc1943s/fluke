@@ -6,6 +6,7 @@ open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Components
 open FsJs
 open FsStore
+open FsStore.Hooks
 open FsUi.Bindings
 open Fluke.Shared
 open FsUi.Components

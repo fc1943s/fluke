@@ -10,6 +10,7 @@ open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Components
 open FsJs
 open FsStore
+open FsStore.Hooks
 open FsUi.Bindings
 open Fluke.Shared
 open Fluke.UI.Frontend.Hooks

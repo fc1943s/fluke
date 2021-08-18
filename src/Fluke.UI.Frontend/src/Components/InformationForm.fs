@@ -5,6 +5,7 @@ open Feliz
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.State
 open FsStore
+open FsStore.Hooks
 open FsUi.Bindings
 open FsCore
 open Fluke.UI.Frontend.State
@@ -81,7 +82,7 @@ module InformationForm =
                         | _ -> return false
                     })
 
-        Accordion.Accordion
+        Accordion.AccordionAtom
             {|
                 Props = fun x -> x.flex <- "1"
                 Atom = Atoms.User.accordionHiddenFlag AccordionType.InformationForm

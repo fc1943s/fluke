@@ -6,6 +6,7 @@ open Fable.React
 open Feliz
 open Fluke.Shared.Domain.State
 open FsStore
+open FsStore.Hooks
 open FsStore.Model
 open FsUi.Bindings
 open Fluke.UI.Frontend.Hooks
@@ -95,7 +96,7 @@ module DatabaseSelector =
                                         Children =
                                             [
                                                 match databaseName with
-                                                | String.ValidString name -> str name
+                                                | String.Valid name -> str name
                                                 | _ -> str "Select..."
                                             ]
                                     |}

@@ -4,6 +4,7 @@ open Browser.Types
 open Feliz
 open Fable.React
 open FsStore
+open FsStore.Hooks
 open FsUi.Bindings
 open FsUi.Components
 open FsUi.Hooks

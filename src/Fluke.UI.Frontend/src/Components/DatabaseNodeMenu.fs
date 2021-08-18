@@ -3,6 +3,7 @@ namespace Fluke.UI.Frontend.Components
 open Fluke.Shared.Domain.Model
 open Feliz
 open FsStore
+open FsStore.Hooks
 open FsUi.Bindings
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State

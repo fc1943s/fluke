@@ -9,6 +9,7 @@ open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Bindings
 open FsStore
+open FsStore.Hooks
 open FsUi.Bindings
 open Fluke.Shared
 open Fluke.UI.Frontend.State

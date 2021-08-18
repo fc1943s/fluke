@@ -5,7 +5,7 @@ open System
 open Fluke.Shared.Domain.UserInteraction
 open FsJs.Bindings.Cypress
 open FsCore
-open FsCore.Model
+open FsCore.BaseModel
 open Fluke.UI.Frontend.State.State
 open Fluke.UI.Frontend.Components
 
@@ -29,7 +29,9 @@ module Full =
                     let taskName = "task1"
 
                     Cy2.expectLocation $"{homeUrl}/"
-                    Cy.get("body").should "have.css" "background-color" "rgb(222, 222, 222)"
+
+                    (Cy.get "body" Cy.defaultOptions)
+                        .should ("have.css", "background-color", "rgb(222, 222, 222)")
 
                     Cy.focused().click None |> ignore
 

@@ -2,11 +2,13 @@ version 6.0.3
 framework: net6.0
 storage: none
 source https://api.nuget.org/v3/index.json
+source https://nuget.pkg.github.com/fc1943s/index.json username: "%GITHUB_ACTOR%" password: "%GITHUB_READ_PACKAGES_TOKEN%"
 
 nuget FSharp.Core ~> 5.0
 
 git https://github.com/fc1943s/FsBeacon.git main build: pwsh build.ps1
 
+nuget FsJs
 
 // group Fluke.Shared
 nuget Myriad.Core ~> 0.5
@@ -28,13 +30,6 @@ nuget YoloDev.Expecto.TestSdk ~> 0.12
 nuget Fake.Core.Target ~> 5.20 prerelease
 nuget Fake.DotNet.Cli ~> 5.20 prerelease
 nuget Fake.IO.FileSystem ~> 5.20 prerelease
-
-
-
-// FsJs
-nuget Fable.DateFunctions ~> 3.6
-nuget Fable.Extras ~> 0.4
-nuget Thoth.Json ~> 6.0
 
 // FsStore
 nuget Fable.SignalR ~> 0.11

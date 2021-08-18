@@ -6,6 +6,7 @@ open Fluke.Shared
 open Fluke.UI.Frontend.TempUI
 open Fluke.UI.Frontend.State
 open FsStore
+open FsStore.Hooks
 open FsStore.Model
 open FsUi.Bindings
 

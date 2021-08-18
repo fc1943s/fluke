@@ -6,6 +6,7 @@ open Fable.React
 open Fluke.Shared.Domain.Model
 open Fluke.UI.Frontend.Components
 open FsStore
+open FsStore.Hooks
 open FsUi.Bindings
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.State.State
@@ -57,7 +58,7 @@ module FilterForm =
     let FilterForm () =
         let filter, setFilter = Store.useState Atoms.User.filter
 
-        Accordion.Accordion
+        Accordion.AccordionAtom
             {|
                 Props = fun x -> x.flex <- "1"
                 Atom = Atoms.User.accordionHiddenFlag AccordionType.TaskForm

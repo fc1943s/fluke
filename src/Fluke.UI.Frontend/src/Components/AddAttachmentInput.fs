@@ -6,6 +6,7 @@ open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.State.State
 open FsStore
+open FsStore.Hooks
 open FsStore.Bindings
 open FsStore.Model
 open FsUi.Bindings
@@ -37,7 +38,7 @@ module AddAttachmentInput =
                 (fun getter setter _ ->
                     promise {
                         match onAdd, tempAttachment.Value with
-                        | Some onAdd, Some (Attachment.Comment (Comment.Comment (String.ValidString _)) as attachment) ->
+                        | Some onAdd, Some (Attachment.Comment (Comment.Comment (String.Valid _)) as attachment) ->
 
                             let attachmentId =
                                 Hydrate.hydrateAttachmentState

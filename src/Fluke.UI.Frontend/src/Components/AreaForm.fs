@@ -5,6 +5,7 @@ open Fable.React
 open Feliz
 open Fluke.Shared.Domain.Model
 open FsStore
+open FsStore.Hooks
 open FsCore
 open FsUi.Bindings
 open Fable.Core
@@ -24,7 +25,7 @@ module AreaForm =
                 (fun _ _ _ ->
                     promise {
                         match areaName |> AreaName.Value with
-                        | String.InvalidString -> toast (fun x -> x.description <- "Invalid name")
+                        | String.Invalid -> toast (fun x -> x.description <- "Invalid name")
                         | _ ->
                             let area: Area = { Name = areaName }
                             do! onSave area

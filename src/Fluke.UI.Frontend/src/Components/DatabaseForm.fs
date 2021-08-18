@@ -7,7 +7,9 @@ open System
 open Fluke.Shared.Domain
 open Fluke.UI.Frontend
 open Fluke.Shared
+open FsCore.BaseModel
 open FsStore
+open FsStore.Hooks
 open FsStore.Bindings
 open FsStore.Model
 open FsUi.Bindings
@@ -32,19 +34,19 @@ module DatabaseForm =
                 (fun getter setter _ ->
                     promise {
                         let databaseName = Store.getTempValue getter (Atoms.Database.name databaseId)
-                        let username = Store.value getter Atoms.username
+                        let alias = Store.value getter Selectors.Gun.alias
 
                         match databaseName with
-                        | DatabaseName String.InvalidString -> toast (fun x -> x.description <- "Invalid name")
+                        | DatabaseName String.Invalid -> toast (fun x -> x.description <- "Invalid name")
                         | _ ->
-                            match username with
-                            | Some username ->
+                            match alias with
+                            | Some (Gun.Alias alias) ->
                                 let! database =
                                     if databaseId = Database.Default.Id then
                                         {
                                             Id = DatabaseId.NewId ()
                                             Name = databaseName
-                                            Owner = username
+                                            Owner = Username alias
                                             SharedWith = DatabaseAccess.Private []
                                             Position = None
                                         }
@@ -67,7 +69,7 @@ module DatabaseForm =
                             | None -> ()
                     })
 
-        Accordion.Accordion
+        Accordion.AccordionAtom
             {|
                 Props = fun x -> x.flex <- "1"
                 Atom = Atoms.User.accordionHiddenFlag AccordionType.DatabaseForm
@@ -77,7 +79,7 @@ module DatabaseForm =
                         (Ui.stack
                             (fun x -> x.spacing <- "15px")
                             [
-                                if logLevel <= Dom.LogLevel.Debug then
+                                if logLevel <= Logger.LogLevel.Debug then
                                     Ui.str $"{databaseId}"
                                 else
                                     nothing

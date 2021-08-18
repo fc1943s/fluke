@@ -2,13 +2,14 @@ namespace Fluke.UI.Frontend.Components
 
 open Fluke.Shared
 open Fluke.Shared.Domain.UserInteraction
-open FsCore.Model
+open FsCore.BaseModel
 open FsUi.Components
 open FsUi.Hooks
 open Browser.Types
 open Feliz
 open System
 open FsStore
+open FsStore.Hooks
 open Fluke.UI.Frontend.State.State
 open FsUi.Bindings
 open Fluke.UI.Frontend.Hooks
@@ -49,31 +50,39 @@ module LoginScreen =
                             return false
                         else
                             match! signUp (usernameField, passwordField) with
-                            | Ok (_username, _keys) ->
-                                do! Hydrate.hydrateTemplates getter setter
+                            | Ok (_alias, _keys) ->
+                                let! hydrateResult = Hydrate.hydrateTemplates getter setter
 
-                                do! Hydrate.hydrateUiState getter setter UiState.Default
+                                match hydrateResult
+                                      |> Array.choose Result.chooseError
+                                      |> Array.toList
+                                      |> List.collect id with
+                                | [] ->
+                                    do! Hydrate.hydrateUiState getter setter UiState.Default
 
-                                do!
-                                    Hydrate.hydrateUserState
-                                        getter
-                                        setter
-                                        { UserState.Default with
-                                            Archive = Some false
-                                            HideTemplates = Some false
-                                            UserColor =
-                                                String.Format ("#{0:X6}", Random().Next 0x1000000)
-                                                |> Color
-                                                |> Some
-                                        }
+                                    do!
+                                        Hydrate.hydrateUserState
+                                            getter
+                                            setter
+                                            { UserState.Default with
+                                                Archive = Some false
+                                                HideTemplates = Some false
+                                                UserColor =
+                                                    String.Format ("#{0:X6}", Random().Next 0x1000000)
+                                                    |> Color
+                                                    |> Some
+                                            }
 
-                                toast
-                                    (fun x ->
-                                        x.title <- "Success"
-                                        x.status <- "success"
-                                        x.description <- "User registered successfully")
+                                    toast
+                                        (fun x ->
+                                            x.title <- "Success"
+                                            x.status <- "success"
+                                            x.description <- "User registered successfully")
 
-                                return true
+                                    return true
+                                | errors ->
+                                    toast (fun x -> x.description <- $"Sign up hydrate error. errors={errors}")
+                                    return false
                             | Error error ->
                                 toast (fun x -> x.description <- error)
                                 return false

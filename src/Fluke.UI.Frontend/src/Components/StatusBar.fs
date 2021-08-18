@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open FsCore.BaseModel
 open FsJs
 open FsCore
 open System
@@ -9,6 +10,8 @@ open Fluke.Shared.Domain.State
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.State
 open FsStore
+open FsStore.Bindings
+open FsStore.Hooks
 open FsUi.Bindings
 open FsUi.Hooks
 open Fluke.Shared
@@ -71,7 +74,7 @@ module StatusBar =
 
     [<ReactComponent>]
     let UserIndicator () =
-        let username = Store.useValue Atoms.username
+        let alias = Store.useValue Selectors.Gun.alias
 
         Ui.stack
             (fun x ->
@@ -80,14 +83,14 @@ module StatusBar =
             [
                 Ui.icon (fun x -> x.``as`` <- Icons.fa.FaRegUser) []
 
-                match username with
-                | Some (Username username) ->
+                match alias with
+                | Some (Gun.Alias alias) ->
                     Ui.str "User:"
 
                     Ui.box
                         (fun x -> x.userSelect <- "text")
                         [
-                            str username
+                            str alias
                         ]
                 | _ -> nothing
             ]

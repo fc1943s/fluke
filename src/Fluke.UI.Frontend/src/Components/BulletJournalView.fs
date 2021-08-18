@@ -7,6 +7,7 @@ open Feliz
 open Fluke.Shared.Domain
 open Fluke.UI.Frontend.State
 open FsStore
+open FsStore.Hooks
 open FsUi.Bindings
 open Fluke.Shared
 

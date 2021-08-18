@@ -5,8 +5,9 @@ open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.Shared.Domain.State
 open Fluke.UI.Frontend.State
-open FsCore.Model
+open FsCore.BaseModel
 open FsStore
+open FsStore.Hooks
 
 
 module rec Task =

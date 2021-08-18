@@ -11,9 +11,9 @@ open Fluke.UI.Frontend.State
 open Fluke.Shared.Domain.State
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.State.State
-open FsCore.Model
-open FsJs
+open FsCore.BaseModel
 open FsStore
+open FsStore.Hooks
 
 #nowarn "40"
 
@@ -200,6 +200,7 @@ module rec Session =
             Selectors.interval
             Set.empty
             (fun getter ->
+                let logger = Store.value getter Selectors.logger
                 let filter = Store.value getter Atoms.User.filter
 
                 let selectedTaskIdListByArchive =
@@ -262,7 +263,7 @@ module rec Session =
                     |> Array.map (fun taskState -> taskState.Task.Id)
 
 
-                Dom.Logger.Default.Debug
+                logger.Debug
                     (fun () ->
                         $"filteredTaskIdArray.Length={filteredTaskIdArray.Length}
                         selectedTaskStateArray.Length={selectedTaskStateArray.Length}")
@@ -290,10 +291,10 @@ module rec Session =
 
                 match position with
                 | Some position ->
+                    let logger = Store.value getter Selectors.logger
                     let filteredTaskIdSet = Store.value getter filteredTaskIdSet
 
-                    Dom.Logger.Default.Debug
-                        (fun () -> $"sortedTaskIdArray. filteredTaskIdSet.Count={filteredTaskIdSet.Count}")
+                    logger.Debug (fun () -> $"sortedTaskIdArray. filteredTaskIdSet.Count={filteredTaskIdSet.Count}")
 
                     let filteredTaskIdArray = filteredTaskIdSet |> Set.toArray
 
@@ -328,7 +329,7 @@ module rec Session =
                                 Lanes = lanes
                             |}
 
-                    Dom.Logger.Default.Debug (fun () -> $"sortedTaskIdArray. result.Length={result.Length}")
+                    logger.Debug (fun () -> $"sortedTaskIdArray. result.Length={result.Length}")
 
                     result
                     |> List.map (fun (taskState, _) -> taskState.Task.Id)

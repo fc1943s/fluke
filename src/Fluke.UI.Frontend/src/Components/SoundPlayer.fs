@@ -5,7 +5,9 @@ open Feliz
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.State
 open Fluke.Shared.Domain
-open Fluke.UI.Frontend.Bindings; open FsStore; open FsUi.Bindings
+open FsStore
+open FsStore.Hooks
+open FsUi.Bindings
 
 module SoundPlayer =
     open Model

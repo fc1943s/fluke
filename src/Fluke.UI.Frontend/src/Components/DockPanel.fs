@@ -4,6 +4,7 @@ open Fable.React
 open Feliz
 open Fluke.UI.Frontend
 open FsStore
+open FsStore.Hooks
 open FsStore.Model
 open FsUi.Bindings
 open FsUi.Components

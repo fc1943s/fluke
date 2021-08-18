@@ -5,8 +5,8 @@ open Feliz
 open Fable.React
 open Fluke.UI.Frontend.State
 open Fluke.Shared
-open FsJs
 open FsStore
+open FsStore.Hooks
 open FsUi.Hooks
 
 
@@ -31,6 +31,8 @@ module CtrlListener =
 module ShiftListener =
     [<ReactComponent>]
     let ShiftListener () =
+        let logger = Store.useValue Selectors.logger
+
         Listener.useKeyPress
             [|
                 "Shift"
@@ -56,7 +58,7 @@ module ShiftListener =
 
                     match e.ctrlKey, e.altKey, e.key with
                     | true, true, "I" ->
-                        Dom.Logger.Default.Debug (fun () -> "RouterObserver.onKeyDown() View.Information")
+                        logger.Debug (fun () -> "RouterObserver.onKeyDown() View.Information")
                         setView View.View.Information
                     | true, true, "H" -> setView View.View.HabitTracker
                     | true, true, "P" -> setView View.View.Priority

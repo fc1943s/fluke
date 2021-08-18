@@ -5,8 +5,10 @@ open Fluke.Shared.Domain.State
 open Fluke.Shared.Domain.UserInteraction
 open Feliz
 open Fable.React
-open FsCore.Model
+open FsCore.BaseModel
 open FsStore
+open FsStore.Bindings
+open FsStore.Hooks
 open FsUi.Bindings
 open Fluke.UI.Frontend.State
 open FsUi.Components
@@ -15,7 +17,7 @@ open FsUi.Components
 module DatabaseLeafIcon =
     [<ReactComponent>]
     let DatabaseLeafIcon databaseId =
-        let username = Store.useValue Atoms.username
+        let alias = Store.useValue Selectors.Gun.alias
         let owner = Store.useValue (Atoms.Database.owner databaseId)
         let sharedWith = Store.useValue (Atoms.Database.sharedWith databaseId)
         let position = Store.useValue (Atoms.Database.position databaseId)
@@ -26,8 +28,8 @@ module DatabaseLeafIcon =
                     let newSharedWith =
                         if owner = Templates.templatesUser.Username then
                             [
-                                match username with
-                                | Some username -> yield username
+                                match alias with
+                                | Some (Gun.Alias alias) -> yield Username alias
                                 | _ -> ()
                             ]
                         else
@@ -36,17 +38,17 @@ module DatabaseLeafIcon =
                             | DatabaseAccess.Private accessList -> accessList |> List.map fst
 
                     let isPrivate =
-                        match username, sharedWith with
+                        match alias, sharedWith with
                         | _, DatabaseAccess.Public -> false
-                        | Some username, _ ->
+                        | Some (Gun.Alias alias), _ ->
                             newSharedWith
-                            |> List.exists (fun share -> share <> username)
+                            |> List.exists (fun (Username share) -> share <> alias)
                             |> not
                         | _ -> true
 
                     newSharedWith, isPrivate),
                 [|
-                    box username
+                    box alias
                     box owner
                     box sharedWith
                 |]

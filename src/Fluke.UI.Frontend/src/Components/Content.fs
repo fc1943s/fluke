@@ -4,6 +4,7 @@ open Feliz
 open Fable.React
 open FsJs
 open FsStore
+open FsStore.Hooks
 open FsUi.Bindings
 open Fluke.UI.Frontend.State
 open FsUi.Components
@@ -12,9 +13,10 @@ open FsUi.Components
 module Content =
     [<ReactComponent>]
     let LoggedContent () =
+        let logger = Store.useValue Selectors.logger
         let userColor = Store.useValue Atoms.User.userColor
+        logger.Debug (fun () -> $"Content.render. userColor={userColor}")
 
-        Dom.Logger.Default.Debug (fun () -> $"Content.render. userColor={userColor}")
 
         //        let asyncTaskIdAtoms = Store.useValue Selectors.asyncTaskIdAtoms
 //        let archive = Store.useValue Atoms.User.archive
@@ -114,7 +116,7 @@ module Content =
                         TopBar.TopBar ()
 
                         match alias with
-                            | None -> LoginScreen.LoginScreen ()
-                            | Some _ -> LoggedContent ()
+                        | None -> LoginScreen.LoginScreen ()
+                        | Some _ -> LoggedContent ()
                     ]
             ]

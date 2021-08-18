@@ -8,7 +8,7 @@ open System
 open Fluke.Shared
 open Fluke.Shared.Domain
 open Fluke.UI.Frontend
-open FsCore.Model
+open FsCore.BaseModel
 open FsCore
 
 

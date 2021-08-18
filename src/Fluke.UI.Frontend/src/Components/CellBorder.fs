@@ -1,11 +1,11 @@
 namespace Fluke.UI.Frontend.Components
 
-open Fable.Core
 open Fable.React
 open Feliz
 open Fluke.UI.Frontend.State
 open FsJs
 open FsStore
+open FsStore.Hooks
 open FsUi.Bindings
 open Fluke.Shared
 

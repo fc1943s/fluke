@@ -3,8 +3,9 @@ namespace Fluke.UI.Frontend.State.Selectors
 open Fluke.Shared
 open Fluke.Shared.Domain.Model
 open Fluke.UI.Frontend.State
-open FsCore.Model
+open FsCore.BaseModel
 open FsStore
+open FsStore.Hooks
 
 
 module rec Information =

@@ -1,8 +1,8 @@
 namespace Fluke.Shared.Domain
 
 open FsCore
-open Fluke.Shared
 open System
+open FsCore.BaseModel
 
 
 module State =

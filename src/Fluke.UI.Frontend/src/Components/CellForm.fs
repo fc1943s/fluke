@@ -6,6 +6,7 @@ open Fable.React
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.UserInteraction
 open FsStore
+open FsStore.Hooks
 open FsStore.Bindings
 open FsUi.Bindings
 open Fluke.Shared
@@ -50,7 +51,7 @@ module CellForm =
                         return true
                     })
 
-        Accordion.Accordion
+        Accordion.AccordionAtom
             {|
                 Props = fun x -> x.flex <- "1"
                 Atom = Atoms.User.accordionHiddenFlag AccordionType.CellForm

@@ -1,7 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
 open FsUi.Bindings
-open Fluke.Shared
 open Feliz
 
 
