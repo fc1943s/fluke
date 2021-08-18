@@ -183,7 +183,7 @@ module CellSelectionSetup =
                     printfn "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ BEFORE RENDER"
 
                     let gun = Store.useValue Selectors.Gun.gun
-                    let username, setUsername = Store.useState Atoms.username
+//                    let alias, setAlias = Store.useState Selectors.Gun.alias
 
                     React.useEffect (
                         (fun () ->
@@ -191,18 +191,19 @@ module CellSelectionSetup =
                                 let user = gun.user ()
 
                                 if user.__.sea.IsNone then
-                                    let username =
+                                    let alias =
                                         Templates.templatesUser.Username
                                         |> Username.ValueOrDefault
 
-                                    let! _ = Gun.createUser user (Gun.Alias username) (Gun.Pass username)
-                                    let! _ = Gun.authUser user (Gun.Alias username) (Gun.Pass username)
+                                    let! _ = Gun.createUser user (Gun.Alias alias) (Gun.Pass alias)
+                                    let! _ = Gun.authUser user (Gun.Alias alias) (Gun.Pass alias)
 
-                                    RTL.act (fun () -> setUsername (Some Templates.templatesUser.Username))
+//                                    RTL.act (fun () -> setAlias (Some Templates.templatesUser.Username))
+                                    ()
                             }
                             |> Promise.start),
                         [|
-                            box username
+//                            box alias
                             box gun
                         |]
                     )
@@ -224,11 +225,11 @@ module CellSelectionSetup =
 
             do! RTL.sleep 400
 
-            let! username =
-                Dom.waitForSome (fun () -> async { return Store.value getFn Atoms.username })
+            let! alias =
+                Dom.waitForSome (fun () -> async { return Store.value getFn Selectors.Gun.alias })
                 |> Async.StartAsPromise
 
-            printfn $"! username={username}"
+            printfn $"! alias={alias}"
 
             do! RTL.waitFor (initialSetter getFn setFn)
 

@@ -95,9 +95,8 @@ module Content =
     let Content () =
         Profiling.addTimestamp "mainComponent.render"
 
-        let sessionRestored = Store.useValue Atoms.Session.sessionRestored
         let deviceInfo = Store.useValue Selectors.deviceInfo
-        let username = Store.useValue Atoms.username
+        let alias = Store.useValue Selectors.Gun.alias
 
         Ui.flex
             (fun x ->
@@ -114,10 +113,7 @@ module Content =
                     [
                         TopBar.TopBar ()
 
-                        match sessionRestored with
-                        | false -> LoadingSpinner.LoadingSpinner ()
-                        | true ->
-                            match username with
+                        match alias with
                             | None -> LoginScreen.LoginScreen ()
                             | Some _ -> LoggedContent ()
                     ]

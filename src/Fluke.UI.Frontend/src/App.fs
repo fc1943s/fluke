@@ -20,7 +20,6 @@ module App =
          else
              React.fragment)
             [
-                RouterObserver.RouterObserver ()
                 GunObserver.GunObserver ()
 
                 CtrlListener.CtrlListener ()
