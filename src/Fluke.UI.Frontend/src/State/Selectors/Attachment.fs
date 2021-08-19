@@ -4,7 +4,7 @@ open Fluke.Shared.Domain.UserInteraction
 open Fluke.Shared.Domain.State
 open Fluke.UI.Frontend.State
 open FsStore
-open FsStore.Hooks
+
 
 
 module rec Attachment =

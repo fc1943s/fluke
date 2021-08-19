@@ -4,7 +4,7 @@ open FsStore.State
 open FsCore.BaseModel
 open FsJs
 open FsStore
-open FsStore.Hooks
+
 open System
 open Fluke.Shared
 open Fluke.Shared.Domain.Model

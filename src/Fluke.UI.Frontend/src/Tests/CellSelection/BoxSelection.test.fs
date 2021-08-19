@@ -7,7 +7,7 @@ open Fluke.Shared.Domain.UserInteraction
 open Microsoft.FSharp.Core.Operators
 open Fluke.UI.Frontend.State
 open FsStore
-open FsStore.Hooks
+
 
 
 module BoxSelection =
