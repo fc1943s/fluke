@@ -423,48 +423,18 @@ module TaskForm =
                         return true
                     })
 
-        let tempInformation =
-            Store.useTempAtom
-                (Some (InputAtom (AtomReference.Atom (Atoms.Task.information taskId))))
-                (Some (InputScope.Temp Gun.defaultSerializer))
-
-        let tempPriority =
-            Store.useTempAtom
-                (Some (InputAtom (AtomReference.Atom (Atoms.Task.priority taskId))))
-                (Some (InputScope.Temp Gun.defaultSerializer))
-
-        let tempDuration =
-            Store.useTempAtom
-                (Some (InputAtom (AtomReference.Atom (Atoms.Task.duration taskId))))
-                (Some (InputScope.Temp Gun.defaultSerializer))
-
-        let tempPendingAfter =
-            Store.useTempAtom
-                (Some (InputAtom (AtomReference.Atom (Atoms.Task.pendingAfter taskId))))
-                (Some (InputScope.Temp Gun.defaultSerializer))
-
-        let tempMissedAfter =
-            Store.useTempAtom
-                (Some (InputAtom (AtomReference.Atom (Atoms.Task.missedAfter taskId))))
-                (Some (InputScope.Temp Gun.defaultSerializer))
-
-        let tempScheduling =
-            Store.useTempAtom
-                (Some (InputAtom (AtomReference.Atom (Atoms.Task.scheduling taskId))))
-                (Some (InputScope.Temp Gun.defaultSerializer))
-
+        let tempInformation = Store.useTempState (AtomReference.Atom (Atoms.Task.information taskId))
+        let tempPriority = Store.useTempState (AtomReference.Atom (Atoms.Task.priority taskId))
+        let tempDuration = Store.useTempState (AtomReference.Atom (Atoms.Task.duration taskId))
+        let tempPendingAfter = Store.useTempState (AtomReference.Atom (Atoms.Task.pendingAfter taskId))
+        let tempMissedAfter = Store.useTempState (AtomReference.Atom (Atoms.Task.missedAfter taskId))
+        let tempScheduling = Store.useTempState (AtomReference.Atom (Atoms.Task.scheduling taskId))
 
         let onSave =
             Store.useCallbackRef
                 (fun getter setter _ ->
                     promise {
                         let taskName = Store.getTempValue getter (Atoms.Task.name taskId)
-                        let taskInformation = Store.getTempValue getter (Atoms.Task.information taskId)
-                        let taskScheduling = Store.getTempValue getter (Atoms.Task.scheduling taskId)
-                        let taskPriority = Store.getTempValue getter (Atoms.Task.priority taskId)
-                        let taskDuration = Store.getTempValue getter (Atoms.Task.duration taskId)
-                        let taskMissedAfter = Store.getTempValue getter (Atoms.Task.missedAfter taskId)
-                        let taskPendingAfter = Store.getTempValue getter (Atoms.Task.pendingAfter taskId)
 
                         if taskDatabaseId = Database.Default.Id then
                             toast (fun x -> x.description <- "Invalid database")
@@ -472,7 +442,7 @@ module TaskForm =
                               | String.Invalid -> true
                               | _ -> false) then
                             toast (fun x -> x.description <- "Invalid name")
-                        elif (match taskInformation
+                        elif (match tempInformation.Value
                                     |> Information.Name
                                     |> InformationName.Value with
                               | String.Invalid -> true
@@ -490,12 +460,12 @@ module TaskForm =
                                     { Task.Default with
                                         Id = TaskId.NewId ()
                                         Name = taskName
-                                        Information = taskInformation
-                                        Scheduling = taskScheduling
-                                        Priority = taskPriority
-                                        Duration = taskDuration
-                                        MissedAfter = taskMissedAfter
-                                        PendingAfter = taskPendingAfter
+                                        Information = tempInformation.Value
+                                        Scheduling = tempScheduling.Value
+                                        Priority = tempPriority.Value
+                                        Duration = tempDuration.Value
+                                        MissedAfter = tempMissedAfter.Value
+                                        PendingAfter = tempPendingAfter.Value
                                     }
                                     |> Promise.lift
                                 else
@@ -505,12 +475,12 @@ module TaskForm =
                                         return
                                             { task with
                                                 Name = taskName
-                                                Information = taskInformation
-                                                Scheduling = taskScheduling
-                                                Priority = taskPriority
-                                                Duration = taskDuration
-                                                MissedAfter = taskMissedAfter
-                                                PendingAfter = taskPendingAfter
+                                                Information = tempInformation.Value
+                                                Scheduling = tempScheduling.Value
+                                                Priority = tempPriority.Value
+                                                Duration = tempDuration.Value
+                                                MissedAfter = tempMissedAfter.Value
+                                                PendingAfter = tempPendingAfter.Value
                                             }
                                     }
 

@@ -28,8 +28,8 @@ module TempUI =
 
     type ActiveSession = ActiveSession of taskName: string * duration: Minute
 
-    let rec informationColor =
-        function
+    let inline informationColor information =
+        match information with
         | Project _ -> "#999"
         | Area _ -> "#666"
         | Resource _ -> "#333"

@@ -20,15 +20,14 @@ open FsUi.Components
 
 
 module AddAttachmentInput =
+    let emptyAttachmentAtomReference = AtomReference.Atom (Atoms.Attachment.attachment (AttachmentId Guid.Empty))
+
     [<ReactComponent>]
     let rec AddAttachmentInput attachmentParent onAdd =
         let archive = Store.useValue Atoms.User.archive
         let ctrlPressed = Store.useValue Atoms.Session.ctrlPressed
 
-        let tempAttachment =
-            Store.useTempAtom
-                (Some (InputAtom (AtomReference.Atom (Atoms.Attachment.attachment (AttachmentId Guid.Empty)))))
-                (Some (InputScope.Temp Gun.defaultSerializer))
+        let tempAttachment = Store.useTempState emptyAttachmentAtomReference
 
         let clipboardVisible, setClipboardVisible = Store.useState Atoms.User.clipboardVisible
         let clipboardAttachmentIdMap = Store.useValue Atoms.User.clipboardAttachmentIdMap

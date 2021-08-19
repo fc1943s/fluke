@@ -22,12 +22,11 @@ open FsUi.Components
 
 
 module Settings =
+    let gunOptionsReference = AtomReference.Atom Atoms.gunOptions
+
     [<ReactComponent>]
     let GunPeersInput () =
-        let tempGunOptions =
-            Store.useTempAtom
-                (Some (InputAtom (AtomReference.Atom Atoms.gunOptions)))
-                (Some (InputScope.Temp defaultSerializer))
+        let tempGunOptions = Store.useTempState gunOptionsReference
 
         Ui.box
             (fun x -> x.display <- "inline")
@@ -106,12 +105,11 @@ module Settings =
                     ]
             ]
 
+    let hubUrlReference = AtomReference.Atom Atoms.hubUrl
+
     [<ReactComponent>]
     let HubUrlInput () =
-        let tempHubUrl =
-            Store.useTempAtom
-                (Some (InputAtom (AtomReference.Atom Atoms.hubUrl)))
-                (Some (InputScope.Temp defaultSerializer))
+        let tempHubUrl = Store.useTempState hubUrlReference
 
         Ui.box
             (fun x -> x.display <- "inline")

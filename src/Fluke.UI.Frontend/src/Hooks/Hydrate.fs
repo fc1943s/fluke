@@ -24,18 +24,18 @@ open FsUi.Bindings
 
 
 module Result =
-    let choose =
-        function
+    let inline choose result =
+        match result with
         | Ok value -> Some value
         | _ -> None
 
-    let chooseError =
-        function
+    let inline chooseError result =
+        match result with
         | Error error -> Some error
         | _ -> None
 
-    let isError =
-        function
+    let inline isError result =
+        match result with
         | Error _ -> true
         | _ -> false
 
