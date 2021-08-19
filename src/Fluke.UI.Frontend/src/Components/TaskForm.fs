@@ -423,12 +423,12 @@ module TaskForm =
                         return true
                     })
 
-        let tempInformation = Store.useTempState (AtomReference.Atom (Atoms.Task.information taskId))
-        let tempPriority = Store.useTempState (AtomReference.Atom (Atoms.Task.priority taskId))
-        let tempDuration = Store.useTempState (AtomReference.Atom (Atoms.Task.duration taskId))
-        let tempPendingAfter = Store.useTempState (AtomReference.Atom (Atoms.Task.pendingAfter taskId))
-        let tempMissedAfter = Store.useTempState (AtomReference.Atom (Atoms.Task.missedAfter taskId))
-        let tempScheduling = Store.useTempState (AtomReference.Atom (Atoms.Task.scheduling taskId))
+        let tempInformation = Store.useAtomTempState (Atoms.Task.information taskId)
+        let tempPriority = Store.useAtomTempState (Atoms.Task.priority taskId)
+        let tempDuration = Store.useAtomTempState (Atoms.Task.duration taskId)
+        let tempPendingAfter = Store.useAtomTempState (Atoms.Task.pendingAfter taskId)
+        let tempMissedAfter = Store.useAtomTempState (Atoms.Task.missedAfter taskId)
+        let tempScheduling = Store.useAtomTempState (Atoms.Task.scheduling taskId)
 
         let onSave =
             Store.useCallbackRef
