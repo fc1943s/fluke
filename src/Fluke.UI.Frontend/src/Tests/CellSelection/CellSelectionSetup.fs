@@ -26,7 +26,6 @@ open State
 
 
 module CellSelectionSetup =
-    let maxTimeout = 5 * 60 * 1000
 
     let inline getCellMap (subject: Bindings.render<_, _>) (getFn: GetFn) =
         let dateIdArray = Store.value getFn Selectors.Selectors.dateIdArray

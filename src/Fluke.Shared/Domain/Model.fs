@@ -52,7 +52,7 @@ module Model =
             Priority: Priority option
         }
 
-    and TaskId = TaskId of guid: Guid
+    and TaskId = TaskId of guid: TicksGuid
 
     and TaskName = TaskName of name: string
 

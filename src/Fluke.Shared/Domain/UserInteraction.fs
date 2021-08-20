@@ -95,7 +95,7 @@ module UserInteraction =
         | Dismiss
         | Schedule
 
-    and AttachmentId = AttachmentId of guid: Guid
+    and AttachmentId = AttachmentId of guid: TicksGuid
 
     and AttachmentId with
         static member inline NewId () = AttachmentId (Guid.newTicksGuid ())

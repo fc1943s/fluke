@@ -26,7 +26,7 @@ module State =
             Position: FlukeDateTime option
         }
 
-    and DatabaseId = DatabaseId of guid: Guid
+    and DatabaseId = DatabaseId of guid: TicksGuid
 
     and DatabaseName = DatabaseName of name: string
 
