@@ -193,7 +193,7 @@ module CellSelectionSetup =
                                 if user.__.sea.IsNone then
                                     let alias =
                                         Templates.templatesUser.Username
-                                        |> Username.ValueOrDefault
+                                        |> Username.Value
 
                                     let! _ = Gun.createUser user (Gun.Alias alias) (Gun.Pass alias)
                                     let! _ = Gun.authUser user (Gun.Alias alias) (Gun.Pass alias)

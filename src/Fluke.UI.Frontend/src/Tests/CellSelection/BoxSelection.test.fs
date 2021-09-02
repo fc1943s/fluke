@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Tests.CellSelection
 
+open FsJs.Bindings
 open Fable.ReactTestingLibrary
 open Fable.Jester
 open Fluke.Shared.Domain.Model
@@ -7,7 +8,6 @@ open Fluke.Shared.Domain.UserInteraction
 open Microsoft.FSharp.Core.Operators
 open Fluke.UI.Frontend.State
 open FsStore
-
 
 
 module BoxSelection =
@@ -113,5 +113,5 @@ module BoxSelection =
                 |> Map.ofSeq
                 |> expectSelection get
         },
-        maxTimeout
+        Jest.maxTimeout
     )

@@ -1,4 +1,4 @@
-version 6.0.3
+version 6.0
 framework: net6.0
 storage: none
 source https://api.nuget.org/v3/index.json
@@ -6,16 +6,13 @@ source https://nuget.pkg.github.com/fc1943s/index.json username: "%GITHUB_ACTOR%
 
 nuget FSharp.Core ~> 5.0
 
-git https://github.com/fc1943s/FsBeacon.git main build: pwsh build.ps1
-
-nuget FsJs
-
 // group Fluke.Shared
 nuget Myriad.Core ~> 0.5
 nuget Myriad.Plugins ~> 0.5
 nuget Myriad.Sdk ~> 0.5
 
 // Fluke.UI.Frontend
+nuget FsUi ~> 0.0 prerelease
 
 // Fluke.UI.Electron.Main
 nuget Fable.Electron ~> 6.0
@@ -30,11 +27,3 @@ nuget YoloDev.Expecto.TestSdk ~> 0.12
 nuget Fake.Core.Target ~> 5.20 prerelease
 nuget Fake.DotNet.Cli ~> 5.20 prerelease
 nuget Fake.IO.FileSystem ~> 5.20 prerelease
-
-// FsStore
-nuget Fable.SignalR ~> 0.11
-nuget Fable.Jester ~> 0.33
-nuget Fable.ReactTestingLibrary ~> 0.33
-
-// FsUi
-nuget Feliz.Router ~> 3.8

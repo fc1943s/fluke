@@ -12,8 +12,8 @@ module App =
 
     [<ReactComponent>]
     let App wrap =
-        Profiling.addTimestamp "App().render"
-        Profiling.addCount "App().render"
+        Profiling.addTimestamp (fun () -> "App().render")
+        Profiling.addCount (fun () -> "App().render")
 
         (if wrap then
              RootWrapper.RootWrapper (Some (Selectors.User.theme :?> Atom<obj>))

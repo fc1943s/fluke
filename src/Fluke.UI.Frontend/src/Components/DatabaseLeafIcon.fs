@@ -68,12 +68,12 @@ module DatabaseLeafIcon =
                         (Ui.box
                             (fun _ -> ())
                             [
-                                str $"Owner: {owner |> Username.ValueOrDefault}"
+                                str $"Owner: {owner |> Username.Value}"
                                 br []
                                 if not newSharedWith.IsEmpty then
                                     str
                                         $"""Shared with: {newSharedWith
-                                                          |> List.map Username.ValueOrDefault
+                                                          |> List.map Username.Value
                                                           |> String.concat ", "}"""
                             ])
                         [

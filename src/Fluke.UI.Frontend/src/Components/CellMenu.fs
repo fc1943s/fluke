@@ -171,7 +171,6 @@ module CellMenu =
                     x.borderColor <-
                         if darkMode then
                             Color.Value UserState.Default.CellColorDisabled
-                            |> Option.get
                         else
                             "gray.45"
 
@@ -217,7 +216,7 @@ module CellMenu =
                                     if until.IsSome then cellColorPostponedUntil else cellColorPostponed
                                 | Dismissed -> cellColorDismissed
                                 | Scheduled -> cellColorScheduled
-                                |> Color.ValueOrDefault
+                                |> Color.Value
 
                             Tooltip.wrap
                                 tooltipLabel
@@ -247,8 +246,7 @@ module CellMenu =
                                 [
                                     wrapButton
                                         (Icons.fi.FiArrowRight |> Icons.render |> Some)
-                                        (Color.Value UserState.Default.CellColorPending
-                                         |> Option.get)
+                                        (Color.Value UserState.Default.CellColorPending)
                                         (Some
                                             (fun () ->
                                                 promise {
@@ -293,7 +291,7 @@ module CellMenu =
                             (Tooltip.wrap
                                 (str $"Postpone until {postponedUntilLabel}")
                                 [
-                                    wrapButton None (cellColorPostponedUntil |> Color.ValueOrDefault) None
+                                    wrapButton None (cellColorPostponedUntil |> Color.Value) None
                                 ])
                             postponeUntilLater
                             (fun (_disclosure, fetchInitialFocusRef) ->
@@ -380,8 +378,7 @@ overriding any other behavior.
                                 [
                                     wrapButton
                                         (Icons.bi.BiShuffle |> Icons.render |> Some)
-                                        (Color.Value UserState.Default.CellColorSuggested
-                                         |> Option.get)
+                                        (Color.Value UserState.Default.CellColorSuggested)
                                         (Some random)
                                 ]
 
@@ -392,8 +389,7 @@ overriding any other behavior.
                                 [
                                     wrapButtonStatus
                                         (Icons.md.MdClear |> Icons.render |> Some)
-                                        (Color.Value UserState.Default.CellColorDisabled
-                                         |> Option.get)
+                                        (Color.Value UserState.Default.CellColorDisabled)
                                         Disabled
                                 ]
                         | _ -> nothing

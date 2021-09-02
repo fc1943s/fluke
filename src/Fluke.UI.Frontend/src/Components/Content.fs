@@ -95,7 +95,7 @@ module Content =
 
     [<ReactComponent>]
     let Content () =
-        Profiling.addTimestamp "mainComponent.render"
+        Profiling.addTimestamp (fun () -> "mainComponent.render")
 
         let deviceInfo = Store.useValue Selectors.deviceInfo
         let alias = Store.useValue Selectors.Gun.alias

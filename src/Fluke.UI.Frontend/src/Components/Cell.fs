@@ -28,7 +28,7 @@ module Cell =
                    DateIdAtom: Atom<DateId>
                    SemiTransparent: bool |})
         =
-        Profiling.addCount "- CellComponent.render"
+        Profiling.addCount (fun () -> "- CellComponent.render")
 
         let taskId = Store.useValue input.TaskIdAtom
         let dateId = Store.useValue input.DateIdAtom
@@ -99,7 +99,7 @@ module Cell =
                          | Postponed until -> if until.IsSome then cellColorPostponedUntil else cellColorPostponed
                          | Dismissed -> cellColorDismissed
                          | Scheduled -> cellColorScheduled
-                     |> Color.ValueOrDefault)
+                     |> Color.Value)
                     + (if isToday then "aa"
                        elif input.SemiTransparent then "d9"
                        else "")

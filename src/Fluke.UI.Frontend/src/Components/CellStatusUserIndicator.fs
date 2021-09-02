@@ -39,7 +39,7 @@ module CellStatusUserIndicator =
 
                                 x.borderBottomColor <-
                                     userColor
-                                    |> Option.map Color.ValueOrDefault
+                                    |> Option.map Color.Value
                                     |> Option.get
 
                                 x.borderBottomWidth <- $"{min (cellSize / 2) 10}px"

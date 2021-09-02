@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Tests.CellSelection
 
+open FsJs.Bindings
 open Fable.ReactTestingLibrary
 open Fable.Jester
 open Fluke.Shared.Domain.Model
@@ -36,5 +37,5 @@ module CtrlPressed =
                 |> Map.ofSeq
                 |> expectSelection get
         },
-        maxTimeout
+        Jest.maxTimeout
     )

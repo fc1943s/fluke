@@ -61,7 +61,7 @@ module rec Session =
                             |> String.IsNullOrWhiteSpace
                             |> not
                             && database.Owner
-                               |> Username.ValueOrDefault
+                               |> Username.Value
                                |> String.IsNullOrWhiteSpace
                                |> not
 
