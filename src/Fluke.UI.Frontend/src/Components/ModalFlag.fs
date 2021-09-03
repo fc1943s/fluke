@@ -17,7 +17,7 @@ module ModalFlag =
     [<ReactComponent>]
     let ModalFlag
         (input: {| UIFlagType: UIFlagType
-                   Content: UIFlag * (unit -> JS.Promise<unit>) -> GetFn * SetFn -> ReactElement |})
+                   Content: UIFlag * (unit -> JS.Promise<unit>) -> Getter<_> * Setter<_> -> ReactElement |})
         =
         let uiFlag, setUIFlag = Store.useState (Atoms.User.uiFlag input.UIFlagType)
         let uiVisibleFlag, setUIVisibleFlag = Store.useState (Atoms.User.uiVisibleFlag input.UIFlagType)
@@ -30,14 +30,14 @@ module ModalFlag =
                         setUIVisibleFlag false
                     })
 
-        let callbacks = Store.useCallbacks ()
+        let store = Store.useStore ()
         let content, setContent = React.useState nothing
 
         React.useEffect (
             (fun () ->
                 promise {
-                    let! callbacks = callbacks ()
-                    setContent (input.Content (uiFlag, onHide) callbacks)
+                    let! store = store ()
+                    setContent (input.Content (uiFlag, onHide) store)
                 }
                 |> Promise.start),
             [|
@@ -45,7 +45,7 @@ module ModalFlag =
                 box onHide
                 box uiFlag
                 box input
-                box callbacks
+                box store
 
             |]
         )
@@ -75,8 +75,8 @@ module ModalFlag =
     let ModalFlagBundle
         (input: {| UIFlagType: UIFlagType
                    UIFlagValue: UIFlag
-                   Trigger: (unit -> JS.Promise<unit>) -> GetFn * SetFn -> ReactElement
-                   Content: (unit -> JS.Promise<unit>) -> GetFn * SetFn -> ReactElement |})
+                   Trigger: (unit -> JS.Promise<unit>) -> Getter<_> * Setter<_> -> ReactElement
+                   Content: (unit -> JS.Promise<unit>) -> Getter<_> * Setter<_> -> ReactElement |})
         =
         React.fragment [
             ModalFlagTrigger.ModalFlagTrigger

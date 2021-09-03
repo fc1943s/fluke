@@ -825,7 +825,7 @@ NUGET
       FSharp.Core (>= 4.6)
       System.Collections.Immutable (>= 1.5 < 5.1)
   remote: https://nuget.pkg.github.com/fc1943s/index.json
-    FsCore (0.0.1-alpha.6)
+    FsCore (0.0.1-alpha.7)
       FSharp.Core (>= 5.0 < 6.0)
     FsJs (0.0.1-alpha.38)
       Fable.DateFunctions (>= 3.6 < 4.0)
@@ -835,15 +835,14 @@ NUGET
       FsCore
       FSharp.Core (>= 5.0 < 6.0)
       Thoth.Json (>= 6.0 < 7.0)
-    FsStore (0.0.1-alpha.2)
+    FsStore (0.2.0-alpha.7)
       Fable.SignalR (>= 0.11 < 1.0)
+      FsCore (>= 0.0.0-prerelease < 1.0.0-prerelease)
       FSharp.Core (>= 5.0 < 6.0)
-      FsJs
-    FsUi (0.0.1-alpha.1)
+      FsJs (>= 0.0.0-prerelease < 1.0.0-prerelease)
+    FsUi (0.0.1-alpha.5)
       Feliz.Router (>= 3.8 < 4.0)
+      FsCore (>= 0.0.0-prerelease < 1.0.0-prerelease)
       FSharp.Core (>= 5.0 < 6.0)
-      FsStore (>= 0.0.1-prerelease < 0.1.0-prerelease)
-GIT
-  remote: https://github.com/fc1943s/FsBeacon.git
-     (810e9c3047fcd68860b3cf4ee6f39c2f4341724e)
-      build: pwsh build.ps1
+      FsJs (>= 0.0.0-prerelease < 1.0.0-prerelease)
+      FsStore (>= 0.2.0-prerelease < 1.0.0-prerelease)

@@ -555,7 +555,7 @@ module SchedulingSelector =
                     fun visible setVisible ->
                         Button.Button
                             {|
-                                Hint = None
+                                Tooltip = None
                                 Icon =
                                     Some (
                                         (if visible then Icons.fi.FiChevronUp else Icons.fi.FiChevronDown)

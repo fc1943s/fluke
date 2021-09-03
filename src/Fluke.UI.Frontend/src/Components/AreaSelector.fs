@@ -83,7 +83,7 @@ module AreaSelector =
                             fun visible setVisible ->
                                 Button.Button
                                     {|
-                                        Hint = None
+                                        Tooltip = None
                                         Icon =
                                             Some (
                                                 (if visible then Icons.fi.FiChevronUp else Icons.fi.FiChevronDown)
@@ -120,7 +120,7 @@ module AreaSelector =
 
                                                         Button.Button
                                                             {|
-                                                                Hint = None
+                                                                Tooltip = None
                                                                 Icon =
                                                                     Some (
                                                                         (if index = i then
@@ -160,7 +160,7 @@ module AreaSelector =
                                                 fun visible setVisible ->
                                                     Button.Button
                                                         {|
-                                                            Hint = None
+                                                            Tooltip = None
                                                             Icon =
                                                                 Some (
                                                                     (if visible then

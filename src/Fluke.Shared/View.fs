@@ -71,11 +71,8 @@ module View =
                     |> Seq.exists
                         (fun (dateId, cellState) ->
                             let dateInRange =
-                                match dateId
-                                      |> DateId.Value
-                                      |> Option.map FlukeDate.DateTime with
-                                | Some date -> date >==< (dateRangeStart, dateRangeEnd)
-                                | None -> false
+                                (dateId |> FlukeDate.DateTime)
+                                >==< (dateRangeStart, dateRangeEnd)
 
                             let hasRelevantData =
                                 not cellState.SessionList.IsEmpty
@@ -101,7 +98,7 @@ module View =
                    DayStart: FlukeTime
                    Position: FlukeDateTime
                    InformationSet: Set<Information>
-                   Lanes: (TaskState * Map<DateId, CellStatus>) list |})
+                   Lanes: (TaskState * Map<FlukeDate, CellStatus>) list |})
         =
         let lanes =
             input.Lanes

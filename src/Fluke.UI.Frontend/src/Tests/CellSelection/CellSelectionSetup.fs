@@ -27,9 +27,9 @@ open State
 
 module CellSelectionSetup =
 
-    let inline getCellMap (subject: Bindings.render<_, _>) (getFn: GetFn) =
-        let dateIdArray = Store.value getFn Selectors.Selectors.dateIdArray
-        let sortedTaskIdArray = Store.value getFn Selectors.Session.sortedTaskIdArray
+    let inline getCellMap (subject: Bindings.render<_, _>) (getFn: Getter<_>) =
+        let dateArray = Atom.get getFn Selectors.Selectors.dateArray
+        let sortedTaskIdArray = Atom.get getFn Selectors.Session.sortedTaskIdArray
 
         printfn $"sortedTaskIdArray={sortedTaskIdArray}"
 
@@ -37,10 +37,9 @@ module CellSelectionSetup =
             sortedTaskIdArray
             |> Array.collect
                 (fun taskId ->
-                    let taskName = Store.value getFn (Atoms.Task.name taskId)
+                    let taskName = Atom.get getFn (Atoms.Task.name taskId)
 
-                    dateIdArray
-                    |> Array.choose DateId.Value
+                    dateArray
                     |> Array.map
                         (fun date ->
                             let el =
@@ -55,7 +54,7 @@ module CellSelectionSetup =
 
         cellMap
 
-    let inline expectSelection (getFn: GetFn) expected =
+    let inline expectSelection (getFn: Getter<_>) expected =
         let toString map =
             map
             |> Map.toList
@@ -70,9 +69,7 @@ module CellSelectionSetup =
         promise {
             do! RTL.waitFor id
 
-            let cellSelectionMap =
-                Store.value getFn Selectors.Session.visibleTaskSelectedDateIdMap
-                |> Map.map (fun _ dateIdSet -> dateIdSet |> Set.choose DateId.Value)
+            let cellSelectionMap = Atom.get getFn Selectors.Session.visibleTaskSelectedDateMap
 
             Jest
                 .expect(toString cellSelectionMap)
@@ -108,7 +105,7 @@ module CellSelectionSetup =
                     (fun ((taskId, TaskName taskName'), _) _ -> if taskName = taskName' then Some taskId else None)
         }
 
-    let inline initialSetter (getter: GetFn) (setter: SetFn) =
+    let inline initialSetter (getter: Getter<_>) (setter: Setter<_>) =
         promise {
             let dslTemplate =
                 {
@@ -172,8 +169,8 @@ module CellSelectionSetup =
                 |> Promise.all
                 |> Promise.ignore
 
-            Store.set setter Atoms.User.selectedDatabaseIdSet (Set.singleton databaseId)
-            Store.set setter Atoms.Session.position (Some dslTemplate.Position)
+            Atom.set setter Atoms.User.selectedDatabaseIdSet (Set.singleton databaseId)
+            Atom.set setter Atoms.Session.position (Some dslTemplate.Position)
         }
 
     let inline getApp () =
@@ -191,9 +188,7 @@ module CellSelectionSetup =
                                 let user = gun.user ()
 
                                 if user.__.sea.IsNone then
-                                    let alias =
-                                        Templates.templatesUser.Username
-                                        |> Username.Value
+                                    let alias = Templates.templatesUser.Username |> Username.Value
 
                                     let! _ = Gun.createUser user (Gun.Alias alias) (Gun.Pass alias)
                                     let! _ = Gun.authUser user (Gun.Alias alias) (Gun.Pass alias)
@@ -226,7 +221,7 @@ module CellSelectionSetup =
             do! RTL.sleep 400
 
             let! alias =
-                Dom.waitForSome (fun () -> async { return Store.value getFn Selectors.Gun.alias })
+                Dom.waitForSome (fun () -> async { return Atom.get getFn Selectors.Gun.alias })
                 |> Async.StartAsPromise
 
             printfn $"! alias={alias}"
@@ -237,7 +232,7 @@ module CellSelectionSetup =
                 Dom.waitForSome
                     (fun () ->
                         async {
-                            let sortedTaskIdArray = Store.value getFn Selectors.Session.sortedTaskIdArray
+                            let sortedTaskIdArray = Atom.get getFn Selectors.Session.sortedTaskIdArray
                             return if sortedTaskIdArray.Length = 4 then Some sortedTaskIdArray else None
                         })
                 |> Async.StartAsPromise

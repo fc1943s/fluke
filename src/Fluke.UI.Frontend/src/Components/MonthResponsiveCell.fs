@@ -15,8 +15,8 @@ module MonthResponsiveCell =
     open Domain.UserInteraction
 
     [<ReactComponent>]
-    let MonthResponsiveCell (dateIdAtom: Atom<DateId>) (props: Ui.IChakraProps -> unit) =
-        let dateId = Store.useValue dateIdAtom
+    let MonthResponsiveCell (dateAtom: AtomConfig<FlukeDate>) (props: Ui.IChakraProps -> unit) =
+        let date = Store.useValue dateAtom
         let weekStart = Store.useValue Atoms.User.weekStart
         let cellSize = Store.useValue Atoms.User.cellSize
 
@@ -28,16 +28,16 @@ module MonthResponsiveCell =
                 x.lineHeight <- $"{cellSize}px"
 
                 x.borderLeftWidth <-
-                    match (weekStart, dateId) with
+                    match (weekStart, date) with
                     | StartOfMonth -> "1px"
                     | _ -> null
 
                 x.borderLeftColor <-
-                    match (weekStart, dateId) with
+                    match (weekStart, date) with
                     | StartOfMonth -> "#ffffff3d"
                     | _ -> null
 
                 props x)
             [
-                dateId |> DateId.Format DateIdFormat.Month |> str
+                date |> FlukeDate.Format DateIdFormat.Month |> str
             ]

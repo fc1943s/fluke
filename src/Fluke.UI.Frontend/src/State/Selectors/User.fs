@@ -1,6 +1,7 @@
 namespace Fluke.UI.Frontend.State.Selectors
 
 open FsCore
+open FsStore.Model
 open FsUi.State
 open FsStore
 
@@ -10,82 +11,82 @@ open Fluke.UI.Frontend.State
 
 module rec User =
     let rec userState =
-        Store.readSelector
-            Fluke.root
-            (nameof userState)
+        Atom.readSelector
+            (StoreAtomPath.IndexedAtomPath (Fluke.root, Atoms.User.collection, [], AtomName (nameof userState)))
             (fun getter ->
                 {
-                    Archive = Store.value getter Atoms.User.archive
+                    Archive = Atom.get getter Atoms.User.archive
                     AccordionHiddenFlagMap =
                         Reflection.unionCases<AccordionType>
                         |> List.map
                             (fun accordionType ->
-                                accordionType, Store.value getter (Atoms.User.accordionHiddenFlag accordionType))
+                                accordionType,
+                                Atom.get getter (Atoms.User.accordionHiddenFlag accordionType)
+                                |> List.toArray)
                         |> Map.ofList
-                    CellColorDisabled = Store.value getter Atoms.User.cellColorDisabled
-                    CellColorSuggested = Store.value getter Atoms.User.cellColorSuggested
-                    CellColorPending = Store.value getter Atoms.User.cellColorPending
-                    CellColorMissed = Store.value getter Atoms.User.cellColorMissed
-                    CellColorMissedToday = Store.value getter Atoms.User.cellColorMissedToday
-                    CellColorPostponedUntil = Store.value getter Atoms.User.cellColorPostponedUntil
-                    CellColorPostponed = Store.value getter Atoms.User.cellColorPostponed
-                    CellColorCompleted = Store.value getter Atoms.User.cellColorCompleted
-                    CellColorDismissed = Store.value getter Atoms.User.cellColorDismissed
-                    CellColorScheduled = Store.value getter Atoms.User.cellColorScheduled
-                    CellSize = Store.value getter Atoms.User.cellSize
-                    ClipboardAttachmentIdMap = Store.value getter Atoms.User.clipboardAttachmentIdMap
-                    ClipboardVisible = Store.value getter Atoms.User.clipboardVisible
-                    DaysAfter = Store.value getter Atoms.User.daysAfter
-                    DaysBefore = Store.value getter Atoms.User.daysBefore
-                    DayStart = Store.value getter Atoms.User.dayStart
-                    EnableCellPopover = Store.value getter Atoms.User.enableCellPopover
-                    ExpandedDatabaseIdSet = Store.value getter Atoms.User.expandedDatabaseIdSet
-                    Filter = Store.value getter Atoms.User.filter
-                    HideSchedulingOverlay = Store.value getter Atoms.User.hideSchedulingOverlay
-                    HideTemplates = Store.value getter Atoms.User.hideTemplates
-                    Language = Store.value getter Atoms.User.language
-                    LastDatabaseSelected = Store.value getter Atoms.User.lastDatabaseSelected
-                    LeftDock = Store.value getter Atoms.User.leftDock
-                    LeftDockSize = Store.value getter Atoms.User.leftDockSize
-                    RandomizeProject = Store.value getter Atoms.User.randomizeProject
-                    RandomizeProjectAttachment = Store.value getter Atoms.User.randomizeProjectAttachment
-                    RandomizeArea = Store.value getter Atoms.User.randomizeArea
-                    RandomizeAreaAttachment = Store.value getter Atoms.User.randomizeAreaAttachment
-                    RandomizeResource = Store.value getter Atoms.User.randomizeResource
-                    RandomizeResourceAttachment = Store.value getter Atoms.User.randomizeResourceAttachment
-                    RandomizeProjectTask = Store.value getter Atoms.User.randomizeProjectTask
-                    RandomizeAreaTask = Store.value getter Atoms.User.randomizeAreaTask
-                    RandomizeProjectTaskAttachment = Store.value getter Atoms.User.randomizeProjectTaskAttachment
-                    RandomizeAreaTaskAttachment = Store.value getter Atoms.User.randomizeAreaTaskAttachment
-                    RandomizeCellAttachment = Store.value getter Atoms.User.randomizeCellAttachment
-                    RightDock = Store.value getter Atoms.User.rightDock
-                    RightDockSize = Store.value getter Atoms.User.rightDockSize
-                    SearchText = Store.value getter Atoms.User.searchText
-                    SelectedDatabaseIdSet = Store.value getter Atoms.User.selectedDatabaseIdSet
-                    SessionBreakDuration = Store.value getter Atoms.User.sessionBreakDuration
-                    SessionDuration = Store.value getter Atoms.User.sessionDuration
+                    CellColorDisabled = Atom.get getter Atoms.User.cellColorDisabled
+                    CellColorSuggested = Atom.get getter Atoms.User.cellColorSuggested
+                    CellColorPending = Atom.get getter Atoms.User.cellColorPending
+                    CellColorMissed = Atom.get getter Atoms.User.cellColorMissed
+                    CellColorMissedToday = Atom.get getter Atoms.User.cellColorMissedToday
+                    CellColorPostponedUntil = Atom.get getter Atoms.User.cellColorPostponedUntil
+                    CellColorPostponed = Atom.get getter Atoms.User.cellColorPostponed
+                    CellColorCompleted = Atom.get getter Atoms.User.cellColorCompleted
+                    CellColorDismissed = Atom.get getter Atoms.User.cellColorDismissed
+                    CellColorScheduled = Atom.get getter Atoms.User.cellColorScheduled
+                    CellSize = Atom.get getter Atoms.User.cellSize
+                    ClipboardAttachmentIdMap = Atom.get getter Atoms.User.clipboardAttachmentIdMap
+                    ClipboardVisible = Atom.get getter Atoms.User.clipboardVisible
+                    DaysAfter = Atom.get getter Atoms.User.daysAfter
+                    DaysBefore = Atom.get getter Atoms.User.daysBefore
+                    DayStart = Atom.get getter Atoms.User.dayStart
+                    EnableCellPopover = Atom.get getter Atoms.User.enableCellPopover
+                    ExpandedDatabaseIdSet = Atom.get getter Atoms.User.expandedDatabaseIdSet
+                    Filter = Atom.get getter Atoms.User.filter
+                    HideSchedulingOverlay = Atom.get getter Atoms.User.hideSchedulingOverlay
+                    HideTemplates = Atom.get getter Atoms.User.hideTemplates
+                    Language = Atom.get getter Atoms.User.language
+                    LastDatabaseSelected = Atom.get getter Atoms.User.lastDatabaseSelected
+                    LeftDock = Atom.get getter Atoms.User.leftDock
+                    LeftDockSize = Atom.get getter Atoms.User.leftDockSize
+                    RandomizeProject = Atom.get getter Atoms.User.randomizeProject
+                    RandomizeProjectAttachment = Atom.get getter Atoms.User.randomizeProjectAttachment
+                    RandomizeArea = Atom.get getter Atoms.User.randomizeArea
+                    RandomizeAreaAttachment = Atom.get getter Atoms.User.randomizeAreaAttachment
+                    RandomizeResource = Atom.get getter Atoms.User.randomizeResource
+                    RandomizeResourceAttachment = Atom.get getter Atoms.User.randomizeResourceAttachment
+                    RandomizeProjectTask = Atom.get getter Atoms.User.randomizeProjectTask
+                    RandomizeAreaTask = Atom.get getter Atoms.User.randomizeAreaTask
+                    RandomizeProjectTaskAttachment = Atom.get getter Atoms.User.randomizeProjectTaskAttachment
+                    RandomizeAreaTaskAttachment = Atom.get getter Atoms.User.randomizeAreaTaskAttachment
+                    RandomizeCellAttachment = Atom.get getter Atoms.User.randomizeCellAttachment
+                    RightDock = Atom.get getter Atoms.User.rightDock
+                    RightDockSize = Atom.get getter Atoms.User.rightDockSize
+                    SearchText = Atom.get getter Atoms.User.searchText
+                    SelectedDatabaseIdSet = Atom.get getter Atoms.User.selectedDatabaseIdSet
+                    SessionBreakDuration = Atom.get getter Atoms.User.sessionBreakDuration
+                    SessionDuration = Atom.get getter Atoms.User.sessionDuration
                     UIFlagMap =
                         Reflection.unionCases<UIFlagType>
-                        |> List.map (fun uiFlagType -> uiFlagType, Store.value getter (Atoms.User.uiFlag uiFlagType))
+                        |> List.map (fun uiFlagType -> uiFlagType, Atom.get getter (Atoms.User.uiFlag uiFlagType))
                         |> Map.ofList
                     UIVisibleFlagMap =
                         Reflection.unionCases<UIFlagType>
                         |> List.map
-                            (fun uiFlagType -> uiFlagType, Store.value getter (Atoms.User.uiVisibleFlag uiFlagType))
+                            (fun uiFlagType -> uiFlagType, Atom.get getter (Atoms.User.uiVisibleFlag uiFlagType))
                         |> Map.ofList
-                    UserColor = Store.value getter Atoms.User.userColor
-                    View = Store.value getter Atoms.User.view
-                    WeekStart = Store.value getter Atoms.User.weekStart
+                    UserColor = Atom.get getter Atoms.User.userColor
+                    View = Atom.get getter Atoms.User.view
+                    WeekStart = Atom.get getter Atoms.User.weekStart
                 })
 
     let rec theme =
-        Store.readSelector
-            Fluke.root
-            (nameof theme)
+        Atom.readSelector
+            (StoreAtomPath.IndexedAtomPath (Fluke.root, Atoms.User.collection, [], AtomName (nameof theme)))
             (fun getter ->
-                let darkMode = Store.value getter Atoms.Ui.darkMode
-                let fontSize = Store.value getter Atoms.Ui.fontSize
-                let systemUiFont = Store.value getter Atoms.Ui.systemUiFont
+                let darkMode = Atom.get getter Atoms.Ui.darkMode
+                let fontSize = Atom.get getter Atoms.Ui.fontSize
+                let systemUiFont = Atom.get getter Atoms.Ui.systemUiFont
 
                 let alphaColors dark =
                     let n = if dark then "0" else "255"

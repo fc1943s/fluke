@@ -14,8 +14,8 @@ module CellBorder =
     open Domain.UserInteraction
 
     [<ReactComponent>]
-    let CellBorder taskIdAtom dateIdAtom =
-        let taskId, dateId = Store.useValueTuple taskIdAtom dateIdAtom
+    let CellBorder taskIdAtom dateAtom =
+        let taskId, dateId = Store.useValueTuple taskIdAtom dateAtom
         let weekStart = Store.useValue Atoms.User.weekStart
         let cellSize = Store.useValue Atoms.User.cellSize
         let databaseId = Store.useValue (Atoms.Task.databaseId taskId)

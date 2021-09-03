@@ -42,7 +42,7 @@ module UserInteraction =
     and [<RequireQualifiedAccess>] Interaction =
         | Information of information: Information * interaction: InformationInteraction
         | Task of task: TaskId * interaction: TaskInteraction
-        | Cell of taskId: TaskId * dateId: DateId * interaction: CellInteraction
+        | Cell of taskId: TaskId * date: FlukeDate * interaction: CellInteraction
 
     and [<RequireQualifiedAccess>] InformationInteraction =
         | Attachment of attachment: Attachment
@@ -82,8 +82,6 @@ module UserInteraction =
         | Sort of top: TaskId option * bottom: TaskId option
 
     and Session = Session of start: FlukeDateTime
-
-    and DateId = DateId of referenceDay: FlukeDate
 
     and [<RequireQualifiedAccess>] CellInteraction =
         | Attachment of attachment: Attachment
@@ -165,7 +163,7 @@ module UserInteraction =
             =
             DateTime (year, int month, day, int hour, int minute, second)
 
-        static member inline GreaterEqualThan (dayStart: FlukeTime) (DateId (referenceDay: FlukeDate)) time position =
+        static member inline GreaterEqualThan (dayStart: FlukeTime) (date: FlukeDate) time position =
             let testingAfterMidnight = dayStart |> FlukeTime.GreaterEqualThan time
 
             let currentlyBeforeMidnight =
@@ -176,10 +174,10 @@ module UserInteraction =
                 if testingAfterMidnight
                    && currentlyBeforeMidnight
                    && dayStart <> time then
-                    (referenceDay |> FlukeDate.DateTime).AddDays 1.
+                    (date |> FlukeDate.DateTime).AddDays 1.
                     |> FlukeDate.FromDateTime
                 else
-                    referenceDay
+                    date
 
             let dateToCompare: FlukeDateTime =
                 {
@@ -205,16 +203,6 @@ module UserInteraction =
         static member inline FromDateTime (date: DateTime) : FlukeDateTime =
             FlukeDateTime.Create (FlukeDate.FromDateTime date, FlukeTime.FromDateTime date, Second date.Second)
 
-    and DateId with
-        static member inline Value value =
-            match value |> Option.ofObjUnbox with
-            | Some (DateId referenceDay) -> Some referenceDay
-            | _ -> None
-
-        static member inline ValueOrDefault value =
-            value
-            |> DateId.Value
-            |> Option.defaultValue FlukeDate.MinValue
 
     and Attachment with
         static member inline Stringify attachment =
@@ -227,7 +215,12 @@ module UserInteraction =
             | Attachment.Image fileId -> $"Image ID: {fileId |> FileId.Value}"
             | attachment -> $"<attachment {attachment}>"
 
-    let inline (|BeforeToday|Today|AfterToday|) (dayStart: FlukeTime, position: FlukeDateTime, DateId referenceDay) =
+    let inline (|BeforeToday|Today|AfterToday|)
+        (
+            dayStart: FlukeTime,
+            position: FlukeDateTime,
+            referenceDay: FlukeDate
+        ) =
         let dateStart =
             FlukeDateTime.Create (referenceDay, dayStart, Second 0)
             |> FlukeDateTime.DateTime
@@ -239,24 +232,23 @@ module UserInteraction =
         | position when dateStart < position -> BeforeToday
         | _ -> AfterToday
 
-    let inline (|StartOfMonth|StartOfWeek|NormalDay|) (weekStart, dateId) =
-        match dateId |> DateId.Value with
-        | Some { Day = Day 1 } -> StartOfMonth
-        | Some date when (date |> FlukeDate.DateTime).DayOfWeek = weekStart -> StartOfWeek
+    let inline (|StartOfMonth|StartOfWeek|NormalDay|) (weekStart, date) =
+        match date with
+        | { Day = Day 1 } -> StartOfMonth
+        | date when (date |> FlukeDate.DateTime).DayOfWeek = weekStart -> StartOfWeek
         | _ -> NormalDay
 
-    let inline isToday dayStart position dateId =
-        match (dayStart, position, dateId) with
+    let inline isToday dayStart position date =
+        match (dayStart, position, date) with
         | Today -> true
         | _ -> false
 
-    let inline dateId dayStart position =
-        match isToday dayStart position (DateId position.Date) with
+    let inline getReferenceDay dayStart position =
+        match isToday dayStart position position.Date with
         | true -> position.Date
         | false ->
             (position.Date |> FlukeDate.DateTime).AddDays -1.
             |> FlukeDate.FromDateTime
-        |> DateId
 
 
 

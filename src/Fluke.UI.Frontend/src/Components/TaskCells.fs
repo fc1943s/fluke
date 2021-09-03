@@ -11,7 +11,7 @@ open FsUi.Components
 module TaskCells =
     [<ReactComponent>]
     let TaskCells index taskIdAtom =
-        let dateIdAtoms = Store.useValue Selectors.Selectors.dateIdAtoms
+        let dateAtoms = Store.useValue Selectors.Selectors.dateAtoms
 
         Ui.flex
             (fun x -> x.backgroundColor <- "#212121")
@@ -19,13 +19,13 @@ module TaskCells =
                 React.suspense (
                     [
                         yield!
-                            dateIdAtoms
+                            dateAtoms
                             |> Array.map
-                                (fun dateIdAtom ->
+                                (fun dateAtom ->
                                     Cell.CellWrapper
                                         {|
                                             TaskIdAtom = taskIdAtom
-                                            DateIdAtom = dateIdAtom
+                                            DateAtom = dateAtom
                                             SemiTransparent = index % 2 <> 0
                                         |})
                     ],

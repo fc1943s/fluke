@@ -13,8 +13,8 @@ module GridHeader =
     [<ReactComponent>]
     let GridHeader () =
         let cellSize = Store.useValue Atoms.User.cellSize
-        let dateIdAtoms = Store.useValue Selectors.Selectors.dateIdAtoms
-        let dateIdAtomsByMonth = Store.useValue Selectors.Selectors.dateIdAtomsByMonth
+        let dateAtoms = Store.useValue Selectors.Selectors.dateAtoms
+        let dateAtomsByMonth = Store.useValue Selectors.Selectors.dateAtomsByMonth
 
         Ui.box
             (fun _ -> ())
@@ -23,16 +23,16 @@ module GridHeader =
                     (fun _ -> ())
                     [
                         yield!
-                            dateIdAtomsByMonth
+                            dateAtomsByMonth
                             |> Array.map
-                                (fun dateIdAtoms ->
-                                    if dateIdAtoms.Length = 0 then
+                                (fun dateAtoms ->
+                                    if dateAtoms.Length = 0 then
                                         nothing
                                     else
-                                        let cellWidth = cellSize * dateIdAtoms.Length
+                                        let cellWidth = cellSize * dateAtoms.Length
 
                                         MonthResponsiveCell.MonthResponsiveCell
-                                            dateIdAtoms.[0]
+                                            dateAtoms.[0]
                                             (fun x -> x.width <- $"{cellWidth}px"))
                     ]
 
@@ -40,7 +40,7 @@ module GridHeader =
                     (fun _ -> ())
                     [
                         yield!
-                            dateIdAtoms
+                            dateAtoms
                             |> Array.map (Day.Day TempUI.DateIdFormat.DayOfWeek)
                     ]
 
@@ -48,7 +48,7 @@ module GridHeader =
                     (fun _ -> ())
                     [
                         yield!
-                            dateIdAtoms
+                            dateAtoms
                             |> Array.map (Day.Day TempUI.DateIdFormat.Day)
                     ]
             ]

@@ -25,14 +25,13 @@ module LoginScreen =
         let passwordField, setPasswordField = React.useState ""
         let password2Field, setPassword2Field = React.useState ""
 
-        let signIn = Auth.useSignIn ()
         let signUp = Auth.useSignUp ()
 
         let signInClick =
             Store.useCallbackRef
-                (fun _ _ _ ->
+                (fun getter setter _ ->
                     promise {
-                        match! signIn (usernameField, passwordField) with
+                        match! Auth.signIn getter setter (usernameField, passwordField) with
                         | Ok _ -> printfn "logged"
                         | Error error -> toast (fun x -> x.description <- error)
                     })
@@ -129,7 +128,7 @@ module LoginScreen =
                                         Button.Button
                                             {|
                                                 Icon = Some (Icons.fi.FiKey |> Icons.render, Button.IconPosition.Left)
-                                                Hint = None
+                                                Tooltip = None
                                                 Props =
                                                     fun x ->
                                                         x.flex <- "1"
@@ -141,7 +140,7 @@ module LoginScreen =
                                             |}
                                         Button.Button
                                             {|
-                                                Hint = None
+                                                Tooltip = None
                                                 Icon =
                                                     Some (
                                                         (if visible then

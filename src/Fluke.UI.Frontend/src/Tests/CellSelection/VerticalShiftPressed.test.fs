@@ -18,7 +18,7 @@ module VerticalShiftPressed =
         promise {
             let! cellMapGetter, (get, setFn) = initialize ()
 
-            RTL.act (fun () -> Store.set setFn Atoms.Session.shiftPressed true)
+            RTL.act (fun () -> Atom.set setFn Atoms.Session.shiftPressed true)
 
             do! RTL.waitFor id
 

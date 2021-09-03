@@ -62,7 +62,7 @@ module Sorting =
                     |> Map.toSeq
                     |> Seq.tryFindIndex
                         (function
-                        | DateId referenceDay,
+                        | referenceDay,
                           (CellStatus.Pending
                           | CellStatus.UserStatus (_, ManualCellStatus.Scheduled)) when
                             (referenceDay |> FlukeDate.DateTime) > (position.Date |> FlukeDate.DateTime)
@@ -76,7 +76,7 @@ module Sorting =
         | DefaultSort
 
     let sortLanesByTimeOfDay dayStart (position: FlukeDateTime) lanes =
-        let currentDateId = dateId dayStart position
+        let currentDateId = getReferenceDay dayStart position
 
         let getGroup taskState (dateId, status) =
             let (|PostponedUntil|Postponed|WasPostponed|NotPostponed|) =
@@ -90,7 +90,7 @@ module Sorting =
                 | ManualCellStatus.Postponed _ -> PostponedUntil
                 | _ -> NotPostponed
 
-            let getSessionsTodayCount (cellStateMap: Map<DateId, CellState>) =
+            let getSessionsTodayCount (cellStateMap: Map<FlukeDate, CellState>) =
                 cellStateMap
                 |> Map.tryFind currentDateId
                 |> Option.map (fun cellState -> cellState.SessionList)

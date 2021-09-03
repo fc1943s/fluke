@@ -108,8 +108,8 @@ module TempData =
             Attachment.Comment comment
             |> CellInteraction.Attachment
 
-        let dateId = dateId dayStart moment
-        let interaction = Interaction.Cell (task.Id, dateId, cellInteraction)
+        let date = getReferenceDay dayStart moment
+        let interaction = Interaction.Cell (task.Id, date, cellInteraction)
         UserInteraction (moment, user, interaction)
 
     let createCellStatusChangeInteractions user (entries: (FlukeDate * (Task option * ManualCellStatus) list) list) =

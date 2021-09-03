@@ -1639,8 +1639,7 @@ module Templates =
             | ManualCellStatus.Scheduled -> CellStatusChange.Schedule
 
         let cellInteraction = CellInteraction.StatusChange cellStatusChange
-        let dateId = DateId date
-        let interaction = Interaction.Cell (task.Id, dateId, cellInteraction)
+        let interaction = Interaction.Cell (task.Id, date, cellInteraction)
         let moment = FlukeDateTime.Create (date, user.DayStart, Second 0)
         let userInteraction = UserInteraction (moment, user.Username, interaction)
         userInteraction
@@ -1676,7 +1675,7 @@ module Templates =
                             let interaction =
                                 Interaction.Cell (
                                     task.Id,
-                                    DateId date,
+                                    date,
                                     CellInteraction.Attachment (Attachment.Comment (Comment.Comment comment))
                                 )
 

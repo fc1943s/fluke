@@ -25,7 +25,6 @@
         <Compile Include="src\State\Atoms\Database.fs" />
         <Compile Include="src\State\Atoms\Attachment.fs" />
         <Compile Include="src\State\Atoms\Task.fs" />
-        <Compile Include="src\State\Atoms\Cell.fs" />
         <Compile Include="src\State\Selectors\Selectors.fs" />
         <Compile Include="src\State\Selectors\User.fs" />
         <Compile Include="src\State\Selectors\Attachment.fs" />
@@ -33,8 +32,8 @@
         <Compile Include="src\State\Selectors\Database.fs" />
         <Compile Include="src\State\Selectors\Information.fs" />
         <Compile Include="src\State\Selectors\Session.fs" />
+        <Compile Include="src\State\Selectors\FlukeDate.fs" />
         <Compile Include="src\State\Selectors\Cell.fs" />
-        <Compile Include="src\State\Selectors\DateId.fs" />
         <Compile Include="src\State\Selectors\BulletJournalView.fs" />
         <Compile Include="src\Hooks\Hydrate.fs" />
         <Compile Include="src\Hooks\Navigate.fs" />
@@ -158,8 +157,6 @@
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Fluke.Shared\Fluke.Shared.fsproj" />
-        <ProjectReference Include="..\..\paket-files\github.com\fc1943s\FsBeacon\src\FsStore\FsStore.fsproj" />
-        <ProjectReference Include="..\..\paket-files\github.com\fc1943s\FsBeacon\src\FsUi\FsUi.fsproj" />
     </ItemGroup>
     <ItemGroup>
       <EmbeddedResource Remove="node_modules\**" />

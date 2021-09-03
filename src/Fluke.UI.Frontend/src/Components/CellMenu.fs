@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open FsStore.State
 open FsCore
 open FsCore.BaseModel
 open FsStore.Bindings
@@ -26,29 +27,29 @@ open FsUi.Components
 module CellMenu =
 
     [<ReactComponent>]
-    let PostponeTooltipText dateIdAtom =
+    let PostponeTooltipText dateAtom =
         let position = Store.useValue Atoms.Session.position
-        let dateId = Store.useValue dateIdAtom
-        let visibleTaskSelectedDateIdMap = Store.useValue Selectors.Session.visibleTaskSelectedDateIdMap
+        let date = Store.useValue dateAtom
+        let visibleTaskSelectedDateMap = Store.useValue Selectors.Session.visibleTaskSelectedDateMap
 
         str
-            $"""Postpone{match position, dateId with
-                         | Some position, dateId when
-                             position.Date = (dateId |> DateId.ValueOrDefault)
-                             && visibleTaskSelectedDateIdMap
+            $"""Postpone{match position, date with
+                         | Some position, date when
+                             position.Date = date
+                             && visibleTaskSelectedDateMap
                                 |> Map.values
-                                |> Seq.forall ((=) (Set.singleton dateId))
+                                |> Seq.forall ((=) (Set.singleton date))
                              ->
                              " until tomorrow"
                          | _ -> ""}"""
 
     [<ReactComponent>]
-    let CellMenu taskIdAtom dateIdAtom (onClose: (unit -> unit) option) (floating: bool) =
-        let taskId, dateId = Store.useValueTuple taskIdAtom dateIdAtom
+    let CellMenu taskIdAtom dateAtom (onClose: (unit -> unit) option) (floating: bool) =
+        let taskId, date = Store.useValueTuple taskIdAtom dateAtom
         let alias = Store.useValue Selectors.Gun.alias
         let toast = Ui.useToast ()
         let cellSize = Store.useValue Atoms.User.cellSize
-        let sessionStatus, setSessionStatus = Store.useState (Selectors.Cell.sessionStatus (taskId, dateId))
+        let sessionStatus, setSessionStatus = Store.useState (Selectors.Cell.sessionStatus (taskId, date))
         let darkMode = Store.useValue Atoms.Ui.darkMode
 
         let postponedUntil, setPostponedUntil =
@@ -70,25 +71,25 @@ module CellMenu =
         let cellColorCompleted = Store.useValue Atoms.User.cellColorCompleted
         let cellColorDismissed = Store.useValue Atoms.User.cellColorDismissed
         let cellColorScheduled = Store.useValue Atoms.User.cellColorScheduled
-        let visibleTaskSelectedDateIdMap = Store.useValue Selectors.Session.visibleTaskSelectedDateIdMap
+        let visibleTaskSelectedDateMap = Store.useValue Selectors.Session.visibleTaskSelectedDateMap
 
         let onClick =
             Store.useCallbackRef
                 (fun _ setter (onClickStatus: CellStatus) ->
                     promise {
-                        visibleTaskSelectedDateIdMap
+                        visibleTaskSelectedDateMap
                         |> Map.iter
-                            (fun taskId dateIdSet ->
-                                dateIdSet
+                            (fun taskId dateSet ->
+                                dateSet
                                 |> Set.iter
-                                    (fun dateId ->
-                                        Store.set setter (Selectors.Cell.sessionStatus (taskId, dateId)) onClickStatus))
+                                    (fun date ->
+                                        Atom.set setter (Selectors.Cell.sessionStatus (taskId, date)) onClickStatus))
 
-                        Store.set setter (Selectors.Cell.sessionStatus (taskId, dateId)) onClickStatus
+                        Atom.set setter (Selectors.Cell.sessionStatus (taskId, date)) onClickStatus
 
-                        visibleTaskSelectedDateIdMap
+                        visibleTaskSelectedDateMap
                         |> Map.keys
-                        |> Seq.iter (fun taskId -> Store.set setter (Atoms.Task.selectionSet taskId) Set.empty)
+                        |> Seq.iter (fun taskId -> Atom.set setter (Atoms.Task.selectionSet taskId) Set.empty)
 
                         match onClose with
                         | Some onClose -> onClose ()
@@ -118,27 +119,27 @@ module CellMenu =
                 (fun _ setter _ ->
                     promise {
                         let newMap =
-                            if visibleTaskSelectedDateIdMap.Count = 1 then
-                                visibleTaskSelectedDateIdMap
+                            if visibleTaskSelectedDateMap.Count = 1 then
+                                visibleTaskSelectedDateMap
                                 |> Map.mapValues (Seq.random >> Set.singleton)
                             else
                                 let key =
-                                    visibleTaskSelectedDateIdMap
+                                    visibleTaskSelectedDateMap
                                     |> Map.keys
                                     |> Seq.random
 
-                                visibleTaskSelectedDateIdMap
+                                visibleTaskSelectedDateMap
                                 |> Map.map (fun key' value -> if key' = key then value else Set.empty)
 
                         match cellUIFlag with
-                        | UIFlag.Cell (taskId, dateId) when
-                            visibleTaskSelectedDateIdMap
+                        | UIFlag.Cell (taskId, date) when
+                            visibleTaskSelectedDateMap
                             |> Map.keys
                             |> Seq.contains taskId
-                            && visibleTaskSelectedDateIdMap.[taskId]
-                               |> Set.contains dateId
+                            && visibleTaskSelectedDateMap.[taskId]
+                               |> Set.contains date
                             && (newMap |> Map.keys |> Seq.contains taskId |> not
-                                || newMap.[taskId] |> Set.contains dateId |> not)
+                                || newMap.[taskId] |> Set.contains date |> not)
                             ->
                             let newTaskId =
                                 newMap
@@ -148,7 +149,7 @@ module CellMenu =
                         | _ -> ()
 
                         newMap
-                        |> Map.iter (Atoms.Task.selectionSet >> Store.set setter)
+                        |> Map.iter (Atoms.Task.selectionSet >> Atom.set setter)
 
                         match onClose with
                         | Some onClose when
@@ -235,8 +236,8 @@ module CellMenu =
 
 
                         if floating
-                           && visibleTaskSelectedDateIdMap.Count <= 1
-                           && visibleTaskSelectedDateIdMap
+                           && visibleTaskSelectedDateMap.Count <= 1
+                           && visibleTaskSelectedDateMap
                               |> Map.values
                               |> Seq.fold Set.union Set.empty
                               |> Set.count
@@ -255,7 +256,7 @@ module CellMenu =
                                                             Navigate.DockPosition.Right,
                                                             Some TempUI.DockType.Cell,
                                                             UIFlagType.Cell,
-                                                            UIFlag.Cell (taskId, dateId)
+                                                            UIFlag.Cell (taskId, date)
                                                         )
 
                                                     match onClose with
@@ -283,7 +284,7 @@ module CellMenu =
                         Ui.box
                             (fun _ -> ())
                             [
-                                PostponeTooltipText dateIdAtom
+                                PostponeTooltipText dateAtom
                             ]
                         |> wrapButtonTooltip (Postponed None)
 
@@ -359,17 +360,15 @@ overriding any other behavior.
                             ]
                         |> wrapButtonTooltip Scheduled
 
-                        if visibleTaskSelectedDateIdMap.IsEmpty
-                           || (visibleTaskSelectedDateIdMap.Count = 1
-                               && visibleTaskSelectedDateIdMap.[visibleTaskSelectedDateIdMap
-                                                                |> Map.keys
-                                                                |> Seq.head]
+                        if visibleTaskSelectedDateMap.IsEmpty
+                           || (visibleTaskSelectedDateMap.Count = 1
+                               && visibleTaskSelectedDateMap.[visibleTaskSelectedDateMap |> Map.keys |> Seq.head]
                                    .Count = 1)
                            || (not floating
-                               && visibleTaskSelectedDateIdMap
+                               && visibleTaskSelectedDateMap
                                   |> Map.tryFind taskId
                                   |> Option.defaultValue Set.empty
-                                  |> Set.contains dateId
+                                  |> Set.contains date
                                   |> not) then
                             nothing
                         else

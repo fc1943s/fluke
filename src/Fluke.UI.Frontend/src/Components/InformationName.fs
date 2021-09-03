@@ -43,7 +43,7 @@ module InformationName =
                             |> List.filter snd
                             |> List.map fst
 
-                        Store.set
+                        Atom.set
                             setter
                             Atoms.User.lastDatabaseSelected
                             (match databaseIdSearch with

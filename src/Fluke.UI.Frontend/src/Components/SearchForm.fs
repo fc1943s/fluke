@@ -76,14 +76,14 @@ module SearchForm =
                                             Some comment
                                         | _ -> None)
 
-                            let selectedDatabaseIdSet = Store.value getter Atoms.User.selectedDatabaseIdSet
+                            let selectedDatabaseIdSet = Atom.get getter Atoms.User.selectedDatabaseIdSet
 
                             let databaseStateArray =
                                 selectedDatabaseIdSet
                                 |> Set.toArray
                                 |> Array.map Selectors.Database.databaseState
-                                |> Store.waitForAll
-                                |> Store.value getter
+                                |> Atom.waitForAll
+                                |> Atom.get getter
 
                             let results =
                                 databaseStateArray
@@ -158,29 +158,26 @@ module SearchForm =
                                                                 taskState.CellStateMap
                                                                 |> Map.toList
                                                                 |> List.collect
-                                                                    (fun (dateId, cellState) ->
+                                                                    (fun (date, cellState) ->
                                                                         [
                                                                             yield!
                                                                                 searchAttachments
                                                                                     cellState.AttachmentStateList
                                                                                 |> List.choose
                                                                                     (fun attachmentText ->
-                                                                                        match dateId |> DateId.Value with
-                                                                                        | Some date ->
-                                                                                            Some (
-                                                                                                SearchResultType.CellAttachment (
-                                                                                                    taskName,
-                                                                                                    date
-                                                                                                    |> FlukeDate.Stringify
-                                                                                                ),
-                                                                                                Navigate.Anchor.CellAttachment (
-                                                                                                    taskId,
-                                                                                                    dateId,
-                                                                                                    AttachmentId.Default
-                                                                                                ),
-                                                                                                attachmentText
-                                                                                            )
-                                                                                        | None -> None)
+                                                                                        Some (
+                                                                                            SearchResultType.CellAttachment (
+                                                                                                taskName,
+                                                                                                date
+                                                                                                |> FlukeDate.Stringify
+                                                                                            ),
+                                                                                            Navigate.Anchor.CellAttachment (
+                                                                                                taskId,
+                                                                                                date,
+                                                                                                AttachmentId.Default
+                                                                                            ),
+                                                                                            attachmentText
+                                                                                        ))
                                                                         ])
                                                         ])
 

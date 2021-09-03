@@ -104,7 +104,7 @@ module Tests =
                                 | date, _ as expected ->
                                     let actual =
                                         laneStatusMap
-                                        |> Map.tryFind (DateId date)
+                                        |> Map.tryFind date
                                         |> Option.defaultValue Disabled
                                         |> fun cellStatus -> date, cellStatus
 
@@ -119,8 +119,7 @@ module Tests =
                             (fun (date, count) ->
                                 let sessionCount =
                                     taskState.SessionList
-                                    |> List.filter
-                                        (fun (Session start) -> isToday templatesUser.DayStart start (DateId date))
+                                    |> List.filter (fun (Session start) -> isToday templatesUser.DayStart start date)
                                     |> List.length
 
                                 count, sessionCount)
@@ -228,7 +227,6 @@ module Tests =
             |> Map.values
             |> Seq.collect (fun taskState -> taskState.CellStateMap |> Map.keys)
             |> Seq.toList
-            |> List.map (fun (DateId referenceDay) -> referenceDay)
             |> Rendering.getDateSequence padding
 
         let expect dateSequence =

@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open FsStore.State
 open FsCore
 open Feliz
 open Fable.React
@@ -19,10 +20,10 @@ module CtrlListener =
             |]
             (fun _getter setter e ->
                 promise {
-                    //                    let ctrlPressed = Store.value getter Atoms.ctrlPressed
+                    //                    let ctrlPressed = Atom.get getter Atoms.ctrlPressed
 //
 //                    if e.ctrlKey <> ctrlPressed then
-                    Store.set setter Atoms.Session.ctrlPressed e.ctrlKey
+                    Atom.set setter Atoms.Session.ctrlPressed e.ctrlKey
                 })
 
         nothing
@@ -39,10 +40,10 @@ module ShiftListener =
             |]
             (fun _getter setter e ->
                 promise {
-                    //                    let shiftPressed = Store.value getter Atoms.shiftPressed
+                    //                    let shiftPressed = Atom.get getter Atoms.shiftPressed
 //
 //                    if e.shiftKey <> shiftPressed then
-                    Store.set setter Atoms.Session.shiftPressed e.shiftKey
+                    Atom.set setter Atoms.Session.shiftPressed e.shiftKey
                 })
 
         Listener.useKeyPress
@@ -54,7 +55,7 @@ module ShiftListener =
             |]
             (fun _ setter e ->
                 promise {
-                    let setView = Store.set setter Atoms.User.view
+                    let setView = Atom.set setter Atoms.User.view
 
                     match e.ctrlKey, e.altKey, e.key with
                     | true, true, "I" ->
@@ -80,13 +81,12 @@ module SelectionListener =
             (fun getter setter e ->
                 promise {
                     if e.key = "Escape" && e.``type`` = "keydown" then
-                        let visibleTaskSelectedDateIdMap =
-                            Store.value getter Selectors.Session.visibleTaskSelectedDateIdMap
+                        let visibleTaskSelectedDateMap = Atom.get getter Selectors.Session.visibleTaskSelectedDateMap
 
-                        if not visibleTaskSelectedDateIdMap.IsEmpty then
-                            visibleTaskSelectedDateIdMap
+                        if not visibleTaskSelectedDateMap.IsEmpty then
+                            visibleTaskSelectedDateMap
                             |> Map.keys
-                            |> Seq.iter (fun taskId -> Store.set setter (Atoms.Task.selectionSet taskId) Set.empty)
+                            |> Seq.iter (fun taskId -> Atom.set setter (Atoms.Task.selectionSet taskId) Set.empty)
                 })
 
         nothing

@@ -53,12 +53,12 @@ module Rendering =
         dayStart
         position
         (taskState: TaskState)
-        (dateId: DateId)
+        (date: FlukeDate)
         (renderState: LaneCellRenderState)
         =
-        let cellState = taskState.CellStateMap |> Map.tryFind dateId
+        let cellState = taskState.CellStateMap |> Map.tryFind date
 
-        let group = dayStart, position, dateId
+        let group = dayStart, position, date
 
         let tempStatus, renderState =
             match cellState with
@@ -78,7 +78,7 @@ module Rendering =
                     match manualCellStatus, group with
                     | Postponed (Some until), Today when
                         position
-                        |> FlukeDateTime.GreaterEqualThan dayStart dateId until
+                        |> FlukeDateTime.GreaterEqualThan dayStart date until
                         ->
                         Pending
                     | _ -> userStatus
@@ -118,11 +118,10 @@ module Rendering =
                         recurrencyList
                         |> List.map
                             (fun recurrency ->
-                                match dateId |> DateId.Value, recurrency with
-                                | Some date, Weekly dayOfWeek -> dayOfWeek = (date |> FlukeDate.DateTime).DayOfWeek
-                                | Some date, Monthly day -> day = date.Day
-                                | Some date, Yearly (day, month) -> day = date.Day && month = date.Month
-                                | _ -> false)
+                                match date, recurrency with
+                                | date, Weekly dayOfWeek -> dayOfWeek = (date |> FlukeDate.DateTime).DayOfWeek
+                                | date, Monthly day -> day = date.Day
+                                | date, Yearly (day, month) -> day = date.Day && month = date.Month)
                         |> List.exists id
 
                     match renderState, group with
@@ -157,12 +156,12 @@ module Rendering =
                 match taskState.Task.MissedAfter, taskState.Task.PendingAfter with
                 | Some missedAfter, _ when
                     position
-                    |> FlukeDateTime.GreaterEqualThan dayStart dateId missedAfter
+                    |> FlukeDateTime.GreaterEqualThan dayStart date missedAfter
                     ->
                     MissedToday
                 | _, Some pendingAfter when
                     position
-                    |> FlukeDateTime.GreaterEqualThan dayStart dateId pendingAfter
+                    |> FlukeDateTime.GreaterEqualThan dayStart date pendingAfter
                     ->
                     Pending
                 | _, None -> Pending
@@ -177,7 +176,7 @@ module Rendering =
         let dates =
             taskState.CellStateMap
             |> Map.keys
-            |> Seq.choose (DateId.Value >> Option.map FlukeDate.DateTime)
+            |> Seq.map FlukeDate.DateTime
             |> Seq.sort
             |> Seq.toArray
 
@@ -213,13 +212,11 @@ module Rendering =
         let rec loop renderState =
             function
             | moment :: tail ->
-                let status, renderState =
-                    internalSessionStatus dayStart position taskState (DateId moment.Date) renderState
-
+                let status, renderState = internalSessionStatus dayStart position taskState moment.Date renderState
                 (moment, status) :: loop renderState tail
             | [] -> []
 
         loop WaitingFirstEvent taskStateDateSequence
         |> List.filter (fun (moment, _) -> moment >==< (firstDateRange, lastDateRange))
-        |> List.map (fun (moment, cellStatus) -> dateId dayStart moment, cellStatus)
+        |> List.map (fun (moment, cellStatus) -> getReferenceDay dayStart moment, cellStatus)
         |> Map.ofSeq

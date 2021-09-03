@@ -8,6 +8,7 @@ open Fluke.Shared.Domain.UserInteraction
 open Fluke.Shared.Domain.State
 open Fluke.UI.Frontend.State.State
 open FsStore
+open FsStore.Model
 
 
 #nowarn "40"
@@ -16,71 +17,80 @@ open FsStore
 module rec Task =
     open Rendering
 
+    let readSelectorFamily name read =
+        Atom.readSelectorFamily
+            (fun taskId ->
+                StoreAtomPath.IndexedAtomPath (
+                    Fluke.root,
+                    Atoms.Task.collection,
+                    Atoms.Task.formatTaskId taskId,
+                    AtomName name
+                ))
+            (fun (taskId: TaskId) -> (read taskId))
+
     let rec task =
-        Store.readSelectorFamily
-            Fluke.root
+        readSelectorFamily
             (nameof task)
             (fun (taskId: TaskId) getter ->
                 {
                     Id = taskId
-                    Name = Store.value getter (Atoms.Task.name taskId)
-                    Information = Store.value getter (Atoms.Task.information taskId)
-                    PendingAfter = Store.value getter (Atoms.Task.pendingAfter taskId)
-                    MissedAfter = Store.value getter (Atoms.Task.missedAfter taskId)
-                    Scheduling = Store.value getter (Atoms.Task.scheduling taskId)
-                    Priority = Store.value getter (Atoms.Task.priority taskId)
-                    Duration = Store.value getter (Atoms.Task.duration taskId)
+                    Name = Atom.get getter (Atoms.Task.name taskId)
+                    Information = Atom.get getter (Atoms.Task.information taskId)
+                    PendingAfter = Atom.get getter (Atoms.Task.pendingAfter taskId)
+                    MissedAfter = Atom.get getter (Atoms.Task.missedAfter taskId)
+                    Scheduling = Atom.get getter (Atoms.Task.scheduling taskId)
+                    Priority = Atom.get getter (Atoms.Task.priority taskId)
+                    Duration = Atom.get getter (Atoms.Task.duration taskId)
                 })
 
     [<RequireQualifiedAccess>]
     type TaskAttachment =
         | Task of TaskId
-        | Cell of TaskId * DateId
+        | Cell of TaskId * FlukeDate
 
+    //            Selectors.interval
+//            [||]
+//
     let rec taskAttachmentArray =
-        Store.readSelectorFamilyInterval
-            Fluke.root
+        readSelectorFamily
             (nameof taskAttachmentArray)
-            Selectors.interval
-            [||]
             (fun (taskId: TaskId) getter ->
                 Selectors.asyncAttachmentIdAtoms
-                |> Store.value getter
+                |> Atom.get getter
                 |> Array.choose
                     (fun attachmentIdAtom ->
-                        let attachmentId = Store.value getter attachmentIdAtom
-                        let parent = Store.value getter (Atoms.Attachment.parent attachmentId)
+                        let attachmentId = Atom.get getter attachmentIdAtom
+                        let parent = Atom.get getter (Atoms.Attachment.parent attachmentId)
 
                         match parent with
-                        | Some (AttachmentParent.Cell (taskId', dateId)) when taskId' = taskId ->
-                            Some (attachmentId, TaskAttachment.Cell (taskId, dateId))
+                        | Some (AttachmentParent.Cell (taskId', date)) when taskId' = taskId ->
+                            Some (attachmentId, TaskAttachment.Cell (taskId, date))
                         | Some (AttachmentParent.Task taskId') when taskId' = taskId ->
                             Some (attachmentId, TaskAttachment.Task taskId)
                         | _ -> None))
+    //        |> Engine.wrapAtomWithInterval [||] Selectors.interval
 
     let rec cellAttachmentIdMap =
-        Store.readSelectorFamily
-            Fluke.root
+        readSelectorFamily
             (nameof cellAttachmentIdMap)
             (fun (taskId: TaskId) getter ->
-                let taskAttachmentArray = taskAttachmentArray taskId |> Store.value getter
+                let taskAttachmentArray = taskAttachmentArray taskId |> Atom.get getter
 
                 taskAttachmentArray
                 |> Array.choose
                     (fun taskAttachment ->
                         match taskAttachment with
-                        | attachmentId, TaskAttachment.Cell (_, dateId) -> Some (dateId, attachmentId)
+                        | attachmentId, TaskAttachment.Cell (_, date) -> Some (date, attachmentId)
                         | _ -> None)
                 |> Array.groupBy fst
-                |> Array.map (fun (dateId, items) -> dateId, items |> Array.map snd |> Set.ofArray)
+                |> Array.map (fun (date, items) -> date, items |> Array.map snd |> Set.ofArray)
                 |> Map.ofSeq)
 
     let rec attachmentIdSet =
-        Store.readSelectorFamily
-            Fluke.root
+        readSelectorFamily
             (nameof attachmentIdSet)
             (fun (taskId: TaskId) getter ->
-                let taskAttachmentArray = taskAttachmentArray taskId |> Store.value getter
+                let taskAttachmentArray = taskAttachmentArray taskId |> Atom.get getter
 
                 taskAttachmentArray
                 |> Array.choose
@@ -91,19 +101,18 @@ module rec Task =
                 |> Set.ofArray)
 
     let rec cellStateMap =
-        Store.readSelectorFamily
-            Fluke.root
+        readSelectorFamily
             (nameof cellStateMap)
             (fun (taskId: TaskId) getter ->
-                let statusMap = Store.value getter (Atoms.Task.statusMap taskId)
-                let cellAttachmentIdMap = Store.value getter (cellAttachmentIdMap taskId)
+                let statusMap = Atom.get getter (Atoms.Task.statusMap taskId)
+                let cellAttachmentIdMap = Atom.get getter (cellAttachmentIdMap taskId)
 
-                let sessions = Store.value getter (Atoms.Task.sessions taskId)
-                let dayStart = Store.value getter Atoms.User.dayStart
+                let sessions = Atom.get getter (Atoms.Task.sessions taskId)
+                let dayStart = Atom.get getter Atoms.User.dayStart
 
                 let sessionMap =
                     sessions
-                    |> List.map (fun (Session start as session) -> dateId dayStart start, session)
+                    |> List.map (fun (Session start as session) -> getReferenceDay dayStart start, session)
                     |> List.groupBy fst
                     |> Map.ofList
                     |> Map.mapValues (List.map snd)
@@ -116,8 +125,8 @@ module rec Task =
                                 attachmentIdSet
                                 |> Set.toArray
                                 |> Array.map Attachment.attachmentState
-                                |> Store.waitForAll
-                                |> Store.value getter
+                                |> Atom.waitForAll
+                                |> Atom.get getter
                                 |> Array.toList
                                 |> List.choose id
                                 |> List.sortByDescending
@@ -160,22 +169,21 @@ module rec Task =
 
 
     let rec filteredCellStateMap =
-        Store.readSelectorFamily
-            Fluke.root
+        readSelectorFamily
             (nameof filteredCellStateMap)
             (fun (taskId: TaskId) getter ->
-                let dateIdArray = Store.value getter Selectors.dateIdArray
-                let cellStateMap = Store.value getter (cellStateMap taskId)
+                let dateArray = Atom.get getter Selectors.dateArray
+                let cellStateMap = Atom.get getter (cellStateMap taskId)
 
-                dateIdArray
+                dateArray
                 |> Array.map
-                    (fun dateId ->
+                    (fun date ->
                         let cellState =
                             cellStateMap
-                            |> Map.tryFind dateId
+                            |> Map.tryFind date
                             |> Option.defaultValue CellState.Default
 
-                        dateId, cellState)
+                        date, cellState)
                 |> Map.ofSeq
                 |> Map.filter
                     (fun _ cellState ->
@@ -187,23 +195,22 @@ module rec Task =
 
 
     let rec taskState =
-        Store.readSelectorFamily
-            Fluke.root
+        readSelectorFamily
             (nameof taskState)
             (fun (taskId: TaskId) getter ->
 
-                let task = Store.value getter (task taskId)
-                let sessions = Store.value getter (Atoms.Task.sessions taskId)
-                let archived = Store.value getter (Atoms.Task.archived taskId)
-                let cellStateMap = Store.value getter (cellStateMap taskId)
-                let attachmentIdSet = Store.value getter (attachmentIdSet taskId)
+                let task = Atom.get getter (task taskId)
+                let sessions = Atom.get getter (Atoms.Task.sessions taskId)
+                let archived = Atom.get getter (Atoms.Task.archived taskId)
+                let cellStateMap = Atom.get getter (cellStateMap taskId)
+                let attachmentIdSet = Atom.get getter (attachmentIdSet taskId)
 
                 let attachmentStateList =
                     attachmentIdSet
                     |> Set.toArray
                     |> Array.map Attachment.attachmentState
-                    |> Store.waitForAll
-                    |> Store.value getter
+                    |> Atom.waitForAll
+                    |> Atom.get getter
                     |> Array.toList
                     |> List.choose id
                     |> List.sortByDescending
@@ -222,28 +229,25 @@ module rec Task =
 
 
     let rec cellStatusMap =
-        Store.readSelectorFamilyInterval
-            Fluke.root
+        //        Store.readSelectorFamilyInterval
+        readSelectorFamily
             (nameof cellStatusMap)
-            Selectors.interval
-            Map.empty
+            //            Selectors.interval
+//            Map.empty
             (fun (taskId: TaskId) getter ->
-                let taskState = Store.value getter (taskState taskId)
-                let dateIdArray = Store.value getter Selectors.dateIdArray
-                let dayStart = Store.value getter Atoms.User.dayStart
+                let taskState = Atom.get getter (taskState taskId)
+                let dateArray = Atom.get getter Selectors.dateArray
+                let dayStart = Atom.get getter Atoms.User.dayStart
 
-                match dateIdArray with
+                match dateArray with
                 | [||] -> Map.empty
                 | _ ->
-                    let dateSequence =
-                        dateIdArray
-                        |> Array.choose DateId.Value
-                        |> Array.toList
+                    let dateSequence = dateArray |> Array.toList
 
                     let firstDateRange, lastDateRange, taskStateDateSequence =
                         taskStateDateSequence dayStart dateSequence taskState
 
-                    let position = Store.value getter Atoms.Session.position
+                    let position = Atom.get getter Atoms.Session.position
 
                     let rec loop renderState =
                         function
@@ -251,7 +255,7 @@ module rec Task =
                             //                                    let result =
 //                                        Store.value
 //                                            getter
-//                                            (Cell.internalSessionStatus (taskId, dateId dayStart moment, renderState))
+//                                            (Cell.internalSessionStatus (taskId, date dayStart moment, renderState))
 
                             let result =
                                 match position with
@@ -261,7 +265,7 @@ module rec Task =
                                             dayStart
                                             position
                                             taskState
-                                            (dateId dayStart moment)
+                                            (getReferenceDay dayStart moment)
                                             renderState
                                     )
                                 | None -> None
@@ -273,24 +277,23 @@ module rec Task =
 
                     loop WaitingFirstEvent taskStateDateSequence
                     |> List.filter (fun (moment, _) -> moment >==< (firstDateRange, lastDateRange))
-                    |> List.map (fun (moment, cellStatus) -> dateId dayStart moment, cellStatus)
+                    |> List.map (fun (moment, cellStatus) -> getReferenceDay dayStart moment, cellStatus)
                     |> Map.ofSeq)
 
 
     let rec lastSession =
-        Store.readSelectorFamily
-            Fluke.root
+        readSelectorFamily
             (nameof lastSession)
             (fun (taskId: TaskId) getter ->
-                let dateIdArray = Store.value getter Selectors.dateIdArray
-                let cellStateMap = Store.value getter (cellStateMap taskId)
+                let dateArray = Atom.get getter Selectors.dateArray
+                let cellStateMap = Atom.get getter (cellStateMap taskId)
 
-                dateIdArray
+                dateArray
                 |> Seq.rev
                 |> Seq.tryPick
-                    (fun dateId ->
+                    (fun date ->
                         cellStateMap
-                        |> Map.tryFind dateId
+                        |> Map.tryFind date
                         |> Option.map (fun cellState -> cellState.SessionList)
                         |> Option.defaultValue []
                         |> List.sortByDescending (fun (Session start) -> start |> FlukeDateTime.DateTime)
@@ -298,17 +301,16 @@ module rec Task =
 
 
     let rec activeSession =
-        Store.readSelectorFamily
-            Fluke.root
+        readSelectorFamily
             (nameof activeSession)
             (fun (taskId: TaskId) getter ->
-                let position = Store.value getter Atoms.Session.position
-                let lastSession = Store.value getter (lastSession taskId)
+                let position = Atom.get getter Atoms.Session.position
+                let lastSession = Atom.get getter (lastSession taskId)
 
                 match position, lastSession with
                 | Some position, Some lastSession ->
-                    let sessionDuration = Store.value getter Atoms.User.sessionDuration
-                    let sessionBreakDuration = Store.value getter Atoms.User.sessionBreakDuration
+                    let sessionDuration = Atom.get getter Atoms.User.sessionDuration
+                    let sessionBreakDuration = Atom.get getter Atoms.User.sessionBreakDuration
 
                     let (Session start) = lastSession
 
@@ -329,11 +331,10 @@ module rec Task =
 
 
     let rec showUser =
-        Store.readSelectorFamily
-            Fluke.root
+        readSelectorFamily
             (nameof showUser)
             (fun (taskId: TaskId) getter ->
-                let cellStateMap = Store.value getter (cellStateMap taskId)
+                let cellStateMap = Atom.get getter (cellStateMap taskId)
 
                 let usersCount =
                     cellStateMap
@@ -349,10 +350,9 @@ module rec Task =
 
 
     let rec hasSelection =
-        Store.readSelectorFamily
-            Fluke.root
+        readSelectorFamily
             (nameof hasSelection)
             (fun (taskId: TaskId) getter ->
-                let dateIdArray = Store.value getter Selectors.dateIdArray
-                let selectionSet = Store.value getter (Atoms.Task.selectionSet taskId)
-                dateIdArray |> Array.exists selectionSet.Contains)
+                let dateArray = Atom.get getter Selectors.dateArray
+                let selectionSet = Atom.get getter (Atoms.Task.selectionSet taskId)
+                dateArray |> Array.exists selectionSet.Contains)

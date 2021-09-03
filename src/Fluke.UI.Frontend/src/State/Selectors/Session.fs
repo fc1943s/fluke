@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.State.Selectors
 
+open FsStore.Model
 open FsStore.State
 open FsCore
 open System
@@ -19,41 +20,41 @@ open FsStore
 
 
 module rec Session =
+    let readSelector name read =
+        Atom.readSelector (StoreAtomPath.IndexedAtomPath (Fluke.root, Atoms.Session.collection, [], AtomName name)) read
+
     let rec devicePingList =
-        Store.readSelector
-            Fluke.root
+        readSelector
             (nameof devicePingList)
             (fun getter ->
                 let deviceIdArray =
                     Selectors.asyncDeviceIdAtoms
-                    |> Store.value getter
-                    |> Store.waitForAll
-                    |> Store.value getter
+                    |> Atom.get getter
+                    |> Atom.waitForAll
+                    |> Atom.get getter
 
                 let pingArray =
                     deviceIdArray
                     |> Array.map Atoms.Device.devicePing
-                    |> Store.waitForAll
-                    |> Store.value getter
+                    |> Atom.waitForAll
+                    |> Atom.get getter
 
                 deviceIdArray
                 |> Array.toList
                 |> List.mapi (fun i deviceId -> deviceId, pingArray.[i]))
 
-
     let rec databaseIdAtoms =
-        Store.readSelector
-            Fluke.root
+        readSelector
             (nameof databaseIdAtoms)
             (fun getter ->
-                let asyncDatabaseIdAtoms = Store.value getter Selectors.asyncDatabaseIdAtoms
-                let hideTemplates = Store.value getter Atoms.User.hideTemplates
+                let asyncDatabaseIdAtoms = Atom.get getter Selectors.asyncDatabaseIdAtoms
+                let hideTemplates = Atom.get getter Atoms.User.hideTemplates
 
                 asyncDatabaseIdAtoms
                 |> Array.filter
                     (fun databaseIdAtom ->
-                        let databaseId = Store.value getter databaseIdAtom
-                        let database = Store.value getter (Database.database databaseId)
+                        let databaseId = Atom.get getter databaseIdAtom
+                        let database = Atom.get getter (Database.database databaseId)
 
                         let valid =
                             database.Name
@@ -68,72 +69,69 @@ module rec Session =
                         if not valid then
                             false
                         else
-                            let nodeType = Store.value getter (Database.nodeType databaseId)
+                            let nodeType = Atom.get getter (Database.nodeType databaseId)
 
                             nodeType <> DatabaseNodeType.Template
                             || hideTemplates = Some false))
 
 
     let rec selectedTaskIdAtoms =
-        Store.readSelector
-            Fluke.root
+        readSelector
             (nameof selectedTaskIdAtoms)
             (fun getter ->
-                let selectedDatabaseIdSet = Store.value getter Atoms.User.selectedDatabaseIdSet
+                let selectedDatabaseIdSet = Atom.get getter Atoms.User.selectedDatabaseIdSet
 
                 selectedDatabaseIdSet
                 |> Set.toArray
                 |> Array.map Database.taskIdAtoms
-                |> Store.waitForAll
-                |> Store.value getter
+                |> Atom.waitForAll
+                |> Atom.get getter
                 |> Array.collect id)
 
 
     let rec selectedTaskIdListByArchive =
-        Store.readSelector
-            Fluke.root
+        readSelector
             (nameof selectedTaskIdListByArchive)
             (fun getter ->
-                let selectedDatabaseIdSet = Store.value getter Atoms.User.selectedDatabaseIdSet
+                let selectedDatabaseIdSet = Atom.get getter Atoms.User.selectedDatabaseIdSet
 
                 selectedDatabaseIdSet
                 |> Set.toArray
                 |> Array.map Database.taskIdAtomsByArchive
-                |> Store.waitForAll
-                |> Store.value getter
+                |> Atom.waitForAll
+                |> Atom.get getter
                 |> Array.collect id
-                |> Store.waitForAll
-                |> Store.value getter
+                |> Atom.waitForAll
+                |> Atom.get getter
                 |> Array.toList)
 
 
     let rec informationSet =
-        Store.readSelector
-            Fluke.root
+        readSelector
             (nameof informationSet)
             (fun getter ->
-                let selectedDatabaseIdSet = Store.value getter Atoms.User.selectedDatabaseIdSet
+                let selectedDatabaseIdSet = Atom.get getter Atoms.User.selectedDatabaseIdSet
 
                 let informationAttachmentIdMapArray =
                     selectedDatabaseIdSet
                     |> Set.toArray
                     |> Array.map Database.informationAttachmentIdMap
-                    |> Store.waitForAll
-                    |> Store.value getter
+                    |> Atom.waitForAll
+                    |> Atom.get getter
                     |> Array.collect (
                         Map.filter (fun _ attachmentIdSet -> attachmentIdSet |> Set.isEmpty |> not)
                         >> Map.keys
                         >> Seq.toArray
                     )
 
-                let selectedTaskIdAtoms = Store.value getter Session.selectedTaskIdAtoms
+                let selectedTaskIdAtoms = Atom.get getter Session.selectedTaskIdAtoms
 
                 let taskInformationArray =
                     selectedTaskIdAtoms
-                    |> Array.map (Store.value getter)
+                    |> Array.map (Atom.get getter)
                     |> Array.map Atoms.Task.information
-                    |> Store.waitForAll
-                    |> Store.value getter
+                    |> Atom.waitForAll
+                    |> Atom.get getter
 
                 let informationArray =
                     taskInformationArray
@@ -161,27 +159,27 @@ module rec Session =
 
 
     let rec activeSessions =
-        Store.readSelectorInterval
-            Fluke.root
+        //        Store.readSelectorInterval
+        readSelector
             (nameof activeSessions)
-            Selectors.interval
-            []
             (fun getter ->
+                //            Selectors.interval
+//            []
                 let selectedTaskIdArray =
-                    Store.value getter selectedTaskIdListByArchive
+                    Atom.get getter selectedTaskIdListByArchive
                     |> List.toArray
 
                 let durationArray =
                     selectedTaskIdArray
                     |> Array.map Task.activeSession
-                    |> Store.waitForAll
-                    |> Store.value getter
+                    |> Atom.waitForAll
+                    |> Atom.get getter
 
                 let nameArray =
                     selectedTaskIdArray
                     |> Array.map Atoms.Task.name
-                    |> Store.waitForAll
-                    |> Store.value getter
+                    |> Atom.waitForAll
+                    |> Atom.get getter
 
                 durationArray
                 |> Array.toList
@@ -194,24 +192,27 @@ module rec Session =
                             (fun duration -> TempUI.ActiveSession (TaskName.Value nameArray.[i], Minute duration))))
 
     let rec filteredTaskIdSet =
-        Store.readSelectorInterval
-            Fluke.root
+        readSelector
             (nameof filteredTaskIdSet)
-            Selectors.interval
-            Set.empty
             (fun getter ->
-                let logger = Store.value getter Selectors.logger
-                let filter = Store.value getter Atoms.User.filter
+                //        Store.readSelectorInterval
+//            Fluke.root
+//            (nameof filteredTaskIdSet)
+//            Selectors.interval
+//            Set.empty
+//            (fun getter ->
+                let logger = Atom.get getter Selectors.logger
+                let filter = Atom.get getter Atoms.User.filter
 
                 let selectedTaskIdListByArchive =
-                    Store.value getter selectedTaskIdListByArchive
+                    Atom.get getter selectedTaskIdListByArchive
                     |> List.toArray
 
                 let selectedTaskStateArray =
                     selectedTaskIdListByArchive
                     |> Array.map Task.taskState
-                    |> Store.waitForAll
-                    |> Store.value getter
+                    |> Atom.waitForAll
+                    |> Atom.get getter
 
                 let checkText (text: string) = text.IndexOf filter.Filter >= 0
 
@@ -272,27 +273,29 @@ module rec Session =
 
 
     let rec filteredTaskIdCount =
-        Store.readSelector
-            Fluke.root
+        readSelector
             (nameof filteredTaskIdCount)
             (fun getter ->
-                let filteredTaskIdSet = Store.value getter filteredTaskIdSet
+                let filteredTaskIdSet = Atom.get getter filteredTaskIdSet
                 filteredTaskIdSet.Count)
 
 
     let rec sortedTaskIdArray =
-        Store.readSelectorInterval
-            Fluke.root
+        readSelector
             (nameof sortedTaskIdArray)
-            Selectors.interval
-            [||]
             (fun getter ->
-                let position = Store.value getter Atoms.Session.position
+                //        Store.readSelectorInterval
+//            Fluke.root
+//            (nameof sortedTaskIdArray)
+//            Selectors.interval
+//            [||]
+//            (fun getter ->
+                let position = Atom.get getter Atoms.Session.position
 
                 match position with
                 | Some position ->
-                    let logger = Store.value getter Selectors.logger
-                    let filteredTaskIdSet = Store.value getter filteredTaskIdSet
+                    let logger = Atom.get getter Selectors.logger
+                    let filteredTaskIdSet = Atom.get getter filteredTaskIdSet
 
                     logger.Debug (fun () -> $"sortedTaskIdArray. filteredTaskIdSet.Count={filteredTaskIdSet.Count}")
 
@@ -301,23 +304,23 @@ module rec Session =
                     let statusMapArray =
                         filteredTaskIdArray
                         |> Array.map Task.cellStatusMap
-                        |> Store.waitForAll
-                        |> Store.value getter
+                        |> Atom.waitForAll
+                        |> Atom.get getter
 
                     let taskStateArray =
                         filteredTaskIdArray
                         |> Array.map Task.taskState
-                        |> Store.waitForAll
-                        |> Store.value getter
+                        |> Atom.waitForAll
+                        |> Atom.get getter
 
                     let lanes =
                         statusMapArray
                         |> Array.zip taskStateArray
                         |> Array.toList
 
-                    let view = Store.value getter Atoms.User.view
-                    let dayStart = Store.value getter Atoms.User.dayStart
-                    let informationSet = Store.value getter Session.informationSet
+                    let view = Atom.get getter Atoms.User.view
+                    let dayStart = Atom.get getter Atoms.User.dayStart
+                    let informationSet = Atom.get getter Session.informationSet
 
                     let result =
                         sortLanes
@@ -336,42 +339,31 @@ module rec Session =
                     |> List.toArray
                 | _ -> [||])
 
-
     let rec sortedTaskIdAtoms =
-        Store.readSelector
-            Fluke.root
-            (nameof sortedTaskIdAtoms)
-            (fun getter ->
-                sortedTaskIdArray
-                |> Store.splitAtom
-                |> Store.value getter)
-
+        readSelector (nameof sortedTaskIdAtoms) (fun getter -> sortedTaskIdArray |> Atom.split |> Atom.get getter)
 
     let rec sortedTaskIdCount =
-        Store.readSelector
-            Fluke.root
+        readSelector
             (nameof sortedTaskIdCount)
             (fun getter ->
-                let sortedTaskIdAtoms = Store.value getter sortedTaskIdAtoms
+                let sortedTaskIdAtoms = Atom.get getter sortedTaskIdAtoms
                 sortedTaskIdAtoms.Length)
 
-
     let rec informationTaskIdArray =
-        Store.readSelector
-            Fluke.root
+        readSelector
             (nameof informationTaskIdArray)
             (fun getter ->
-                let sortedTaskIdAtoms = Store.value getter sortedTaskIdAtoms
+                let sortedTaskIdAtoms = Atom.get getter sortedTaskIdAtoms
 
-                let informationSet = Store.value getter informationSet
+                let informationSet = Atom.get getter informationSet
 
                 let taskInformationArray =
                     sortedTaskIdAtoms
-                    |> Store.waitForAll
-                    |> Store.value getter
+                    |> Atom.waitForAll
+                    |> Atom.get getter
                     |> Array.map Atoms.Task.information
-                    |> Store.waitForAll
-                    |> Store.value getter
+                    |> Atom.waitForAll
+                    |> Atom.get getter
 
                 let taskMap =
                     sortedTaskIdAtoms
@@ -397,28 +389,24 @@ module rec Session =
                     >> Option.map Information.toTag
                 ))
 
-
     let rec informationTaskIdAtoms =
-        Store.readSelector
-            Fluke.root
+        readSelector
             (nameof informationTaskIdAtoms)
             (fun getter ->
                 informationTaskIdArray
-                |> Store.splitAtom
-                |> Store.value getter)
-
+                |> Atom.split
+                |> Atom.get getter)
 
     let rec informationTaskIdArrayByKind =
-        Store.readSelector
-            Fluke.root
+        readSelector
             (nameof informationTaskIdArrayByKind)
             (fun getter ->
-                let informationTaskIdAtoms = Store.value getter Session.informationTaskIdAtoms
-                //                         let informationTaskIdArray = Store.value getter Selectors.Session.informationTaskIdArray
+                let informationTaskIdAtoms = Atom.get getter Session.informationTaskIdAtoms
+                //                         let informationTaskIdArray = Atom.get getter Selectors.Session.informationTaskIdArray
                 let informationTaskIdArray =
                     informationTaskIdAtoms
-                    |> Store.waitForAll
-                    |> Store.value getter
+                    |> Atom.waitForAll
+                    |> Atom.get getter
 
                 informationTaskIdArray
                 |> Array.indexed
@@ -429,47 +417,48 @@ module rec Session =
                         groups
                         |> Array.map (fun (i, _) -> informationTaskIdAtoms.[i])))
 
-
     let rec informationTaskIdAtomsByKind =
-        Store.readSelector
-            Fluke.root
+        readSelector
             (nameof informationTaskIdAtomsByKind)
             (fun getter ->
                 informationTaskIdArrayByKind
-                |> Store.splitAtom
-                |> Store.value getter)
+                |> Atom.split
+                |> Atom.get getter)
 
 
-    let rec taskSelectedDateIdMap =
-        Store.readSelector
-            Fluke.root
-            (nameof taskSelectedDateIdMap)
+    let rec taskSelectedDateMap =
+        readSelector
+            (nameof taskSelectedDateMap)
             (fun getter ->
-                let sortedTaskIdArray = Store.value getter sortedTaskIdArray
+                let sortedTaskIdArray = Atom.get getter sortedTaskIdArray
 
                 sortedTaskIdArray
                 |> Array.map Atoms.Task.selectionSet
-                |> Store.waitForAll
-                |> Store.value getter
+                |> Atom.waitForAll
+                |> Atom.get getter
                 |> Array.mapi (fun i dates -> sortedTaskIdArray.[i], dates)
                 |> Map.ofArray)
 
 
-    let rec visibleTaskSelectedDateIdMap =
-        Store.selector
-            Fluke.root
-            (nameof visibleTaskSelectedDateIdMap)
+    let rec visibleTaskSelectedDateMap =
+        Atom.selector
+            (StoreAtomPath.IndexedAtomPath (
+                Fluke.root,
+                Atoms.Session.collection,
+                [],
+                AtomName (nameof visibleTaskSelectedDateMap)
+            ))
             (fun getter ->
-                let taskSelectedDateIdMap = Store.value getter taskSelectedDateIdMap
-                let dateIdArray = Store.value getter Selectors.dateIdArray
+                let taskSelectedDateMap = Atom.get getter taskSelectedDateMap
+                let dateArray = Atom.get getter Selectors.dateArray
 
-                taskSelectedDateIdMap
+                taskSelectedDateMap
                 |> Map.keys
                 |> Seq.map
                     (fun taskId ->
                         let dates =
-                            dateIdArray
-                            |> Array.map (fun dateId -> dateId, taskSelectedDateIdMap.[taskId].Contains dateId)
+                            dateArray
+                            |> Array.map (fun date -> date, taskSelectedDateMap.[taskId].Contains date)
                             |> Array.filter snd
                             |> Array.map fst
                             |> Set.ofSeq
@@ -478,15 +467,15 @@ module rec Session =
                 |> Seq.filter (fun (_, dates) -> Set.isEmpty dates |> not)
                 |> Map.ofSeq)
             (fun getter setter newValue ->
-                let sortedTaskIdArray = Store.value getter sortedTaskIdArray
-                let visibleTaskSelectedDateIdMap = Store.value getter visibleTaskSelectedDateIdMap
+                let sortedTaskIdArray = Atom.get getter sortedTaskIdArray
+                let visibleTaskSelectedDateMap = Atom.get getter visibleTaskSelectedDateMap
 
                 let operations =
                     sortedTaskIdArray
                     |> Array.collect
                         (fun taskId ->
                             let dates =
-                                visibleTaskSelectedDateIdMap
+                                visibleTaskSelectedDateMap
                                 |> Map.tryFind taskId
                                 |> Option.defaultValue Set.empty
 
@@ -511,8 +500,8 @@ module rec Session =
 
                 operations
                 |> Array.iter
-                    (fun (taskId, dateId, newValue) ->
-                        Store.change
+                    (fun (taskId, date, newValue) ->
+                        Atom.change
                             setter
                             (Atoms.Task.selectionSet taskId)
-                            ((if newValue then Set.add else Set.remove) dateId)))
+                            ((if newValue then Set.add else Set.remove) date)))

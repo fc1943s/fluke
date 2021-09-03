@@ -7,31 +7,47 @@ open Fluke.Shared.Domain.State
 open Fluke.UI.Frontend.State
 open FsCore.BaseModel
 open FsStore
-
+open FsStore.Bindings.Gun
 
 
 module rec Task =
     let collection = Collection (nameof Task)
 
-    let inline taskIdIdentifier (taskId: TaskId) =
-        taskId |> TaskId.Value |> string |> List.singleton
+    let formatTaskId =
+        Engine.getKeysFormatter
+            (fun taskId ->
+                taskId
+                |> TaskId.Value
+                |> string
+                |> AtomKeyFragment
+                |> List.singleton)
 
-    let inline atomFamilyWithSync name defaultValueFn =
-        Store.atomFamilyWithSync Fluke.root collection name defaultValueFn taskIdIdentifier
+    let inline createFamilyWithSubscription name defaultValueFn =
+        Engine.createFamilyWithSubscription Fluke.root collection name defaultValueFn formatTaskId
 
     let rec statusMap =
-        atomFamilyWithSync
+        createFamilyWithSubscription
             (nameof statusMap)
-            (fun (_taskId: TaskId) -> Map.empty: Map<DateId, Username * ManualCellStatus>)
+            (fun (_taskId: TaskId) -> Map.empty: Map<FlukeDate, Username * ManualCellStatus>)
 
-    let rec databaseId = atomFamilyWithSync (nameof databaseId) (fun (_: TaskId) -> Database.Default.Id)
-    let rec sessions = atomFamilyWithSync (nameof sessions) (fun (_: TaskId) -> []: Session list)
-    let rec selectionSet = atomFamilyWithSync (nameof selectionSet) (fun (_: TaskId) -> Set.empty: Set<DateId>)
-    let rec information = atomFamilyWithSync (nameof information) (fun (_: TaskId) -> Task.Default.Information)
-    let rec name = atomFamilyWithSync (nameof name) (fun (_: TaskId) -> Task.Default.Name)
-    let rec scheduling = atomFamilyWithSync (nameof scheduling) (fun (_: TaskId) -> Task.Default.Scheduling)
-    let rec pendingAfter = atomFamilyWithSync (nameof pendingAfter) (fun (_: TaskId) -> Task.Default.PendingAfter)
-    let rec missedAfter = atomFamilyWithSync (nameof missedAfter) (fun (_: TaskId) -> Task.Default.MissedAfter)
-    let rec priority = atomFamilyWithSync (nameof priority) (fun (_: TaskId) -> Task.Default.Priority)
-    let rec duration = atomFamilyWithSync (nameof duration) (fun (_: TaskId) -> Task.Default.Duration)
-    let rec archived = atomFamilyWithSync (nameof archived) (fun (_: TaskId) -> None: bool option)
+    let rec databaseId = createFamilyWithSubscription (nameof databaseId) (fun (_: TaskId) -> Database.Default.Id)
+    let rec sessions = createFamilyWithSubscription (nameof sessions) (fun (_: TaskId) -> []: Session list)
+
+    let rec selectionSet =
+        createFamilyWithSubscription (nameof selectionSet) (fun (_: TaskId) -> Set.empty: Set<FlukeDate>)
+
+    let rec information =
+        createFamilyWithSubscription (nameof information) (fun (_: TaskId) -> Task.Default.Information)
+
+    let rec name = createFamilyWithSubscription (nameof name) (fun (_: TaskId) -> Task.Default.Name)
+    let rec scheduling = createFamilyWithSubscription (nameof scheduling) (fun (_: TaskId) -> Task.Default.Scheduling)
+
+    let rec pendingAfter =
+        createFamilyWithSubscription (nameof pendingAfter) (fun (_: TaskId) -> Task.Default.PendingAfter)
+
+    let rec missedAfter =
+        createFamilyWithSubscription (nameof missedAfter) (fun (_: TaskId) -> Task.Default.MissedAfter)
+
+    let rec priority = createFamilyWithSubscription (nameof priority) (fun (_: TaskId) -> Task.Default.Priority)
+    let rec duration = createFamilyWithSubscription (nameof duration) (fun (_: TaskId) -> Task.Default.Duration)
+    let rec archived = createFamilyWithSubscription (nameof archived) (fun (_: TaskId) -> None: bool option)

@@ -13,7 +13,7 @@ open FsCore
 
 
 module Fluke =
-    let root = StoreRoot (nameof Fluke)
+    let root = StoreRoot (nameof Fluke) // TODO: rename to storeRoot
 
 
 module State =
@@ -29,7 +29,7 @@ module State =
         | Database of DatabaseId
         | Information of Information
         | Task of DatabaseId * TaskId
-        | Cell of TaskId * DateId
+        | Cell of TaskId * FlukeDate
         | File of FileId
         | RawImage of url: string
 
@@ -55,11 +55,11 @@ module State =
         | None
         | Information of databaseId: DatabaseId * Information: Information
         | Task of taskId: TaskId
-        | Cell of taskId: TaskId * dateId: DateId
+        | Cell of taskId: TaskId * date: FlukeDate
 
     let uiFlagDefault = UIFlag.None
     let uiVisibleFlagDefault = false
-    let accordionHiddenFlagDefault: string [] = [||]
+    let accordionHiddenFlagDefault: string list = []
 
     type Filter =
         {
@@ -131,7 +131,7 @@ module State =
                 Archive = None
                 AccordionHiddenFlagMap =
                     Reflection.unionCases<AccordionType>
-                    |> List.map (fun accordionType -> accordionType, accordionHiddenFlagDefault)
+                    |> List.map (fun accordionType -> accordionType, accordionHiddenFlagDefault |> List.toArray)
                     |> Map.ofList
                 CellColorDisabled = Color "#595959"
                 CellColorSuggested = Color "#4C664E"

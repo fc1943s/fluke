@@ -14,10 +14,10 @@ module Day =
 
 
     [<ReactComponent>]
-    let Day dayFormat dateIdAtom =
-        let dateId = Store.useValue dateIdAtom
-        let isToday = Store.useValue (Selectors.DateId.isToday dateId)
-        let hasCellSelection = Store.useValue (Selectors.DateId.hasCellSelection dateId)
+    let Day dayFormat dateAtom =
+        let dateId = Store.useValue dateAtom
+        let isToday = Store.useValue (Selectors.FlukeDate.isToday dateId)
+        let hasCellSelection = Store.useValue (Selectors.FlukeDate.hasCellSelection dateId)
         let weekStart = Store.useValue Atoms.User.weekStart
         let cellSize = Store.useValue Atoms.User.cellSize
 
@@ -47,7 +47,7 @@ module Day =
                 x.textAlign <- "center")
             [
                 dateId
-                |> DateId.Format dayFormat
+                |> FlukeDate.Format dayFormat
                 |> String.toLower
                 |> str
             ]

@@ -17,12 +17,12 @@ open FsUi.Components
 
 module CellForm =
     [<ReactComponent>]
-    let rec CellForm taskIdAtom dateIdAtom =
-        let taskId, dateId = Store.useValueTuple taskIdAtom dateIdAtom
+    let rec CellForm taskIdAtom dateAtom =
+        let taskId, dateId = Store.useValueTuple taskIdAtom dateAtom
         let (TaskName taskName) = Store.useValue (Atoms.Task.name taskId)
 
         let attachmentIdSet = Store.useValue (Selectors.Cell.attachmentIdSet (taskId, dateId))
-        let visibleTaskSelectedDateIdMap = Store.useValue Selectors.Session.visibleTaskSelectedDateIdMap
+        let visibleTaskSelectedDateMap = Store.useValue Selectors.Session.visibleTaskSelectedDateMap
 
 
         let attachmentIdList =
@@ -37,7 +37,7 @@ module CellForm =
             Store.useCallbackRef
                 (fun _ setter attachmentId ->
                     promise {
-                        Store.set
+                        Atom.set
                             setter
                             (Atoms.Attachment.parent attachmentId)
                             (Some (AttachmentParent.Cell (taskId, dateId)))
@@ -47,7 +47,7 @@ module CellForm =
             Store.useCallbackRef
                 (fun getter _setter attachmentId ->
                     promise {
-                        do! Store.deleteRoot getter (Atoms.Attachment.attachment attachmentId)
+                        do! Engine.deleteParent getter (Atoms.Attachment.attachment attachmentId)
                         return true
                     })
 
@@ -61,7 +61,7 @@ module CellForm =
                         (Ui.stack
                             (fun x -> x.spacing <- "10px")
                             [
-                                if visibleTaskSelectedDateIdMap
+                                if visibleTaskSelectedDateMap
                                    |> Map.keys
                                    |> Seq.length
                                    <= 1 then
@@ -73,7 +73,7 @@ module CellForm =
                                 else
                                     nothing
 
-                                if visibleTaskSelectedDateIdMap
+                                if visibleTaskSelectedDateMap
                                    |> Map.values
                                    |> Seq.fold Set.union Set.empty
                                    |> Set.count
@@ -81,10 +81,7 @@ module CellForm =
                                     Ui.box
                                         (fun x -> x.userSelect <- "text")
                                         [
-                                            str
-                                                $"Date: {dateId
-                                                         |> DateId.ValueOrDefault
-                                                         |> FlukeDate.Stringify}"
+                                            str $"Date: {dateId |> FlukeDate.Stringify}"
                                         ]
                                 else
                                     nothing
@@ -95,7 +92,7 @@ module CellForm =
                                         x.alignItems <- "center")
                                     [
                                         Ui.str "Status: "
-                                        CellMenu.CellMenu taskIdAtom dateIdAtom None false
+                                        CellMenu.CellMenu taskIdAtom dateAtom None false
                                     ]
                             ])
 
@@ -120,7 +117,7 @@ module CellForm =
 
         let selectedTaskIdListByArchive = Store.useValue Selectors.Session.selectedTaskIdListByArchive
 
-        let taskIdAtom, dateIdAtom =
+        let taskIdAtom, dateAtom =
             React.useMemo (
                 (fun () ->
                     match cellUIFlag with
@@ -136,8 +133,8 @@ module CellForm =
                 |]
             )
 
-        match taskIdAtom, dateIdAtom with
-        | Some taskIdAtom, Some dateIdAtom -> CellForm taskIdAtom dateIdAtom
+        match taskIdAtom, dateAtom with
+        | Some taskIdAtom, Some dateAtom -> CellForm taskIdAtom dateAtom
         | _ ->
             Ui.box
                 (fun x -> x.padding <- "15px")

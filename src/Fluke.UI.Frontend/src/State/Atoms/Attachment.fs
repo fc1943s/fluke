@@ -5,22 +5,31 @@ open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.State.State
 open FsCore.BaseModel
 open FsStore
-
+open FsStore.Bindings.Gun
 
 
 module rec Attachment =
     let collection = Collection (nameof Attachment)
 
-    let inline attachmentIdIdentifier (attachmentId: AttachmentId) =
-        attachmentId
-        |> AttachmentId.Value
-        |> string
-        |> List.singleton
+    let formatAttachmentId =
+        Engine.getKeysFormatter
+            (fun attachmentId ->
+                attachmentId
+                |> AttachmentId.Value
+                |> string
+                |> AtomKeyFragment
+                |> List.singleton)
 
-    let inline atomFamilyWithSync name defaultValueFn =
-        Store.atomFamilyWithSync Fluke.root collection name defaultValueFn attachmentIdIdentifier
+    let inline createFamilyWithSubscription name defaultValueFn =
+        Engine.createFamilyWithSubscription Fluke.root collection name defaultValueFn formatAttachmentId
 
-    let rec parent = atomFamilyWithSync (nameof parent) (fun (_: AttachmentId) -> None: AttachmentParent option)
-    let rec timestamp = atomFamilyWithSync (nameof timestamp) (fun (_: AttachmentId) -> None: FlukeDateTime option)
-    let rec archived = atomFamilyWithSync (nameof archived) (fun (_: AttachmentId) -> None: bool option)
-    let rec attachment = atomFamilyWithSync (nameof attachment) (fun (_: AttachmentId) -> None: Attachment option)
+    let rec parent =
+        createFamilyWithSubscription (nameof parent) (fun (_: AttachmentId) -> None: AttachmentParent option)
+
+    let rec timestamp =
+        createFamilyWithSubscription (nameof timestamp) (fun (_: AttachmentId) -> None: FlukeDateTime option)
+
+    let rec archived = createFamilyWithSubscription (nameof archived) (fun (_: AttachmentId) -> None: bool option)
+
+    let rec attachment =
+        createFamilyWithSubscription (nameof attachment) (fun (_: AttachmentId) -> None: Attachment option)

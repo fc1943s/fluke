@@ -4,21 +4,19 @@ open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.State.State
 open FsCore.BaseModel
 open FsStore
+open FsStore.Bindings.Gun
+open FsStore.Model
 
+#nowarn "40"
 
 
 module rec User =
     let collection = Collection (nameof User)
 
-    let inline atomWithSync name defaultValueFn =
-        Store.atomWithSync
-            {
-                StoreRoot = Fluke.root
-                Collection = Some collection
-                Keys = []
-                Name = name
-            }
-            defaultValueFn
+    let inline atomWithSync name defaultValue =
+        Engine.createAtomWithSubscription
+            (StoreAtomPath.IndexedAtomPath (Fluke.root, collection, [], AtomName name))
+            defaultValue
 
     let rec archive = atomWithSync (nameof archive) UserState.Default.Archive
     let rec cellColorDisabled = atomWithSync (nameof cellColorDisabled) UserState.Default.CellColorDisabled
@@ -90,25 +88,37 @@ module rec User =
     let rec weekStart = atomWithSync (nameof weekStart) UserState.Default.WeekStart
 
     let rec uiFlag =
-        Store.atomFamilyWithSync
+        Engine.createFamilyWithSubscription
             Fluke.root
             collection
             (nameof uiFlag)
-            (fun (_: UIFlagType) -> uiFlagDefault)
-            (string >> List.singleton)
+            (fun _ -> uiFlagDefault)
+            (fun (uiFlagType: UIFlagType) ->
+                uiFlagType
+                |> string
+                |> AtomKeyFragment
+                |> List.singleton)
 
     let rec uiVisibleFlag =
-        Store.atomFamilyWithSync
+        Engine.createFamilyWithSubscription
             Fluke.root
             collection
             (nameof uiVisibleFlag)
-            (fun (_: UIFlagType) -> uiVisibleFlagDefault)
-            (string >> List.singleton)
+            (fun _ -> uiVisibleFlagDefault)
+            (fun (uiFlagType: UIFlagType) ->
+                uiFlagType
+                |> string
+                |> AtomKeyFragment
+                |> List.singleton)
 
     let rec accordionHiddenFlag =
-        Store.atomFamilyWithSync
+        Engine.createFamilyWithSubscription
             Fluke.root
             collection
             (nameof accordionHiddenFlag)
-            (fun (_: AccordionType) -> accordionHiddenFlagDefault)
-            (string >> List.singleton)
+            (fun _ -> accordionHiddenFlagDefault)
+            (fun (accordionType: AccordionType) ->
+                accordionType
+                |> string
+                |> AtomKeyFragment
+                |> List.singleton)

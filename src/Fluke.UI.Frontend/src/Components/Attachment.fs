@@ -11,6 +11,7 @@ open FsStore
 open FsStore.Hooks
 open FsStore.Bindings
 open FsStore.Model
+open FsStore.Utils
 open FsUi.Bindings
 open Fluke.Shared
 open Fluke.UI.Frontend.State
@@ -37,7 +38,7 @@ module Attachment =
             Store.useCallbackRef
                 (fun _ setter _ ->
                     promise {
-                        Store.resetTempValue setter (Atoms.Attachment.attachment attachmentId)
+                        TempValue.reset setter (Atoms.Attachment.attachment attachmentId)
                         setEditing false
                     })
 
@@ -51,11 +52,11 @@ module Attachment =
             Store.useCallbackRef
                 (fun getter setter () ->
                     promise {
-                        let attachment = Store.getTempValue getter (Atoms.Attachment.attachment attachmentId)
+                        let attachment = TempValue.get getter (Atoms.Attachment.attachment attachmentId)
 
                         match attachment with
                         | Some (Attachment.Comment (Comment.Comment (String.Valid _))) ->
-                            Store.set setter (Atoms.Attachment.attachment attachmentId) attachment
+                            Atom.set setter (Atoms.Attachment.attachment attachmentId) attachment
                             do! reset ()
                         | _ -> ()
                     })

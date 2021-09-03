@@ -56,7 +56,7 @@ module AddAttachmentInput =
 
                             do! onAdd attachmentId
 
-                            // Store.resetTempValue setter (Atoms.Attachment.attachment (AttachmentId Guid.Empty))
+                            // TempValue.reset setter (Atoms.Attachment.attachment (AttachmentId Guid.Empty))
                             tempAttachment.SetValue (Some (Attachment.Comment (Comment.Comment "")))
                         | _ -> ()
                     })
@@ -130,7 +130,7 @@ module AddAttachmentInput =
                             [
                                 Button.Button
                                     {|
-                                        Hint = None
+                                        Tooltip = None
                                         Icon = Some (Icons.fa.FaPlus |> Icons.render, Button.IconPosition.Left)
                                         Props =
                                             fun x ->
@@ -153,7 +153,7 @@ module AddAttachmentInput =
                                             [
                                                 Button.Button
                                                     {|
-                                                        Hint = None
+                                                        Tooltip = None
                                                         Icon =
                                                             Some (
                                                                 Icons.io5.IoDocumentAttachOutline |> Icons.render,

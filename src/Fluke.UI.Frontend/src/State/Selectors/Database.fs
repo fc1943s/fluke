@@ -2,6 +2,7 @@ namespace Fluke.UI.Frontend.State.Selectors
 
 open FsCore.BaseModel
 open FsStore.Bindings
+open FsStore.Model
 open FsStore.State
 open FsCore
 open System
@@ -20,27 +21,36 @@ open FsStore
 
 
 module rec Database =
+    let readSelectorFamily name read =
+        Atom.readSelectorFamily
+            (fun databaseId ->
+                StoreAtomPath.IndexedAtomPath (
+                    Fluke.root,
+                    Atoms.Database.collection,
+                    Atoms.Database.formatDatabaseId databaseId,
+                    AtomName name
+                ))
+            (fun (databaseId: DatabaseId) -> (read databaseId))
+
     let rec database =
-        Store.readSelectorFamily
-            Fluke.root
+        readSelectorFamily
             (nameof database)
             (fun (databaseId: DatabaseId) getter ->
                 {
                     Id = databaseId
-                    Name = Store.value getter (Atoms.Database.name databaseId)
-                    Owner = Store.value getter (Atoms.Database.owner databaseId)
-                    SharedWith = Store.value getter (Atoms.Database.sharedWith databaseId)
-                    Position = Store.value getter (Atoms.Database.position databaseId)
+                    Name = Atom.get getter (Atoms.Database.name databaseId)
+                    Owner = Atom.get getter (Atoms.Database.owner databaseId)
+                    SharedWith = Atom.get getter (Atoms.Database.sharedWith databaseId)
+                    Position = Atom.get getter (Atoms.Database.position databaseId)
                 })
 
 
     let rec nodeType =
-        Store.readSelectorFamily
-            Fluke.root
+        readSelectorFamily
             (nameof nodeType)
             (fun (databaseId: DatabaseId) getter ->
-                let database = Store.value getter (database databaseId)
-                let alias = Store.value getter Selectors.Gun.alias
+                let database = Atom.get getter (database databaseId)
+                let alias = Atom.get getter Selectors.Gun.alias
 
                 match database.Owner with
                 | owner when owner = Templates.templatesUser.Username -> DatabaseNodeType.Template
@@ -50,16 +60,15 @@ module rec Database =
 
 
     let rec isReadWrite =
-        Store.readSelectorFamily
-            Fluke.root
+        readSelectorFamily
             (nameof isReadWrite)
             (fun (databaseId: DatabaseId) getter ->
-                let alias = Store.value getter Selectors.Gun.alias
+                let alias = Atom.get getter Selectors.Gun.alias
 
                 let access =
                     match alias with
                     | Some (Gun.Alias alias) ->
-                        let database = Store.value getter (database databaseId)
+                        let database = Atom.get getter (database databaseId)
 
                         if Username alias <> Templates.templatesUser.Username
                            && database.Owner = Templates.templatesUser.Username then
@@ -72,74 +81,70 @@ module rec Database =
 
 
     let rec taskIdAtoms =
-        Store.readSelectorFamilyInterval
-            Fluke.root
+        //        Store.readSelectorFamilyInterval
+        readSelectorFamily
             (nameof taskIdAtoms)
-            Selectors.interval
-            [||]
+            //            Selectors.interval
+//            [||]
             (fun (databaseId: DatabaseId) getter ->
                 Selectors.asyncTaskIdAtoms
-                |> Store.value getter
+                |> Atom.get getter
                 |> Array.filter
                     (fun taskIdAtom ->
-                        let taskId = Store.value getter taskIdAtom
-                        let databaseId' = Store.value getter (Atoms.Task.databaseId taskId)
+                        let taskId = Atom.get getter taskIdAtom
+                        let databaseId' = Atom.get getter (Atoms.Task.databaseId taskId)
                         databaseId = databaseId'))
 
 
     let rec unarchivedTaskIdAtoms =
-        Store.readSelectorFamily
-            Fluke.root
+        readSelectorFamily
             (nameof unarchivedTaskIdAtoms)
             (fun (databaseId: DatabaseId) getter ->
-                let taskIdAtoms = Store.value getter (taskIdAtoms databaseId)
+                let taskIdAtoms = Atom.get getter (taskIdAtoms databaseId)
 
                 taskIdAtoms
                 |> Array.filter
                     (fun taskIdAtom ->
-                        let taskId = Store.value getter taskIdAtom
-                        let archived = Store.value getter (Atoms.Task.archived taskId)
+                        let taskId = Atom.get getter taskIdAtom
+                        let archived = Atom.get getter (Atoms.Task.archived taskId)
                         archived = Some false))
 
 
     let rec archivedTaskIdAtoms =
-        Store.readSelectorFamily
-            Fluke.root
+        readSelectorFamily
             (nameof archivedTaskIdAtoms)
             (fun (databaseId: DatabaseId) getter ->
-                let taskIdAtoms = Store.value getter (taskIdAtoms databaseId)
+                let taskIdAtoms = Atom.get getter (taskIdAtoms databaseId)
 
                 taskIdAtoms
                 |> Array.filter
                     (fun taskIdAtom ->
-                        let taskId = Store.value getter taskIdAtom
-                        let archived = Store.value getter (Atoms.Task.archived taskId)
+                        let taskId = Atom.get getter taskIdAtom
+                        let archived = Atom.get getter (Atoms.Task.archived taskId)
                         archived = Some true))
 
 
     let rec taskIdAtomsByArchive =
-        Store.readSelectorFamily
-            Fluke.root
+        readSelectorFamily
             (nameof taskIdAtomsByArchive)
             (fun (databaseId: DatabaseId) getter ->
-                let archive = Store.value getter Atoms.User.archive
+                let archive = Atom.get getter Atoms.User.archive
 
                 databaseId
                 |> (if archive = Some true then
                         Database.archivedTaskIdAtoms
                     else
                         Database.unarchivedTaskIdAtoms)
-                |> Store.value getter)
+                |> Atom.get getter)
 
 
     let rec informationAttachmentIdMapByArchive =
-        Store.readSelectorFamily
-            Fluke.root
+        readSelectorFamily
             (nameof informationAttachmentIdMapByArchive)
             (fun (databaseId: DatabaseId) getter ->
-                let archive = Store.value getter Atoms.User.archive
+                let archive = Atom.get getter Atoms.User.archive
 
-                let informationAttachmentIdMap = Store.value getter (Database.informationAttachmentIdMap databaseId)
+                let informationAttachmentIdMap = Atom.get getter (Database.informationAttachmentIdMap databaseId)
 
                 let attachmentIdArray =
                     informationAttachmentIdMap
@@ -150,8 +155,8 @@ module rec Database =
                 let archivedArray =
                     attachmentIdArray
                     |> Array.map Atoms.Attachment.archived
-                    |> Store.waitForAll
-                    |> Store.value getter
+                    |> Atom.waitForAll
+                    |> Atom.get getter
 
                 let archivedMap =
                     archivedArray
@@ -165,18 +170,18 @@ module rec Database =
                         |> Set.filter (fun attachmentId -> archivedMap.[attachmentId] = archive)))
 
     let rec informationAttachmentIdMap =
-        Store.readSelectorFamilyInterval
-            Fluke.root
+        //        readSelectorFamilyInterval
+        readSelectorFamily
             (nameof informationAttachmentIdMap)
-            Selectors.interval
-            Map.empty
+            //            Selectors.interval
+//            Map.empty
             (fun (databaseId: DatabaseId) getter ->
                 Selectors.asyncAttachmentIdAtoms
-                |> Store.value getter
+                |> Atom.get getter
                 |> Array.choose
                     (fun attachmentIdAtom ->
-                        let attachmentId = Store.value getter attachmentIdAtom
-                        let parent = Store.value getter (Atoms.Attachment.parent attachmentId)
+                        let attachmentId = Atom.get getter attachmentIdAtom
+                        let parent = Atom.get getter (Atoms.Attachment.parent attachmentId)
 
                         match parent with
                         | Some (AttachmentParent.Information (databaseId', information)) when databaseId' = databaseId ->
@@ -187,22 +192,21 @@ module rec Database =
                 |> Map.ofSeq)
 
     let rec databaseState =
-        Store.readSelectorFamily
-            Fluke.root
+        readSelectorFamily
             (nameof databaseState)
             (fun (databaseId: DatabaseId) getter ->
-                let database = Store.value getter (Database.database databaseId)
+                let database = Atom.get getter (Database.database databaseId)
 
-                let taskIdAtoms = Store.value getter (Database.taskIdAtoms databaseId)
+                let taskIdAtoms = Atom.get getter (Database.taskIdAtoms databaseId)
 
                 let taskStateList: TaskState list =
                     taskIdAtoms
                     |> Array.toList
-                    |> List.map (Store.value getter)
+                    |> List.map (Atom.get getter)
                     |> List.map Task.taskState
-                    |> List.map (Store.value getter)
+                    |> List.map (Atom.get getter)
 
-                let informationAttachmentIdMap = Store.value getter (Database.informationAttachmentIdMap databaseId)
+                let informationAttachmentIdMap = Atom.get getter (Database.informationAttachmentIdMap databaseId)
 
                 let informationStateMap =
                     informationAttachmentIdMap
@@ -212,8 +216,8 @@ module rec Database =
                                 attachmentIdSet
                                 |> Set.toArray
                                 |> Array.map Attachment.attachmentState
-                                |> Store.waitForAll
-                                |> Store.value getter
+                                |> Atom.waitForAll
+                                |> Atom.get getter
                                 |> Array.toList
                                 |> List.choose id
 
@@ -258,8 +262,8 @@ module rec Database =
                     fileIdList
                     |> List.map Selectors.File.byteArray
                     |> List.toArray
-                    |> Store.waitForAll
-                    |> Store.value getter
+                    |> Atom.waitForAll
+                    |> Atom.get getter
 
                 if byteArrayArray |> Array.contains None then
                     Error "Invalid files present"

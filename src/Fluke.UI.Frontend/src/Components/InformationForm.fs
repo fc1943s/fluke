@@ -57,7 +57,7 @@ module InformationForm =
                     promise {
                         match lastDatabaseSelected, information with
                         | Some lastDatabaseSelected, Some information ->
-                            Store.set
+                            Atom.set
                                 setter
                                 (Atoms.Attachment.parent attachmentId)
                                 (Some (AttachmentParent.Information (lastDatabaseSelected, information)))
@@ -77,7 +77,7 @@ module InformationForm =
 
                         match databaseIdList, information with
                         | _ :: _, Some _information ->
-                            do! Store.deleteRoot getter (Atoms.Attachment.attachment attachmentId)
+                            do! Engine.deleteParent getter (Atoms.Attachment.attachment attachmentId)
                             return true
                         | _ -> return false
                     })

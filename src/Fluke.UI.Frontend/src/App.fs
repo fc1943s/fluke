@@ -16,7 +16,7 @@ module App =
         Profiling.addCount (fun () -> "App().render")
 
         (if wrap then
-             RootWrapper.RootWrapper (Some (Selectors.User.theme :?> Atom<obj>))
+             RootWrapper.RootWrapper (Some (Selectors.User.theme |> unbox<AtomConfig<unit>>))
          else
              React.fragment)
             [

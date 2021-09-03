@@ -24,20 +24,20 @@ module Cell =
 
     [<ReactComponent>]
     let Cell
-        (input: {| TaskIdAtom: Atom<TaskId>
-                   DateIdAtom: Atom<DateId>
+        (input: {| TaskIdAtom: AtomConfig<TaskId>
+                   DateAtom: AtomConfig<FlukeDate>
                    SemiTransparent: bool |})
         =
         Profiling.addCount (fun () -> "- CellComponent.render")
 
         let taskId = Store.useValue input.TaskIdAtom
-        let dateId = Store.useValue input.DateIdAtom
+        let dateId = Store.useValue input.DateAtom
         let cellSize = Store.useValue Atoms.User.cellSize
         let databaseId = Store.useValue (Atoms.Task.databaseId taskId)
         let isReadWrite = Store.useValue (Selectors.Database.isReadWrite databaseId)
         let sessionStatus = Store.useValue (Selectors.Cell.sessionStatus (taskId, dateId))
         let attachmentIdSet = Store.useValue (Selectors.Cell.attachmentIdSet (taskId, dateId))
-        let isToday = Store.useValue (Selectors.DateId.isToday dateId)
+        let isToday = Store.useValue (Selectors.FlukeDate.isToday dateId)
         let selected, setSelected = Store.useState (Selectors.Cell.selected (taskId, dateId))
         let cellUIFlag = Store.useValue (Atoms.User.uiFlag UIFlagType.Cell)
         let rightDock = Store.useValue Atoms.User.rightDock
@@ -58,8 +58,8 @@ module Cell =
                 (fun getter _ (_e: MouseEvent) ->
                     promise {
                         //                        if deviceInfo.IsTesting then
-                        let ctrlPressed = Store.value getter Atoms.Session.ctrlPressed
-                        let shiftPressed = Store.value getter Atoms.Session.shiftPressed
+                        let ctrlPressed = Atom.get getter Atoms.Session.ctrlPressed
+                        let shiftPressed = Atom.get getter Atoms.Session.shiftPressed
 
                         let newSelected = if ctrlPressed || shiftPressed then not selected else false
 
@@ -75,9 +75,7 @@ module Cell =
             (fun x ->
                 Ui.setTestId
                     x
-                    $"cell-{taskId}-{(dateId
-                                      |> DateId.ValueOrDefault
-                                      |> FlukeDate.DateTime)
+                    $"cell-{taskId}-{(dateId |> FlukeDate.DateTime)
                                          .ToShortDateString ()}"
 
                 if isReadWrite then x.onClick <- onCellClick
@@ -124,14 +122,14 @@ module Cell =
                         []
                 | _ -> nothing
 
-                CellSessionIndicator.CellSessionIndicator input.TaskIdAtom input.DateIdAtom
+                CellSessionIndicator.CellSessionIndicator input.TaskIdAtom input.DateAtom
 
                 if selected then
                     nothing
                 else
-                    CellBorder.CellBorder input.TaskIdAtom input.DateIdAtom
+                    CellBorder.CellBorder input.TaskIdAtom input.DateAtom
 
-                CellStatusUserIndicator.CellStatusUserIndicator input.TaskIdAtom input.DateIdAtom
+                CellStatusUserIndicator.CellStatusUserIndicator input.TaskIdAtom input.DateAtom
 
                 if not attachmentIdSet.IsEmpty then
                     AttachmentIndicator.AttachmentIndicator ()
@@ -141,12 +139,12 @@ module Cell =
 
     [<ReactComponent>]
     let CellWrapper
-        (input: {| TaskIdAtom: Atom<TaskId>
-                   DateIdAtom: Atom<DateId>
+        (input: {| TaskIdAtom: AtomConfig<TaskId>
+                   DateAtom: AtomConfig<FlukeDate>
                    SemiTransparent: bool |})
         =
         let taskId = Store.useValue input.TaskIdAtom
-        let dateId = Store.useValue input.DateIdAtom
+        let dateId = Store.useValue input.DateAtom
         let enableCellPopover = Store.useValue Atoms.User.enableCellPopover
         let databaseId = Store.useValue (Atoms.Task.databaseId taskId)
         let isReadWrite = Store.useValue (Selectors.Database.isReadWrite databaseId) //
@@ -165,7 +163,7 @@ module Cell =
                                 if isReadWrite then //
                                     CellMenu.CellMenu
                                         input.TaskIdAtom
-                                        input.DateIdAtom
+                                        input.DateAtom
                                         (Some disclosure.onClose) // None
                                         true
                                 else //

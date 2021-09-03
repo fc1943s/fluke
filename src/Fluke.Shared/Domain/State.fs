@@ -52,7 +52,7 @@ module State =
             SessionList: Session list
             AttachmentStateList: AttachmentState list
             SortList: (TaskId option * TaskId option) list
-            CellStateMap: Map<DateId, CellState>
+            CellStateMap: Map<FlukeDate, CellState>
         }
 
     and CellState =
@@ -313,7 +313,7 @@ module State =
                         SortList = oldValue.SortList @ newValue.SortList
                     })
 
-    let inline mergeCellStateMap (oldMap: Map<DateId, CellState>) (newMap: Map<DateId, CellState>) =
+    let inline mergeCellStateMap (oldMap: Map<FlukeDate, CellState>) (newMap: Map<FlukeDate, CellState>) =
         (oldMap, newMap)
         ||> Map.unionWith
                 (fun oldValue newValue ->

@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open FsStore.State
 open FsCore
 open Feliz
 open Fable.Core.JsInterop
@@ -82,28 +83,28 @@ module TopBar =
                                 if randomizeCellAttachment then yield RandomType.CellAttachment
                             |]
 
-                        let selectedDatabaseIdSet = Store.value getter Atoms.User.selectedDatabaseIdSet
+                        let selectedDatabaseIdSet = Atom.get getter Atoms.User.selectedDatabaseIdSet
 
                         let selectedDatabaseIdArray = selectedDatabaseIdSet |> Set.toArray
 
-                        let informationSet = Store.value getter Selectors.Session.informationSet
+                        let informationSet = Atom.get getter Selectors.Session.informationSet
 
                         let informationArray = informationSet |> Set.toArray
 
                         let informationAttachmentIdMapByArchiveArray =
                             selectedDatabaseIdArray
                             |> Array.map Selectors.Database.informationAttachmentIdMapByArchive
-                            |> Store.waitForAll
-                            |> Store.value getter
+                            |> Atom.waitForAll
+                            |> Atom.get getter
 
                         let databaseTaskIdArray =
                             selectedDatabaseIdArray
                             |> Array.map Selectors.Database.taskIdAtomsByArchive
-                            |> Store.waitForAll
-                            |> Store.value getter
-                            |> Array.map Store.waitForAll
-                            |> Store.waitForAll
-                            |> Store.value getter
+                            |> Atom.waitForAll
+                            |> Atom.get getter
+                            |> Array.map Atom.waitForAll
+                            |> Atom.waitForAll
+                            |> Atom.get getter
 
                         let databaseTaskInformationArray =
                             databaseTaskIdArray
@@ -111,8 +112,8 @@ module TopBar =
                                 (fun taskIdArray ->
                                     taskIdArray
                                     |> Array.map Atoms.Task.information
-                                    |> Store.waitForAll
-                                    |> Store.value getter)
+                                    |> Atom.waitForAll
+                                    |> Atom.get getter)
 
                         let databaseTaskAttachmentIdSetArray =
                             databaseTaskIdArray
@@ -120,8 +121,8 @@ module TopBar =
                                 (fun taskIdArray ->
                                     taskIdArray
                                     |> Array.map Selectors.Task.attachmentIdSet
-                                    |> Store.waitForAll
-                                    |> Store.value getter)
+                                    |> Atom.waitForAll
+                                    |> Atom.get getter)
 
                         let databaseCellAttachmentIdMapArray =
                             databaseTaskIdArray
@@ -129,8 +130,8 @@ module TopBar =
                                 (fun taskIdArray ->
                                     taskIdArray
                                     |> Array.map Selectors.Task.cellAttachmentIdMap
-                                    |> Store.waitForAll
-                                    |> Store.value getter)
+                                    |> Atom.waitForAll
+                                    |> Atom.get getter)
 
                         let anchorArray =
                             selectedDatabaseIdArray
@@ -377,9 +378,9 @@ module TopBar =
             Store.useCallbackRef
                 (fun _ setter _ ->
                     promise {
-                        Store.set setter Atoms.User.leftDock None
-                        Store.set setter Atoms.User.rightDock None
-                        Store.set setter Atoms.User.view UserState.Default.View
+                        Atom.set setter Atoms.User.leftDock None
+                        Atom.set setter Atoms.User.rightDock None
+                        Atom.set setter Atoms.User.view UserState.Default.View
                     })
 
         let archive, setArchive = Store.useState Atoms.User.archive

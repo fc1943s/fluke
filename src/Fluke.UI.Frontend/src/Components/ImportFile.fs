@@ -40,7 +40,7 @@ module ImportFile =
                     [
                         Button.Button
                             {|
-                                Hint = None
+                                Tooltip = None
                                 Icon = Some (Icons.bi.BiImport |> Icons.render, Button.IconPosition.Left)
                                 Props =
                                     fun x ->

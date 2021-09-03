@@ -26,8 +26,8 @@ module PositionUpdater =
             5000
             (fun getter setter ->
                 promise {
-                    let hub = Store.value getter Selectors.Hub.hub
-                    let hubUrl = Store.value getter Atoms.hubUrl
+                    let hub = Atom.get getter Selectors.Hub.hub
+                    let hubUrl = Atom.get getter Atoms.hubUrl
 
                     match hubUrl with
                     | Some (String.Valid _) ->
@@ -37,13 +37,13 @@ module PositionUpdater =
                                 $"position timer. hub.connectionId={hub.connectionId}. triggering hubTrigger **skipped** window.hubTrigger()"
 
                             match Dom.window () with
-                            | Some window -> window?hubTrigger <- fun () -> Store.change setter Atoms.hubTrigger ((+) 1)
+                            | Some window -> window?hubTrigger <- fun () -> Atom.change setter Atoms.hubTrigger ((+) 1)
                             | None -> ()
-                        //                            Store.change setter Atoms.hubTrigger ((+) 1)
+                        //                            Atom.change setter Atoms.hubTrigger ((+) 1)
                         | _ -> ()
                     | _ -> ()
 
-                    Store.set setter (Atoms.Device.devicePing deviceInfo.DeviceId) (Ping (string DateTime.Now.Ticks))
+                    Atom.set setter (Atoms.Device.devicePing deviceInfo.DeviceId) (Ping (string DateTime.Now.Ticks))
                 })
 
         Scheduling.useScheduling
@@ -51,20 +51,20 @@ module PositionUpdater =
             1000
             (fun getter setter ->
                 promise {
-                    let selectedDatabaseIdSet = Store.value getter Atoms.User.selectedDatabaseIdSet
+                    let selectedDatabaseIdSet = Atom.get getter Atoms.User.selectedDatabaseIdSet
 
                     let selectedDatabasePositions =
                         selectedDatabaseIdSet
                         |> Set.toList
                         |> List.map Atoms.Database.position
-                        |> List.map (Store.value getter)
+                        |> List.map (Atom.get getter)
 
                     let pausedPosition =
                         selectedDatabasePositions
                         |> List.choose id
                         |> List.tryHead
 
-                    let position = Store.value getter Atoms.Session.position
+                    let position = Atom.get getter Atoms.Session.position
 
                     let newPosition =
                         match selectedDatabasePositions, pausedPosition with
@@ -75,7 +75,7 @@ module PositionUpdater =
                                     Second = Second 0
                                 }
 
-                            let position = Store.value getter Atoms.Session.position
+                            let position = Atom.get getter Atoms.Session.position
 
                             if (not deviceInfo.IsTesting || position.IsNone)
                                && Some newPosition <> position then
@@ -94,7 +94,7 @@ module PositionUpdater =
 
                     if position <> newPosition then
                         printfn $"Updating position newPosition={newPosition |> Option.map FlukeDateTime.Stringify}"
-                        Store.set setter Atoms.Session.position newPosition
+                        Atom.set setter Atoms.Session.position newPosition
                 })
 
         nothing

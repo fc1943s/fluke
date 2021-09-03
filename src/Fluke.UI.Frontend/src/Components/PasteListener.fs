@@ -1,6 +1,7 @@
 namespace Fluke.UI.Frontend.Components
 
 open System
+open FsStore.State
 open Fluke.UI.Frontend.State.State
 open FsCore
 open FsStore.Model
@@ -23,7 +24,7 @@ module PasteListener =
             Store.useCallbackRef
                 (fun getter setter attachment ->
                     promise {
-                        let logger = Store.value getter Selectors.logger
+                        let logger = Atom.get getter Selectors.logger
                         logger.Debug (fun () -> $"pasted image attachment={attachment}")
 
                         let attachmentId =
@@ -38,7 +39,7 @@ module PasteListener =
                                      Attachment = attachment
                                  })
 
-                        Store.change
+                        Atom.change
                             setter
                             Atoms.User.clipboardAttachmentIdMap
                             (fun map -> map |> Map.add attachmentId false)
@@ -50,7 +51,7 @@ module PasteListener =
             Store.useCallbackRef
                 (fun getter setter (e: Browser.Types.Event) ->
                     promise {
-                        let logger = Store.value getter Selectors.logger
+                        let logger = Atom.get getter Selectors.logger
 
                         let! blobs =
                             match Browser.Navigator.navigator.clipboard with
@@ -87,7 +88,7 @@ module PasteListener =
                                 (fun blob ->
                                     promise {
                                         let! hexString = Js.blobToHexString blob
-                                        let fileId = Hydrate.hydrateFile setter (AtomScope.Current, hexString)
+                                        let fileId = Hydrate.hydrateFile setter hexString
 
                                         match fileId with
                                         | Some fileId ->

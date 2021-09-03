@@ -35,21 +35,18 @@ module TempUI =
         | Resource _ -> "#333"
 
 
-    type DateId with
-        static member inline Value (DateId referenceDay) = referenceDay
-
-        static member inline Format dateIdFormat dateId =
-            match dateId |> DateId.Value, dateIdFormat with
-            | Some { Day = Day day }, DateIdFormat.Day -> day.ToString "D2"
-            | Some date, DateIdFormat.DayOfWeek ->
+    type FlukeDate with
+        static member inline Format dateIdFormat date =
+            match date, dateIdFormat with
+            | { Day = Day day }, DateIdFormat.Day -> day.ToString "D2"
+            | date, DateIdFormat.DayOfWeek ->
                 date
                 |> FlukeDate.DateTime
                 |> DateTime.format "EEEEEE"
-            | Some date, DateIdFormat.Month ->
+            | date, DateIdFormat.Month ->
                 date
                 |> FlukeDate.DateTime
                 |> DateTime.format "MMM"
-            | _ -> "??"
 
     and [<RequireQualifiedAccess>] DateIdFormat =
         | Day

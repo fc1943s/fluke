@@ -19,6 +19,7 @@ open Fluke.Shared.Domain.Model
 open Fluke.Shared
 open Fluke.UI.Frontend.State.State
 open FsUi.Components
+open FsStore.State
 
 
 module Settings =

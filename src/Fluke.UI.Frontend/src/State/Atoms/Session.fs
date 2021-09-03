@@ -1,11 +1,14 @@
 namespace Fluke.UI.Frontend.State.Atoms
 
 open Fluke.Shared.Domain.UserInteraction
+open FsCore.BaseModel
 open FsStore
 open Fluke.UI.Frontend.State
+open FsStore.Model
 
 
 module Session =
+    let collection = Collection (nameof Session)
 
 
     //        module rec Events =
@@ -21,12 +24,22 @@ module Session =
 //                | NoOp
 //
 //            let rec events =
-//                Store.atomFamilyWithSync (
+//                Store.createFamilyWithSubscription (
 //                    $"{nameof Events}/{nameof events}",
 //                    (fun (_eventId: EventId) -> Event.NoOp)
 //                )
 
-    let rec sessionRestored = Store.atom Fluke.root (nameof sessionRestored) false
-    let rec position = Store.atom Fluke.root (nameof position) (None: FlukeDateTime option)
-    let rec ctrlPressed = Store.atom Fluke.root (nameof ctrlPressed) false
-    let rec shiftPressed = Store.atom Fluke.root (nameof shiftPressed) false
+    let rec position =
+        Atom.create
+            (StoreAtomPath.IndexedAtomPath (Fluke.root, collection, [], AtomName (nameof position)))
+            (AtomType.Atom (None: FlukeDateTime option))
+
+    let rec shiftPressed =
+        Atom.create
+            (StoreAtomPath.IndexedAtomPath (Fluke.root, collection, [], AtomName (nameof shiftPressed)))
+            (AtomType.Atom false)
+
+    let rec ctrlPressed =
+        Atom.create
+            (StoreAtomPath.IndexedAtomPath (Fluke.root, collection, [], AtomName (nameof ctrlPressed)))
+            (AtomType.Atom false)

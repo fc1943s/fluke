@@ -16,8 +16,8 @@ module CellStatusUserIndicator =
     open State
 
     [<ReactComponent>]
-    let CellStatusUserIndicator taskIdAtom dateIdAtom =
-        let taskId, dateId = Store.useValueTuple taskIdAtom dateIdAtom
+    let CellStatusUserIndicator taskIdAtom dateAtom =
+        let taskId, dateId = Store.useValueTuple taskIdAtom dateAtom
         let userColor = Store.useValue Atoms.User.userColor
         let cellSize = Store.useValue Atoms.User.cellSize
         let showUser = Store.useValue (Selectors.Task.showUser taskId)

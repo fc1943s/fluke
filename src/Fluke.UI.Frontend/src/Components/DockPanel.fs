@@ -20,7 +20,7 @@ module DockPanel =
     let DockPanel
         (input: {| Name: string
                    Icon: obj
-                   Atom: Atom<TempUI.DockType option>
+                   Atom: AtomConfig<TempUI.DockType option>
                    RightIcons: DockPanelIcon list
                    children: seq<ReactElement> |})
         =

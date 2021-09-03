@@ -12,6 +12,7 @@ open FsStore
 open FsStore.Hooks
 open FsStore.Bindings
 open FsStore.Model
+open FsStore.Utils
 open FsUi.Bindings
 open Fable.Core
 open Fluke.UI.Frontend.Hooks
@@ -33,8 +34,8 @@ module DatabaseForm =
             Store.useCallbackRef
                 (fun getter setter _ ->
                     promise {
-                        let databaseName = Store.getTempValue getter (Atoms.Database.name databaseId)
-                        let alias = Store.value getter Selectors.Gun.alias
+                        let databaseName = TempValue.get getter (Atoms.Database.name databaseId)
+                        let alias = Atom.get getter Selectors.Gun.alias
 
                         match databaseName with
                         | DatabaseName String.Invalid -> toast (fun x -> x.description <- "Invalid name")
@@ -53,7 +54,7 @@ module DatabaseForm =
                                         |> Promise.lift
                                     else
                                         promise {
-                                            let database = Store.value getter (Selectors.Database.database databaseId)
+                                            let database = Atom.get getter (Selectors.Database.database databaseId)
 
                                             return { database with Name = databaseName }
                                         }
@@ -63,7 +64,7 @@ module DatabaseForm =
                                 //                                setter.set (Atoms.Events.events eventId, event)
                                 //                                printfn $"event {event}"
 
-                                Store.resetTempValue setter (Atoms.Database.name databaseId)
+                                TempValue.reset setter (Atoms.Database.name databaseId)
 
                                 do! onSave database
                             | None -> ()
@@ -118,7 +119,7 @@ module DatabaseForm =
 
                                 Button.Button
                                     {|
-                                        Hint = None
+                                        Tooltip = None
                                         Icon = Some (Icons.fi.FiSave |> Icons.render, Button.IconPosition.Left)
                                         Props = fun x -> x.onClick <- onSave
                                         Children =

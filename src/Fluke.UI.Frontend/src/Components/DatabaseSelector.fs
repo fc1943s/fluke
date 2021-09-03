@@ -32,13 +32,13 @@ module DatabaseSelector =
 
         let databaseIdList =
             databaseIdAtoms
-            |> Store.waitForAll
+            |> Atom.waitForAll
             |> Store.useValue
 
         let filteredDatabaseIdList =
             databaseIdList
             |> Array.map Selectors.Database.isReadWrite
-            |> Store.waitForAll
+            |> Atom.waitForAll
             |> Store.useValue
             |> Array.toList
             |> List.mapi
@@ -52,7 +52,7 @@ module DatabaseSelector =
             filteredDatabaseIdList
             |> List.map Atoms.Database.name
             |> List.toArray
-            |> Store.waitForAll
+            |> Atom.waitForAll
             |> Store.useValue
             |> Array.toList
             |> List.map DatabaseName.ValueOrDefault
@@ -90,7 +90,7 @@ module DatabaseSelector =
                             fun visible setVisible ->
                                 Button.Button
                                     {|
-                                        Hint = None
+                                        Tooltip = None
                                         Icon = Some (Icons.fi.FiChevronDown |> Icons.render, Button.IconPosition.Right)
                                         Props = fun x -> x.onClick <- fun _ -> promise { setVisible (not visible) }
                                         Children =
@@ -151,7 +151,7 @@ module DatabaseSelector =
                                                 fun visible setVisible ->
                                                     Button.Button
                                                         {|
-                                                            Hint = None
+                                                            Tooltip = None
                                                             Icon =
                                                                 Some (
                                                                     (if visible then

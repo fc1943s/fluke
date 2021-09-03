@@ -14,8 +14,8 @@ module CellSessionIndicator =
 
 
     [<ReactComponent>]
-    let CellSessionIndicator taskIdAtom dateIdAtom =
-        let taskId, dateId = Store.useValueTuple taskIdAtom dateIdAtom
+    let CellSessionIndicator taskIdAtom dateAtom =
+        let taskId, dateId = Store.useValueTuple taskIdAtom dateAtom
         let sessionStatus = Store.useValue (Selectors.Cell.sessionStatus (taskId, dateId))
         let sessionCount = Store.useValue (Selectors.Cell.sessionCount (taskId, dateId))
 

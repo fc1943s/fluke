@@ -16,31 +16,31 @@ module ModalFlagTrigger =
     let ModalFlagTrigger
         (input: {| UIFlagType: UIFlagType
                    UIFlagValue: UIFlag
-                   Trigger: (unit -> JS.Promise<unit>) -> GetFn * SetFn -> ReactElement |})
+                   Trigger: (unit -> JS.Promise<unit>) -> Getter<_> * Setter<_> -> ReactElement |})
         =
         let onTrigger =
             Store.useCallbackRef
                 (fun _ setter _ ->
                     promise {
-                        Store.set setter (Atoms.User.uiFlag input.UIFlagType) input.UIFlagValue
-                        Store.set setter (Atoms.User.uiVisibleFlag input.UIFlagType) true
+                        Atom.set setter (Atoms.User.uiFlag input.UIFlagType) input.UIFlagValue
+                        Atom.set setter (Atoms.User.uiVisibleFlag input.UIFlagType) true
                     })
 
-        let callbacks = Store.useCallbacks ()
+        let store = Store.useStore ()
         let content, setContent = React.useState nothing
 
         React.useEffect (
             (fun () ->
                 promise {
-                    let! callbacks = callbacks ()
-                    setContent (input.Trigger onTrigger callbacks)
+                    let! store = store ()
+                    setContent (input.Trigger onTrigger store)
                 }
                 |> Promise.start),
             [|
                 box setContent
                 box input
                 box onTrigger
-                box callbacks
+                box store
             |]
         )
 

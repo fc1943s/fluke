@@ -6,63 +6,77 @@ open Fluke.Shared.Domain.Model
 open Fluke.UI.Frontend.State
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.Shared.Domain.State
+open FsCore.BaseModel
 open FsStore
+open FsStore.Model
 
 
 #nowarn "40"
 
 
 module rec Cell =
+    let collection = Collection (nameof Cell)
+
+    let selectorFamily name =
+        Atom.selectorFamily
+            (fun (taskId: TaskId, date: FlukeDate) ->
+                StoreAtomPath.IndexedAtomPath (
+                    Fluke.root,
+                    Cell.collection,
+                    Atoms.Task.formatTaskId taskId
+                    @ FlukeDate.formatDate date,
+                    AtomName name
+                ))
+
+    let readSelectorFamily name read =
+        selectorFamily name read (fun _ -> failwith "readonly")
+
     let rec sessionStatus =
-        Store.selectorFamily
-            Fluke.root
-            (Some Atoms.Cell.collection)
+        selectorFamily
             (nameof sessionStatus)
-            (fun (taskId: TaskId, dateId: DateId) getter ->
-                let hideSchedulingOverlay = Store.value getter Atoms.User.hideSchedulingOverlay
+            (fun (taskId: TaskId, date: FlukeDate) getter ->
+                let hideSchedulingOverlay = Atom.get getter Atoms.User.hideSchedulingOverlay
 
                 if hideSchedulingOverlay then
-                    Store.value getter (Atoms.Task.statusMap taskId)
-                    |> Map.tryFind dateId
+                    Atom.get getter (Atoms.Task.statusMap taskId)
+                    |> Map.tryFind date
                     |> Option.map UserStatus
                     |> Option.defaultValue Disabled
                 else
-                    Store.value getter (Task.cellStatusMap taskId)
-                    |> Map.tryFind dateId
+                    Atom.get getter (Task.cellStatusMap taskId)
+                    |> Map.tryFind date
                     |> Option.defaultValue Disabled)
-            (fun (taskId: TaskId, dateId: DateId) _getter setter newValue ->
-                Store.change
+            (fun (taskId: TaskId, date: FlukeDate) _getter setter newValue ->
+                Atom.change
                     setter
                     (Atoms.Task.statusMap taskId)
                     (fun statusMap ->
                         match newValue with
-                        | UserStatus (username, status) -> statusMap |> Map.add dateId (username, status)
-                        | _ -> statusMap |> Map.remove dateId))
+                        | UserStatus (username, status) -> statusMap |> Map.add date (username, status)
+                        | _ -> statusMap |> Map.remove date))
 
 
     let rec selected =
-        Store.selectorFamily
-            Fluke.root
-            (Some Atoms.Cell.collection)
+        selectorFamily
             (nameof selected)
-            (fun (taskId: TaskId, dateId: DateId) getter ->
-                let selectionSet = Store.value getter (Atoms.Task.selectionSet taskId)
-                selectionSet.Contains dateId)
-            (fun (taskId: TaskId, dateId: DateId) getter setter newValue ->
-                let ctrlPressed = Store.value getter Atoms.Session.ctrlPressed
-                let shiftPressed = Store.value getter Atoms.Session.shiftPressed
+            (fun (taskId: TaskId, date: FlukeDate) getter ->
+                let selectionSet = Atom.get getter (Atoms.Task.selectionSet taskId)
+                selectionSet.Contains date)
+            (fun (taskId: TaskId, date: FlukeDate) getter setter newValue ->
+                let ctrlPressed = Atom.get getter Atoms.Session.ctrlPressed
+                let shiftPressed = Atom.get getter Atoms.Session.shiftPressed
 
                 let newCellSelectionMap =
                     match shiftPressed, ctrlPressed with
                     | false, false ->
-                        let newTaskSelection = if newValue then Set.singleton dateId else Set.empty
+                        let newTaskSelection = if newValue then Set.singleton date else Set.empty
 
                         [
                             taskId, newTaskSelection
                         ]
                         |> Map.ofSeq
                     | false, true ->
-                        let swapSelection oldSelection taskId dateId =
+                        let swapSelection oldSelection taskId date =
                             let oldSet =
                                 oldSelection
                                 |> Map.tryFind taskId
@@ -71,21 +85,20 @@ module rec Cell =
                             let newSet =
                                 let fn = if newValue then Set.add else Set.remove
 
-                                fn dateId oldSet
+                                fn date oldSet
 
                             oldSelection |> Map.add taskId newSet
 
-                        let oldSelection = Store.value getter Selectors.Session.visibleTaskSelectedDateIdMap
+                        let oldSelection = Atom.get getter Selectors.Session.visibleTaskSelectedDateMap
 
-                        swapSelection oldSelection taskId dateId
+                        swapSelection oldSelection taskId date
                     | true, _ ->
-                        let sortedTaskIdArray = Store.value getter Selectors.Session.sortedTaskIdArray
+                        let sortedTaskIdArray = Atom.get getter Selectors.Session.sortedTaskIdArray
 
-                        let visibleTaskSelectedDateIdMap =
-                            Store.value getter Selectors.Session.visibleTaskSelectedDateIdMap
+                        let visibleTaskSelectedDateMap = Atom.get getter Selectors.Session.visibleTaskSelectedDateMap
 
                         let initialTaskIdSet =
-                            visibleTaskSelectedDateIdMap
+                            visibleTaskSelectedDateMap
                             |> Map.toSeq
                             |> Seq.filter (fun (_, dates) -> Set.isEmpty dates |> not)
                             |> Seq.map fst
@@ -100,12 +113,11 @@ module rec Cell =
                             |> Array.rev
 
                         let initialDateList =
-                            visibleTaskSelectedDateIdMap
+                            visibleTaskSelectedDateMap
                             |> Map.values
                             |> Set.unionMany
-                            |> Set.add dateId
+                            |> Set.add date
                             |> Set.toList
-                            |> List.choose DateId.Value
                             |> List.sort
 
                         let dateSet =
@@ -117,41 +129,37 @@ module rec Cell =
                                     dateList |> List.last
                                 ]
                                 |> Rendering.getDateSequence (0, 0)
-                                |> List.map DateId
                             |> Set.ofSeq
 
                         newTaskIdArray
                         |> Array.map (fun taskId -> taskId, dateSet)
                         |> Map.ofSeq
 
-                Store.set setter Selectors.Session.visibleTaskSelectedDateIdMap newCellSelectionMap)
+                Atom.set setter Selectors.Session.visibleTaskSelectedDateMap newCellSelectionMap)
 
     let rec sessions =
-        Store.readSelectorFamily
-            Fluke.root
+        readSelectorFamily
             (nameof sessions)
-            (fun (taskId: TaskId, dateId: DateId) getter ->
-                let sessions = Store.value getter (Atoms.Task.sessions taskId)
-                let dayStart = Store.value getter Atoms.User.dayStart
+            (fun (taskId: TaskId, date: FlukeDate) getter ->
+                let sessions = Atom.get getter (Atoms.Task.sessions taskId)
+                let dayStart = Atom.get getter Atoms.User.dayStart
 
                 sessions
-                |> List.filter (fun (Session start) -> isToday dayStart start dateId))
+                |> List.filter (fun (Session start) -> isToday dayStart start date))
 
     let rec sessionCount =
-        Store.readSelectorFamily
-            Fluke.root
+        readSelectorFamily
             (nameof sessionCount)
-            (fun (taskId: TaskId, dateId: DateId) getter ->
-                let sessions = Store.value getter (sessions (taskId, dateId))
+            (fun (taskId: TaskId, date: FlukeDate) getter ->
+                let sessions = Atom.get getter (sessions (taskId, date))
                 sessions.Length)
 
     let rec attachmentIdSet =
-        Store.readSelectorFamily
-            Fluke.root
+        readSelectorFamily
             (nameof attachmentIdSet)
-            (fun (taskId: TaskId, dateId: DateId) getter ->
-                let cellAttachmentIdMap = Store.value getter (Task.cellAttachmentIdMap taskId)
+            (fun (taskId: TaskId, date: FlukeDate) getter ->
+                let cellAttachmentIdMap = Atom.get getter (Task.cellAttachmentIdMap taskId)
 
                 cellAttachmentIdMap
-                |> Map.tryFind dateId
+                |> Map.tryFind date
                 |> Option.defaultValue Set.empty)

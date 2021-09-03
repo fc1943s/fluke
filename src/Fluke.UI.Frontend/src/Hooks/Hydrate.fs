@@ -1,6 +1,7 @@
 namespace Fluke.UI.Frontend.Hooks
 
 open FsStore
+open FsStore.State
 open FsStore.Hooks
 open FsCore
 open Fluke.Shared.Domain.Model
@@ -18,6 +19,7 @@ open FsCore.BaseModel
 open FsJs
 open FsStore.Bindings
 open FsStore.Model
+open FsStore.Utils
 open FsUi.Model
 open FsUi.State
 open FsUi.Bindings
@@ -43,7 +45,7 @@ module Result =
 module Hydrate =
     let inline hydrateUiState _ setter (uiState: UiState) =
         promise {
-            let set atom value = Store.set setter atom value
+            let set atom value = Atom.set setter atom value
 
             set Atoms.Ui.darkMode uiState.DarkMode
             set Atoms.Ui.fontSize uiState.FontSize
@@ -51,7 +53,7 @@ module Hydrate =
 
     let inline hydrateUserState _ setter (userState: UserState) =
         promise {
-            let set atom value = Store.set setter atom value
+            let set atom value = Atom.set setter atom value
 
             set Atoms.User.archive userState.Archive
             set Atoms.User.cellColorDisabled userState.CellColorDisabled
@@ -100,7 +102,9 @@ module Hydrate =
             set Atoms.User.weekStart userState.WeekStart
 
             userState.AccordionHiddenFlagMap
-            |> Map.iter (Atoms.User.accordionHiddenFlag >> set)
+            |> Map.iter
+                (fun accordionType values ->
+                    set (Atoms.User.accordionHiddenFlag accordionType) (values |> Array.toList))
 
             userState.UIFlagMap
             |> Map.iter (Atoms.User.uiFlag >> set)
@@ -114,30 +118,40 @@ module Hydrate =
 
     let inline hydrateDatabase _ setter (atomScope, database: Database) =
         promise {
-            Store.scopedSet setter atomScope (Atoms.Database.name, database.Id, database.Name)
-            Store.scopedSet setter atomScope (Atoms.Database.owner, database.Id, database.Owner)
-            Store.scopedSet setter atomScope (Atoms.Database.sharedWith, database.Id, database.SharedWith)
-            Store.scopedSet setter atomScope (Atoms.Database.position, database.Id, database.Position)
+            TempValue.setWithScope setter atomScope (Atoms.Database.name, database.Id, database.Name)
+            TempValue.setWithScope setter atomScope (Atoms.Database.owner, database.Id, database.Owner)
+            TempValue.setWithScope setter atomScope (Atoms.Database.sharedWith, database.Id, database.SharedWith)
+            TempValue.setWithScope setter atomScope (Atoms.Database.position, database.Id, database.Position)
         }
 
     let inline hydrateTask _ setter (atomScope, databaseId, task: Task) =
         promise {
-            Store.scopedSet setter atomScope (Atoms.Task.databaseId, task.Id, databaseId)
-            Store.scopedSet setter atomScope (Atoms.Task.name, task.Id, task.Name)
-            Store.scopedSet setter atomScope (Atoms.Task.information, task.Id, task.Information)
-            Store.scopedSet setter atomScope (Atoms.Task.duration, task.Id, task.Duration)
-            Store.scopedSet setter atomScope (Atoms.Task.pendingAfter, task.Id, task.PendingAfter)
-            Store.scopedSet setter atomScope (Atoms.Task.missedAfter, task.Id, task.MissedAfter)
-            Store.scopedSet setter atomScope (Atoms.Task.scheduling, task.Id, task.Scheduling)
-            Store.scopedSet setter atomScope (Atoms.Task.priority, task.Id, task.Priority)
+            TempValue.setWithScope setter atomScope (Atoms.Task.databaseId, task.Id, databaseId)
+            TempValue.setWithScope setter atomScope (Atoms.Task.name, task.Id, task.Name)
+            TempValue.setWithScope setter atomScope (Atoms.Task.information, task.Id, task.Information)
+            TempValue.setWithScope setter atomScope (Atoms.Task.duration, task.Id, task.Duration)
+            TempValue.setWithScope setter atomScope (Atoms.Task.pendingAfter, task.Id, task.PendingAfter)
+            TempValue.setWithScope setter atomScope (Atoms.Task.missedAfter, task.Id, task.MissedAfter)
+            TempValue.setWithScope setter atomScope (Atoms.Task.scheduling, task.Id, task.Scheduling)
+            TempValue.setWithScope setter atomScope (Atoms.Task.priority, task.Id, task.Priority)
         }
 
     let inline hydrateAttachmentState _getter setter (atomScope, parent, attachmentState) =
         let attachmentId = AttachmentId.NewId ()
-        Store.scopedSet setter atomScope (Atoms.Attachment.parent, attachmentId, Some parent)
-        Store.scopedSet setter atomScope (Atoms.Attachment.timestamp, attachmentId, Some attachmentState.Timestamp)
-        Store.scopedSet setter atomScope (Atoms.Attachment.archived, attachmentId, Some attachmentState.Archived)
-        Store.scopedSet setter atomScope (Atoms.Attachment.attachment, attachmentId, Some attachmentState.Attachment)
+        TempValue.setWithScope setter atomScope (Atoms.Attachment.parent, attachmentId, Some parent)
+
+        TempValue.setWithScope
+            setter
+            atomScope
+            (Atoms.Attachment.timestamp, attachmentId, Some attachmentState.Timestamp)
+
+        TempValue.setWithScope setter atomScope (Atoms.Attachment.archived, attachmentId, Some attachmentState.Archived)
+
+        TempValue.setWithScope
+            setter
+            atomScope
+            (Atoms.Attachment.attachment, attachmentId, Some attachmentState.Attachment)
+
         attachmentId
 
 
@@ -146,10 +160,10 @@ module Hydrate =
         promise {
             do! hydrateTask getter setter (atomScope, databaseId, taskState.Task)
 
-            Store.scopedSet setter atomScope (Atoms.Task.selectionSet, taskState.Task.Id, Set.empty)
-            Store.scopedSet setter atomScope (Atoms.Task.archived, taskState.Task.Id, Some taskState.Archived)
+            TempValue.setWithScope setter atomScope (Atoms.Task.selectionSet, taskState.Task.Id, Set.empty)
+            TempValue.setWithScope setter atomScope (Atoms.Task.archived, taskState.Task.Id, Some taskState.Archived)
 
-            Store.scopedSet
+            TempValue.setWithScope
                 setter
                 atomScope
                 (Atoms.Task.statusMap,
@@ -189,7 +203,7 @@ module Hydrate =
                                 ))
                         |> Set.ofSeq)
 
-            Store.scopedSet setter atomScope (Atoms.Task.sessions, taskState.Task.Id, taskState.SessionList)
+            TempValue.setWithScope setter atomScope (Atoms.Task.sessions, taskState.Task.Id, taskState.SessionList)
         }
 
     let inline hydrateDatabaseState getter setter (atomScope, databaseState: DatabaseState) =
@@ -201,7 +215,7 @@ module Hydrate =
                 |> Map.toList
                 |> List.map
                     (fun (fileId, hexString) ->
-                        let newFileId = Hydrate.hydrateFile setter (atomScope, hexString)
+                        let newFileId = Hydrate.hydrateFile setter hexString
 
                         match newFileId with
                         | Some newFileId -> Ok (fileId, newFileId)
@@ -300,7 +314,7 @@ module Hydrate =
 
                     let rec loop attemptsLeft =
                         promise {
-                            let databaseState = Store.value getter (Selectors.Database.databaseState databaseId)
+                            let databaseState = Atom.get getter (Selectors.Database.databaseState databaseId)
 
                             match databaseState with
                             | _ when attemptsLeft = attempts ->
@@ -358,11 +372,11 @@ module Hydrate =
         Store.useCallbackRef
             (fun getter _ () ->
                 promise {
-                    let alias = Store.value getter Selectors.Gun.alias
+                    let alias = Atom.get getter Selectors.Gun.alias
 
                     match alias with
                     | Some (Gun.Alias alias) ->
-                        let privateKeys = Store.value getter Selectors.Gun.privateKeys
+                        let privateKeys = Atom.get getter Selectors.Gun.privateKeys
                         let json = privateKeys |> Json.encodeFormatted
 
                         let timestamp =
@@ -391,17 +405,17 @@ module Hydrate =
                             x.title <- "Loading"
                             x.status <- "warning")
 
-                    let alias = Store.value getter Selectors.Gun.alias
+                    let alias = Atom.get getter Selectors.Gun.alias
 
                     match alias with
                     | Some (Gun.Alias alias) ->
-                        let _ = Store.value getter Selectors.User.userState
-                        let _ = Store.value getter Selectors.Ui.uiState
+                        let _ = Atom.get getter Selectors.User.userState
+                        let _ = Atom.get getter Selectors.Ui.uiState
 
                         do! Promise.sleep 4000
 
-                        let userState = Store.value getter Selectors.User.userState
-                        let uiState = Store.value getter Selectors.Ui.uiState
+                        let userState = Atom.get getter Selectors.User.userState
+                        let uiState = Atom.get getter Selectors.Ui.uiState
 
                         let json =
                             { Ui = uiState; User = userState }
@@ -427,7 +441,7 @@ module Hydrate =
         Store.useCallbackRef
             (fun getter setter files ->
                 promise {
-                    let alias = Store.value getter Selectors.Gun.alias
+                    let alias = Atom.get getter Selectors.Gun.alias
 
                     match alias, files with
                     | Some _alias, Some (files: FileList) when files.length = 1 ->
@@ -467,7 +481,7 @@ module Hydrate =
         Store.useCallbackRef
             (fun getter setter files ->
                 promise {
-                    let alias = Store.value getter Selectors.Gun.alias
+                    let alias = Atom.get getter Selectors.Gun.alias
 
                     match alias, files with
                     | Some (Gun.Alias alias), Some (files: FileList) when files.length > 0 ->
@@ -543,7 +557,7 @@ module Hydrate =
                                                                      })
                                                              |> Map.ofSeq
                                                      })
-                                        //                                            Store.change setter Atoms.databaseIdSet (Set.add database.Id)
+                                        //                                            Atom.change setter Atoms.databaseIdSet (Set.add database.Id)
                                         })
                                 |> Promise.all
                                 |> Promise.ignore
@@ -556,5 +570,5 @@ module Hydrate =
                         with
                         | ex -> toast (fun x -> x.description <- $"Error importing database: ${ex.Message}")
                     | _ -> toast (fun x -> x.description <- "No files selected")
-                //                                            Store.change setter Atoms.databaseIdSet (Set.add database.Id)
+                //                                            Atom.change setter Atoms.databaseIdSet (Set.add database.Id)
                 })

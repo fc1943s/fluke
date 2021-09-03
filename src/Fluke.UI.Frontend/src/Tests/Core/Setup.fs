@@ -45,7 +45,7 @@ module Setup =
             //            let mutable peekFn : (CallbackMethods -> JS.Promise<unit>) -> JS.Promise<unit> =
 //                fun _ -> failwith "called empty callback"
 //
-            let mutable callbacksRef: GetFn * SetFn = unbox null
+            let mutable storeRef: Getter<_> * Setter<_> = unbox null
             //
 //            let cmpWrapper =
 //                React.memo
@@ -63,17 +63,17 @@ module Setup =
                         React.fragment [
                             (React.memo
                                 (fun () ->
-                                    let callbacks = Store.useCallbacks ()
+                                    let store = Store.useStore ()
 
                                     React.useEffect (
                                         (fun () ->
                                             promise {
-                                                let! callbacksValue = callbacks ()
-                                                callbacksRef <- callbacksValue
+                                                let! storeValue = store ()
+                                                storeRef <- storeValue
                                             }
                                             |> Promise.start),
                                         [|
-                                            box callbacks
+                                            box store
                                         |]
                                     )
 
@@ -88,7 +88,7 @@ module Setup =
 
             do! RTL.waitFor id
             //            return subject, peekFn
-            return subject, callbacksRef
+            return subject, storeRef
         }
 
 //    let waitForObj setter fn =

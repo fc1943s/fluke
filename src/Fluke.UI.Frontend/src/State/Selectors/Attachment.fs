@@ -4,25 +4,41 @@ open Fluke.Shared.Domain.UserInteraction
 open Fluke.Shared.Domain.State
 open Fluke.UI.Frontend.State
 open FsStore
+open FsStore.Bindings.Gun
+open FsStore.Model
 
 
+module Attachment =
+    let formatAttachmentId =
+        Engine.getKeysFormatter
+            (fun attachmentId ->
+                attachmentId
+                |> AttachmentId.Value
+                |> string
+                |> AtomKeyFragment
+                |> List.singleton)
 
-module rec Attachment =
     let rec attachmentState =
-        Store.readSelectorFamily
-            Fluke.root
-            (nameof attachmentState)
-            (fun (attachmentId: AttachmentId) getter ->
-                let timestamp = Store.value getter (Atoms.Attachment.timestamp attachmentId)
-                let archived = Store.value getter (Atoms.Attachment.archived attachmentId)
-                let attachment = Store.value getter (Atoms.Attachment.attachment attachmentId)
+        Atom.readSelectorFamily
+            (fun attachmentId ->
+                StoreAtomPath.IndexedAtomPath (
+                    Fluke.root,
+                    Atoms.Attachment.collection,
+                    formatAttachmentId attachmentId,
+                    AtomName (nameof attachmentState)
+                ))
+            (fun (attachmentId: AttachmentId) ->
+                (fun getter ->
+                    let timestamp = Atom.get getter (Atoms.Attachment.timestamp attachmentId)
+                    let archived = Atom.get getter (Atoms.Attachment.archived attachmentId)
+                    let attachment = Atom.get getter (Atoms.Attachment.attachment attachmentId)
 
-                match timestamp, archived, attachment with
-                | Some timestamp, Some archived, Some attachment ->
-                    Some
-                        {
-                            Timestamp = timestamp
-                            Archived = archived
-                            Attachment = attachment
-                        }
-                | _ -> None)
+                    match timestamp, archived, attachment with
+                    | Some timestamp, Some archived, Some attachment ->
+                        Some
+                            {
+                                Timestamp = timestamp
+                                Archived = archived
+                                Attachment = attachment
+                            }
+                    | _ -> None))

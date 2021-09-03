@@ -36,12 +36,12 @@ module MenuItemToggle =
             ]
 
     [<ReactComponent>]
-    let MenuItemToggleAtom (atom: Atom<bool>) label =
+    let MenuItemToggleAtom (atom: AtomConfig<bool>) label =
         let value, setValue = Store.useState atom
         MenuItemToggle (atom.ToString ()) value setValue label
 
     [<ReactComponent>]
-    let MenuItemToggleAtomOption (atom: Atom<bool option>) label =
+    let MenuItemToggleAtomOption (atom: AtomConfig<bool option>) label =
         let value, setValue = Store.useState atom
 
         MenuItemToggle (atom.ToString ()) (value |> Option.defaultValue false) (Some >> setValue) label

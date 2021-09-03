@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open FsStore.State
 open Feliz
 open Fable.React
 open FsJs
@@ -30,17 +31,17 @@ module Content =
 //
 //                    if archive.IsNone then
 //                        printfn "setting archive"
-//                        Store.set setter Atoms.User.archive (Some false)
+//                        Atom.set setter Atoms.User.archive (Some false)
 //
 //                    asyncTaskIdAtoms
 //                    |> Array.iter
 //                        (fun taskIdAtom ->
-//                            let taskId = Store.value getter taskIdAtom
-//                            let archived = Store.value getter (Atoms.Task.archived taskId)
+//                            let taskId = Atom.get getter taskIdAtom
+//                            let archived = Atom.get getter (Atoms.Task.archived taskId)
 //
 //                            if archived.IsNone then
 //                                printfn "setting task archive"
-//                                Store.set setter (Atoms.Task.archived taskId) (Some false))
+//                                Atom.set setter (Atoms.Task.archived taskId) (Some false))
 //                }
 //                |> Promise.start),
 //            [|

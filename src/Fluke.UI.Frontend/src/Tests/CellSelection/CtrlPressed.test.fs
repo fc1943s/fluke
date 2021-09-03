@@ -19,7 +19,7 @@ module CtrlPressed =
         promise {
             let! cellMapGetter, (get, setFn) = initialize ()
 
-            RTL.act (fun () -> Store.set setFn Atoms.Session.ctrlPressed true)
+            RTL.act (fun () -> Atom.set setFn Atoms.Session.ctrlPressed true)
 
             do! click (getCell (cellMapGetter, TaskName "2", FlukeDate.Create 2020 Month.January 9))
             do! click (getCell (cellMapGetter, TaskName "2", FlukeDate.Create 2020 Month.January 11))

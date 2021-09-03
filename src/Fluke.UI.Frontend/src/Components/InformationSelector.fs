@@ -149,7 +149,7 @@ module InformationSelector =
                             fun visible setVisible ->
                                 Button.Button
                                     {|
-                                        Hint = None
+                                        Tooltip = None
                                         Icon =
                                             Some (
                                                 (if visible then Icons.fi.FiChevronUp else Icons.fi.FiChevronDown)
@@ -261,7 +261,7 @@ module InformationSelector =
 
                                                                     Button.Button
                                                                         {|
-                                                                            Hint = None
+                                                                            Tooltip = None
                                                                             Icon =
                                                                                 Some (
                                                                                     (if index = i then
@@ -311,7 +311,7 @@ module InformationSelector =
                                                             fun visible setVisible ->
                                                                 Button.Button
                                                                     {|
-                                                                        Hint = None
+                                                                        Tooltip = None
                                                                         Icon =
                                                                             Some (
                                                                                 (if visible then

@@ -21,19 +21,19 @@ module AttachmentsClipboard =
             Store.useCallbackRef
                 (fun getter setter attachmentId ->
                     promise {
-                        Store.change setter Atoms.User.clipboardAttachmentIdMap (Map.remove attachmentId)
-                        do! Store.deleteRoot getter (Atoms.Attachment.attachment attachmentId)
+                        Atom.change setter Atoms.User.clipboardAttachmentIdMap (Map.remove attachmentId)
+                        do! Engine.deleteParent getter (Atoms.Attachment.attachment attachmentId)
                     })
 
         let addImageAttachment =
             Store.useCallbackRef
                 (fun _ setter attachmentId ->
                     promise {
-                        Store.change setter Atoms.User.clipboardAttachmentIdMap (Map.remove attachmentId)
+                        Atom.change setter Atoms.User.clipboardAttachmentIdMap (Map.remove attachmentId)
 
                         match attachmentParent with
                         | AttachmentParent.Information _ ->
-                            Store.set setter (Atoms.Attachment.archived attachmentId) archive
+                            Atom.set setter (Atoms.Attachment.archived attachmentId) archive
                         | _ -> ()
 
                         do! onAdd attachmentId

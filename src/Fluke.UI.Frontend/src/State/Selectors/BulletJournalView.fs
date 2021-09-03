@@ -9,29 +9,34 @@ open Fluke.Shared.Domain.State
 open FsStore
 
 open FsStore.Bindings
+open FsStore.Model
 
 
 module rec BulletJournalView =
+    let inline readSelector name read =
+        Atom.readSelector (StoreAtomPath.RootAtomPath (Fluke.root, AtomName name)) read
+
     let rec bulletJournalWeekCellsMap =
-        Store.readSelectorInterval
-            Fluke.root
+        //        Store.readSelectorInterval
+        readSelector
+            //            Fluke.root
             (nameof bulletJournalWeekCellsMap)
-            Selectors.interval
-            []
+            //            Selectors.interval
+//            []
             (fun getter ->
-                let position = Store.value getter Atoms.Session.position
-                let sortedTaskIdAtoms = Store.value getter Session.sortedTaskIdAtoms
+                let position = Atom.get getter Atoms.Session.position
+                let sortedTaskIdAtoms = Atom.get getter Session.sortedTaskIdAtoms
 
                 let sortedTaskIdArray =
                     sortedTaskIdAtoms
-                    |> Store.waitForAll
-                    |> Store.value getter
+                    |> Atom.waitForAll
+                    |> Atom.get getter
 
                 let taskStateArray =
                     sortedTaskIdArray
                     |> Array.map Task.taskState
-                    |> Store.waitForAll
-                    |> Store.value getter
+                    |> Atom.waitForAll
+                    |> Atom.get getter
 
                 let taskStateMap =
                     sortedTaskIdArray
@@ -45,8 +50,8 @@ module rec BulletJournalView =
 
                 match position with
                 | Some position ->
-                    let dayStart = Store.value getter Atoms.User.dayStart
-                    let weekStart = Store.value getter Atoms.User.weekStart
+                    let dayStart = Atom.get getter Atoms.User.dayStart
+                    let weekStart = Atom.get getter Atoms.User.weekStart
 
                     let weeks =
                         [
@@ -62,11 +67,9 @@ module rec BulletJournalView =
                                             date |> DateTime.addDays -1 |> getWeekStart
 
                                     let startDate =
-                                        dateId dayStart position
-                                        |> fun (DateId referenceDay) ->
-                                            referenceDay
-                                            |> FlukeDate.DateTime
-                                            |> DateTime.addDays (7 * weekOffset)
+                                        getReferenceDay dayStart position
+                                        |> FlukeDate.DateTime
+                                        |> DateTime.addDays (7 * weekOffset)
                                         |> getWeekStart
 
                                     [
@@ -74,7 +77,7 @@ module rec BulletJournalView =
                                     ]
                                     |> List.map (fun days -> startDate |> DateTime.addDays days)
                                     |> List.map FlukeDateTime.FromDateTime
-                                    |> List.map (dateId dayStart)
+                                    |> List.map (getReferenceDay dayStart)
 
                                 let result =
                                     sortedTaskIdArray
@@ -96,7 +99,7 @@ module rec BulletJournalView =
                                                     {|
                                                         DateId = dateId
                                                         TaskId = taskId
-                                                        DateIdAtom = Jotai.jotai.atom dateId
+                                                        DateAtom = Jotai.jotai.atom dateId
                                                         TaskIdAtom = taskIdAtomMap.[taskId]
                                                         Status = cellState.Status
                                                         SessionList = cellState.SessionList
@@ -106,46 +109,44 @@ module rec BulletJournalView =
                                             |> List.toArray)
                                     |> Array.groupBy (fun x -> x.DateId)
                                     |> Array.map
-                                        (fun (dateId, cellsMetadata) ->
-                                            match dateId with
-                                            | DateId referenceDay as dateId ->
-                                                //                |> Sorting.sortLanesByTimeOfDay input.DayStart input.Position input.TaskOrderList
-                                                let taskSessionList =
-                                                    cellsMetadata
-                                                    |> Array.toList
-                                                    |> List.collect (fun x -> x.SessionList)
+                                        (fun (date, cellsMetadata) ->
+                                            //                |> Sorting.sortLanesByTimeOfDay input.DayStart input.Position input.TaskOrderList
+                                            let taskSessionList =
+                                                cellsMetadata
+                                                |> Array.toList
+                                                |> List.collect (fun x -> x.SessionList)
 
-                                                let sortedTasksMap =
-                                                    cellsMetadata
-                                                    |> Array.map
-                                                        (fun cellMetadata ->
-                                                            let taskState =
-                                                                { taskStateMap.[cellMetadata.TaskId] with
-                                                                    SessionList = taskSessionList
-                                                                }
+                                            let sortedTasksMap =
+                                                cellsMetadata
+                                                |> Array.map
+                                                    (fun cellMetadata ->
+                                                        let taskState =
+                                                            { taskStateMap.[cellMetadata.TaskId] with
+                                                                SessionList = taskSessionList
+                                                            }
 
-                                                            taskState,
-                                                            [
-                                                                dateId, cellMetadata.Status
-                                                            ]
-                                                            |> Map.ofSeq)
-                                                    |> Array.toList
-                                                    |> Sorting.sortLanesByTimeOfDay
-                                                        dayStart
-                                                        (FlukeDateTime.Create (referenceDay, dayStart, Second 0))
-                                                    |> List.indexed
-                                                    |> List.map (fun (i, (taskState, _)) -> taskState.Task.Id, i)
-                                                    |> Map.ofSeq
+                                                        taskState,
+                                                        [
+                                                            date, cellMetadata.Status
+                                                        ]
+                                                        |> Map.ofSeq)
+                                                |> Array.toList
+                                                |> Sorting.sortLanesByTimeOfDay
+                                                    dayStart
+                                                    (FlukeDateTime.Create (date, dayStart, Second 0))
+                                                |> List.indexed
+                                                |> List.map (fun (i, (taskState, _)) -> taskState.Task.Id, i)
+                                                |> Map.ofSeq
 
-                                                let newCells =
-                                                    cellsMetadata
-                                                    |> Array.sortBy
-                                                        (fun cell ->
-                                                            sortedTasksMap
-                                                            |> Map.tryFind cell.TaskId
-                                                            |> Option.defaultValue -1)
+                                            let newCells =
+                                                cellsMetadata
+                                                |> Array.sortBy
+                                                    (fun cell ->
+                                                        sortedTasksMap
+                                                        |> Map.tryFind cell.TaskId
+                                                        |> Option.defaultValue -1)
 
-                                                dateId, newCells)
+                                            date, newCells)
                                     |> Map.ofSeq
 
                                 result)

@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open FsStore.State
 open FsCore.BaseModel
 open FsJs
 open FsCore
@@ -238,7 +239,7 @@ module StatusBar =
             selectedDatabaseIdSet
             |> Set.toArray
             |> Array.map Selectors.Database.informationAttachmentIdMap
-            |> Store.waitForAll
+            |> Atom.waitForAll
             |> Store.useValue
             |> Array.collect (Map.values >> Seq.toArray)
             |> Array.fold Set.union Set.empty
@@ -249,13 +250,13 @@ module StatusBar =
 
         let selectedTaskIdArray =
             selectedTaskIdAtoms
-            |> Store.waitForAll
+            |> Atom.waitForAll
             |> Store.useValue
 
         let taskAttachmentIdArray =
             selectedTaskIdArray
             |> Array.map Selectors.Task.attachmentIdSet
-            |> Store.waitForAll
+            |> Atom.waitForAll
             |> Store.useValue
             |> Array.collect Set.toArray
 
@@ -266,7 +267,7 @@ module StatusBar =
         let cellStateMapArray =
             selectedTaskIdArray
             |> Array.map Selectors.Task.cellStateMap
-            |> Store.waitForAll
+            |> Atom.waitForAll
             |> Store.useValue
 
         let detailsText, total =

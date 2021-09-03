@@ -55,7 +55,7 @@ module ResourceForm =
 
                 Button.Button
                     {|
-                        Hint = None
+                        Tooltip = None
                         Icon = Some (Icons.fi.FiSave |> Icons.render, Button.IconPosition.Left)
                         Props = fun x -> x.onClick <- onSave
                         Children =

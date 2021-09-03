@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open FsStore.State
 open FsJs
 open Browser.Types
 open FsStore
@@ -13,6 +14,7 @@ open Fluke.Shared.Domain.State
 open Fluke.Shared.Domain.UserInteraction
 open FsStore.Bindings
 open FsStore.Model
+open FsStore.Utils
 open FsUi.Bindings
 open System
 open Fable.Core
@@ -29,9 +31,9 @@ module TaskForm =
         Store.useCallbackRef
             (fun getter setter taskId ->
                 promise {
-                    let sessions = Store.value getter (Atoms.Task.sessions taskId)
+                    let sessions = Atom.get getter (Atoms.Task.sessions taskId)
 
-                    Store.set
+                    Atom.set
                         setter
                         (Atoms.Task.sessions taskId)
                         (Session (
@@ -328,7 +330,7 @@ module TaskForm =
         Store.useCallbackRef
             (fun getter _ taskId ->
                 promise {
-                    do! Store.deleteRoot getter (Atoms.Task.databaseId taskId)
+                    do! Engine.deleteParent getter (Atoms.Task.databaseId taskId)
                     return true
                 })
 
@@ -412,14 +414,14 @@ module TaskForm =
             Store.useCallbackRef
                 (fun _ setter attachmentId ->
                     promise {
-                        Store.set setter (Atoms.Attachment.parent attachmentId) (Some (AttachmentParent.Task taskId)) })
+                        Atom.set setter (Atoms.Attachment.parent attachmentId) (Some (AttachmentParent.Task taskId)) })
 
 
         let onAttachmentDelete =
             Store.useCallbackRef
                 (fun getter _setter attachmentId ->
                     promise {
-                        do! Store.deleteRoot getter (Atoms.Attachment.attachment attachmentId)
+                        do! Engine.deleteParent getter (Atoms.Attachment.attachment attachmentId)
                         return true
                     })
 
@@ -434,7 +436,7 @@ module TaskForm =
             Store.useCallbackRef
                 (fun getter setter _ ->
                     promise {
-                        let taskName = Store.getTempValue getter (Atoms.Task.name taskId)
+                        let taskName = TempValue.get getter (Atoms.Task.name taskId)
 
                         if taskDatabaseId = Database.Default.Id then
                             toast (fun x -> x.description <- "Invalid database")
@@ -470,7 +472,7 @@ module TaskForm =
                                     |> Promise.lift
                                 else
                                     promise {
-                                        let task = Store.value getter (Selectors.Task.task taskId)
+                                        let task = Atom.get getter (Selectors.Task.task taskId)
 
                                         return
                                             { task with
@@ -484,13 +486,13 @@ module TaskForm =
                                             }
                                     }
 
-                            Store.resetTempValue setter (Atoms.Task.name taskId)
-                            Store.resetTempValue setter (Atoms.Task.information taskId)
-                            Store.resetTempValue setter (Atoms.Task.scheduling taskId)
-                            Store.resetTempValue setter (Atoms.Task.priority taskId)
-                            Store.resetTempValue setter (Atoms.Task.duration taskId)
-                            Store.resetTempValue setter (Atoms.Task.missedAfter taskId)
-                            Store.resetTempValue setter (Atoms.Task.pendingAfter taskId)
+                            TempValue.reset setter (Atoms.Task.name taskId)
+                            TempValue.reset setter (Atoms.Task.information taskId)
+                            TempValue.reset setter (Atoms.Task.scheduling taskId)
+                            TempValue.reset setter (Atoms.Task.priority taskId)
+                            TempValue.reset setter (Atoms.Task.duration taskId)
+                            TempValue.reset setter (Atoms.Task.missedAfter taskId)
+                            TempValue.reset setter (Atoms.Task.pendingAfter taskId)
 
                             do! onSave task
                     })
@@ -624,7 +626,7 @@ module TaskForm =
 
                                 Button.Button
                                     {|
-                                        Hint = None
+                                        Tooltip = None
                                         Icon = Some (Icons.fi.FiSave |> Icons.render, Button.IconPosition.Left)
                                         Props = fun x -> x.onClick <- onSave
                                         Children =

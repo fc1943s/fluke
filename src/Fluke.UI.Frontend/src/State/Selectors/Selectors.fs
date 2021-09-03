@@ -1,11 +1,9 @@
 namespace Fluke.UI.Frontend.State.Selectors
 
+open FsStore.Model
 open FsStore.State
 open FsCore.BaseModel
-open FsJs
 open FsStore
-
-open System
 open Fluke.Shared
 open Fluke.Shared.Domain.Model
 open Fluke.UI.Frontend.State
@@ -18,89 +16,53 @@ open Fluke.Shared.Domain.State
 module rec Selectors =
     let interval = 750
 
-    let readSelector name getFn =
-        Store.readSelector Fluke.root name getFn
-
-    let selectAtomSyncKeys name atom =
-        Store.selectAtomSyncKeys Fluke.root name atom Database.Default.Id (Guid >> DatabaseId)
-
-    let rec dateIdArray =
-        readSelector
-            (nameof dateIdArray)
+    let rec dateArray =
+        Atom.readSelector
+            (StoreAtomPath.RootAtomPath (Fluke.root, AtomName (nameof dateArray)))
             (fun getter ->
-                let position = Store.value getter Atoms.Session.position
+                let position = Atom.get getter Atoms.Session.position
 
                 match position with
                 | Some position ->
-                    let daysBefore = Store.value getter Atoms.User.daysBefore
-                    let daysAfter = Store.value getter Atoms.User.daysAfter
-                    let dayStart = Store.value getter Atoms.User.dayStart
-                    let dateId = dateId dayStart position
-                    let (DateId referenceDay) = dateId
+                    let daysBefore = Atom.get getter Atoms.User.daysBefore
+                    let daysAfter = Atom.get getter Atoms.User.daysAfter
+                    let dayStart = Atom.get getter Atoms.User.dayStart
+                    let date = getReferenceDay dayStart position
 
-                    referenceDay
+                    date
                     |> List.singleton
                     |> Rendering.getDateSequence (daysBefore, daysAfter)
-                    |> List.map DateId
                     |> List.toArray
                 | _ -> [||])
 
 
-    let rec dateIdAtoms =
-        readSelector
-            (nameof dateIdAtoms)
+    let rec dateAtoms =
+        Atom.readSelector
+            (StoreAtomPath.RootAtomPath (Fluke.root, AtomName (nameof dateAtoms)))
+            (fun getter -> dateArray |> Atom.split |> Atom.get getter)
+
+
+    let rec dateAtomsByMonth =
+        Atom.readSelector
+            (StoreAtomPath.RootAtomPath (Fluke.root, AtomName (nameof dateAtomsByMonth)))
             (fun getter ->
-                dateIdArray
-                |> Store.splitAtom
-                |> Store.value getter)
+                let dateAtoms = Atom.get getter dateAtoms
 
-
-    let rec dateIdAtomsByMonth =
-        readSelector
-            (nameof dateIdAtomsByMonth)
-            (fun getter ->
-                let dateIdAtoms = Store.value getter dateIdAtoms
-
-                dateIdAtoms
-                |> Store.waitForAll
-                |> Store.value getter
+                dateAtoms
+                |> Atom.waitForAll
+                |> Atom.get getter
                 |> Array.indexed
-                |> Array.groupBy
-                    (fun (_, dateId) ->
-                        dateId
-                        |> DateId.Value
-                        |> Option.map (fun date -> date.Month))
-                |> Array.map (fun (_, dates) -> dates |> Array.map (fun (i, _) -> dateIdAtoms.[i])))
+                |> Array.groupBy (fun (_, date) -> date.Month)
+                |> Array.map (fun (_, dates) -> dates |> Array.map (fun (i, _) -> dateAtoms.[i])))
 
 
     let rec asyncDatabaseIdAtoms =
-        Store.selectAtomSyncKeys
-            Fluke.root
-            (nameof asyncDatabaseIdAtoms)
-            Atoms.Database.name
-            Database.Default.Id
-            (Guid >> DatabaseId)
+        Engine.subscribeCollection Fluke.root Atoms.Database.collection (Engine.parseGuidKey DatabaseId)
 
-    let rec asyncTaskIdAtoms =
-        Store.selectAtomSyncKeys
-            Fluke.root
-            (nameof asyncTaskIdAtoms)
-            Atoms.Task.databaseId
-            Task.Default.Id
-            (Guid >> TaskId)
+    let rec asyncTaskIdAtoms = Engine.subscribeCollection Fluke.root Atoms.Task.collection (Engine.parseGuidKey TaskId)
 
     let rec asyncAttachmentIdAtoms =
-        Store.selectAtomSyncKeys
-            Fluke.root
-            (nameof asyncAttachmentIdAtoms)
-            Atoms.Attachment.parent
-            AttachmentId.Default
-            (Guid >> AttachmentId)
+        Engine.subscribeCollection Fluke.root Atoms.Attachment.collection (Engine.parseGuidKey AttachmentId)
 
     let rec asyncDeviceIdAtoms =
-        Store.selectAtomSyncKeys
-            Fluke.root
-            (nameof asyncDeviceIdAtoms)
-            Atoms.Device.devicePing
-            Dom.deviceInfo.DeviceId
-            (Guid >> DeviceId)
+        Engine.subscribeCollection Fluke.root Atoms.Device.collection (Engine.parseGuidKey DeviceId)

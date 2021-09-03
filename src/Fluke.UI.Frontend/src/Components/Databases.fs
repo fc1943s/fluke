@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open FsStore.State
 open FsCore
 open FsJs
 open System
@@ -286,19 +287,19 @@ module Databases =
 
         let databaseIdArray =
             databaseIdAtoms
-            |> Store.waitForAll
+            |> Atom.waitForAll
             |> Store.useValue
 
         let databaseArray =
             databaseIdArray
             |> Array.map Selectors.Database.database
-            |> Store.waitForAll
+            |> Atom.waitForAll
             |> Store.useValue
 
         let databaseNodeTypeArray =
             databaseIdArray
             |> Array.map Selectors.Database.nodeType
-            |> Store.waitForAll
+            |> Atom.waitForAll
             |> Store.useValue
 
         let databaseMap =

@@ -23,8 +23,8 @@ module DatabaseNodeMenu =
             Store.useCallbackRef
                 (fun getter setter _ ->
                     promise {
-                        Store.change setter Atoms.User.selectedDatabaseIdSet (Set.remove databaseId)
-                        do! Store.deleteRoot getter (Atoms.Database.name databaseId)
+                        Atom.change setter Atoms.User.selectedDatabaseIdSet (Set.remove databaseId)
+                        do! Engine.deleteParent getter (Atoms.Database.name databaseId)
                         return true
                     })
 

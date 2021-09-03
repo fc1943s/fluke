@@ -16,7 +16,7 @@ module DockButton =
     let DockButton
         (input: {| Name: string
                    Icon: obj
-                   Atom: Atom<TempUI.DockType option>
+                   Atom: AtomConfig<TempUI.DockType option>
                    OnClick: TempUI.DockType option -> JS.Promise<unit>
                    DockType: TempUI.DockType
                    Props: Ui.IChakraProps -> unit |})
