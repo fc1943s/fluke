@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.State.Atoms
 
+open System
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.State.State
 open FsCore.BaseModel
@@ -9,83 +10,119 @@ open FsStore.Model
 
 #nowarn "40"
 
-
 module rec User =
     let collection = Collection (nameof User)
 
-    let inline atomWithSync name defaultValue =
+    let inline createAtomWithSubscription<'A8 when 'A8: equality and 'A8 :> IComparable> name (defaultValue: 'A8) =
         Engine.createAtomWithSubscription
             (StoreAtomPath.IndexedAtomPath (Fluke.root, collection, [], AtomName name))
             defaultValue
 
-    let rec archive = atomWithSync (nameof archive) UserState.Default.Archive
-    let rec cellColorDisabled = atomWithSync (nameof cellColorDisabled) UserState.Default.CellColorDisabled
-    let rec cellColorSuggested = atomWithSync (nameof cellColorSuggested) UserState.Default.CellColorSuggested
-    let rec cellColorPending = atomWithSync (nameof cellColorPending) UserState.Default.CellColorPending
-    let rec cellColorMissed = atomWithSync (nameof cellColorMissed) UserState.Default.CellColorMissed
-    let rec cellColorMissedToday = atomWithSync (nameof cellColorMissedToday) UserState.Default.CellColorMissedToday
+    let rec archive = createAtomWithSubscription (nameof archive) UserState.Default.Archive
+
+    let rec cellColorDisabled =
+        createAtomWithSubscription (nameof cellColorDisabled) UserState.Default.CellColorDisabled
+
+    let rec cellColorSuggested =
+        createAtomWithSubscription (nameof cellColorSuggested) UserState.Default.CellColorSuggested
+
+    let rec cellColorPending = createAtomWithSubscription (nameof cellColorPending) UserState.Default.CellColorPending
+    let rec cellColorMissed = createAtomWithSubscription (nameof cellColorMissed) UserState.Default.CellColorMissed
+
+    let rec cellColorMissedToday =
+        createAtomWithSubscription (nameof cellColorMissedToday) UserState.Default.CellColorMissedToday
 
     let rec cellColorPostponedUntil =
-        atomWithSync (nameof cellColorPostponedUntil) UserState.Default.CellColorPostponedUntil
+        createAtomWithSubscription (nameof cellColorPostponedUntil) UserState.Default.CellColorPostponedUntil
 
-    let rec cellColorPostponed = atomWithSync (nameof cellColorPostponed) UserState.Default.CellColorPostponed
-    let rec cellColorCompleted = atomWithSync (nameof cellColorCompleted) UserState.Default.CellColorCompleted
-    let rec cellColorDismissed = atomWithSync (nameof cellColorDismissed) UserState.Default.CellColorDismissed
-    let rec cellColorScheduled = atomWithSync (nameof cellColorScheduled) UserState.Default.CellColorScheduled
-    let rec cellSize = atomWithSync (nameof cellSize) UserState.Default.CellSize
+    let rec cellColorPostponed =
+        createAtomWithSubscription (nameof cellColorPostponed) UserState.Default.CellColorPostponed
+
+    let rec cellColorCompleted =
+        createAtomWithSubscription (nameof cellColorCompleted) UserState.Default.CellColorCompleted
+
+    let rec cellColorDismissed =
+        createAtomWithSubscription (nameof cellColorDismissed) UserState.Default.CellColorDismissed
+
+    let rec cellColorScheduled =
+        createAtomWithSubscription (nameof cellColorScheduled) UserState.Default.CellColorScheduled
+
+    let rec cellSize = createAtomWithSubscription (nameof cellSize) UserState.Default.CellSize
 
     let rec clipboardAttachmentIdMap =
-        atomWithSync (nameof clipboardAttachmentIdMap) UserState.Default.ClipboardAttachmentIdMap
+        createAtomWithSubscription (nameof clipboardAttachmentIdMap) UserState.Default.ClipboardAttachmentIdMap
 
-    let rec clipboardVisible = atomWithSync (nameof clipboardVisible) UserState.Default.ClipboardVisible
-    let rec daysAfter = atomWithSync (nameof daysAfter) UserState.Default.DaysAfter
-    let rec daysBefore = atomWithSync (nameof daysBefore) UserState.Default.DaysBefore
-    let rec dayStart = atomWithSync (nameof dayStart) UserState.Default.DayStart
-    let rec enableCellPopover = atomWithSync (nameof enableCellPopover) UserState.Default.EnableCellPopover
-    let rec expandedDatabaseIdSet = atomWithSync (nameof expandedDatabaseIdSet) UserState.Default.ExpandedDatabaseIdSet
-    let rec filter = atomWithSync (nameof filter) UserState.Default.Filter
-    let rec hideSchedulingOverlay = atomWithSync (nameof hideSchedulingOverlay) UserState.Default.HideSchedulingOverlay
-    let rec hideTemplates = atomWithSync (nameof hideTemplates) UserState.Default.HideTemplates
-    let rec language = atomWithSync (nameof language) UserState.Default.Language
-    let rec lastDatabaseSelected = atomWithSync (nameof lastDatabaseSelected) UserState.Default.LastDatabaseSelected
-    let rec leftDock = atomWithSync (nameof leftDock) UserState.Default.LeftDock
-    let rec leftDockSize = atomWithSync (nameof leftDockSize) UserState.Default.LeftDockSize
-    let rec randomizeProject = atomWithSync (nameof randomizeProject) UserState.Default.RandomizeProject
+    let rec clipboardVisible = createAtomWithSubscription (nameof clipboardVisible) UserState.Default.ClipboardVisible
+    let rec daysAfter = createAtomWithSubscription (nameof daysAfter) UserState.Default.DaysAfter
+    let rec daysBefore = createAtomWithSubscription (nameof daysBefore) UserState.Default.DaysBefore
+    let rec dayStart = createAtomWithSubscription (nameof dayStart) UserState.Default.DayStart
+
+    let rec enableCellPopover =
+        createAtomWithSubscription (nameof enableCellPopover) UserState.Default.EnableCellPopover
+
+    let rec expandedDatabaseIdSet =
+        createAtomWithSubscription (nameof expandedDatabaseIdSet) UserState.Default.ExpandedDatabaseIdSet
+
+    let rec filter = createAtomWithSubscription (nameof filter) UserState.Default.Filter
+
+    let rec hideSchedulingOverlay =
+        createAtomWithSubscription (nameof hideSchedulingOverlay) UserState.Default.HideSchedulingOverlay
+
+    let rec hideTemplates = createAtomWithSubscription (nameof hideTemplates) UserState.Default.HideTemplates
+    let rec language = createAtomWithSubscription (nameof language) UserState.Default.Language
+
+    let rec lastDatabaseSelected =
+        createAtomWithSubscription (nameof lastDatabaseSelected) UserState.Default.LastDatabaseSelected
+
+    let rec leftDock = createAtomWithSubscription (nameof leftDock) UserState.Default.LeftDock
+    let rec leftDockSize = createAtomWithSubscription (nameof leftDockSize) UserState.Default.LeftDockSize
+    let rec randomizeProject = createAtomWithSubscription (nameof randomizeProject) UserState.Default.RandomizeProject
 
     let rec randomizeProjectAttachment =
-        atomWithSync (nameof randomizeProjectAttachment) UserState.Default.RandomizeProjectAttachment
+        createAtomWithSubscription (nameof randomizeProjectAttachment) UserState.Default.RandomizeProjectAttachment
 
-    let rec randomizeArea = atomWithSync (nameof randomizeArea) UserState.Default.RandomizeArea
+    let rec randomizeArea = createAtomWithSubscription (nameof randomizeArea) UserState.Default.RandomizeArea
 
     let rec randomizeAreaAttachment =
-        atomWithSync (nameof randomizeAreaAttachment) UserState.Default.RandomizeAreaAttachment
+        createAtomWithSubscription (nameof randomizeAreaAttachment) UserState.Default.RandomizeAreaAttachment
 
-    let rec randomizeResource = atomWithSync (nameof randomizeResource) UserState.Default.RandomizeResource
+    let rec randomizeResource =
+        createAtomWithSubscription (nameof randomizeResource) UserState.Default.RandomizeResource
 
     let rec randomizeResourceAttachment =
-        atomWithSync (nameof randomizeResourceAttachment) UserState.Default.RandomizeResourceAttachment
+        createAtomWithSubscription (nameof randomizeResourceAttachment) UserState.Default.RandomizeResourceAttachment
 
-    let rec randomizeProjectTask = atomWithSync (nameof randomizeProjectTask) UserState.Default.RandomizeProjectTask
-    let rec randomizeAreaTask = atomWithSync (nameof randomizeAreaTask) UserState.Default.RandomizeAreaTask
+    let rec randomizeProjectTask =
+        createAtomWithSubscription (nameof randomizeProjectTask) UserState.Default.RandomizeProjectTask
+
+    let rec randomizeAreaTask =
+        createAtomWithSubscription (nameof randomizeAreaTask) UserState.Default.RandomizeAreaTask
 
     let rec randomizeProjectTaskAttachment =
-        atomWithSync (nameof randomizeProjectTaskAttachment) UserState.Default.RandomizeProjectTaskAttachment
+        createAtomWithSubscription
+            (nameof randomizeProjectTaskAttachment)
+            UserState.Default.RandomizeProjectTaskAttachment
 
     let rec randomizeAreaTaskAttachment =
-        atomWithSync (nameof randomizeAreaTaskAttachment) UserState.Default.RandomizeAreaTaskAttachment
+        createAtomWithSubscription (nameof randomizeAreaTaskAttachment) UserState.Default.RandomizeAreaTaskAttachment
 
     let rec randomizeCellAttachment =
-        atomWithSync (nameof randomizeCellAttachment) UserState.Default.RandomizeCellAttachment
+        createAtomWithSubscription (nameof randomizeCellAttachment) UserState.Default.RandomizeCellAttachment
 
-    let rec rightDock = atomWithSync (nameof rightDock) UserState.Default.RightDock
-    let rec rightDockSize = atomWithSync (nameof rightDockSize) UserState.Default.RightDockSize
-    let rec searchText = atomWithSync (nameof searchText) UserState.Default.SearchText
-    let rec selectedDatabaseIdSet = atomWithSync (nameof selectedDatabaseIdSet) UserState.Default.SelectedDatabaseIdSet
-    let rec sessionBreakDuration = atomWithSync (nameof sessionBreakDuration) UserState.Default.SessionBreakDuration
-    let rec sessionDuration = atomWithSync (nameof sessionDuration) UserState.Default.SessionDuration
-    let rec userColor = atomWithSync (nameof userColor) (None: Color option)
-    let rec view = atomWithSync (nameof view) UserState.Default.View
-    let rec weekStart = atomWithSync (nameof weekStart) UserState.Default.WeekStart
+    let rec rightDock = createAtomWithSubscription (nameof rightDock) UserState.Default.RightDock
+    let rec rightDockSize = createAtomWithSubscription (nameof rightDockSize) UserState.Default.RightDockSize
+    let rec searchText = createAtomWithSubscription (nameof searchText) UserState.Default.SearchText
+
+    let rec selectedDatabaseIdSet =
+        createAtomWithSubscription (nameof selectedDatabaseIdSet) UserState.Default.SelectedDatabaseIdSet
+
+    let rec sessionBreakDuration =
+        createAtomWithSubscription (nameof sessionBreakDuration) UserState.Default.SessionBreakDuration
+
+    let rec sessionDuration = createAtomWithSubscription (nameof sessionDuration) UserState.Default.SessionDuration
+    let rec userColor = createAtomWithSubscription (nameof userColor) (None: Color option)
+    let rec view = createAtomWithSubscription (nameof view) UserState.Default.View
+    let rec weekStart = createAtomWithSubscription (nameof weekStart) UserState.Default.WeekStart
 
     let rec uiFlag =
         Engine.createFamilyWithSubscription

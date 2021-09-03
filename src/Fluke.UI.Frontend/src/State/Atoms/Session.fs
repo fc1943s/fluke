@@ -43,3 +43,8 @@ module Session =
         Atom.create
             (StoreAtomPath.IndexedAtomPath (Fluke.root, collection, [], AtomName (nameof ctrlPressed)))
             (AtomType.Atom false)
+
+    let rec hydrateTemplatesPending =
+        Atom.create
+            (StoreAtomPath.IndexedAtomPath (Fluke.root, collection, [], AtomName (nameof hydrateTemplatesPending)))
+            (AtomType.Atom false)

@@ -3,18 +3,16 @@ namespace Fluke.UI.Frontend.Components
 open Fluke.Shared
 open Fluke.Shared.Domain.UserInteraction
 open FsCore.BaseModel
+open FsStore.State
 open FsUi.Components
 open FsUi.Hooks
 open Browser.Types
 open Feliz
-open System
 open FsStore
 open FsStore.Hooks
-open Fluke.UI.Frontend.State.State
+open Fluke.UI.Frontend.State
 open FsUi.Bindings
-open Fluke.UI.Frontend.Hooks
 open Fable.React
-open FsUi.Model
 
 
 module LoginScreen =
@@ -27,6 +25,8 @@ module LoginScreen =
 
         let signUp = Auth.useSignUp ()
 
+        let setHydratePending = Store.useSetState Atoms.Session.hydrateTemplatesPending
+
         let signInClick =
             Store.useCallbackRef
                 (fun getter setter _ ->
@@ -38,52 +38,16 @@ module LoginScreen =
 
         let signUpClick =
             Store.useCallbackRef
-                (fun getter setter _ ->
+                (fun _ _ _ ->
                     promise {
                         if passwordField <> password2Field then
                             toast (fun x -> x.description <- "Passwords don't match")
-                            return false
                         elif Templates.templatesUser.Username |> Username.Value = usernameField then
                             toast (fun x -> x.description <- "Invalid username")
-                            return false
                         else
                             match! signUp (usernameField, passwordField) with
-                            | Ok (_alias, _keys) ->
-                                let! hydrateResult = Hydrate.hydrateTemplates getter setter
-
-                                match hydrateResult
-                                      |> Array.choose Result.chooseError
-                                      |> Array.toList
-                                      |> List.collect id with
-                                | [] ->
-                                    do! Hydrate.hydrateUiState getter setter UiState.Default
-
-                                    do!
-                                        Hydrate.hydrateUserState
-                                            getter
-                                            setter
-                                            { UserState.Default with
-                                                Archive = Some false
-                                                HideTemplates = Some false
-                                                UserColor =
-                                                    String.Format ("#{0:X6}", Random().Next 0x1000000)
-                                                    |> Color
-                                                    |> Some
-                                            }
-
-                                    toast
-                                        (fun x ->
-                                            x.title <- "Success"
-                                            x.status <- "success"
-                                            x.description <- "User registered successfully")
-
-                                    return true
-                                | errors ->
-                                    toast (fun x -> x.description <- $"Sign up hydrate error. errors={errors}")
-                                    return false
-                            | Error error ->
-                                toast (fun x -> x.description <- error)
-                                return false
+                            | Ok (_alias, _keys) -> setHydratePending true
+                            | Error error -> toast (fun x -> x.description <- error)
                     })
 
         Ui.center
@@ -120,7 +84,11 @@ module LoginScreen =
 
                         Dropdown.CustomConfirmDropdown
                             false
-                            signUpClick
+                            (fun () ->
+                                promise {
+                                    do! signUpClick ()
+                                    return true
+                                })
                             (fun visible setVisible ->
                                 Ui.hStack
                                     (fun x -> x.alignItems <- "stretch")
@@ -161,7 +129,7 @@ module LoginScreen =
                                                     ]
                                             |}
                                     ])
-                            (fun onHide ->
+                            (fun _onHide ->
                                 [
                                     Input.Input
                                         {|
@@ -170,13 +138,7 @@ module LoginScreen =
                                                     x.fixedValue <- Some password2Field
                                                     x.inputFormat <- Some Input.InputFormat.Password
 
-                                                    x.onEnterPress <-
-                                                        Some
-                                                            (fun _ ->
-                                                                promise {
-                                                                    let! result = signUpClick ()
-                                                                    if result then onHide ()
-                                                                })
+                                                    x.onEnterPress <- Some (fun _ -> signUpClick ())
                                             Props =
                                                 fun x ->
                                                     x.autoFocus <- true

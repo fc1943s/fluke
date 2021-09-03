@@ -23,6 +23,8 @@ open FsStore.Utils
 open FsUi.Model
 open FsUi.State
 open FsUi.Bindings
+open FsUi.Hooks
+open Feliz
 
 
 module Result =
@@ -112,8 +114,9 @@ module Hydrate =
             userState.UIVisibleFlagMap
             |> Map.iter (Atoms.User.uiVisibleFlag >> set)
 
-            JS.setTimeout (fun () -> set Atoms.User.userColor userState.UserColor) 0
-            |> ignore
+            Logger.logInfo (fun () -> $"setting usercolor: {userState.UserColor}")
+
+            set Atoms.User.userColor userState.UserColor
         }
 
     let inline hydrateDatabase _ setter (atomScope, database: Database) =
@@ -572,3 +575,66 @@ module Hydrate =
                     | _ -> toast (fun x -> x.description <- "No files selected")
                 //                                            Atom.change setter Atoms.databaseIdSet (Set.add database.Id)
                 })
+
+    let inline useHydrateTemplates () =
+        let hydrateTemplatesPending, setHydrateTemplatesPending = Store.useState Atoms.Session.hydrateTemplatesPending
+        let toast = Ui.useToast ()
+        let alias = Store.useValue Selectors.Gun.alias
+
+        let hydrate =
+            Store.useCallbackRef
+                (fun getter setter _ ->
+                    promise {
+                        if hydrateTemplatesPending then
+                            setHydrateTemplatesPending false
+
+                            let! hydrateResult = hydrateTemplates getter setter
+
+                            match hydrateResult
+                                  |> Array.choose Result.chooseError
+                                  |> Array.toList
+                                  |> List.collect id with
+                            | [] ->
+                                do! hydrateUiState getter setter UiState.Default
+
+                                do!
+                                    hydrateUserState
+                                        getter
+                                        setter
+                                        { UserState.Default with
+                                            Archive = Some false
+                                            HideTemplates = Some false
+                                            UserColor =
+                                                String.Format ("#{0:X6}", Random().Next 0x1000000)
+                                                |> Color
+                                                |> Some
+                                        }
+
+                                toast
+                                    (fun x ->
+                                        x.title <- "Success"
+                                        x.status <- "success"
+                                        x.description <- "User registered successfully")
+
+                                return true
+                            | errors ->
+                                toast (fun x -> x.description <- $"Sign up hydrate error. errors={errors}")
+                                return false
+                        else
+                            return false
+                    })
+
+        React.useEffect (
+            (fun () ->
+                promise {
+                    if alias.IsSome && hydrateTemplatesPending then
+                        let! hydrateResult = hydrate ()
+                        printfn $"hydrateResult={hydrateResult}"
+                }
+                |> Promise.start),
+            [|
+                box alias
+                box hydrateTemplatesPending
+                box hydrate
+            |]
+        )

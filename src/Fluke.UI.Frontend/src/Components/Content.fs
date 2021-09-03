@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open Fluke.UI.Frontend.Hooks
 open FsStore.State
 open Feliz
 open Fable.React
@@ -17,6 +18,7 @@ module Content =
         let logger = Store.useValue Selectors.logger
         let userColor = Store.useValue Atoms.User.userColor
         logger.Debug (fun () -> $"Content.render. userColor={userColor}")
+        let _hydrateTemplates = Hydrate.useHydrateTemplates ()
 
 
         //        let asyncTaskIdAtoms = Store.useValue Selectors.asyncTaskIdAtoms
