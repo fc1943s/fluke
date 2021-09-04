@@ -51,7 +51,6 @@ jobs:
           path: ./src/Fluke.UI.Frontend/cypress/screenshots
 
       - uses: actions/upload-artifact@v2
-        if: failure()
         with:
           name: cypress-videos
           path: ./src/Fluke.UI.Frontend/cypress/videos

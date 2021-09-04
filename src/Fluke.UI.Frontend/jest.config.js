@@ -4,6 +4,7 @@ module.exports = {
   "preset": "ts-jest",
   verbose: true,
   testMatch: ["**/*.test.fs.js"],
+  testPathIgnorePatterns: [".fable"],
   transform: {
     '\\.js$': ['babel-jest', { configFile: './_babel.config.json' }]
   },

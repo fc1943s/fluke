@@ -264,9 +264,9 @@ module rec Session =
                     |> Array.map (fun taskState -> taskState.Task.Id)
 
 
-                logger.Debug
+                logger.Trace
                     (fun () ->
-                        $"filteredTaskIdArray.Length={filteredTaskIdArray.Length}
+                        $"filteredTaskIdSet selector read. filteredTaskIdArray.Length={filteredTaskIdArray.Length}
                         selectedTaskStateArray.Length={selectedTaskStateArray.Length}")
 
                 filteredTaskIdArray |> Set.ofSeq)
@@ -297,7 +297,7 @@ module rec Session =
                     let logger = Atom.get getter Selectors.logger
                     let filteredTaskIdSet = Atom.get getter filteredTaskIdSet
 
-                    logger.Debug (fun () -> $"sortedTaskIdArray. filteredTaskIdSet.Count={filteredTaskIdSet.Count}")
+                    logger.Trace (fun () -> $"sortedTaskIdArray readSelector. sortedTaskIdArray. filteredTaskIdSet.Count={filteredTaskIdSet.Count}")
 
                     let filteredTaskIdArray = filteredTaskIdSet |> Set.toArray
 
