@@ -61,12 +61,12 @@
     "gun": "amark/gun.git#master",
     "@peculiar/asn1-schema": "~2.0",
 
-    "@microsoft/signalr": "6.0.0-preview.6.21355.2",
+    "@microsoft/signalr": "6.0.0-preview.7.21378.6",
 
-    "react": "18.0.0-alpha-1314299c7-20210901",
-    "react-dom": "18.0.0-alpha-1314299c7-20210901",
+    "react": "18.0.0-alpha-8f96c6b2a-20210909",
+    "react-dom": "18.0.0-alpha-8f96c6b2a-20210909",
 
-    "jotai": "~1.3",
+    "jotai": "~1.3.3",
 
     "@chakra-ui/react": "~1.6",
     "@chakra-ui/system": "~1.7",
@@ -90,7 +90,7 @@
     "devtron": "~1.4"
   },
   "devDependencies": {
-    "https-localhost": "~4.6",
+    "https-localhost": "~4.7",
 
     "http-proxy-middleware": "~2.0",
 
@@ -98,7 +98,7 @@
 
     "typescript": "~4.4",
     "ts-node": "~10.2",
-    "@types/node" : "~16.7",
+    "@types/node" : "~16.9",
     "ts2fable" : "0.8.0-build.616",
 
     "@welldone-software/why-did-you-render": "~6.2",
@@ -106,7 +106,7 @@
     "fable-loader": "~2.1",
     "fable-compiler": "~2.13",
 
-    "@typescript-eslint/eslint-plugin": "~4.30",
+    "@typescript-eslint/eslint-plugin": "~4.31",
     "@typescript-eslint/parser": "~4.30",
     "eslint": "~7.32",
     "eslint-plugin-react": "~7.25",

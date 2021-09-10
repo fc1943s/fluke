@@ -2,6 +2,7 @@ namespace Fluke.UI.Frontend.Components
 
 open Fluke.Shared.Domain.Model
 open Feliz
+open Fluke.Shared.Domain.State
 open FsStore
 open FsStore.Hooks
 open FsUi.Bindings
@@ -10,6 +11,7 @@ open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.State.State
 open Fluke.UI.Frontend.TempUI
 open FsUi.Components
+open FsStore.State
 
 
 module DatabaseNodeMenu =
@@ -24,7 +26,7 @@ module DatabaseNodeMenu =
                 (fun getter setter _ ->
                     promise {
                         Atom.change setter Atoms.User.selectedDatabaseIdSet (Set.remove databaseId)
-                        do! Engine.deleteParent getter (Atoms.Database.name databaseId)
+                        do! Hydrate.deleteRecord getter Atoms.Database.collection (databaseId |> DatabaseId.Value)
                         return true
                     })
 

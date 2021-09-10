@@ -21,7 +21,7 @@ open FsStore
 
 module rec Session =
     let readSelector name read =
-        Atom.readSelector (StoreAtomPath.IndexedAtomPath (Fluke.root, Atoms.Session.collection, [], AtomName name)) read
+        Atom.readSelector (StoreAtomPath.ValueAtomPath (Fluke.root, Atoms.Session.collection, [], AtomName name)) read
 
     let rec devicePingList =
         readSelector
@@ -332,7 +332,7 @@ module rec Session =
                                 Lanes = lanes
                             |}
 
-                    logger.Debug (fun () -> $"sortedTaskIdArray. result.Length={result.Length}")
+                    logger.Trace (fun () -> $"sortedTaskIdArray. result.Length={result.Length}")
 
                     result
                     |> List.map (fun (taskState, _) -> taskState.Task.Id)
@@ -442,7 +442,7 @@ module rec Session =
 
     let rec visibleTaskSelectedDateMap =
         Atom.selector
-            (StoreAtomPath.IndexedAtomPath (
+            (StoreAtomPath.ValueAtomPath (
                 Fluke.root,
                 Atoms.Session.collection,
                 [],

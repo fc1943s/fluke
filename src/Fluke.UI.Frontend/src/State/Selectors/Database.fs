@@ -24,7 +24,7 @@ module rec Database =
     let readSelectorFamily name read =
         Atom.readSelectorFamily
             (fun databaseId ->
-                StoreAtomPath.IndexedAtomPath (
+                StoreAtomPath.ValueAtomPath (
                     Fluke.root,
                     Atoms.Database.collection,
                     Atoms.Database.formatDatabaseId databaseId,

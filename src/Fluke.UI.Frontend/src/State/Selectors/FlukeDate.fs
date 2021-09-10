@@ -23,7 +23,7 @@ module rec FlukeDate =
     let inline readSelectorFamily name =
         Atom.readSelectorFamily
             (fun (date: FlukeDate) ->
-                StoreAtomPath.IndexedAtomPath (Fluke.root, collection, formatDate date, AtomName name))
+                StoreAtomPath.ValueAtomPath (Fluke.root, collection, formatDate date, AtomName name))
 
     let isToday =
         readSelectorFamily

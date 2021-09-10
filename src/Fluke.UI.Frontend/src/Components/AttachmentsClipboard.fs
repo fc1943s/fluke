@@ -1,13 +1,16 @@
 namespace Fluke.UI.Frontend.Components
 
+open Fluke.Shared.Domain.UserInteraction
+open FsStore.Hooks
 open FsCore
 open Fable.React
 open Fluke.UI.Frontend.State.State
 open FsStore
-open FsStore.Hooks
 open FsUi.Bindings
 open Fluke.UI.Frontend.State
 open Feliz
+open FsStore.State
+open Fluke.UI.Frontend.Hooks
 
 
 module AttachmentsClipboard =
@@ -22,7 +25,8 @@ module AttachmentsClipboard =
                 (fun getter setter attachmentId ->
                     promise {
                         Atom.change setter Atoms.User.clipboardAttachmentIdMap (Map.remove attachmentId)
-                        do! Engine.deleteParent getter (Atoms.Attachment.attachment attachmentId)
+
+                        do! Hydrate.deleteRecord getter Atoms.Attachment.collection (attachmentId |> AttachmentId.Value)
                     })
 
         let addImageAttachment =

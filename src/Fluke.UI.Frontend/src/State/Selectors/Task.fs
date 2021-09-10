@@ -20,7 +20,7 @@ module rec Task =
     let readSelectorFamily name read =
         Atom.readSelectorFamily
             (fun taskId ->
-                StoreAtomPath.IndexedAtomPath (
+                StoreAtomPath.ValueAtomPath (
                     Fluke.root,
                     Atoms.Task.collection,
                     Atoms.Task.formatTaskId taskId,

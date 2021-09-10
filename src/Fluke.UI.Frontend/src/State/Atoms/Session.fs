@@ -31,20 +31,20 @@ module Session =
 
     let rec position =
         Atom.create
-            (StoreAtomPath.IndexedAtomPath (Fluke.root, collection, [], AtomName (nameof position)))
+            (StoreAtomPath.ValueAtomPath (Fluke.root, collection, [], AtomName (nameof position)))
             (AtomType.Atom (None: FlukeDateTime option))
 
     let rec shiftPressed =
         Atom.create
-            (StoreAtomPath.IndexedAtomPath (Fluke.root, collection, [], AtomName (nameof shiftPressed)))
+            (StoreAtomPath.ValueAtomPath (Fluke.root, collection, [], AtomName (nameof shiftPressed)))
             (AtomType.Atom false)
 
     let rec ctrlPressed =
         Atom.create
-            (StoreAtomPath.IndexedAtomPath (Fluke.root, collection, [], AtomName (nameof ctrlPressed)))
+            (StoreAtomPath.ValueAtomPath (Fluke.root, collection, [], AtomName (nameof ctrlPressed)))
             (AtomType.Atom false)
 
     let rec hydrateTemplatesPending =
         Atom.create
-            (StoreAtomPath.IndexedAtomPath (Fluke.root, collection, [], AtomName (nameof hydrateTemplatesPending)))
+            (StoreAtomPath.ValueAtomPath (Fluke.root, collection, [], AtomName (nameof hydrateTemplatesPending)))
             (AtomType.Atom false)

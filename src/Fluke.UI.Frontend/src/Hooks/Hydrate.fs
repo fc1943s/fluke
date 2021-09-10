@@ -1,6 +1,7 @@
 namespace Fluke.UI.Frontend.Hooks
 
 open FsStore
+open FsStore.Bindings.Gun
 open FsStore.State
 open FsStore.Hooks
 open FsCore
@@ -17,7 +18,6 @@ open Fluke.Shared.Domain.UserInteraction
 open Fable.Core
 open FsCore.BaseModel
 open FsJs
-open FsStore.Bindings
 open FsStore.Model
 open FsStore.Utils
 open FsUi.Model
@@ -378,7 +378,7 @@ module Hydrate =
                     let alias = Atom.get getter Selectors.Gun.alias
 
                     match alias with
-                    | Some (Gun.Alias alias) ->
+                    | Some (Alias alias) ->
                         let privateKeys = Atom.get getter Selectors.Gun.privateKeys
                         let json = privateKeys |> Json.encodeFormatted
 
@@ -411,7 +411,7 @@ module Hydrate =
                     let alias = Atom.get getter Selectors.Gun.alias
 
                     match alias with
-                    | Some (Gun.Alias alias) ->
+                    | Some (Alias alias) ->
                         let _ = Atom.get getter Selectors.User.userState
                         let _ = Atom.get getter Selectors.Ui.uiState
 
@@ -487,7 +487,7 @@ module Hydrate =
                     let alias = Atom.get getter Selectors.Gun.alias
 
                     match alias, files with
-                    | Some (Gun.Alias alias), Some (files: FileList) when files.length > 0 ->
+                    | Some (Alias alias), Some (files: FileList) when files.length > 0 ->
                         let! files =
                             files
                             |> Seq.ofItems
@@ -638,3 +638,14 @@ module Hydrate =
                 box hydrate
             |]
         )
+
+    let inline deleteRecord getter collection guid =
+        Engine.delete
+            getter
+            (StoreAtomPath.RecordAtomPath (
+                Fluke.root,
+                collection,
+                [
+                    guid |> string |> AtomKeyFragment
+                ]
+            ))

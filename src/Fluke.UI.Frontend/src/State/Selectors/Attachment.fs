@@ -21,7 +21,7 @@ module Attachment =
     let rec attachmentState =
         Atom.readSelectorFamily
             (fun attachmentId ->
-                StoreAtomPath.IndexedAtomPath (
+                StoreAtomPath.ValueAtomPath (
                     Fluke.root,
                     Atoms.Attachment.collection,
                     formatAttachmentId attachmentId,

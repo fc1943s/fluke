@@ -15,7 +15,7 @@ module rec User =
 
     let inline createAtomWithSubscription<'A8 when 'A8: equality and 'A8 :> IComparable> name (defaultValue: 'A8) =
         Engine.createAtomWithSubscription
-            (StoreAtomPath.IndexedAtomPath (Fluke.root, collection, [], AtomName name))
+            (StoreAtomPath.ValueAtomPath (Fluke.root, collection, [], AtomName name))
             defaultValue
 
     let rec archive = createAtomWithSubscription (nameof archive) UserState.Default.Archive

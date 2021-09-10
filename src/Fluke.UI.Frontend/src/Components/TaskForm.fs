@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open FsStore.Bindings.Gun
 open FsStore.State
 open FsJs
 open Browser.Types
@@ -12,7 +13,6 @@ open Fluke.Shared.Domain
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.State
 open Fluke.Shared.Domain.UserInteraction
-open FsStore.Bindings
 open FsStore.Model
 open FsStore.Utils
 open FsUi.Bindings
@@ -330,7 +330,7 @@ module TaskForm =
         Store.useCallbackRef
             (fun getter _ taskId ->
                 promise {
-                    do! Engine.deleteParent getter (Atoms.Task.databaseId taskId)
+                    do! Hydrate.deleteRecord getter Atoms.Task.collection (taskId |> TaskId.Value)
                     return true
                 })
 
@@ -421,7 +421,7 @@ module TaskForm =
             Store.useCallbackRef
                 (fun getter _setter attachmentId ->
                     promise {
-                        do! Engine.deleteParent getter (Atoms.Attachment.attachment attachmentId)
+                        do! Hydrate.deleteRecord getter Atoms.Attachment.collection (attachmentId |> AttachmentId.Value)
                         return true
                     })
 
@@ -586,7 +586,7 @@ module TaskForm =
                                             fun x ->
                                                 x.atom <- Some (InputAtom (AtomReference.Atom (Atoms.Task.name taskId)))
 
-                                                x.inputScope <- Some (InputScope.Temp Gun.defaultSerializer)
+                                                x.inputScope <- Some (InputScope.Temp defaultSerializer)
 
                                                 x.onEnterPress <- Some onSave
                                                 x.onFormat <- Some (fun (TaskName name) -> name)

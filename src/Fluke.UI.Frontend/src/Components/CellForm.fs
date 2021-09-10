@@ -13,6 +13,8 @@ open Fluke.Shared
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.State.State
 open FsUi.Components
+open Fluke.UI.Frontend.Hooks
+open FsStore.State
 
 
 module CellForm =
@@ -47,7 +49,7 @@ module CellForm =
             Store.useCallbackRef
                 (fun getter _setter attachmentId ->
                     promise {
-                        do! Engine.deleteParent getter (Atoms.Attachment.attachment attachmentId)
+                        do! Hydrate.deleteRecord getter Atoms.Attachment.collection (attachmentId |> AttachmentId.Value)
                         return true
                     })
 

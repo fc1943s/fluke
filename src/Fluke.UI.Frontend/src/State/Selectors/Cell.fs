@@ -20,7 +20,7 @@ module rec Cell =
     let selectorFamily name =
         Atom.selectorFamily
             (fun (taskId: TaskId, date: FlukeDate) ->
-                StoreAtomPath.IndexedAtomPath (
+                StoreAtomPath.ValueAtomPath (
                     Fluke.root,
                     Cell.collection,
                     Atoms.Task.formatTaskId taskId

@@ -4,6 +4,7 @@ open Fable.React
 open Feliz
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.State
+open Fluke.Shared.Domain.UserInteraction
 open FsStore
 open FsStore.Hooks
 open FsUi.Bindings
@@ -14,6 +15,8 @@ open Fluke.Shared.Domain
 open Fluke.Shared
 open Fluke.UI.Frontend.State.State
 open FsUi.Components
+open Fluke.UI.Frontend.Hooks
+open FsStore.State
 
 
 module InformationForm =
@@ -77,7 +80,12 @@ module InformationForm =
 
                         match databaseIdList, information with
                         | _ :: _, Some _information ->
-                            do! Engine.deleteParent getter (Atoms.Attachment.attachment attachmentId)
+                            do!
+                                Hydrate.deleteRecord
+                                    getter
+                                    Atoms.Attachment.collection
+                                    (attachmentId |> AttachmentId.Value)
+
                             return true
                         | _ -> return false
                     })

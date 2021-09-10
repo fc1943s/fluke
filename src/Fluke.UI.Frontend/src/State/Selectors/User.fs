@@ -12,7 +12,7 @@ open Fluke.UI.Frontend.State
 module rec User =
     let rec userState =
         Atom.readSelector
-            (StoreAtomPath.IndexedAtomPath (Fluke.root, Atoms.User.collection, [], AtomName (nameof userState)))
+            (StoreAtomPath.ValueAtomPath (Fluke.root, Atoms.User.collection, [], AtomName (nameof userState)))
             (fun getter ->
                 {
                     Archive = Atom.get getter Atoms.User.archive
@@ -82,7 +82,7 @@ module rec User =
 
     let rec theme =
         Atom.readSelector
-            (StoreAtomPath.IndexedAtomPath (Fluke.root, Atoms.User.collection, [], AtomName (nameof theme)))
+            (StoreAtomPath.ValueAtomPath (Fluke.root, Atoms.User.collection, [], AtomName (nameof theme)))
             (fun getter ->
                 let darkMode = Atom.get getter Atoms.Ui.darkMode
                 let fontSize = Atom.get getter Atoms.Ui.fontSize
