@@ -1,6 +1,7 @@
 namespace Fluke.UI.Frontend.Components
 
 open Fluke.UI.Frontend.Hooks
+open FsCore
 open FsStore.State
 open Feliz
 open Fable.React
@@ -17,7 +18,8 @@ module Content =
     let LoggedContent () =
         let logger = Store.useValue Selectors.logger
         let userColor = Store.useValue Atoms.User.userColor
-        logger.Debug (fun () -> $"Content.render. userColor={userColor}")
+        let inline getLocals () = $"userColor={userColor} {getLocals ()}"
+        logger.Debug (fun () -> $"Content.render") getLocals
         let _hydrateTemplates = Hydrate.useHydrateTemplates ()
 
 
@@ -98,7 +100,7 @@ module Content =
 
     [<ReactComponent>]
     let Content () =
-        Profiling.addTimestamp (fun () -> "mainComponent.render")
+        Profiling.addTimestamp (fun () -> "Content.render") getLocals
 
         let deviceInfo = Store.useValue Selectors.deviceInfo
         let alias = Store.useValue Selectors.Gun.alias

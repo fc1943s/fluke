@@ -105,6 +105,8 @@
         <Compile Include="src\Components\SoundPlayer.fs" />
         <Compile Include="src\Components\PositionUpdater.fs" />
         <Compile Include="src\Components\KeyboardListener.fs" />
+        <Compile Include="src\Components\MessageConsumer.fs" />
+        <Compile Include="src\Components\MessagesListener.fs" />
         <Compile Include="src\Components\Content.fs" />
         <Compile Include="src\App.fs" />
         <Compile Include="src\Main.fs" />

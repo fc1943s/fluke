@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open FsCore
 open Browser.Types
 open Fable.React
 open Feliz
@@ -28,7 +29,7 @@ module Cell =
                    DateAtom: AtomConfig<FlukeDate>
                    SemiTransparent: bool |})
         =
-        Profiling.addCount (fun () -> "- CellComponent.render")
+        Profiling.addCount (fun () -> "- CellComponent.render") getLocals
 
         let taskId = Store.useValue input.TaskIdAtom
         let dateId = Store.useValue input.DateAtom

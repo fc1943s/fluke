@@ -25,7 +25,11 @@ module PasteListener =
                 (fun getter setter attachment ->
                     promise {
                         let logger = Atom.get getter Selectors.logger
-                        logger.Debug (fun () -> $"pasted image attachment={attachment}")
+
+                        let getLocals () =
+                            $"attachment={attachment} {getLocals ()}"
+
+                        logger.Debug (fun () -> "PasteListener. pasted image") getLocals
 
                         let attachmentId =
                             Hydrate.hydrateAttachmentState
@@ -72,7 +76,8 @@ module PasteListener =
                                         return Some blobs
                                     with
                                     | ex ->
-                                        logger.Error (fun () -> $"handlePasteEvent clipboard error={ex}")
+                                        let getLocals () = $"ex={ex} {getLocals ()}"
+                                        logger.Error (fun () -> "PasteListener. handlePasteEvent clipboard") getLocals
                                         return None
                                 }
                             | None ->

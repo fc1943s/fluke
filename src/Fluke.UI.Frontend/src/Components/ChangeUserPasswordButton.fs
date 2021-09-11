@@ -13,7 +13,6 @@ open FsUi.Hooks
 module ChangeUserPasswordButton =
     [<ReactComponent>]
     let rec ChangeUserPasswordButton () =
-        let changePassword = Auth.useChangePassword ()
         let toast = Ui.useToast ()
         let passwordField, setPasswordField = React.useState ""
         let newPasswordField, setNewPasswordField = React.useState ""
@@ -21,14 +20,14 @@ module ChangeUserPasswordButton =
 
         let confirmClick =
             Store.useCallbackRef
-                (fun _ _ _ ->
+                (fun getter setter _ ->
                     promise {
                         if newPasswordField <> newPassword2Field then
                             toast (fun x -> x.description <- "Passwords don't match")
                             return false
                         else
-                            match! changePassword (passwordField, newPasswordField) with
-                            | Ok () ->
+                            match! Auth.changePassword getter setter (passwordField, newPasswordField) with
+                            | Ok _alias ->
                                 toast
                                     (fun x ->
                                         x.title <- "Success"

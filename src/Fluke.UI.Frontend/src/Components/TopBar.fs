@@ -371,8 +371,8 @@ module TopBar =
     [<ReactComponent>]
     let TopBar () =
         let deviceInfo = Store.useValue Selectors.deviceInfo
-        let logout = Auth.useLogout ()
         let alias = Store.useValue Selectors.Gun.alias
+        let logout = Store.useSetState Auth.Actions.logout
 
         let onLogoClick =
             Store.useCallbackRef
@@ -555,7 +555,7 @@ module TopBar =
                                                     x.icon <- Icons.hi.HiLogout |> Icons.render
                                                     x.fontSize <- "17px"
                                                     x.height <- "27px"
-                                                    x.onClick <- fun _ -> promise { do! logout () }
+                                                    x.onClick <- fun _ -> promise { logout () }
                                         |}
                                 ]
 

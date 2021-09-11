@@ -264,10 +264,10 @@ module rec Session =
                     |> Array.map (fun taskState -> taskState.Task.Id)
 
 
-                logger.Trace
-                    (fun () ->
-                        $"filteredTaskIdSet selector read. filteredTaskIdArray.Length={filteredTaskIdArray.Length}
-                        selectedTaskStateArray.Length={selectedTaskStateArray.Length}")
+                let getLocals () =
+                    $"filteredTaskIdArray.Length={filteredTaskIdArray.Length} selectedTaskStateArray.Length={selectedTaskStateArray.Length} {getLocals ()}"
+
+                logger.Trace (fun () -> $"{nameof Fluke} | Session.filteredTaskIdSet selector read") getLocals
 
                 filteredTaskIdArray |> Set.ofSeq)
 
@@ -297,7 +297,12 @@ module rec Session =
                     let logger = Atom.get getter Selectors.logger
                     let filteredTaskIdSet = Atom.get getter filteredTaskIdSet
 
-                    logger.Trace (fun () -> $"sortedTaskIdArray readSelector. sortedTaskIdArray. filteredTaskIdSet.Count={filteredTaskIdSet.Count}")
+                    let getLocals () =
+                        $"filteredTaskIdSet.Count={filteredTaskIdSet.Count} {getLocals ()}"
+
+                    logger.Trace
+                        (fun () -> $"{nameof Fluke} | Session.sortedTaskIdArray readSelector. sortedTaskIdArray")
+                        getLocals
 
                     let filteredTaskIdArray = filteredTaskIdSet |> Set.toArray
 
@@ -332,7 +337,10 @@ module rec Session =
                                 Lanes = lanes
                             |}
 
-                    logger.Trace (fun () -> $"sortedTaskIdArray. result.Length={result.Length}")
+                    let getLocals () =
+                        $"result.Length={result.Length} {getLocals ()}"
+
+                    logger.Trace (fun () -> $"{nameof Fluke} | Session.sortedTaskIdArray") getLocals
 
                     result
                     |> List.map (fun (taskState, _) -> taskState.Task.Id)

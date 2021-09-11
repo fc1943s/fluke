@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend
 
+open FsCore
 open Feliz
 open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.State
@@ -9,11 +10,9 @@ open FsUi.Components
 
 
 module App =
-
     [<ReactComponent>]
     let App wrap =
-        Profiling.addTimestamp (fun () -> "App().render")
-        Profiling.addCount (fun () -> "App().render")
+        Profiling.addTimestamp (fun () -> $"{nameof Fluke} | App.render") getLocals
 
         (if wrap then
              RootWrapper.RootWrapper (Some (Selectors.User.theme |> unbox<AtomConfig<unit>>))
@@ -25,6 +24,7 @@ module App =
                 CtrlListener.CtrlListener ()
                 ShiftListener.ShiftListener ()
                 SelectionListener.SelectionListener ()
+                MessagesListener.MessagesListener ()
 
                 Content.Content ()
 

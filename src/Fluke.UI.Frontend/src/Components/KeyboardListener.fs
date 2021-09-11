@@ -59,7 +59,7 @@ module ShiftListener =
 
                     match e.ctrlKey, e.altKey, e.key with
                     | true, true, "I" ->
-                        logger.Debug (fun () -> "RouterObserver.onKeyDown() View.Information")
+                        logger.Debug (fun () -> "RouterObserver.onKeyDown() View.Information") getLocals
                         setView View.View.Information
                     | true, true, "H" -> setView View.View.HabitTracker
                     | true, true, "P" -> setView View.View.Priority

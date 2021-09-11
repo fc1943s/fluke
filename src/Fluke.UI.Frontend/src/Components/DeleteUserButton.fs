@@ -12,26 +12,27 @@ open FsUi.Hooks
 module DeleteUserButton =
     [<ReactComponent>]
     let rec DeleteUserButton () =
-        let deleteUser = Auth.useDeleteUser ()
         let toast = Ui.useToast ()
         let passwordField, setPasswordField = React.useState ""
 
-        let confirmClick () =
-            promise {
-                match! deleteUser passwordField with
-                | Ok () ->
-                    toast
-                        (fun x ->
-                            x.title <- "Success"
-                            x.status <- "success"
-                            x.description <- "User deleted successfully")
+        let confirmClick =
+            Store.useCallbackRef
+                (fun getter setter _ ->
+                    promise {
+                        match! Auth.deleteUser getter setter passwordField with
+                        | Ok _alias ->
+                            toast
+                                (fun x ->
+                                    x.title <- "Success"
+                                    x.status <- "success"
+                                    x.description <- "User deleted successfully")
 
-                    setPasswordField ""
-                    return true
-                | Error error ->
-                    toast (fun x -> x.description <- error)
-                    return false
-            }
+                            setPasswordField ""
+                            return true
+                        | Error error ->
+                            toast (fun x -> x.description <- error)
+                            return false
+                    })
 
         Dropdown.ConfirmDropdown
             "Delete User"

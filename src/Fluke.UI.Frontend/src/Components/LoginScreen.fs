@@ -23,8 +23,6 @@ module LoginScreen =
         let passwordField, setPasswordField = React.useState ""
         let password2Field, setPassword2Field = React.useState ""
 
-        let signUp = Auth.useSignUp ()
-
         let setHydratePending = Store.useSetState Atoms.Session.hydrateTemplatesPending
 
         let signInClick =
@@ -38,14 +36,14 @@ module LoginScreen =
 
         let signUpClick =
             Store.useCallbackRef
-                (fun _ _ _ ->
+                (fun getter setter _ ->
                     promise {
                         if passwordField <> password2Field then
                             toast (fun x -> x.description <- "Passwords don't match")
                         elif Templates.templatesUser.Username |> Username.Value = usernameField then
                             toast (fun x -> x.description <- "Invalid username")
                         else
-                            match! signUp (usernameField, passwordField) with
+                            match! Auth.signUp getter setter (usernameField, passwordField) with
                             | Ok (_alias, _keys) -> setHydratePending true
                             | Error error -> toast (fun x -> x.description <- error)
                     })
