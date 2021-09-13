@@ -32,7 +32,7 @@ module CtrlListener =
 module ShiftListener =
     [<ReactComponent>]
     let ShiftListener () =
-        let logger = Store.useValue Selectors.logger
+        let logger = Store.useValue Selectors.Store.logger
 
         Listener.useKeyPress
             [|

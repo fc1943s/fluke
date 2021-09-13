@@ -20,7 +20,7 @@ module RightDock =
 
     [<ReactComponent>]
     let RightDock () =
-        let deviceInfo = Store.useValue Selectors.deviceInfo
+        let deviceInfo = Store.useValue Selectors.Store.deviceInfo
         let setLeftDock = Store.useSetState Atoms.User.leftDock
         let rightDock = Store.useValue Atoms.User.rightDock
 

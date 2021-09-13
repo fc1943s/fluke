@@ -24,7 +24,7 @@ module PasteListener =
             Store.useCallbackRef
                 (fun getter setter attachment ->
                     promise {
-                        let logger = Atom.get getter Selectors.logger
+                        let logger = Atom.get getter Selectors.Store.logger
 
                         let getLocals () =
                             $"attachment={attachment} {getLocals ()}"
@@ -55,7 +55,7 @@ module PasteListener =
             Store.useCallbackRef
                 (fun getter setter (e: Browser.Types.Event) ->
                     promise {
-                        let logger = Atom.get getter Selectors.logger
+                        let logger = Atom.get getter Selectors.Store.logger
 
                         let! blobs =
                             match Browser.Navigator.navigator.clipboard with

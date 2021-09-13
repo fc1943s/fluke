@@ -69,7 +69,7 @@ module Navigate =
     let navigate =
         fun getter setter (dockPosition, dockType, uiFlagType, uiFlag) ->
             promise {
-                let deviceInfo = Atom.get getter Selectors.deviceInfo
+                let deviceInfo = Atom.get getter Selectors.Store.deviceInfo
 
                 match dockPosition with
                 | DockPosition.Left

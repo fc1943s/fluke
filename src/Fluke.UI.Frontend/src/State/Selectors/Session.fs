@@ -201,7 +201,7 @@ module rec Session =
 //            Selectors.interval
 //            Set.empty
 //            (fun getter ->
-                let logger = Atom.get getter Selectors.logger
+                let logger = Atom.get getter Selectors.Store.logger
                 let filter = Atom.get getter Atoms.User.filter
 
                 let selectedTaskIdListByArchive =
@@ -294,7 +294,7 @@ module rec Session =
 
                 match position with
                 | Some position ->
-                    let logger = Atom.get getter Selectors.logger
+                    let logger = Atom.get getter Selectors.Store.logger
                     let filteredTaskIdSet = Atom.get getter filteredTaskIdSet
 
                     let getLocals () =

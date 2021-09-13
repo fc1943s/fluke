@@ -17,8 +17,8 @@ open Fluke.UI.Frontend.State
 module MessageConsumer =
     [<ReactComponent>]
     let MessageConsumer messageIdAtom =
-        let logger = Store.useValue Selectors.logger
-        let deviceInfo = Store.useValue Selectors.deviceInfo
+        let logger = Store.useValue Selectors.Store.logger
+        let deviceInfo = Store.useValue Selectors.Store.deviceInfo
         let appState = Store.useValue (Atoms.Device.appState deviceInfo.DeviceId)
         let consumeCommands = Store.useCallbackRef (Engine.consumeCommands Messaging.appUpdate appState)
         let messageId = Store.useValue messageIdAtom

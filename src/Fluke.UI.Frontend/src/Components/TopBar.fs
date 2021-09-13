@@ -370,7 +370,7 @@ module TopBar =
 
     [<ReactComponent>]
     let TopBar () =
-        let deviceInfo = Store.useValue Selectors.deviceInfo
+        let deviceInfo = Store.useValue Selectors.Store.deviceInfo
         let alias = Store.useValue Selectors.Gun.alias
         let logout = Store.useSetState Auth.Actions.logout
 

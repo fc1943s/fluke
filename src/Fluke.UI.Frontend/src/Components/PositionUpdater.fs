@@ -19,7 +19,7 @@ open Fable.Core.JsInterop
 module PositionUpdater =
     [<ReactComponent>]
     let PositionUpdater () =
-        let deviceInfo = Store.useValue Selectors.deviceInfo
+        let deviceInfo = Store.useValue Selectors.Store.deviceInfo
 
         Scheduling.useScheduling
             Scheduling.Interval

@@ -16,7 +16,7 @@ open FsUi.Components
 module Content =
     [<ReactComponent>]
     let LoggedContent () =
-        let logger = Store.useValue Selectors.logger
+        let logger = Store.useValue Selectors.Store.logger
         let userColor = Store.useValue Atoms.User.userColor
         let inline getLocals () = $"userColor={userColor} {getLocals ()}"
         logger.Debug (fun () -> $"Content.render") getLocals
@@ -102,7 +102,7 @@ module Content =
     let Content () =
         Profiling.addTimestamp (fun () -> "Content.render") getLocals
 
-        let deviceInfo = Store.useValue Selectors.deviceInfo
+        let deviceInfo = Store.useValue Selectors.Store.deviceInfo
         let alias = Store.useValue Selectors.Gun.alias
 
         Ui.flex

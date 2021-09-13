@@ -380,7 +380,7 @@ module Databases =
                 |]
             )
 
-        let deviceInfo = Store.useValue Selectors.deviceInfo
+        let deviceInfo = Store.useValue Selectors.Store.deviceInfo
         let selectedDatabaseIdSet, setSelectedDatabaseIdSet = Store.useState Atoms.User.selectedDatabaseIdSet
 
         let nodes, newExpandedDatabaseGuidArray, newSelectedDatabaseGuidArray =
