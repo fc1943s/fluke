@@ -13,16 +13,19 @@ open FsStore.Model
 
 
 module rec BulletJournalView =
-    let inline readSelector name read =
-        Atom.readSelector (StoreAtomPath.RootAtomPath (Fluke.root, AtomName name)) read
+    let readSelector name defaultValue read =
+        let wrapper = Atom.readSelector (StoreAtomPath.RootAtomPath (Fluke.root, AtomName name)) read
+
+        match defaultValue with
+        | None -> wrapper
+        | Some defaultValue ->
+            wrapper
+            |> Engine.wrapAtomWithInterval defaultValue Selectors.interval
 
     let rec bulletJournalWeekCellsMap =
-        //        Store.readSelectorInterval
         readSelector
-            //            Fluke.root
             (nameof bulletJournalWeekCellsMap)
-            //            Selectors.interval
-//            []
+            (Some [])
             (fun getter ->
                 let position = Atom.get getter Atoms.Session.position
                 let sortedTaskIdAtoms = Atom.get getter Session.sortedTaskIdAtoms

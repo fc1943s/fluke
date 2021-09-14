@@ -21,6 +21,8 @@ module PositionUpdater =
     let PositionUpdater () =
         let deviceInfo = Store.useValue Selectors.Store.deviceInfo
 
+        let hubCount, setHubCount = React.useState 0
+
         Scheduling.useScheduling
             Scheduling.Interval
             5000
@@ -39,7 +41,12 @@ module PositionUpdater =
                             match Dom.window () with
                             | Some window -> window?hubTrigger <- fun () -> Atom.change setter Atoms.hubTrigger ((+) 1)
                             | None -> ()
-                        //                            Atom.change setter Atoms.hubTrigger ((+) 1)
+
+                            if hubCount = 3 then
+                                Atom.change setter Atoms.hubTrigger ((+) 1)
+                                setHubCount 0
+                            else
+                                setHubCount (hubCount + 1)
                         | _ -> ()
                     | _ -> ()
 

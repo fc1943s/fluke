@@ -21,20 +21,29 @@ open FsStore
 
 
 module rec Database =
-    let readSelectorFamily name read =
-        Atom.readSelectorFamily
+    let readSelectorFamily name (defaultValue: 'T option) read =
+        Atom.Primitives.atomFamily
             (fun databaseId ->
-                StoreAtomPath.ValueAtomPath (
-                    Fluke.root,
-                    Atoms.Database.collection,
-                    Atoms.Database.formatDatabaseId databaseId,
-                    AtomName name
-                ))
-            (fun (databaseId: DatabaseId) -> (read databaseId))
+                let storeAtomPath =
+                    StoreAtomPath.ValueAtomPath (
+                        Fluke.root,
+                        Atoms.Database.collection,
+                        Atoms.Database.formatDatabaseId databaseId,
+                        AtomName name
+                    )
+
+                let wrapper = Atom.selector storeAtomPath (read databaseId) Atom.Primitives.throwReadOnly
+
+                match defaultValue with
+                | None -> wrapper
+                | Some defaultValue ->
+                    wrapper
+                    |> Engine.wrapAtomWithInterval defaultValue Selectors.interval)
 
     let rec database =
         readSelectorFamily
             (nameof database)
+            None
             (fun (databaseId: DatabaseId) getter ->
                 {
                     Id = databaseId
@@ -48,6 +57,7 @@ module rec Database =
     let rec nodeType =
         readSelectorFamily
             (nameof nodeType)
+            None
             (fun (databaseId: DatabaseId) getter ->
                 let database = Atom.get getter (database databaseId)
                 let alias = Atom.get getter Selectors.Gun.alias
@@ -62,6 +72,7 @@ module rec Database =
     let rec isReadWrite =
         readSelectorFamily
             (nameof isReadWrite)
+            None
             (fun (databaseId: DatabaseId) getter ->
                 let alias = Atom.get getter Selectors.Gun.alias
 
@@ -81,11 +92,9 @@ module rec Database =
 
 
     let rec taskIdAtoms =
-        //        Store.readSelectorFamilyInterval
         readSelectorFamily
             (nameof taskIdAtoms)
-            //            Selectors.interval
-//            [||]
+            (Some [||])
             (fun (databaseId: DatabaseId) getter ->
                 Selectors.asyncTaskIdAtoms
                 |> Atom.get getter
@@ -99,6 +108,7 @@ module rec Database =
     let rec unarchivedTaskIdAtoms =
         readSelectorFamily
             (nameof unarchivedTaskIdAtoms)
+            None
             (fun (databaseId: DatabaseId) getter ->
                 let taskIdAtoms = Atom.get getter (taskIdAtoms databaseId)
 
@@ -113,6 +123,7 @@ module rec Database =
     let rec archivedTaskIdAtoms =
         readSelectorFamily
             (nameof archivedTaskIdAtoms)
+            None
             (fun (databaseId: DatabaseId) getter ->
                 let taskIdAtoms = Atom.get getter (taskIdAtoms databaseId)
 
@@ -127,6 +138,7 @@ module rec Database =
     let rec taskIdAtomsByArchive =
         readSelectorFamily
             (nameof taskIdAtomsByArchive)
+            None
             (fun (databaseId: DatabaseId) getter ->
                 let archive = Atom.get getter Atoms.User.archive
 
@@ -141,6 +153,7 @@ module rec Database =
     let rec informationAttachmentIdMapByArchive =
         readSelectorFamily
             (nameof informationAttachmentIdMapByArchive)
+            None
             (fun (databaseId: DatabaseId) getter ->
                 let archive = Atom.get getter Atoms.User.archive
 
@@ -170,11 +183,9 @@ module rec Database =
                         |> Set.filter (fun attachmentId -> archivedMap.[attachmentId] = archive)))
 
     let rec informationAttachmentIdMap =
-        //        readSelectorFamilyInterval
         readSelectorFamily
             (nameof informationAttachmentIdMap)
-            //            Selectors.interval
-//            Map.empty
+            (Some Map.empty)
             (fun (databaseId: DatabaseId) getter ->
                 Selectors.asyncAttachmentIdAtoms
                 |> Atom.get getter
@@ -194,6 +205,7 @@ module rec Database =
     let rec databaseState =
         readSelectorFamily
             (nameof databaseState)
+            None
             (fun (databaseId: DatabaseId) getter ->
                 let database = Atom.get getter (Database.database databaseId)
 

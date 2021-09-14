@@ -17,20 +17,30 @@ open FsStore.Model
 module rec Task =
     open Rendering
 
-    let readSelectorFamily name read =
-        Atom.readSelectorFamily
+    let readSelectorFamily name (defaultValue: 'T option) read =
+        Atom.Primitives.atomFamily
             (fun taskId ->
-                StoreAtomPath.ValueAtomPath (
-                    Fluke.root,
-                    Atoms.Task.collection,
-                    Atoms.Task.formatTaskId taskId,
-                    AtomName name
-                ))
-            (fun (taskId: TaskId) -> (read taskId))
+                let storeAtomPath =
+                    StoreAtomPath.ValueAtomPath (
+                        Fluke.root,
+                        Atoms.Task.collection,
+                        Atoms.Task.formatTaskId taskId,
+                        AtomName name
+                    )
+
+                let wrapper = Atom.selector storeAtomPath (read taskId) Atom.Primitives.throwReadOnly
+
+                match defaultValue with
+                | None -> wrapper
+                | Some defaultValue ->
+                    wrapper
+                    |> Engine.wrapAtomWithInterval defaultValue Selectors.interval)
+
 
     let rec task =
         readSelectorFamily
             (nameof task)
+            None
             (fun (taskId: TaskId) getter ->
                 {
                     Id = taskId
@@ -48,12 +58,10 @@ module rec Task =
         | Task of TaskId
         | Cell of TaskId * FlukeDate
 
-    //            Selectors.interval
-//            [||]
-//
     let rec taskAttachmentArray =
         readSelectorFamily
             (nameof taskAttachmentArray)
+            (Some [||])
             (fun (taskId: TaskId) getter ->
                 Selectors.asyncAttachmentIdAtoms
                 |> Atom.get getter
@@ -68,11 +76,12 @@ module rec Task =
                         | Some (AttachmentParent.Task taskId') when taskId' = taskId ->
                             Some (attachmentId, TaskAttachment.Task taskId)
                         | _ -> None))
-    //        |> Engine.wrapAtomWithInterval [||] Selectors.interval
+
 
     let rec cellAttachmentIdMap =
         readSelectorFamily
             (nameof cellAttachmentIdMap)
+            None
             (fun (taskId: TaskId) getter ->
                 let taskAttachmentArray = taskAttachmentArray taskId |> Atom.get getter
 
@@ -89,6 +98,7 @@ module rec Task =
     let rec attachmentIdSet =
         readSelectorFamily
             (nameof attachmentIdSet)
+            None
             (fun (taskId: TaskId) getter ->
                 let taskAttachmentArray = taskAttachmentArray taskId |> Atom.get getter
 
@@ -103,6 +113,7 @@ module rec Task =
     let rec cellStateMap =
         readSelectorFamily
             (nameof cellStateMap)
+            None
             (fun (taskId: TaskId) getter ->
                 let statusMap = Atom.get getter (Atoms.Task.statusMap taskId)
                 let cellAttachmentIdMap = Atom.get getter (cellAttachmentIdMap taskId)
@@ -171,6 +182,7 @@ module rec Task =
     let rec filteredCellStateMap =
         readSelectorFamily
             (nameof filteredCellStateMap)
+            None
             (fun (taskId: TaskId) getter ->
                 let dateArray = Atom.get getter Selectors.dateArray
                 let cellStateMap = Atom.get getter (cellStateMap taskId)
@@ -197,6 +209,7 @@ module rec Task =
     let rec taskState =
         readSelectorFamily
             (nameof taskState)
+            None
             (fun (taskId: TaskId) getter ->
 
                 let task = Atom.get getter (task taskId)
@@ -229,11 +242,9 @@ module rec Task =
 
 
     let rec cellStatusMap =
-        //        Store.readSelectorFamilyInterval
         readSelectorFamily
             (nameof cellStatusMap)
-            //            Selectors.interval
-//            Map.empty
+            (Some Map.empty)
             (fun (taskId: TaskId) getter ->
                 let taskState = Atom.get getter (taskState taskId)
                 let dateArray = Atom.get getter Selectors.dateArray
@@ -284,6 +295,7 @@ module rec Task =
     let rec lastSession =
         readSelectorFamily
             (nameof lastSession)
+            None
             (fun (taskId: TaskId) getter ->
                 let dateArray = Atom.get getter Selectors.dateArray
                 let cellStateMap = Atom.get getter (cellStateMap taskId)
@@ -303,6 +315,7 @@ module rec Task =
     let rec activeSession =
         readSelectorFamily
             (nameof activeSession)
+            None
             (fun (taskId: TaskId) getter ->
                 let position = Atom.get getter Atoms.Session.position
                 let lastSession = Atom.get getter (lastSession taskId)
@@ -333,6 +346,7 @@ module rec Task =
     let rec showUser =
         readSelectorFamily
             (nameof showUser)
+            None
             (fun (taskId: TaskId) getter ->
                 let cellStateMap = Atom.get getter (cellStateMap taskId)
 
@@ -352,6 +366,7 @@ module rec Task =
     let rec hasSelection =
         readSelectorFamily
             (nameof hasSelection)
+            None
             (fun (taskId: TaskId) getter ->
                 let dateArray = Atom.get getter Selectors.dateArray
                 let selectionSet = Atom.get getter (Atoms.Task.selectionSet taskId)

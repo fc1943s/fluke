@@ -104,6 +104,7 @@ module Content =
 
         let deviceInfo = Store.useValue Selectors.Store.deviceInfo
         let alias = Store.useValue Selectors.Gun.alias
+        let _ = Auth.useGunAliasLoader ()
 
         Ui.flex
             (fun x ->
