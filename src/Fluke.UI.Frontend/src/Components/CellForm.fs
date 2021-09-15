@@ -20,10 +20,10 @@ open FsStore.State
 module CellForm =
     [<ReactComponent>]
     let rec CellForm taskIdAtom dateAtom =
-        let taskId, dateId = Store.useValueTuple taskIdAtom dateAtom
+        let taskId, date = Store.useValueTuple taskIdAtom dateAtom
         let (TaskName taskName) = Store.useValue (Atoms.Task.name taskId)
 
-        let attachmentIdSet = Store.useValue (Selectors.Cell.attachmentIdSet (taskId, dateId))
+        let attachmentIdSet = Store.useValue (Selectors.Cell.attachmentIdSet (CellRef (taskId, date)))
         let visibleTaskSelectedDateMap = Store.useValue Selectors.Session.visibleTaskSelectedDateMap
 
 
@@ -42,7 +42,7 @@ module CellForm =
                         Atom.set
                             setter
                             (Atoms.Attachment.parent attachmentId)
-                            (Some (AttachmentParent.Cell (taskId, dateId)))
+                            (Some (AttachmentParent.Cell (taskId, date)))
                     })
 
         let onAttachmentDelete =
@@ -83,7 +83,7 @@ module CellForm =
                                     Ui.box
                                         (fun x -> x.userSelect <- "text")
                                         [
-                                            str $"Date: {dateId |> FlukeDate.Stringify}"
+                                            str $"Date: {date |> FlukeDate.Stringify}"
                                         ]
                                 else
                                     nothing
@@ -105,7 +105,7 @@ module CellForm =
                                 x.flex <- "1")
                             [
                                 AttachmentPanel.AttachmentPanel
-                                    (AttachmentParent.Cell (taskId, dateId))
+                                    (AttachmentParent.Cell (taskId, date))
                                     (Some onAttachmentAdd)
                                     onAttachmentDelete
                                     attachmentIdList
@@ -123,11 +123,11 @@ module CellForm =
             React.useMemo (
                 (fun () ->
                     match cellUIFlag with
-                    | UIFlag.Cell (taskId, dateId) when
+                    | UIFlag.Cell (taskId, date) when
                         selectedTaskIdListByArchive
                         |> List.contains taskId
                         ->
-                        Some (Jotai.jotai.atom taskId), Some (Jotai.jotai.atom dateId)
+                        Some (Jotai.jotai.atom taskId), Some (Jotai.jotai.atom date)
                     | _ -> None, None),
                 [|
                     box cellUIFlag

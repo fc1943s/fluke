@@ -29,9 +29,9 @@ module rec Session =
 
         match defaultValue with
         | None -> wrapper
-        | Some defaultValue ->
+        | Some _defaultValue ->
             wrapper
-            |> Engine.wrapAtomWithInterval defaultValue Selectors.interval
+//            |> Engine.wrapAtomWithInterval defaultValue Selectors.interval
 
     let rec devicePingList =
         readSelector

@@ -32,14 +32,14 @@ module Cell =
         Profiling.addCount (fun () -> "- CellComponent.render") getLocals
 
         let taskId = Store.useValue input.TaskIdAtom
-        let dateId = Store.useValue input.DateAtom
+        let date = Store.useValue input.DateAtom
         let cellSize = Store.useValue Atoms.User.cellSize
         let databaseId = Store.useValue (Atoms.Task.databaseId taskId)
         let isReadWrite = Store.useValue (Selectors.Database.isReadWrite databaseId)
-        let sessionStatus = Store.useValue (Selectors.Cell.sessionStatus (taskId, dateId))
-        let attachmentIdSet = Store.useValue (Selectors.Cell.attachmentIdSet (taskId, dateId))
-        let isToday = Store.useValue (Selectors.FlukeDate.isToday dateId)
-        let selected, setSelected = Store.useState (Selectors.Cell.selected (taskId, dateId))
+        let sessionStatus = Store.useValue (Selectors.Cell.sessionStatus (CellRef (taskId, date)))
+        let attachmentIdSet = Store.useValue (Selectors.Cell.attachmentIdSet (CellRef (taskId, date)))
+        let isToday = Store.useValue (Selectors.FlukeDate.isToday date)
+        let selected, setSelected = Store.useState (Selectors.Cell.selected (CellRef (taskId, date)))
         let cellUIFlag = Store.useValue (Atoms.User.uiFlag UIFlagType.Cell)
         let rightDock = Store.useValue Atoms.User.rightDock
         //        let deviceInfo = Store.useValue Selectors.deviceInfo
@@ -74,10 +74,7 @@ module Cell =
 
         Ui.center
             (fun x ->
-                Ui.setTestId
-                    x
-                    $"cell-{taskId}-{(dateId |> FlukeDate.DateTime)
-                                         .ToShortDateString ()}"
+                Ui.setTestId x $"cell-{taskId}-{(date |> FlukeDate.DateTime).ToShortDateString ()}"
 
                 if isReadWrite then x.onClick <- onCellClick
                 x.width <- $"{cellSize}px"
@@ -114,7 +111,7 @@ module Cell =
                     x.cursor <- "pointer")
             [
                 match rightDock, cellUIFlag with
-                | Some TempUI.DockType.Cell, UIFlag.Cell (taskId', dateId') when taskId' = taskId && dateId' = dateId ->
+                | Some TempUI.DockType.Cell, UIFlag.Cell (taskId', dateId') when taskId' = taskId && dateId' = date ->
                     Ui.icon
                         (fun x ->
                             x.``as`` <- Icons.ti.TiPin
@@ -145,7 +142,7 @@ module Cell =
                    SemiTransparent: bool |})
         =
         let taskId = Store.useValue input.TaskIdAtom
-        let dateId = Store.useValue input.DateAtom
+        let date = Store.useValue input.DateAtom
         let enableCellPopover = Store.useValue Atoms.User.enableCellPopover
         let databaseId = Store.useValue (Atoms.Task.databaseId taskId)
         let isReadWrite = Store.useValue (Selectors.Database.isReadWrite databaseId) //
@@ -182,7 +179,7 @@ module Cell =
                                         Navigate.DockPosition.Right,
                                         Some TempUI.DockType.Cell,
                                         UIFlagType.Cell,
-                                        UIFlag.Cell (taskId, dateId)
+                                        UIFlag.Cell (taskId, date)
                                     )
                             })
                 [

@@ -36,9 +36,9 @@ module rec Database =
 
                 match defaultValue with
                 | None -> wrapper
-                | Some defaultValue ->
-                    wrapper
-                    |> Engine.wrapAtomWithInterval defaultValue Selectors.interval)
+                | Some _defaultValue -> wrapper
+                //                    |> Engine.wrapAtomWithInterval defaultValue Selectors.interval
+                )
 
     let rec database =
         readSelectorFamily
@@ -199,7 +199,7 @@ module rec Database =
                             Some (information, attachmentId)
                         | _ -> None)
                 |> Array.groupBy fst
-                |> Array.map (fun (dateId, items) -> dateId, items |> Array.map snd |> Set.ofArray)
+                |> Array.map (fun (information, items) -> information, items |> Array.map snd |> Set.ofArray)
                 |> Map.ofSeq)
 
     let rec databaseState =

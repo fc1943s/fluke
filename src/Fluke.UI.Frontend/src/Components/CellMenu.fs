@@ -43,14 +43,125 @@ module CellMenu =
                              " until tomorrow"
                          | _ -> ""}"""
 
+    module Actions =
+        let postponeUntilLater =
+            Atom.Primitives.setSelector
+                (fun getter setter (taskId, date, postponedUntil) ->
+                    Profiling.addTimestamp (fun () -> $"{nameof Fluke} | Actions.postponeUntilLater") getLocals
+                    let alias = Atom.get getter Selectors.Gun.alias
+
+                    match alias with
+                    | Some (Gun.Alias alias) ->
+                        Atom.set
+                            setter
+                            (Selectors.Cell.sessionStatus (CellRef (taskId, date)))
+                            (UserStatus (Username alias, Postponed (Some postponedUntil)))
+                    | _ -> ())
+
+        let setCellStatus =
+            Atom.Primitives.setSelector
+                (fun getter setter (taskId, date, newStatus: CellStatus) ->
+                    let visibleTaskSelectedDateMap = Atom.get getter Selectors.Session.visibleTaskSelectedDateMap
+
+                    let newMap =
+                        visibleTaskSelectedDateMap
+                        |> Map.add
+                            taskId
+                            (visibleTaskSelectedDateMap
+                             |> Map.tryFind taskId
+                             |> Option.defaultValue Set.empty
+                             |> Set.add date)
+
+                    let newStatuses =
+                        newMap
+                        |> Map.toList
+                        |> List.collect
+                            (fun (taskId, dateSet) ->
+                                dateSet
+                                |> Set.toList
+                                |> List.map (fun date -> taskId, date, newStatus))
+
+                    newStatuses
+                    |> List.iter
+                        (fun (taskId, date, newStatus) ->
+                            let getLocals () =
+                                $"date={date |> FlukeDate.Stringify} taskId={taskId} newStatus={newStatus} {getLocals ()}"
+
+                            Profiling.addTimestamp
+                                (fun () ->
+                                    $"{nameof Fluke} | Actions.setCellStatus / write () / setting Selectores.Cell.sessionStatus")
+                                getLocals
+
+                            Atom.set setter (Selectors.Cell.sessionStatus (CellRef (taskId, date))) newStatus)
+
+                    visibleTaskSelectedDateMap
+                    |> Map.toSeq
+                    |> Seq.iter
+                        (fun (taskId, selectionSet) ->
+                            if selectionSet <> Set.empty then
+                                let getLocals () =
+                                    $"date={date |> FlukeDate.Stringify} taskId={taskId} selectionSet={selectionSet} {getLocals ()}"
+
+                                Profiling.addTimestamp
+                                    (fun () ->
+                                        $"{nameof Fluke} | Actions.setCellStatus / write () / setting Atoms.Task.selectionSet=Set.empty")
+                                    getLocals
+
+                                Atom.set setter (Atoms.Task.selectionSet taskId) Set.empty))
+
+        let random =
+            Atom.Primitives.setSelector
+                (fun getter setter () ->
+                    Profiling.addTimestamp (fun () -> $"{nameof Fluke} | Actions.random") getLocals
+                    let visibleTaskSelectedDateMap = Atom.get getter Selectors.Session.visibleTaskSelectedDateMap
+                    let cellUIFlag = Atom.get getter (Atoms.User.uiFlag UIFlagType.Cell)
+
+                    let newMap =
+                        if visibleTaskSelectedDateMap.Count = 1 then
+                            visibleTaskSelectedDateMap
+                            |> Map.mapValues (Seq.random >> Set.singleton)
+                        else
+                            let key =
+                                visibleTaskSelectedDateMap
+                                |> Map.keys
+                                |> Seq.random
+
+                            visibleTaskSelectedDateMap
+                            |> Map.map (fun key' value -> if key' = key then value else Set.empty)
+
+                    match cellUIFlag with
+                    | UIFlag.Cell (taskId, date) when
+                        visibleTaskSelectedDateMap
+                        |> Map.keys
+                        |> Seq.contains taskId
+                        && visibleTaskSelectedDateMap.[taskId]
+                           |> Set.contains date
+                        && (newMap |> Map.keys |> Seq.contains taskId |> not
+                            || newMap.[taskId] |> Set.contains date |> not)
+                        ->
+                        let newTaskId =
+                            newMap
+                            |> Map.pick (fun k v -> if v.IsEmpty then None else Some k)
+
+                        Atom.set
+                            setter
+                            (Atoms.User.uiFlag UIFlagType.Cell)
+                            (UIFlag.Cell (newTaskId, newMap.[newTaskId] |> Seq.random))
+                    | _ -> ()
+
+                    newMap
+                    |> Map.iter (Atoms.Task.selectionSet >> Atom.set setter))
+
     [<ReactComponent>]
     let CellMenu taskIdAtom dateAtom (onClose: (unit -> unit) option) (floating: bool) =
         let taskId, date = Store.useValueTuple taskIdAtom dateAtom
         let alias = Store.useValue Selectors.Gun.alias
-        let toast = Ui.useToast ()
         let cellSize = Store.useValue Atoms.User.cellSize
-        let sessionStatus, setSessionStatus = Store.useState (Selectors.Cell.sessionStatus (taskId, date))
+        let sessionStatus = Store.useValue (Selectors.Cell.sessionStatus (CellRef (taskId, date)))
         let darkMode = Store.useValue Atoms.Ui.darkMode
+        let setCellStatus = Store.useSetState Actions.setCellStatus
+        let random = Store.useSetState Actions.random
+        let postponeUntilLater = Store.useSetState Actions.postponeUntilLater
 
         let postponedUntil, setPostponedUntil =
             React.useState (
@@ -65,7 +176,6 @@ module CellMenu =
             | _ -> "later"
 
         let navigate = Store.useCallbackRef Navigate.navigate
-        let cellUIFlag, setCellUIFlag = Store.useState (Atoms.User.uiFlag UIFlagType.Cell)
         let cellColorPostponedUntil = Store.useValue Atoms.User.cellColorPostponedUntil
         let cellColorPostponed = Store.useValue Atoms.User.cellColorPostponed
         let cellColorCompleted = Store.useValue Atoms.User.cellColorCompleted
@@ -73,94 +183,6 @@ module CellMenu =
         let cellColorScheduled = Store.useValue Atoms.User.cellColorScheduled
         let visibleTaskSelectedDateMap = Store.useValue Selectors.Session.visibleTaskSelectedDateMap
 
-        let onClick =
-            Store.useCallbackRef
-                (fun _ setter (onClickStatus: CellStatus) ->
-                    promise {
-                        visibleTaskSelectedDateMap
-                        |> Map.iter
-                            (fun taskId dateSet ->
-                                dateSet
-                                |> Set.iter
-                                    (fun date ->
-                                        Atom.set setter (Selectors.Cell.sessionStatus (taskId, date)) onClickStatus))
-
-                        Atom.set setter (Selectors.Cell.sessionStatus (taskId, date)) onClickStatus
-
-                        visibleTaskSelectedDateMap
-                        |> Map.keys
-                        |> Seq.iter (fun taskId -> Atom.set setter (Atoms.Task.selectionSet taskId) Set.empty)
-
-                        match onClose with
-                        | Some onClose -> onClose ()
-                        | None -> ()
-                    })
-
-        let postponeUntilLater =
-            Store.useCallbackRef
-                (fun _ _ _ ->
-                    promise {
-                        match alias, postponedUntil with
-                        | Some (Gun.Alias alias), Some postponedUntil ->
-                            setSessionStatus (UserStatus (Username alias, Postponed (Some postponedUntil)))
-
-                            match onClose with
-                            | Some onClose -> onClose ()
-                            | None -> ()
-
-                            return true
-                        | _ ->
-                            toast (fun x -> x.description <- "Invalid time")
-                            return false
-                    })
-
-        let random =
-            Store.useCallbackRef
-                (fun _ setter _ ->
-                    promise {
-                        let newMap =
-                            if visibleTaskSelectedDateMap.Count = 1 then
-                                visibleTaskSelectedDateMap
-                                |> Map.mapValues (Seq.random >> Set.singleton)
-                            else
-                                let key =
-                                    visibleTaskSelectedDateMap
-                                    |> Map.keys
-                                    |> Seq.random
-
-                                visibleTaskSelectedDateMap
-                                |> Map.map (fun key' value -> if key' = key then value else Set.empty)
-
-                        match cellUIFlag with
-                        | UIFlag.Cell (taskId, date) when
-                            visibleTaskSelectedDateMap
-                            |> Map.keys
-                            |> Seq.contains taskId
-                            && visibleTaskSelectedDateMap.[taskId]
-                               |> Set.contains date
-                            && (newMap |> Map.keys |> Seq.contains taskId |> not
-                                || newMap.[taskId] |> Set.contains date |> not)
-                            ->
-                            let newTaskId =
-                                newMap
-                                |> Map.pick (fun k v -> if v.IsEmpty then None else Some k)
-
-                            setCellUIFlag (UIFlag.Cell (newTaskId, newMap.[newTaskId] |> Seq.random))
-                        | _ -> ()
-
-                        newMap
-                        |> Map.iter (Atoms.Task.selectionSet >> Atom.set setter)
-
-                        match onClose with
-                        | Some onClose when
-                            newMap
-                            |> Map.values
-                            |> Seq.map Set.count
-                            |> Seq.sum = 1
-                            ->
-                            onClose ()
-                        | _ -> ()
-                    })
 
         Ui.stack
             (fun x ->
@@ -185,7 +207,7 @@ module CellMenu =
                         x.spacing <- "1px"
                         x.width <- $"{cellSize (* * 2*) }px")
                     [
-                        let wrapButton icon color onClick =
+                        let inline wrapButton icon color onClick =
                             Ui.iconButton
                                 (fun x ->
                                     Ui.setTestId x $"cell-button-{color}"
@@ -206,10 +228,21 @@ module CellMenu =
                                     | None -> ())
                                 []
 
-                        let wrapButtonStatus icon color status =
-                            wrapButton icon color (Some (fun () -> onClick status))
+                        let inline wrapButtonStatus icon color status =
+                            wrapButton
+                                icon
+                                color
+                                (Some
+                                    (fun () ->
+                                        promise {
+                                            setCellStatus (taskId, date, status)
 
-                        let wrapButtonTooltip status tooltipLabel =
+                                            match onClose with
+                                            | Some onClose -> onClose ()
+                                            | None -> ()
+                                        }))
+
+                        let inline wrapButtonTooltip status tooltipLabel =
                             let color =
                                 match status with
                                 | Completed -> cellColorCompleted
@@ -294,7 +327,14 @@ module CellMenu =
                                 [
                                     wrapButton None (cellColorPostponedUntil |> Color.Value) None
                                 ])
-                            postponeUntilLater
+                            (fun () ->
+                                promise {
+                                    match postponedUntil with
+                                    | Some postponedUntil ->
+                                        postponeUntilLater (taskId, date, postponedUntil)
+                                        return true
+                                    | None -> return false
+                                })
                             (fun (_disclosure, fetchInitialFocusRef) ->
                                 [
                                     Ui.stack
@@ -378,7 +418,7 @@ overriding any other behavior.
                                     wrapButton
                                         (Icons.bi.BiShuffle |> Icons.render |> Some)
                                         (Color.Value UserState.Default.CellColorSuggested)
-                                        (Some random)
+                                        (Some (fun () -> promise { random () }))
                                 ]
 
                         match sessionStatus with

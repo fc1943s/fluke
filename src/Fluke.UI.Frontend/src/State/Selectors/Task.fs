@@ -7,6 +7,7 @@ open Fluke.UI.Frontend.State
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.Shared.Domain.State
 open Fluke.UI.Frontend.State.State
+open FsJs
 open FsStore
 open FsStore.Model
 
@@ -32,9 +33,10 @@ module rec Task =
 
                 match defaultValue with
                 | None -> wrapper
-                | Some defaultValue ->
+                | Some _defaultValue ->
                     wrapper
-                    |> Engine.wrapAtomWithInterval defaultValue Selectors.interval)
+//                    |> Engine.wrapAtomWithInterval defaultValue Selectors.interval
+                    )
 
 
     let rec task =
@@ -166,6 +168,11 @@ module rec Task =
                             { CellState.Default with
                                 Status = UserStatus status
                             })
+
+                let getLocals () =
+                    $"statusMap={statusMap} {getLocals ()}"
+
+                Profiling.addTimestamp (fun () -> $"{nameof Fluke} | Task.cellStateMap") getLocals
 
                 newStatusMap
                 |> mergeCellStateMap cellStateSessionMap

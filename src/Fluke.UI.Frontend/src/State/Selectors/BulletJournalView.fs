@@ -18,9 +18,8 @@ module rec BulletJournalView =
 
         match defaultValue with
         | None -> wrapper
-        | Some defaultValue ->
-            wrapper
-            |> Engine.wrapAtomWithInterval defaultValue Selectors.interval
+        | Some _defaultValue -> wrapper
+    //            |> Engine.wrapAtomWithInterval defaultValue Selectors.interval
 
     let rec bulletJournalWeekCellsMap =
         readSelector
@@ -62,7 +61,7 @@ module rec BulletJournalView =
                         ]
                         |> List.map
                             (fun weekOffset ->
-                                let dateIdSequence =
+                                let dateSequence =
                                     let rec getWeekStart (date: DateTime) =
                                         if date.DayOfWeek = weekStart then
                                             date
@@ -86,23 +85,23 @@ module rec BulletJournalView =
                                     sortedTaskIdArray
                                     |> Array.collect
                                         (fun taskId ->
-                                            dateIdSequence
+                                            dateSequence
                                             |> List.map
-                                                (fun dateId ->
-                                                    let isToday = isToday dayStart position dateId
+                                                (fun date ->
+                                                    let isToday = isToday dayStart position date
 
                                                     let cellState =
                                                         taskStateMap
                                                         |> Map.tryFind taskId
                                                         |> Option.bind
                                                             (fun taskState ->
-                                                                taskState.CellStateMap |> Map.tryFind dateId)
+                                                                taskState.CellStateMap |> Map.tryFind date)
                                                         |> Option.defaultValue CellState.Default
 
                                                     {|
-                                                        DateId = dateId
+                                                        Date = date
                                                         TaskId = taskId
-                                                        DateAtom = Jotai.jotai.atom dateId
+                                                        DateAtom = Jotai.jotai.atom date
                                                         TaskIdAtom = taskIdAtomMap.[taskId]
                                                         Status = cellState.Status
                                                         SessionList = cellState.SessionList
@@ -110,7 +109,7 @@ module rec BulletJournalView =
                                                         AttachmentStateList = cellState.AttachmentStateList
                                                     |})
                                             |> List.toArray)
-                                    |> Array.groupBy (fun x -> x.DateId)
+                                    |> Array.groupBy (fun x -> x.Date)
                                     |> Array.map
                                         (fun (date, cellsMetadata) ->
                                             //                |> Sorting.sortLanesByTimeOfDay input.DayStart input.Position input.TaskOrderList

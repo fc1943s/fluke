@@ -14,7 +14,7 @@ open Fluke.Shared.Domain.State
 
 
 module rec Selectors =
-    let interval = 750
+    let interval2 = 750
 
     let rec dateArray =
         Atom.readSelector

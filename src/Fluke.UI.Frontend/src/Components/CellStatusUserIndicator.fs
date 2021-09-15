@@ -21,7 +21,7 @@ module CellStatusUserIndicator =
         let userColor = Store.useValue Atoms.User.userColor
         let cellSize = Store.useValue Atoms.User.cellSize
         let showUser = Store.useValue (Selectors.Task.showUser taskId)
-        let sessionStatus = Store.useValue (Selectors.Cell.sessionStatus (taskId, dateId))
+        let sessionStatus = Store.useValue (Selectors.Cell.sessionStatus (CellRef (taskId, dateId)))
 
         match showUser, sessionStatus with
         | true, UserStatus _ ->
@@ -32,16 +32,10 @@ module CellStatusUserIndicator =
                     x.position <- "absolute"
                     x.top <- "0"
                     //                x.width <- "100%"
-
                     x._after <-
                         (Js.newObj
                             (fun x ->
-
-                                x.borderBottomColor <-
-                                    userColor
-                                    |> Option.map Color.Value
-                                    |> Option.get
-
+                                x.borderBottomColor <- userColor |> Option.map Color.Value |> Option.get
                                 x.borderBottomWidth <- $"{min (cellSize / 2) 10}px"
                                 x.borderLeftColor <- "transparent"
                                 x.borderLeftWidth <- $"{min (cellSize / 2) 10}px"

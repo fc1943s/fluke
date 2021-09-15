@@ -1,12 +1,13 @@
 namespace Fluke.UI.Frontend.State.Selectors
 
+open Fluke.UI.Frontend.State.State
 open FsCore
 open Fluke.Shared
-open Fluke.Shared.Domain.Model
 open Fluke.UI.Frontend.State
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.Shared.Domain.State
 open FsCore.BaseModel
+open FsJs
 open FsStore
 open FsStore.Model
 
@@ -14,27 +15,29 @@ open FsStore.Model
 #nowarn "40"
 
 
-module rec Cell =
-    let collection = Collection (nameof Cell)
-
-    let selectorFamily name =
+module Store =
+    let inline selectorFamily collection name =
         Atom.selectorFamily
-            (fun (taskId: TaskId, date: FlukeDate) ->
+            (fun (CellRef (taskId, date)) ->
                 StoreAtomPath.ValueAtomPath (
                     Fluke.root,
-                    Cell.collection,
+                    collection,
                     Atoms.Task.formatTaskId taskId
                     @ FlukeDate.formatDate date,
                     AtomName name
                 ))
 
-    let readSelectorFamily name read =
-        selectorFamily name read (fun _ -> failwith "readonly")
+    let inline readSelectorFamily collection name read =
+        selectorFamily collection name read (fun _ -> failwith "readonly")
+
+module rec Cell =
+    let collection = Collection (nameof Cell)
 
     let rec sessionStatus =
-        selectorFamily
+        Store.selectorFamily
+            collection
             (nameof sessionStatus)
-            (fun (taskId: TaskId, date: FlukeDate) getter ->
+            (fun (CellRef (taskId, date)) getter ->
                 let hideSchedulingOverlay = Atom.get getter Atoms.User.hideSchedulingOverlay
 
                 if hideSchedulingOverlay then
@@ -46,23 +49,37 @@ module rec Cell =
                     Atom.get getter (Task.cellStatusMap taskId)
                     |> Map.tryFind date
                     |> Option.defaultValue Disabled)
-            (fun (taskId: TaskId, date: FlukeDate) _getter setter newValue ->
+            (fun (CellRef (taskId, date)) _getter setter newValue ->
+                let getLocals () =
+                    $"newValue={newValue} date={date |> FlukeDate.Stringify} {getLocals ()}"
+
+                Logger.logDebug (fun () -> "Cell.sessionStatus / write()") getLocals
+
                 Atom.change
                     setter
                     (Atoms.Task.statusMap taskId)
                     (fun statusMap ->
-                        match newValue with
-                        | UserStatus (username, status) -> statusMap |> Map.add date (username, status)
-                        | _ -> statusMap |> Map.remove date))
+                        let newMap =
+                            match newValue with
+                            | UserStatus (username, status) -> statusMap |> Map.add date (username, status)
+                            | _ -> statusMap |> Map.remove date
+
+                        let getLocals () =
+                            $"newMap={newMap} statusMap={statusMap} {getLocals ()}"
+
+                        Logger.logDebug (fun () -> "Cell.sessionStatus / write() / change") getLocals
+
+                        newMap))
 
 
     let rec selected =
-        selectorFamily
+        Store.selectorFamily
+            collection
             (nameof selected)
-            (fun (taskId: TaskId, date: FlukeDate) getter ->
+            (fun (CellRef (taskId, date)) getter ->
                 let selectionSet = Atom.get getter (Atoms.Task.selectionSet taskId)
                 selectionSet.Contains date)
-            (fun (taskId: TaskId, date: FlukeDate) getter setter newValue ->
+            (fun (CellRef (taskId, date)) getter setter newValue ->
                 let ctrlPressed = Atom.get getter Atoms.Session.ctrlPressed
                 let shiftPressed = Atom.get getter Atoms.Session.shiftPressed
 
@@ -135,12 +152,18 @@ module rec Cell =
                         |> Array.map (fun taskId -> taskId, dateSet)
                         |> Map.ofSeq
 
+                let getLocals () =
+                    $"ctrlPressed={ctrlPressed} shiftPressed={shiftPressed} taskId={taskId} date={date} newValue={newValue} newCellSelectionMap={newCellSelectionMap} {getLocals ()}"
+
+                Logger.logDebug (fun () -> "Cell.selected / write()") getLocals
+
                 Atom.set setter Selectors.Session.visibleTaskSelectedDateMap newCellSelectionMap)
 
     let rec sessions =
-        readSelectorFamily
+        Store.readSelectorFamily
+            collection
             (nameof sessions)
-            (fun (taskId: TaskId, date: FlukeDate) getter ->
+            (fun (CellRef (taskId, date)) getter ->
                 let sessions = Atom.get getter (Atoms.Task.sessions taskId)
                 let dayStart = Atom.get getter Atoms.User.dayStart
 
@@ -148,16 +171,18 @@ module rec Cell =
                 |> List.filter (fun (Session start) -> isToday dayStart start date))
 
     let rec sessionCount =
-        readSelectorFamily
+        Store.readSelectorFamily
+            collection
             (nameof sessionCount)
-            (fun (taskId: TaskId, date: FlukeDate) getter ->
-                let sessions = Atom.get getter (sessions (taskId, date))
+            (fun cellRef getter ->
+                let sessions = Atom.get getter (sessions cellRef)
                 sessions.Length)
 
     let rec attachmentIdSet =
-        readSelectorFamily
+        Store.readSelectorFamily
+            collection
             (nameof attachmentIdSet)
-            (fun (taskId: TaskId, date: FlukeDate) getter ->
+            (fun (CellRef (taskId, date)) getter ->
                 let cellAttachmentIdMap = Atom.get getter (Task.cellAttachmentIdMap taskId)
 
                 cellAttachmentIdMap

@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.State
 
+open Fable.Core
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.State
 open Fluke.Shared.Domain.UserInteraction
@@ -56,6 +57,9 @@ module State =
         | Information of databaseId: DatabaseId * Information: Information
         | Task of taskId: TaskId
         | Cell of taskId: TaskId * date: FlukeDate
+
+    [<Erase>]
+    type CellRef = CellRef of taskId: TaskId * date: FlukeDate
 
     let uiFlagDefault = UIFlag.None
     let uiVisibleFlagDefault = false
