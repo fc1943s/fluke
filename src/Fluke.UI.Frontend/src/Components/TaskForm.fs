@@ -738,7 +738,6 @@ module TaskForm =
         let hydrateTask = Store.useCallbackRef Hydrate.hydrateTask
         let archive = Store.useValue Atoms.User.archive
         let selectedTaskIdListByArchive = Store.useValue Selectors.Session.selectedTaskIdListByArchive
-        let setRightDock = Store.useSetState Atoms.User.rightDock
         let taskUIFlag = Store.useValue (Atoms.User.uiFlag UIFlagType.Task)
 
         let taskDatabaseId =
@@ -776,6 +775,4 @@ module TaskForm =
                         do! hydrateTaskState (AtomScope.Current, taskDatabaseId, taskState)
                     else
                         do! hydrateTask (AtomScope.Current, taskDatabaseId, task)
-
-                    setRightDock None
                 })

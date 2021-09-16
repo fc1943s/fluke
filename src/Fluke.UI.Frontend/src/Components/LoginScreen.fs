@@ -3,6 +3,7 @@ namespace Fluke.UI.Frontend.Components
 open Fluke.Shared
 open Fluke.Shared.Domain.UserInteraction
 open FsCore.BaseModel
+open FsStore.Bindings
 open FsStore.State
 open FsUi.Components
 open FsUi.Hooks
@@ -30,7 +31,10 @@ module LoginScreen =
                 (fun getter setter _ ->
                     promise {
                         match! Auth.signIn getter setter (usernameField, passwordField) with
-                        | Ok _ -> printfn "logged"
+                        | Ok _ ->
+                            let gun = Atom.get getter Selectors.Gun.gun
+                            do! Gun.putPublicHash gun (Gun.Alias usernameField)
+                            printfn "logged"
                         | Error error -> toast (fun x -> x.description <- error)
                     })
 

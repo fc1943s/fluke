@@ -28,7 +28,8 @@ module Store =
                 ))
 
     let inline readSelectorFamily collection name read =
-        selectorFamily collection name read (fun _ -> failwith "readonly")
+        selectorFamily collection name read (fun _ _ _ _ -> failwith "readSelectorFamily readonly")
+
 
 module rec Cell =
     let collection = Collection (nameof Cell)
