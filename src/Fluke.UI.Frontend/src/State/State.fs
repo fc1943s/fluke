@@ -58,7 +58,6 @@ module State =
         | Task of taskId: TaskId
         | Cell of taskId: TaskId * date: FlukeDate
 
-    [<Erase>]
     type CellRef = CellRef of taskId: TaskId * date: FlukeDate
 
     let uiFlagDefault = UIFlag.None
