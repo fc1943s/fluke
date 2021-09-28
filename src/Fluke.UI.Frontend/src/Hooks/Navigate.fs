@@ -23,6 +23,7 @@ module Navigate =
         | Information of information: Information
         | InformationAttachment of information: Information * attachmentId: AttachmentId
         | Task of databaseId: DatabaseId * taskId: TaskId
+        | Cell of taskId: TaskId * date: FlukeDate
         | TaskAttachment of databaseId: DatabaseId * taskId: TaskId * attachmentId: AttachmentId
         | CellAttachment of taskId: TaskId * date: FlukeDate * attachmentId: AttachmentId
 
@@ -47,6 +48,10 @@ module Navigate =
             | Anchor.Task (_, taskId) ->
                 let name = Atom.get getter (Atoms.Task.name taskId)
                 "Task", name |> TaskName.Value
+
+            | Anchor.Cell (taskId, date) ->
+                let name = Atom.get getter (Atoms.Task.name taskId)
+                "Cell", $"{name |> TaskName.Value}/{date |> FlukeDate.Stringify}"
 
             | Anchor.TaskAttachment (_, taskId, attachmentId) ->
                 let attachment = Atom.get getter (Atoms.Attachment.attachment attachmentId)
@@ -100,13 +105,6 @@ module Navigate =
                     let navigate = Atom.set setter navigate
 
                     match anchor with
-                    | Anchor.Task (databaseId, taskId) ->
-                        navigate (
-                            DockPosition.Right,
-                            Some DockType.Task,
-                            UIFlagType.Task,
-                            UIFlag.Task (databaseId, taskId)
-                        )
                     | Anchor.Information information ->
                         navigate (
                             DockPosition.Right,
@@ -114,19 +112,28 @@ module Navigate =
                             UIFlagType.Information,
                             UIFlag.Information information
                         )
-                    | Anchor.InformationAttachment (information, attachmentId) ->
-                        navigate (
-                            DockPosition.Right,
-                            Some DockType.Information,
-                            UIFlagType.Information,
-                            UIFlag.Information information
-                        )
-                    | Anchor.TaskAttachment (databaseId, taskId, attachmentId) ->
+                    | Anchor.Task (databaseId, taskId) ->
                         navigate (
                             DockPosition.Right,
                             Some DockType.Task,
                             UIFlagType.Task,
                             UIFlag.Task (databaseId, taskId)
                         )
-                    | Anchor.CellAttachment (taskId, dateId, attachmentId) ->
+                    | Anchor.Cell (taskId, dateId) ->
+                        navigate (DockPosition.Right, Some DockType.Cell, UIFlagType.Cell, UIFlag.Cell (taskId, dateId))
+                    | Anchor.InformationAttachment (information, _attachmentId) ->
+                        navigate (
+                            DockPosition.Right,
+                            Some DockType.Information,
+                            UIFlagType.Information,
+                            UIFlag.Information information
+                        )
+                    | Anchor.TaskAttachment (databaseId, taskId, _attachmentId) ->
+                        navigate (
+                            DockPosition.Right,
+                            Some DockType.Task,
+                            UIFlagType.Task,
+                            UIFlag.Task (databaseId, taskId)
+                        )
+                    | Anchor.CellAttachment (taskId, dateId, _attachmentId) ->
                         navigate (DockPosition.Right, Some DockType.Cell, UIFlagType.Cell, UIFlag.Cell (taskId, dateId)))

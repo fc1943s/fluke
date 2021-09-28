@@ -1,9 +1,11 @@
 namespace Fluke.UI.Frontend.Components
 
+open FsCore
 open Fable.React
 open Feliz
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
+open FsJs
 open FsStore
 open FsStore.Hooks
 open FsUi.Bindings
@@ -16,19 +18,31 @@ open FsUi.Components
 module TaskName =
     open Domain.Model
 
+    module Actions =
+        let details =
+            Atom.Primitives.setSelector
+                (fun _getter setter (databaseId, taskId) ->
+                    Profiling.addTimestamp (fun () -> $"{nameof Fluke} | TaskName.Actions.details") getLocals
+
+                    Atom.set
+                        setter
+                        Navigate.Actions.navigate
+                        (Navigate.DockPosition.Right,
+                         Some DockType.Task,
+                         UIFlagType.Task,
+                         UIFlag.Task (databaseId, taskId)))
+
     [<ReactComponent>]
     let TaskName taskIdAtom =
         let taskId = Store.useValue taskIdAtom
-        let navigate = Store.useSetState Navigate.Actions.navigate
+        let details = Store.useSetState Actions.details
         let hasSelection = Store.useValue (Selectors.Task.hasSelection taskId)
         let name = Store.useValue (Atoms.Task.name taskId)
-        let archived, setArchived = Store.useState (Atoms.Task.archived taskId)
         let attachmentIdSet = Store.useValue (Selectors.Task.attachmentIdSet taskId)
         let cellSize = Store.useValue Atoms.User.cellSize
         let databaseId = Store.useValue (Atoms.Task.databaseId taskId)
         let isReadWrite = Store.useValue (Selectors.Database.isReadWrite databaseId)
-        let startSession = TaskForm.useStartSession ()
-        let deleteTask = TaskForm.useDeleteTask ()
+
 
         Ui.flex
             (fun x ->
@@ -58,64 +72,15 @@ module TaskName =
                             if not isReadWrite then
                                 nothing
                             else
-                                Menu.Menu
-                                    {|
-                                        Tooltip = ""
-                                        Trigger =
-                                            InputLabelIconButton.InputLabelIconButton
-                                                (fun x ->
-                                                    x.``as`` <- Ui.react.MenuButton
-                                                    x.icon <- Icons.bs.BsThreeDots |> Icons.render
-                                                    x.fontSize <- "11px"
-                                                    x.height <- "15px"
-                                                    x.color <- "whiteAlpha.700"
-                                                    x.display <- if isReadWrite then null else "none"
-                                                    x.marginTop <- "-3px"
-                                                    x.marginLeft <- "6px")
-                                        Body =
-                                            [
-                                                MenuItem.MenuItem
-                                                    Icons.bs.BsPen
-                                                    "Edit Task"
-                                                    (Some
-                                                        (fun () ->
-                                                            promise {
-                                                                navigate (
-                                                                    Navigate.DockPosition.Right,
-                                                                    Some DockType.Task,
-                                                                    UIFlagType.Task,
-                                                                    UIFlag.Task (databaseId, taskId)
-                                                                )
-                                                            }))
-                                                    (fun _ -> ())
-
-                                                MenuItem.MenuItem
-                                                    Icons.gi.GiHourglass
-                                                    "Start Session"
-                                                    (Some (fun () -> startSession taskId))
-                                                    (fun _ -> ())
-
-                                                MenuItem.MenuItem
-                                                    Icons.ri.RiArchiveLine
-                                                    $"""{if archived = Some true then "Unarchive" else "Archive"} Task"""
-                                                    (Some
-                                                        (fun () ->
-                                                            promise {
-                                                                setArchived (
-                                                                    match archived with
-                                                                    | Some archived -> Some (not archived)
-                                                                    | None -> Some false
-                                                                )
-                                                            }))
-                                                    (fun _ -> ())
-
-                                                Popover.MenuItemConfirmPopover
-                                                    Icons.bi.BiTrash
-                                                    "Delete Task"
-                                                    (fun () -> deleteTask taskId)
-                                            ]
-                                        MenuListProps = fun _ -> ()
-                                    |}
+                                InputLabelIconButton.InputLabelIconButton
+                                    (fun x ->
+                                        x.icon <- Icons.fi.FiArrowRight |> Icons.render
+                                        x.fontSize <- "11px"
+                                        x.height <- "15px"
+                                        x.color <- "whiteAlpha.700"
+                                        x.marginTop <- "-1px"
+                                        x.marginLeft <- "6px"
+                                        x.onClick <- fun _ -> promise { details (databaseId, taskId) })
                     ]
 
                 if not attachmentIdSet.IsEmpty then

@@ -1,5 +1,7 @@
 namespace Fluke.UI.Frontend.Components
 
+open Fluke.UI.Frontend.Hooks.Navigate
+open FsCore.BaseModel
 open FsStore.Bindings.Gun
 open FsStore.State
 open FsJs
@@ -340,7 +342,7 @@ module TaskForm =
 
     [<ReactComponent>]
     let AddTaskButton information =
-        let navigate = Store.useSetState Navigate.Actions.navigate
+        let navigate = Store.useSetState Actions.navigate
         let taskUIFlag = Store.useValue (Atoms.User.uiFlag UIFlagType.Task)
         let setInformationUIFlag = Store.useSetState (Atoms.User.uiFlag UIFlagType.Information)
 
@@ -370,7 +372,7 @@ module TaskForm =
                                     fun _ ->
                                         promise {
                                             navigate (
-                                                Navigate.DockPosition.Right,
+                                                DockPosition.Right,
                                                 Some DockType.Task,
                                                 UIFlagType.Task,
                                                 UIFlag.Task (databaseId, Task.Default.Id)
@@ -382,6 +384,65 @@ module TaskForm =
                                         }
                     |}
             ]
+
+    [<ReactComponent>]
+    let ArchiveTaskButton taskId =
+        let archive = Store.useValue Atoms.User.archive
+        let archived, setArchived = Store.useState (Atoms.Task.archived taskId)
+        let archiveTaskLabel = $"""{if archived = Some true then "Unarchive" else "Archive"} Task"""
+
+        if archive <> archived then
+            nothing
+        else
+            Tooltip.wrap
+                (str archiveTaskLabel)
+                [
+                    TransparentIconButton.TransparentIconButton
+                        {|
+                            Props =
+                                fun x ->
+                                    Ui.setTestId x archiveTaskLabel
+                                    x.icon <- Icons.ri.RiArchiveLine |> Icons.render
+                                    x.fontSize <- "17px"
+
+                                    x.onClick <-
+                                        fun _ ->
+                                            promise {
+                                                setArchived (
+                                                    match archived with
+                                                    | Some archived -> Some (not archived)
+                                                    | None -> Some false
+                                                )
+                                            }
+                        |}
+                ]
+
+    [<ReactComponent>]
+    let DeleteTaskButton taskId =
+        let archive = Store.useValue Atoms.User.archive
+        let archived = Store.useValue (Atoms.Task.archived taskId)
+        let deleteTask = useDeleteTask ()
+
+        if archive <> archived then
+            nothing
+        else
+            Popover.CustomConfirmPopover
+                (fun _ -> ())
+                true
+                (Tooltip.wrap
+                    (str "Delete Task")
+                    [
+                        TransparentIconButton.TransparentIconButton
+                            {|
+                                Props =
+                                    fun x ->
+                                        Ui.setTestId x "Delete Task"
+                                        x.icon <- Icons.bi.BiTrash |> Icons.render
+                                        x.fontSize <- "17px"
+                            |}
+                    ])
+                (fun () -> deleteTask taskId)
+                (fun _ -> [])
 
     [<ReactComponent>]
     let rec TaskForm (taskId: TaskId) (onSave: Task -> JS.Promise<unit>) =
@@ -434,6 +495,8 @@ module TaskForm =
         let tempPendingAfter = Store.useAtomTempState (Atoms.Task.pendingAfter taskId)
         let tempMissedAfter = Store.useAtomTempState (Atoms.Task.missedAfter taskId)
         let tempScheduling = Store.useAtomTempState (Atoms.Task.scheduling taskId)
+
+        let navigateAnchor = Store.useSetState Actions.navigateAnchor
 
         let onSave =
             Store.useCallbackRef
@@ -638,6 +701,61 @@ module TaskForm =
                                             ]
                                     |}
                             ])
+
+                        if taskId <> Task.Default.Id then
+                            (Ui.box
+                                (fun _ -> ())
+                                [
+                                    str "Statuses"
+                                ]),
+                            (if statusMap |> Map.count = 0 then
+                                 Ui.str "No statuses found"
+                             else
+                                 Ui.stack
+                                     (fun _ -> ())
+                                     [
+                                         yield!
+                                             statusMap
+                                             |> Map.toList
+                                             |> List.map
+                                                 (fun (date, (Username username, status)) ->
+                                                     Ui.flex
+                                                         (fun _ -> ())
+                                                         [
+                                                             Ui.box
+                                                                 (fun _ -> ())
+                                                                 [
+                                                                     let statusLabel =
+                                                                         match status with
+                                                                         | Postponed None -> nameof Postponed
+                                                                         | Postponed (Some time) ->
+                                                                             $"{nameof Postponed} ({time |> FlukeTime.Stringify})"
+                                                                         | status -> $"{status}"
+
+                                                                     str
+                                                                         $"""{username}: {date |> FlukeDate.Stringify} / {statusLabel}"""
+
+                                                                     InputLabelIconButton.InputLabelIconButton
+                                                                         (fun x ->
+                                                                             x.icon <-
+                                                                                 Icons.fi.FiArrowRight |> Icons.render
+
+                                                                             x.fontSize <- "11px"
+                                                                             x.height <- "15px"
+                                                                             x.color <- "whiteAlpha.700"
+                                                                             x.marginTop <- "-1px"
+                                                                             x.marginLeft <- "6px"
+
+                                                                             x.onClick <-
+                                                                                 fun _ ->
+                                                                                     promise {
+                                                                                         navigateAnchor (
+                                                                                             Anchor.Cell (taskId, date)
+                                                                                         )
+                                                                                     })
+                                                                 ]
+                                                         ])
+                                     ])
 
                         if taskId <> Task.Default.Id then
                             (Ui.box

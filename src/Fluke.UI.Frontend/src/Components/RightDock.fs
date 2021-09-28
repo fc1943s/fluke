@@ -66,6 +66,8 @@ module RightDock =
                                     match taskUIFlag with
                                     | UIFlag.Task (_databaseId, taskId) when taskId <> Task.Default.Id ->
                                         yield DockPanel.DockPanelIcon.Component (TaskForm.AddTaskButton None)
+                                        yield DockPanel.DockPanelIcon.Component (TaskForm.ArchiveTaskButton taskId)
+                                        yield DockPanel.DockPanelIcon.Component (TaskForm.DeleteTaskButton taskId)
                                     | _ -> ()
                                 ]
                         |}
