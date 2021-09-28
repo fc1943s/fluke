@@ -183,7 +183,10 @@ module TaskForm =
                     ]
             ]
 
-    let inline DurationInput (duration: Minute option) setDuration =
+    [<ReactComponent>]
+    let DurationInput (duration: Minute option) setDuration =
+        let sessionDuration = Store.useValue Atoms.User.sessionDuration
+
         Ui.box
             (fun x -> x.display <- "inline")
             [
@@ -208,7 +211,8 @@ module TaskForm =
 
                                 x.onChange <-
                                     fun _ ->
-                                        promise { setDuration (if duration.IsSome then None else (Some (Minute 1))) })
+                                        promise {
+                                            setDuration (if duration.IsSome then None else (Some sessionDuration)) })
 
                         match duration with
                         | Some duration ->
@@ -336,7 +340,7 @@ module TaskForm =
 
     [<ReactComponent>]
     let AddTaskButton information =
-        let navigate = Store.useCallbackRef Navigate.navigate
+        let navigate = Store.useSetState Navigate.Actions.navigate
         let taskUIFlag = Store.useValue (Atoms.User.uiFlag UIFlagType.Task)
         let setInformationUIFlag = Store.useSetState (Atoms.User.uiFlag UIFlagType.Information)
 
@@ -365,13 +369,12 @@ module TaskForm =
                                 x.onClick <-
                                     fun _ ->
                                         promise {
-                                            do!
-                                                navigate (
-                                                    Navigate.DockPosition.Right,
-                                                    Some DockType.Task,
-                                                    UIFlagType.Task,
-                                                    UIFlag.Task (databaseId, Task.Default.Id)
-                                                )
+                                            navigate (
+                                                Navigate.DockPosition.Right,
+                                                Some DockType.Task,
+                                                UIFlagType.Task,
+                                                UIFlag.Task (databaseId, Task.Default.Id)
+                                            )
 
                                             match information with
                                             | Some information -> setInformationUIFlag (UIFlag.Information information)

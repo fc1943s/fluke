@@ -30,7 +30,7 @@ module SearchForm =
 
     [<ReactComponent>]
     let SearchResultItem anchor searchResultText =
-        let navigateAnchor = Store.useCallbackRef Navigate.navigateAnchor
+        let navigateAnchor = Store.useSetState Navigate.Actions.navigateAnchor
 
         Ui.box
             (fun x ->
@@ -50,7 +50,7 @@ module SearchForm =
                         x.marginTop <- "-1px"
                         x.marginLeft <- "6px"
 
-                        x.onClick <- fun _ -> navigateAnchor anchor)
+                        x.onClick <- fun _ -> promise { navigateAnchor anchor })
             ]
 
     [<ReactComponent>]

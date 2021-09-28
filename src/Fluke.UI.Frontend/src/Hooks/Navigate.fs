@@ -66,72 +66,67 @@ module Navigate =
                 |> Option.map Attachment.Stringify
                 |> Option.defaultValue "???"
 
-    let navigate =
-        fun getter setter (dockPosition, dockType, uiFlagType, uiFlag) ->
-            promise {
-                let deviceInfo = Atom.get getter Selectors.Store.deviceInfo
+    module Actions =
+        let navigate =
+            Atom.Primitives.setSelector
+                (fun getter setter (dockPosition, dockType, uiFlagType, uiFlag) ->
+                    let deviceInfo = Atom.get getter Selectors.Store.deviceInfo
 
-                match dockPosition with
-                | DockPosition.Left
-                | DockPosition.Right ->
-                    if deviceInfo.IsMobile then
+                    match dockPosition with
+                    | DockPosition.Left
+                    | DockPosition.Right ->
+                        if deviceInfo.IsMobile then
+                            Atom.set
+                                setter
+                                (if dockPosition = DockPosition.Left then
+                                     Atoms.User.rightDock
+                                 else
+                                     Atoms.User.leftDock)
+                                None
+
                         Atom.set
                             setter
                             (if dockPosition = DockPosition.Left then
-                                 Atoms.User.rightDock
+                                 Atoms.User.leftDock
                              else
-                                 Atoms.User.leftDock)
-                            None
+                                 Atoms.User.rightDock)
+                            dockType
 
-                    Atom.set
-                        setter
-                        (if dockPosition = DockPosition.Left then
-                             Atoms.User.leftDock
-                         else
-                             Atoms.User.rightDock)
-                        dockType
+                        Atom.set setter (Atoms.User.uiFlag uiFlagType) uiFlag)
 
-                    Atom.set setter (Atoms.User.uiFlag uiFlagType) uiFlag
-            }
+        let navigateAnchor =
+            Atom.Primitives.setSelector
+                (fun _getter setter anchor ->
+                    let navigate = Atom.set setter navigate
 
-    let navigateAnchor =
-        fun getter setter anchor ->
-            promise {
-                let navigate = navigate getter setter
-
-                match anchor with
-                | Anchor.Task (databaseId, taskId) ->
-                    do!
+                    match anchor with
+                    | Anchor.Task (databaseId, taskId) ->
                         navigate (
                             DockPosition.Right,
                             Some DockType.Task,
                             UIFlagType.Task,
                             UIFlag.Task (databaseId, taskId)
                         )
-                | Anchor.Information information ->
-                    do!
+                    | Anchor.Information information ->
                         navigate (
                             DockPosition.Right,
                             Some DockType.Information,
                             UIFlagType.Information,
                             UIFlag.Information information
                         )
-                | Anchor.InformationAttachment (information, attachmentId) ->
-                    do!
+                    | Anchor.InformationAttachment (information, attachmentId) ->
                         navigate (
                             DockPosition.Right,
                             Some DockType.Information,
                             UIFlagType.Information,
                             UIFlag.Information information
                         )
-                | Anchor.TaskAttachment (databaseId, taskId, attachmentId) ->
-                    do!
+                    | Anchor.TaskAttachment (databaseId, taskId, attachmentId) ->
                         navigate (
                             DockPosition.Right,
                             Some DockType.Task,
                             UIFlagType.Task,
                             UIFlag.Task (databaseId, taskId)
                         )
-                | Anchor.CellAttachment (taskId, dateId, attachmentId) ->
-                    do! navigate (DockPosition.Right, Some DockType.Cell, UIFlagType.Cell, UIFlag.Cell (taskId, dateId))
-            }
+                    | Anchor.CellAttachment (taskId, dateId, attachmentId) ->
+                        navigate (DockPosition.Right, Some DockType.Cell, UIFlagType.Cell, UIFlag.Cell (taskId, dateId)))

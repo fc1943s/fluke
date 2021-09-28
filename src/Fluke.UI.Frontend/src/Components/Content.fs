@@ -19,7 +19,7 @@ module Content =
         let logger = Store.useValue Selectors.Store.logger
         let userColor = Store.useValue Atoms.User.userColor
         let inline getLocals () = $"userColor={userColor} {getLocals ()}"
-        logger.Debug (fun () -> $"Content.render") getLocals
+        logger.Debug (fun () -> "Content.render") getLocals
         let _hydrateTemplates = Hydrate.useHydrateTemplates ()
 
 

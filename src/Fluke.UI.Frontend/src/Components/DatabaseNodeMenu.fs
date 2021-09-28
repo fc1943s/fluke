@@ -18,7 +18,7 @@ module DatabaseNodeMenu =
     [<ReactComponent>]
     let DatabaseNodeMenu databaseId disabled =
         let isReadWrite = Store.useValue (Selectors.Database.isReadWrite databaseId)
-        let navigate = Store.useCallbackRef Navigate.navigate
+        let navigate = Store.useSetState Navigate.Actions.navigate
         let exportDatabase = Hydrate.useExportDatabase ()
 
         let deleteDatabase =
@@ -49,12 +49,14 @@ module DatabaseNodeMenu =
                                 "Add Task"
                                 (Some
                                     (fun () ->
-                                        navigate (
-                                            Navigate.DockPosition.Right,
-                                            Some DockType.Task,
-                                            UIFlagType.Task,
-                                            UIFlag.Task (databaseId, Task.Default.Id)
-                                        )))
+                                        promise {
+                                            navigate (
+                                                Navigate.DockPosition.Right,
+                                                Some DockType.Task,
+                                                UIFlagType.Task,
+                                                UIFlag.Task (databaseId, Task.Default.Id)
+                                            )
+                                        }))
                                 (fun _ -> ())
 
                             MenuItem.MenuItem
@@ -62,12 +64,14 @@ module DatabaseNodeMenu =
                                 "Edit Database"
                                 (Some
                                     (fun () ->
-                                        navigate (
-                                            Navigate.DockPosition.Right,
-                                            Some DockType.Database,
-                                            UIFlagType.Database,
-                                            UIFlag.Database databaseId
-                                        )))
+                                        promise {
+                                            navigate (
+                                                Navigate.DockPosition.Right,
+                                                Some DockType.Database,
+                                                UIFlagType.Database,
+                                                UIFlag.Database databaseId
+                                            )
+                                        }))
                                 (fun _ -> ())
 
                         MenuItem.MenuItem Icons.fi.FiCopy "Clone Database" None (fun x -> x.isDisabled <- true)

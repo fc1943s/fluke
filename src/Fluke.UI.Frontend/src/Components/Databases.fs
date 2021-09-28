@@ -257,7 +257,7 @@ module Databases =
 
     [<ReactComponent>]
     let AddDatabaseButton () =
-        let navigate = Store.useCallbackRef Navigate.navigate
+        let navigate = Store.useSetState Navigate.Actions.navigate
 
         Tooltip.wrap
             (str "Add Database")
@@ -272,12 +272,14 @@ module Databases =
 
                                 x.onClick <-
                                     fun _ ->
-                                        navigate (
-                                            Navigate.DockPosition.Right,
-                                            Some DockType.Database,
-                                            UIFlagType.Database,
-                                            UIFlag.None
-                                        )
+                                        promise {
+                                            navigate (
+                                                Navigate.DockPosition.Right,
+                                                Some DockType.Database,
+                                                UIFlagType.Database,
+                                                UIFlag.None
+                                            )
+                                        }
                     |}
             ]
 

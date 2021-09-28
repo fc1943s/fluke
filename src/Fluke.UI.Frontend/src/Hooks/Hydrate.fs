@@ -115,7 +115,7 @@ module Hydrate =
             |> Map.iter (Atoms.User.uiVisibleFlag >> set)
 
 
-            let getLocals () =
+            let inline getLocals () =
                 $"userState.UserColor={userState.UserColor} {getLocals ()}"
 
             Logger.logInfo (fun () -> "Hydrate.hydrateUserState") getLocals

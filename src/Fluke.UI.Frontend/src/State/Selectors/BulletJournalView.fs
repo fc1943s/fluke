@@ -12,8 +12,8 @@ open FsStore.Bindings
 open FsStore.Model
 
 
-module rec BulletJournalView =
-    let readSelector name defaultValue read =
+module BulletJournalView =
+    let inline readSelector name defaultValue read =
         let wrapper = Atom.readSelector (StoreAtomPath.RootAtomPath (Fluke.root, AtomName name)) read
 
         match defaultValue with

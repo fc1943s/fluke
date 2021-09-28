@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.State.Selectors
 
+open FsStore.Bindings
 open FsStore.Model
 open FsStore.State
 open FsCore
@@ -15,13 +16,11 @@ open Fluke.UI.Frontend.State.State
 open FsCore.BaseModel
 open FsStore
 
-
 #nowarn "40"
 
 
-module rec Session =
-
-    let readSelector name defaultValue read =
+module Session =
+    let inline readSelector name (defaultValue: 'T option) (read: Jotai.Read<'T>) =
         let wrapper =
             Atom.readSelector
                 (StoreAtomPath.ValueAtomPath (Fluke.root, Atoms.Session.collection, [], AtomName name))
@@ -29,9 +28,8 @@ module rec Session =
 
         match defaultValue with
         | None -> wrapper
-        | Some _defaultValue ->
-            wrapper
-//            |> Engine.wrapAtomWithInterval defaultValue Selectors.interval
+        | Some _defaultValue -> wrapper
+    //            |> Engine.wrapAtomWithInterval defaultValue Selectors.interval
 
     let rec devicePingList =
         readSelector
@@ -139,7 +137,7 @@ module rec Session =
                         >> Seq.toArray
                     )
 
-                let selectedTaskIdAtoms = Atom.get getter Session.selectedTaskIdAtoms
+                let selectedTaskIdAtoms = Atom.get getter selectedTaskIdAtoms
 
                 let taskInformationArray =
                     selectedTaskIdAtoms
@@ -329,7 +327,7 @@ module rec Session =
 
                     let view = Atom.get getter Atoms.User.view
                     let dayStart = Atom.get getter Atoms.User.dayStart
-                    let informationSet = Atom.get getter Session.informationSet
+                    let informationSet = Atom.get getter informationSet
 
                     let result =
                         sortLanes
@@ -350,6 +348,7 @@ module rec Session =
                     |> List.map (fun (taskState, _) -> taskState.Task.Id)
                     |> List.toArray
                 | _ -> [||])
+        |> Engine.wrapAtomWithInterval [||] Selectors.interval2
 
     let rec sortedTaskIdAtoms =
         readSelector (nameof sortedTaskIdAtoms) None (fun getter -> sortedTaskIdArray |> Atom.split |> Atom.get getter)
@@ -417,7 +416,7 @@ module rec Session =
             (nameof informationTaskIdArrayByKind)
             None
             (fun getter ->
-                let informationTaskIdAtoms = Atom.get getter Session.informationTaskIdAtoms
+                let informationTaskIdAtoms = Atom.get getter informationTaskIdAtoms
                 //                         let informationTaskIdArray = Atom.get getter Selectors.Session.informationTaskIdArray
                 let informationTaskIdArray =
                     informationTaskIdAtoms

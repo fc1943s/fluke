@@ -6,6 +6,7 @@ open Feliz
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
+open FsJs
 open FsStore
 open FsStore.Hooks
 open FsUi.Bindings
@@ -17,43 +18,45 @@ open FsUi.Components
 
 
 module InformationName =
+    module Actions =
+        let details =
+            Atom.Primitives.setSelector
+                (fun getter setter information ->
+                    let attachmentIdMap = Atom.get getter (Selectors.Information.attachmentIdMap information)
+                    let selectedDatabaseIdSet = Atom.get getter Atoms.User.selectedDatabaseIdSet
+                    Profiling.addTimestamp (fun () -> $"{nameof Fluke} | InformationName.Actions.details") getLocals
+
+                    Atom.set
+                        setter
+                        Navigate.Actions.navigate
+                        (Navigate.DockPosition.Right,
+                         Some TempUI.DockType.Information,
+                         UIFlagType.Information,
+                         UIFlag.Information information)
+
+                    let databaseIdSearch =
+                        attachmentIdMap
+                        |> Map.map (fun _ attachmentIdSet -> not attachmentIdSet.IsEmpty)
+                        |> Map.toList
+                        |> List.filter snd
+                        |> List.map fst
+
+                    Atom.set
+                        setter
+                        Atoms.User.lastDatabaseSelected
+                        (match databaseIdSearch with
+                         | [ databaseId ] -> Some databaseId
+                         | _ ->
+                             if selectedDatabaseIdSet.Count = 1 then
+                                 (selectedDatabaseIdSet |> Seq.head |> Some)
+                             else
+                                 None))
+
     [<ReactComponent>]
     let InformationName information =
         let attachmentIdMap = Store.useValue (Selectors.Information.attachmentIdMap information)
         let cellSize = Store.useValue Atoms.User.cellSize
-        let selectedDatabaseIdSet = Store.useValue Atoms.User.selectedDatabaseIdSet
-
-        let detailsClick =
-            Store.useCallbackRef
-                (fun getter setter _ ->
-                    promise {
-                        do!
-                            Navigate.navigate
-                                getter
-                                setter
-                                (Navigate.DockPosition.Right,
-                                 Some TempUI.DockType.Information,
-                                 UIFlagType.Information,
-                                 UIFlag.Information information)
-
-                        let databaseIdSearch =
-                            attachmentIdMap
-                            |> Map.map (fun _ attachmentIdSet -> not attachmentIdSet.IsEmpty)
-                            |> Map.toList
-                            |> List.filter snd
-                            |> List.map fst
-
-                        Atom.set
-                            setter
-                            Atoms.User.lastDatabaseSelected
-                            (match databaseIdSearch with
-                             | [ databaseId ] -> Some databaseId
-                             | _ ->
-                                 if selectedDatabaseIdSet.Count = 1 then
-                                     (selectedDatabaseIdSet |> Seq.head |> Some)
-                                 else
-                                     None)
-                    })
+        let details = Store.useSetState Actions.details
 
         Ui.flex
             (fun x ->
@@ -82,7 +85,7 @@ module InformationName =
                                         x.color <- "whiteAlpha.700"
                                         x.marginTop <- "-1px"
                                         x.marginLeft <- "6px"
-                                        x.onClick <- detailsClick)
+                                        x.onClick <- fun _ -> promise { details information })
                             ]
                         | _ -> LoadingSpinner.InlineLoadingSpinner ()
                     ]

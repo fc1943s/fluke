@@ -17,11 +17,9 @@ open FsJs
 open FsStore
 
 
-#nowarn "40"
 
-
-module rec Database =
-    let readSelectorFamily name (defaultValue: 'T option) read =
+module Database =
+    let inline readSelectorFamily name (defaultValue: 'T option) read =
         Atom.Primitives.atomFamily
             (fun databaseId ->
                 let storeAtomPath =
@@ -144,11 +142,30 @@ module rec Database =
 
                 databaseId
                 |> (if archive = Some true then
-                        Database.archivedTaskIdAtoms
+                        archivedTaskIdAtoms
                     else
-                        Database.unarchivedTaskIdAtoms)
+                        unarchivedTaskIdAtoms)
                 |> Atom.get getter)
 
+    let rec informationAttachmentIdMap =
+        readSelectorFamily
+            (nameof informationAttachmentIdMap)
+            (Some Map.empty)
+            (fun (databaseId: DatabaseId) getter ->
+                Selectors.asyncAttachmentIdAtoms
+                |> Atom.get getter
+                |> Array.choose
+                    (fun attachmentIdAtom ->
+                        let attachmentId = Atom.get getter attachmentIdAtom
+                        let parent = Atom.get getter (Atoms.Attachment.parent attachmentId)
+
+                        match parent with
+                        | Some (AttachmentParent.Information (databaseId', information)) when databaseId' = databaseId ->
+                            Some (information, attachmentId)
+                        | _ -> None)
+                |> Array.groupBy fst
+                |> Array.map (fun (information, items) -> information, items |> Array.map snd |> Set.ofArray)
+                |> Map.ofSeq)
 
     let rec informationAttachmentIdMapByArchive =
         readSelectorFamily
@@ -157,7 +174,7 @@ module rec Database =
             (fun (databaseId: DatabaseId) getter ->
                 let archive = Atom.get getter Atoms.User.archive
 
-                let informationAttachmentIdMap = Atom.get getter (Database.informationAttachmentIdMap databaseId)
+                let informationAttachmentIdMap = Atom.get getter (informationAttachmentIdMap databaseId)
 
                 let attachmentIdArray =
                     informationAttachmentIdMap
@@ -182,34 +199,14 @@ module rec Database =
                         attachmentIdSet
                         |> Set.filter (fun attachmentId -> archivedMap.[attachmentId] = archive)))
 
-    let rec informationAttachmentIdMap =
-        readSelectorFamily
-            (nameof informationAttachmentIdMap)
-            (Some Map.empty)
-            (fun (databaseId: DatabaseId) getter ->
-                Selectors.asyncAttachmentIdAtoms
-                |> Atom.get getter
-                |> Array.choose
-                    (fun attachmentIdAtom ->
-                        let attachmentId = Atom.get getter attachmentIdAtom
-                        let parent = Atom.get getter (Atoms.Attachment.parent attachmentId)
-
-                        match parent with
-                        | Some (AttachmentParent.Information (databaseId', information)) when databaseId' = databaseId ->
-                            Some (information, attachmentId)
-                        | _ -> None)
-                |> Array.groupBy fst
-                |> Array.map (fun (information, items) -> information, items |> Array.map snd |> Set.ofArray)
-                |> Map.ofSeq)
-
     let rec databaseState =
         readSelectorFamily
             (nameof databaseState)
             None
             (fun (databaseId: DatabaseId) getter ->
-                let database = Atom.get getter (Database.database databaseId)
+                let database = Atom.get getter (database databaseId)
 
-                let taskIdAtoms = Atom.get getter (Database.taskIdAtoms databaseId)
+                let taskIdAtoms = Atom.get getter (taskIdAtoms databaseId)
 
                 let taskStateList: TaskState list =
                     taskIdAtoms
@@ -218,7 +215,7 @@ module rec Database =
                     |> List.map Task.taskState
                     |> List.map (Atom.get getter)
 
-                let informationAttachmentIdMap = Atom.get getter (Database.informationAttachmentIdMap databaseId)
+                let informationAttachmentIdMap = Atom.get getter (informationAttachmentIdMap databaseId)
 
                 let informationStateMap =
                     informationAttachmentIdMap

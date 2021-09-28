@@ -236,7 +236,7 @@ module TopBar =
                             return false
                         else
                             let anchor = anchorArray |> Seq.random
-                            do! Navigate.navigateAnchor getter setter anchor
+                            Atom.set setter Navigate.Actions.navigateAnchor anchor
 
                             let title, description = anchor |> Navigate.Anchor.Stringify getter
 

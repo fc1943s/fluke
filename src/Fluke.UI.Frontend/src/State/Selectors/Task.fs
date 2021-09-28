@@ -10,15 +10,11 @@ open Fluke.UI.Frontend.State.State
 open FsJs
 open FsStore
 open FsStore.Model
+open Rendering
 
 
-#nowarn "40"
-
-
-module rec Task =
-    open Rendering
-
-    let readSelectorFamily name (defaultValue: 'T option) read =
+module Task =
+    let inline readSelectorFamily name (defaultValue: 'T option) read =
         Atom.Primitives.atomFamily
             (fun taskId ->
                 let storeAtomPath =
@@ -33,10 +29,9 @@ module rec Task =
 
                 match defaultValue with
                 | None -> wrapper
-                | Some _defaultValue ->
-                    wrapper
-//                    |> Engine.wrapAtomWithInterval defaultValue Selectors.interval
-                    )
+                | Some _defaultValue -> wrapper
+                //                    |> Engine.wrapAtomWithInterval defaultValue Selectors.interval
+                )
 
 
     let rec task =
@@ -169,8 +164,7 @@ module rec Task =
                                 Status = UserStatus status
                             })
 
-                let getLocals () =
-                    $"statusMap={statusMap} {getLocals ()}"
+                let getLocals () = $"statusMap={statusMap} {getLocals ()}"
 
                 Profiling.addTimestamp (fun () -> $"{nameof Fluke} | Task.cellStateMap") getLocals
 

@@ -175,7 +175,8 @@ module CellMenu =
             | UserStatus (_, Postponed (Some until)) -> until |> FlukeTime.Stringify
             | _ -> "later"
 
-        let navigate = Store.useCallbackRef Navigate.navigate
+        let navigate = Store.useSetState Navigate.Actions.navigate
+
         let cellColorPostponedUntil = Store.useValue Atoms.User.cellColorPostponedUntil
         let cellColorPostponed = Store.useValue Atoms.User.cellColorPostponed
         let cellColorCompleted = Store.useValue Atoms.User.cellColorCompleted
@@ -284,13 +285,12 @@ module CellMenu =
                                         (Some
                                             (fun () ->
                                                 promise {
-                                                    do!
-                                                        navigate (
-                                                            Navigate.DockPosition.Right,
-                                                            Some TempUI.DockType.Cell,
-                                                            UIFlagType.Cell,
-                                                            UIFlag.Cell (taskId, date)
-                                                        )
+                                                    navigate (
+                                                        Navigate.DockPosition.Right,
+                                                        Some TempUI.DockType.Cell,
+                                                        UIFlagType.Cell,
+                                                        UIFlag.Cell (taskId, date)
+                                                    )
 
                                                     match onClose with
                                                     | Some onClose -> onClose ()

@@ -1,7 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
 open FsCore
-open Browser.Types
 open Fable.React
 open Feliz
 open Fluke.Shared.Domain.Model
@@ -23,6 +22,25 @@ module Cell =
     open UserInteraction
     open State
 
+    module Actions =
+        let onCellClick =
+            Atom.Primitives.setSelector
+                (fun getter setter (taskId, date) ->
+                    let selected = Atom.get getter (Selectors.Cell.selected (CellRef (taskId, date)))
+                    //                        if deviceInfo.IsTesting then
+                    let ctrlPressed = Atom.get getter Atoms.Session.ctrlPressed
+                    let shiftPressed = Atom.get getter Atoms.Session.shiftPressed
+
+                    let newSelected = if ctrlPressed || shiftPressed then not selected else false
+
+                    Atom.set setter (Selectors.Cell.selected (CellRef (taskId, date))) newSelected
+                    //                        else
+//                            let newSelected = if e.ctrlKey || e.shiftKey then not selected else false
+//
+//                            if selected <> newSelected then
+//                                do! setSelected (taskId, dateId, newSelected)
+                    )
+
     [<ReactComponent>]
     let Cell
         (input: {| TaskIdAtom: AtomConfig<TaskId>
@@ -39,7 +57,7 @@ module Cell =
         let sessionStatus = Store.useValue (Selectors.Cell.sessionStatus (CellRef (taskId, date)))
         let attachmentIdSet = Store.useValue (Selectors.Cell.attachmentIdSet (CellRef (taskId, date)))
         let isToday = Store.useValue (Selectors.FlukeDate.isToday date)
-        let selected, setSelected = Store.useState (Selectors.Cell.selected (CellRef (taskId, date)))
+        let selected = Store.useValue (Selectors.Cell.selected (CellRef (taskId, date)))
         let cellUIFlag = Store.useValue (Atoms.User.uiFlag UIFlagType.Cell)
         let rightDock = Store.useValue Atoms.User.rightDock
         //        let deviceInfo = Store.useValue Selectors.deviceInfo
@@ -54,29 +72,15 @@ module Cell =
         let cellColorDismissed = Store.useValue Atoms.User.cellColorDismissed
         let cellColorScheduled = Store.useValue Atoms.User.cellColorScheduled
 
-        let onCellClick =
-            Store.useCallbackRef
-                (fun getter _ (_e: MouseEvent) ->
-                    promise {
-                        //                        if deviceInfo.IsTesting then
-                        let ctrlPressed = Atom.get getter Atoms.Session.ctrlPressed
-                        let shiftPressed = Atom.get getter Atoms.Session.shiftPressed
-
-                        let newSelected = if ctrlPressed || shiftPressed then not selected else false
-
-                        setSelected newSelected
-                    //                        else
-//                            let newSelected = if e.ctrlKey || e.shiftKey then not selected else false
-//
-//                            if selected <> newSelected then
-//                                do! setSelected (taskId, dateId, newSelected)
-                    })
+        let onCellClick = Store.useSetState Actions.onCellClick
 
         Ui.center
             (fun x ->
                 Ui.setTestId x $"cell-{taskId}-{(date |> FlukeDate.DateTime).ToShortDateString ()}"
 
-                if isReadWrite then x.onClick <- onCellClick
+                if isReadWrite then
+                    x.onClick <- fun _ -> promise { onCellClick (taskId, date) }
+
                 x.width <- $"{cellSize}px"
                 x.height <- $"{cellSize}px"
                 x.lineHeight <- $"{cellSize}px"
@@ -146,7 +150,7 @@ module Cell =
         let enableCellPopover = Store.useValue Atoms.User.enableCellPopover
         let databaseId = Store.useValue (Atoms.Task.databaseId taskId)
         let isReadWrite = Store.useValue (Selectors.Database.isReadWrite databaseId) //
-        let navigate = Store.useCallbackRef Navigate.navigate
+        let navigate = Store.useSetState Navigate.Actions.navigate
 
         if enableCellPopover then
             Popover.CustomPopover //
@@ -174,13 +178,12 @@ module Cell =
                     x.onClick <-
                         fun _ ->
                             promise {
-                                do!
-                                    navigate (
-                                        Navigate.DockPosition.Right,
-                                        Some TempUI.DockType.Cell,
-                                        UIFlagType.Cell,
-                                        UIFlag.Cell (taskId, date)
-                                    )
+                                navigate (
+                                    Navigate.DockPosition.Right,
+                                    Some TempUI.DockType.Cell,
+                                    UIFlagType.Cell,
+                                    UIFlag.Cell (taskId, date)
+                                )
                             })
                 [
                     Cell input

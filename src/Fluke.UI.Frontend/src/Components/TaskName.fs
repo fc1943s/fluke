@@ -19,7 +19,7 @@ module TaskName =
     [<ReactComponent>]
     let TaskName taskIdAtom =
         let taskId = Store.useValue taskIdAtom
-        let navigate = Store.useCallbackRef Navigate.navigate
+        let navigate = Store.useSetState Navigate.Actions.navigate
         let hasSelection = Store.useValue (Selectors.Task.hasSelection taskId)
         let name = Store.useValue (Atoms.Task.name taskId)
         let archived, setArchived = Store.useState (Atoms.Task.archived taskId)
@@ -79,12 +79,14 @@ module TaskName =
                                                     "Edit Task"
                                                     (Some
                                                         (fun () ->
-                                                            navigate (
-                                                                Navigate.DockPosition.Right,
-                                                                Some DockType.Task,
-                                                                UIFlagType.Task,
-                                                                UIFlag.Task (databaseId, taskId)
-                                                            )))
+                                                            promise {
+                                                                navigate (
+                                                                    Navigate.DockPosition.Right,
+                                                                    Some DockType.Task,
+                                                                    UIFlagType.Task,
+                                                                    UIFlag.Task (databaseId, taskId)
+                                                                )
+                                                            }))
                                                     (fun _ -> ())
 
                                                 MenuItem.MenuItem

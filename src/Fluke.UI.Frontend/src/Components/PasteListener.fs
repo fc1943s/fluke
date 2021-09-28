@@ -18,37 +18,38 @@ open Fluke.Shared.Domain.UserInteraction
 
 
 module PasteListener =
+    module Actions =
+        let onFilePasted =
+            Atom.Primitives.setSelector
+                (fun getter setter attachment ->
+                    let logger = Atom.get getter Selectors.Store.logger
+
+                    let getLocals () =
+                        $"attachment={attachment} {getLocals ()}"
+
+                    logger.Debug (fun () -> "PasteListener. pasted image") getLocals
+
+                    let attachmentId =
+                        Hydrate.hydrateAttachmentState
+                            getter
+                            setter
+                            (AtomScope.Current,
+                             AttachmentParent.None,
+                             {
+                                 Timestamp = FlukeDateTime.FromDateTime DateTime.Now
+                                 Archived = false
+                                 Attachment = attachment
+                             })
+
+                    Atom.change
+                        setter
+                        Atoms.User.clipboardAttachmentIdMap
+                        (fun map -> map |> Map.add attachmentId false))
+
+
     [<ReactComponent>]
     let PasteListener () =
-        let onFilePasted =
-            Store.useCallbackRef
-                (fun getter setter attachment ->
-                    promise {
-                        let logger = Atom.get getter Selectors.Store.logger
-
-                        let getLocals () =
-                            $"attachment={attachment} {getLocals ()}"
-
-                        logger.Debug (fun () -> "PasteListener. pasted image") getLocals
-
-                        let attachmentId =
-                            Hydrate.hydrateAttachmentState
-                                getter
-                                setter
-                                (AtomScope.Current,
-                                 AttachmentParent.None,
-                                 {
-                                     Timestamp = FlukeDateTime.FromDateTime DateTime.Now
-                                     Archived = false
-                                     Attachment = attachment
-                                 })
-
-                        Atom.change
-                            setter
-                            Atoms.User.clipboardAttachmentIdMap
-                            (fun map -> map |> Map.add attachmentId false)
-                    })
-
+        let onFilePasted = Store.useSetState Actions.onFilePasted
         let toast = Ui.useToast ()
 
         let handlePasteEvent =
@@ -98,7 +99,7 @@ module PasteListener =
                                         match fileId with
                                         | Some fileId ->
                                             let attachment = Attachment.Image fileId
-                                            do! onFilePasted attachment
+                                            onFilePasted attachment
                                         | None ->
                                             toast
                                                 (fun x ->

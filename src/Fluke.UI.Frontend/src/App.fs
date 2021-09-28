@@ -7,6 +7,8 @@ open Fluke.UI.Frontend.State
 open FsJs
 open FsStore.Model
 open FsUi.Components
+open FsUi.Bindings
+open FsUi.State
 
 
 module App =
