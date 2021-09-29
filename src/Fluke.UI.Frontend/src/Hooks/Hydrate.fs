@@ -68,7 +68,8 @@ module Hydrate =
             set Atoms.User.cellColorCompleted userState.CellColorCompleted
             set Atoms.User.cellColorDismissed userState.CellColorDismissed
             set Atoms.User.cellColorScheduled userState.CellColorScheduled
-            set Atoms.User.cellSize userState.CellSize
+            set Atoms.User.cellHeight userState.CellHeight
+            set Atoms.User.cellWidth userState.CellWidth
             set Atoms.User.clipboardAttachmentIdMap userState.ClipboardAttachmentIdMap
             set Atoms.User.clipboardVisible userState.ClipboardVisible
             set Atoms.User.daysAfter userState.DaysAfter

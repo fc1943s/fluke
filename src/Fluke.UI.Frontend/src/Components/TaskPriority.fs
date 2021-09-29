@@ -14,7 +14,7 @@ module TaskPriority =
     let TaskPriority taskIdAtom =
         let taskId = Store.useValue taskIdAtom
         let priority = Store.useValue (Atoms.Task.priority taskId)
-        let cellSize = Store.useValue Atoms.User.cellSize
+        let cellHeight = Store.useValue Atoms.User.cellHeight
 
         let priorityText =
             priority
@@ -24,8 +24,8 @@ module TaskPriority =
         Ui.box
             (fun x ->
                 x.position <- "relative"
-                x.height <- $"{cellSize}px"
-                x.lineHeight <- $"{cellSize}px")
+                x.height <- $"{cellHeight}px"
+                x.lineHeight <- $"{cellHeight}px")
             [
                 str priorityText
             ]

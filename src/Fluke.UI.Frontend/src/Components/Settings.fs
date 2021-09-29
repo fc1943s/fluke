@@ -284,7 +284,6 @@ module Settings =
                                         CustomProps =
                                             fun x ->
                                                 x.atom <- Some (InputAtom (AtomReference.Atom Atoms.User.daysBefore))
-
                                                 x.inputFormat <- Some Input.InputFormat.Number
                                         Props = fun x -> x.label <- str "Days Before"
                                     |}
@@ -294,7 +293,6 @@ module Settings =
                                         CustomProps =
                                             fun x ->
                                                 x.atom <- Some (InputAtom (AtomReference.Atom Atoms.User.daysAfter))
-
                                                 x.inputFormat <- Some Input.InputFormat.Number
                                         Props = fun x -> x.label <- str "Days After"
                                     |}
@@ -303,10 +301,18 @@ module Settings =
                                     {|
                                         CustomProps =
                                             fun x ->
-                                                x.atom <- Some (InputAtom (AtomReference.Atom Atoms.User.cellSize))
-
+                                                x.atom <- Some (InputAtom (AtomReference.Atom Atoms.User.cellHeight))
                                                 x.inputFormat <- Some Input.InputFormat.Number
-                                        Props = fun x -> x.label <- str "Cell Size"
+                                        Props = fun x -> x.label <- str "Cell Height"
+                                    |}
+
+                                Input.Input
+                                    {|
+                                        CustomProps =
+                                            fun x ->
+                                                x.atom <- Some (InputAtom (AtomReference.Atom Atoms.User.cellWidth))
+                                                x.inputFormat <- Some Input.InputFormat.Number
+                                        Props = fun x -> x.label <- str "Cell Width"
                                     |}
 
                                 Input.Input
@@ -314,7 +320,6 @@ module Settings =
                                         CustomProps =
                                             fun x ->
                                                 x.atom <- Some (InputAtom (AtomReference.Atom Atoms.Ui.fontSize))
-
                                                 x.inputFormat <- Some Input.InputFormat.Number
                                         Props = fun x -> x.label <- str "Font Size"
                                     |}

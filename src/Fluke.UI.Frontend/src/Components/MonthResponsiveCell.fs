@@ -18,14 +18,14 @@ module MonthResponsiveCell =
     let MonthResponsiveCell (dateAtom: AtomConfig<FlukeDate>) (props: Ui.IChakraProps -> unit) =
         let date = Store.useValue dateAtom
         let weekStart = Store.useValue Atoms.User.weekStart
-        let cellSize = Store.useValue Atoms.User.cellSize
+        let cellHeight = Store.useValue Atoms.User.cellHeight
 
         Ui.box
             (fun x ->
                 x.whiteSpace <- "nowrap"
                 x.textAlign <- "center"
-                x.height <- $"{cellSize}px"
-                x.lineHeight <- $"{cellSize}px"
+                x.height <- $"{cellHeight}px"
+                x.lineHeight <- $"{cellHeight}px"
 
                 x.borderLeftWidth <-
                     match (weekStart, date) with

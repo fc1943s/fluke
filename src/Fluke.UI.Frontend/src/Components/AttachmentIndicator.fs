@@ -12,13 +12,14 @@ open Fluke.UI.Frontend.State
 module AttachmentIndicator =
     [<ReactComponent>]
     let AttachmentIndicator () =
-        let cellSize = Store.useValue Atoms.User.cellSize
+        let cellHeight = Store.useValue Atoms.User.cellHeight
+        let cellWidth = Store.useValue Atoms.User.cellWidth
         let userColor = Store.useValue Atoms.User.userColor
 
         Ui.box
             (fun x ->
-                x.height <- $"{cellSize}px"
-                x.lineHeight <- $"{cellSize}px"
+                x.height <- $"{cellHeight}px"
+                x.lineHeight <- $"{cellHeight}px"
                 x.position <- "absolute"
                 x.top <- "0px"
                 x.right <- "0px"
@@ -27,14 +28,14 @@ module AttachmentIndicator =
                     Js.newObj
                         (fun x ->
                             x.content <- "\"\""
-                            x.borderTopWidth <- $"{min (cellSize / 2) 10}px"
+                            x.borderTopWidth <- $"{min (cellWidth / 2) 10}px"
 
                             x.borderTopColor <-
                                 userColor
                                 |> Option.defaultValue Color.Default
                                 |> Color.Value
 
-                            x.borderLeftWidth <- $"{min (cellSize / 2) 10}px"
+                            x.borderLeftWidth <- $"{min (cellWidth / 2) 10}px"
                             x.borderLeftColor <- "transparent"
                             x.position <- "absolute"
                             x.top <- "0"

@@ -12,7 +12,7 @@ open FsUi.Bindings
 module GridHeader =
     [<ReactComponent>]
     let GridHeader () =
-        let cellSize = Store.useValue Atoms.User.cellSize
+        let cellWidth = Store.useValue Atoms.User.cellWidth
         let dateAtoms = Store.useValue Selectors.Selectors.dateAtoms
         let dateAtomsByMonth = Store.useValue Selectors.Selectors.dateAtomsByMonth
 
@@ -29,7 +29,7 @@ module GridHeader =
                                     if dateAtoms.Length = 0 then
                                         nothing
                                     else
-                                        let cellWidth = cellSize * dateAtoms.Length
+                                        let cellWidth = cellWidth * dateAtoms.Length
 
                                         MonthResponsiveCell.MonthResponsiveCell
                                             dateAtoms.[0]

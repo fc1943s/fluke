@@ -89,7 +89,8 @@ module State =
             CellColorCompleted: Color
             CellColorDismissed: Color
             CellColorScheduled: Color
-            CellSize: int
+            CellHeight: int
+            CellWidth: int
             ClipboardAttachmentIdMap: Map<AttachmentId, bool>
             ClipboardVisible: bool
             DaysAfter: int
@@ -146,7 +147,8 @@ module State =
                 CellColorCompleted = Color "#339933"
                 CellColorDismissed = Color "#673AB7"
                 CellColorScheduled = Color "#003038"
-                CellSize = 19
+                CellHeight = 19
+                CellWidth = 19
                 ClipboardAttachmentIdMap = Map.empty
                 ClipboardVisible = false
                 DaysAfter = 7

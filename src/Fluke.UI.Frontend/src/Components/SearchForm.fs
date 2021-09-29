@@ -43,13 +43,11 @@ module SearchForm =
                 InputLabelIconButton.InputLabelIconButton
                     (fun x ->
                         x.icon <- Icons.fi.FiArrowRight |> Icons.render
-
                         x.fontSize <- "11px"
                         x.height <- "15px"
                         x.color <- "whiteAlpha.700"
                         x.marginTop <- "-1px"
                         x.marginLeft <- "6px"
-
                         x.onClick <- fun _ -> promise { navigateAnchor anchor })
             ]
 

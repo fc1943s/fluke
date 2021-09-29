@@ -19,7 +19,8 @@ module Day =
         let isToday = Store.useValue (Selectors.FlukeDate.isToday dateId)
         let hasCellSelection = Store.useValue (Selectors.FlukeDate.hasCellSelection dateId)
         let weekStart = Store.useValue Atoms.User.weekStart
-        let cellSize = Store.useValue Atoms.User.cellSize
+        let cellHeight = Store.useValue Atoms.User.cellHeight
+        let cellWidth = Store.useValue Atoms.User.cellWidth
 
         Ui.box
             (fun x ->
@@ -41,9 +42,9 @@ module Day =
                     | _ -> null
 
                 x.whiteSpace <- "nowrap"
-                x.height <- $"{cellSize}px"
-                x.width <- $"{cellSize}px"
-                x.lineHeight <- $"{cellSize}px"
+                x.height <- $"{cellHeight}px"
+                x.width <- $"{cellWidth}px"
+                x.lineHeight <- $"{cellHeight}px"
                 x.textAlign <- "center")
             [
                 dateId

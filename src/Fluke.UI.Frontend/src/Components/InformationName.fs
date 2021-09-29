@@ -55,15 +55,15 @@ module InformationName =
     [<ReactComponent>]
     let InformationName information =
         let attachmentIdMap = Store.useValue (Selectors.Information.attachmentIdMap information)
-        let cellSize = Store.useValue Atoms.User.cellSize
+        let cellHeight = Store.useValue Atoms.User.cellHeight
         let details = Store.useSetState Actions.details
 
         Ui.flex
             (fun x ->
                 x.position <- "relative"
-                x.height <- $"{cellSize}px"
+                x.height <- $"{cellHeight}px"
                 x.alignItems <- "center"
-                x.lineHeight <- $"{cellSize}px")
+                x.lineHeight <- $"{cellHeight}px")
             [
                 Ui.box
                     (fun x ->

@@ -47,7 +47,8 @@ module rec User =
     let rec cellColorScheduled =
         createAtomWithSubscription (nameof cellColorScheduled) UserState.Default.CellColorScheduled
 
-    let rec cellSize = createAtomWithSubscription (nameof cellSize) UserState.Default.CellSize
+    let rec cellHeight = createAtomWithSubscription (nameof cellHeight) UserState.Default.CellHeight
+    let rec cellWidth = createAtomWithSubscription (nameof cellWidth) UserState.Default.CellWidth
 
     let rec clipboardAttachmentIdMap =
         createAtomWithSubscription (nameof clipboardAttachmentIdMap) UserState.Default.ClipboardAttachmentIdMap

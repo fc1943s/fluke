@@ -19,7 +19,7 @@ module HabitTrackerView =
     [<ReactComponent>]
     let HabitTrackerView () =
         let sortedTaskIdAtoms = Store.useValue Selectors.Session.sortedTaskIdAtoms
-        let cellSize = Store.useValue Atoms.User.cellSize
+        let cellHeight = Store.useValue Atoms.User.cellHeight
         let informationTaskIdAtoms = Store.useValue Selectors.Session.informationTaskIdAtoms
 
         Ui.flex
@@ -32,7 +32,7 @@ module HabitTrackerView =
                         x.paddingLeft <- "4px")
                     [
                         yield!
-                            Ui.box (fun x -> x.minHeight <- $"{cellSize}px") []
+                            Ui.box (fun x -> x.minHeight <- $"{cellHeight}px") []
                             |> List.replicate 3
 
                         Ui.flex
@@ -78,7 +78,7 @@ module HabitTrackerView =
                                             |> Array.map
                                                 (fun taskIdAtom ->
                                                     Ui.box
-                                                        (fun x -> x.height <- $"{cellSize}px")
+                                                        (fun x -> x.height <- $"{cellHeight}px")
                                                         [
                                                             React.suspense (
                                                                 [

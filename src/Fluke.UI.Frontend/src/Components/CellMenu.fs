@@ -156,7 +156,8 @@ module CellMenu =
     let CellMenu taskIdAtom dateAtom (onClose: (unit -> unit) option) (floating: bool) =
         let taskId, date = Store.useValueTuple taskIdAtom dateAtom
         let alias = Store.useValue Selectors.Gun.alias
-        let cellSize = Store.useValue Atoms.User.cellSize
+        let cellHeight = Store.useValue Atoms.User.cellHeight
+        let cellWidth = Store.useValue Atoms.User.cellWidth
         let sessionStatus = Store.useValue (Selectors.Cell.sessionStatus (CellRef (taskId, date)))
         let darkMode = Store.useValue Atoms.Ui.darkMode
         let setCellStatus = Store.useSetState Actions.setCellStatus
@@ -206,7 +207,7 @@ module CellMenu =
                         x.borderColor <- "gray.77"
                         x.backgroundColor <- if darkMode then "#636363" else "gray.45"
                         x.spacing <- "1px"
-                        x.width <- $"{cellSize (* * 2*) }px")
+                        x.width <- $"{cellWidth (* * 2*) }px")
                     [
                         let inline wrapButton icon color onClick =
                             Ui.iconButton
@@ -220,8 +221,8 @@ module CellMenu =
                                     x.variant <- "outline"
                                     x.backgroundColor <- color
                                     x.border <- "0"
-                                    x.minWidth <- $"{cellSize}px"
-                                    x.height <- $"{cellSize}px"
+                                    x.minWidth <- $"{cellWidth}px"
+                                    x.height <- $"{cellHeight}px"
                                     x.borderRadius <- "0"
 
                                     match onClick with

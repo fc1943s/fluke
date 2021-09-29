@@ -51,7 +51,8 @@ module Cell =
 
         let taskId = Store.useValue input.TaskIdAtom
         let date = Store.useValue input.DateAtom
-        let cellSize = Store.useValue Atoms.User.cellSize
+        let cellHeight = Store.useValue Atoms.User.cellHeight
+        let cellWidth = Store.useValue Atoms.User.cellWidth
         let databaseId = Store.useValue (Atoms.Task.databaseId taskId)
         let isReadWrite = Store.useValue (Selectors.Database.isReadWrite databaseId)
         let sessionStatus = Store.useValue (Selectors.Cell.sessionStatus (CellRef (taskId, date)))
@@ -81,9 +82,9 @@ module Cell =
                 if isReadWrite then
                     x.onClick <- fun _ -> promise { onCellClick (taskId, date) }
 
-                x.width <- $"{cellSize}px"
-                x.height <- $"{cellSize}px"
-                x.lineHeight <- $"{cellSize}px"
+                x.width <- $"{cellWidth}px"
+                x.height <- $"{cellHeight}px"
+                x.lineHeight <- $"{cellHeight}px"
                 x.position <- "relative"
 
                 x.backgroundColor <-
@@ -119,7 +120,7 @@ module Cell =
                     Ui.icon
                         (fun x ->
                             x.``as`` <- Icons.ti.TiPin
-                            x.fontSize <- $"{cellSize - 4}px"
+                            x.fontSize <- $"{cellHeight - 4}px"
                             x.color <- "white")
                         []
                 | _ -> nothing

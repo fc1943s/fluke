@@ -17,7 +17,7 @@ module CellBorder =
     let CellBorder taskIdAtom dateAtom =
         let taskId, dateId = Store.useValueTuple taskIdAtom dateAtom
         let weekStart = Store.useValue Atoms.User.weekStart
-        let cellSize = Store.useValue Atoms.User.cellSize
+        let cellWidth = Store.useValue Atoms.User.cellWidth
         let databaseId = Store.useValue (Atoms.Task.databaseId taskId)
         let isReadWrite = Store.useValue (Selectors.Database.isReadWrite databaseId)
 
@@ -42,7 +42,7 @@ module CellBorder =
                     x.top <- "-1px"
                     x.left <- "-1px"
                     x.bottom <- "-1px"
-                    x.width <- $"{cellSize}px"
+                    x.width <- $"{cellWidth}px"
 
                     if isReadWrite then
                         x._hover <- Js.newObj (fun x -> x.borderLeftWidth <- "0")

@@ -39,7 +39,7 @@ module TaskName =
         let hasSelection = Store.useValue (Selectors.Task.hasSelection taskId)
         let name = Store.useValue (Atoms.Task.name taskId)
         let attachmentIdSet = Store.useValue (Selectors.Task.attachmentIdSet taskId)
-        let cellSize = Store.useValue Atoms.User.cellSize
+        let cellHeight = Store.useValue Atoms.User.cellHeight
         let databaseId = Store.useValue (Atoms.Task.databaseId taskId)
         let isReadWrite = Store.useValue (Selectors.Database.isReadWrite databaseId)
 
@@ -50,7 +50,7 @@ module TaskName =
                 x.alignItems <- "center"
                 //                x.ref <- ref
                 x.position <- "relative"
-                x.height <- $"{cellSize}px")
+                x.height <- $"{cellHeight}px")
             [
                 Ui.box
                     (fun x ->
@@ -60,7 +60,7 @@ module TaskName =
                         x.overflow <- "hidden"
                         x.paddingLeft <- "5px"
                         x.paddingRight <- "5px"
-                        x.lineHeight <- $"{cellSize}px"
+                        x.lineHeight <- $"{cellHeight}px"
                         x.whiteSpace <- "nowrap"
                         x.textOverflow <- "ellipsis")
                     [

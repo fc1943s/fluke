@@ -12,10 +12,10 @@ open FsUi.Bindings
 module InformationView =
     [<ReactComponent>]
     let InformationTree information taskIdAtoms =
-        let cellSize = Store.useValue Atoms.User.cellSize
+        let cellWidth = Store.useValue Atoms.User.cellWidth
 
         Ui.box
-            (fun x -> x.paddingLeft <- $"{cellSize}px")
+            (fun x -> x.paddingLeft <- $"{cellWidth}px")
             [
                 InformationName.InformationName information
 
@@ -32,7 +32,7 @@ module InformationView =
                                             x.position <- "relative"
                                             x.direction <- "row"
                                             x.spacing <- "10px"
-                                            x.paddingLeft <- $"{cellSize}px")
+                                            x.paddingLeft <- $"{cellWidth}px")
                                         [
                                             Ui.box
                                                 (fun x ->
@@ -56,7 +56,7 @@ module InformationView =
     let KindInformationTreeWrapper kindInformationTaskIdAtom =
         let informationKindName, groups = Store.useValue kindInformationTaskIdAtom
 
-        let cellSize = Store.useValue Atoms.User.cellSize
+        let cellHeight = Store.useValue Atoms.User.cellHeight
 
         Ui.flex
             (fun x ->
@@ -65,8 +65,8 @@ module InformationView =
             [
                 Ui.box
                     (fun x ->
-                        x.height <- $"{cellSize}px"
-                        x.lineHeight <- $"{cellSize}px"
+                        x.height <- $"{cellHeight}px"
+                        x.lineHeight <- $"{cellHeight}px"
                         x.color <- "#444")
                     [
                         str informationKindName
@@ -93,7 +93,7 @@ module InformationView =
     [<ReactComponent>]
     let KindCellsWrapper kindInformationTaskIdAtom =
         let _informationKindName, groups = Store.useValue kindInformationTaskIdAtom
-        let cellSize = Store.useValue Atoms.User.cellSize
+        let cellHeight = Store.useValue Atoms.User.cellHeight
 
         Ui.box
             (fun _ -> ())
@@ -101,8 +101,8 @@ module InformationView =
                 Ui.box
                     (fun x ->
                         x.position <- "relative"
-                        x.height <- $"{cellSize}px"
-                        x.lineHeight <- $"{cellSize}px")
+                        x.height <- $"{cellHeight}px"
+                        x.lineHeight <- $"{cellHeight}px")
                     []
                 yield!
                     groups
@@ -114,8 +114,8 @@ module InformationView =
                                     Ui.box
                                         (fun x ->
                                             x.position <- "relative"
-                                            x.height <- $"{cellSize}px"
-                                            x.lineHeight <- $"{cellSize}px")
+                                            x.height <- $"{cellHeight}px"
+                                            x.lineHeight <- $"{cellHeight}px")
                                         []
                                     CellsWrapper informationTaskIdAtom
                                 ])
@@ -127,7 +127,7 @@ module InformationView =
         let _groupIndentationLength = 20
 
         let informationTaskIdAtomsByKind = Store.useValue Selectors.Session.informationTaskIdAtomsByKind
-        let cellSize = Store.useValue Atoms.User.cellSize
+        let cellHeight = Store.useValue Atoms.User.cellHeight
 
         Ui.flex
             (fun x -> x.flex <- "1")
@@ -141,7 +141,7 @@ module InformationView =
                         x.maxWidth <- "400px")
                     [
                         yield!
-                            Ui.box (fun x -> x.minHeight <- $"{cellSize}px") []
+                            Ui.box (fun x -> x.minHeight <- $"{cellHeight}px") []
                             |> List.replicate 3
 
                         Ui.flex

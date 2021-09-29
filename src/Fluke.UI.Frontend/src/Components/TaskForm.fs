@@ -422,6 +422,19 @@ module TaskForm =
         let archive = Store.useValue Atoms.User.archive
         let archived = Store.useValue (Atoms.Task.archived taskId)
         let deleteTask = useDeleteTask ()
+        let navigate = Store.useSetState Actions.navigate
+        let taskUIFlag = Store.useValue (Atoms.User.uiFlag UIFlagType.Task)
+
+        let databaseId =
+            React.useMemo (
+                (fun () ->
+                    match taskUIFlag with
+                    | UIFlag.Task (databaseId, _) -> databaseId
+                    | _ -> Database.Default.Id),
+                [|
+                    box taskUIFlag
+                |]
+            )
 
         if archive <> archived then
             nothing
@@ -441,7 +454,20 @@ module TaskForm =
                                         x.fontSize <- "17px"
                             |}
                     ])
-                (fun () -> deleteTask taskId)
+                (fun () ->
+                    promise {
+                        let! deleted = deleteTask taskId
+
+                        if deleted then
+                            navigate (
+                                DockPosition.Right,
+                                Some DockType.Task,
+                                UIFlagType.Task,
+                                UIFlag.Task (databaseId, Task.Default.Id)
+                            )
+
+                        return deleted
+                    })
                 (fun _ -> [])
 
     [<ReactComponent>]
@@ -479,7 +505,6 @@ module TaskForm =
                 (fun _ setter attachmentId ->
                     promise {
                         Atom.set setter (Atoms.Attachment.parent attachmentId) (Some (AttachmentParent.Task taskId)) })
-
 
         let onAttachmentDelete =
             Store.useCallbackRef
