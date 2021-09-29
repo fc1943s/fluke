@@ -41,6 +41,37 @@ module Cell =
 //                                do! setSelected (taskId, dateId, newSelected)
                     )
 
+    let getCellColor userState status =
+        let cellColorDisabled = userState.CellColorDisabled
+        let cellColorSuggested = userState.CellColorSuggested
+        let cellColorPending = userState.CellColorPending
+        let cellColorMissed = userState.CellColorMissed
+        let cellColorMissedToday = userState.CellColorMissedToday
+        let cellColorPostponedUntil = userState.CellColorPostponedUntil
+        let cellColorPostponed = userState.CellColorPostponed
+        let cellColorCompleted = userState.CellColorCompleted
+        let cellColorDismissed = userState.CellColorDismissed
+        let cellColorScheduled = userState.CellColorScheduled
+
+        match status with
+        | Disabled -> cellColorDisabled
+        | Suggested -> cellColorSuggested
+        | Pending -> cellColorPending
+        | Missed -> cellColorMissed
+        | MissedToday -> cellColorMissedToday
+        | UserStatus (_, status) ->
+            match status with
+            | Completed -> cellColorCompleted
+            | Postponed until -> if until.IsSome then cellColorPostponedUntil else cellColorPostponed
+            | Dismissed -> cellColorDismissed
+            | Scheduled -> cellColorScheduled
+        |> Color.Value
+
+    let useCellColor status =
+        let userState = Store.useValue Selectors.User.userState
+        getCellColor userState status
+
+
     [<ReactComponent>]
     let Cell
         (input: {| TaskIdAtom: AtomConfig<TaskId>
@@ -55,25 +86,14 @@ module Cell =
         let cellWidth = Store.useValue Atoms.User.cellWidth
         let databaseId = Store.useValue (Atoms.Task.databaseId taskId)
         let isReadWrite = Store.useValue (Selectors.Database.isReadWrite databaseId)
-        let sessionStatus = Store.useValue (Selectors.Cell.sessionStatus (CellRef (taskId, date)))
         let attachmentIdSet = Store.useValue (Selectors.Cell.attachmentIdSet (CellRef (taskId, date)))
         let isToday = Store.useValue (Selectors.FlukeDate.isToday date)
         let selected = Store.useValue (Selectors.Cell.selected (CellRef (taskId, date)))
         let cellUIFlag = Store.useValue (Atoms.User.uiFlag UIFlagType.Cell)
         let rightDock = Store.useValue Atoms.User.rightDock
-        //        let deviceInfo = Store.useValue Selectors.deviceInfo
-        let cellColorDisabled = Store.useValue Atoms.User.cellColorDisabled
-        let cellColorSuggested = Store.useValue Atoms.User.cellColorSuggested
-        let cellColorPending = Store.useValue Atoms.User.cellColorPending
-        let cellColorMissed = Store.useValue Atoms.User.cellColorMissed
-        let cellColorMissedToday = Store.useValue Atoms.User.cellColorMissedToday
-        let cellColorPostponedUntil = Store.useValue Atoms.User.cellColorPostponedUntil
-        let cellColorPostponed = Store.useValue Atoms.User.cellColorPostponed
-        let cellColorCompleted = Store.useValue Atoms.User.cellColorCompleted
-        let cellColorDismissed = Store.useValue Atoms.User.cellColorDismissed
-        let cellColorScheduled = Store.useValue Atoms.User.cellColorScheduled
-
         let onCellClick = Store.useSetState Actions.onCellClick
+        let sessionStatus = Store.useValue (Selectors.Cell.sessionStatus (CellRef (taskId, date)))
+        let userState = Store.useValue Selectors.User.userState
 
         Ui.center
             (fun x ->
@@ -88,19 +108,7 @@ module Cell =
                 x.position <- "relative"
 
                 x.backgroundColor <-
-                    (match sessionStatus with
-                     | Disabled -> cellColorDisabled
-                     | Suggested -> cellColorSuggested
-                     | Pending -> cellColorPending
-                     | Missed -> cellColorMissed
-                     | MissedToday -> cellColorMissedToday
-                     | UserStatus (_, status) ->
-                         match status with
-                         | Completed -> cellColorCompleted
-                         | Postponed until -> if until.IsSome then cellColorPostponedUntil else cellColorPostponed
-                         | Dismissed -> cellColorDismissed
-                         | Scheduled -> cellColorScheduled
-                     |> Color.Value)
+                    (getCellColor userState sessionStatus)
                     + (if isToday then "aa"
                        elif input.SemiTransparent then "d9"
                        else "")

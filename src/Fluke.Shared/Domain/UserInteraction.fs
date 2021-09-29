@@ -147,20 +147,21 @@ module UserInteraction =
             =
             $"{date |> FlukeDate.Stringify} {time |> FlukeTime.Stringify}:%02d{second}"
 
-        static member inline DateTime
-            {
-                Date = {
-                           Year = Year year
-                           Month = month
-                           Day = Day day
-                       }
-                Time = {
-                           Hour = Hour hour
-                           Minute = Minute minute
-                       }
-                Second = Second second
-            }
-            =
+        static member inline DateTime dateTime =
+            let {
+                    Date = {
+                               Year = Year year
+                               Month = month
+                               Day = Day day
+                           }
+                    Time = {
+                               Hour = Hour hour
+                               Minute = Minute minute
+                           }
+                    Second = Second second
+                } =
+                dateTime
+
             DateTime (year, int month, day, int hour, int minute, second)
 
         static member inline GreaterEqualThan (dayStart: FlukeTime) (date: FlukeDate) time position =

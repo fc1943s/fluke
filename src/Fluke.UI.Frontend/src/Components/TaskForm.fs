@@ -601,6 +601,8 @@ module TaskForm =
                         return true
                     })
 
+        let userState = Store.useValue Selectors.User.userState
+
         Accordion.AccordionAtom
             {|
                 Props = fun x -> x.flex <- "1"
@@ -747,7 +749,7 @@ module TaskForm =
                                                      Ui.flex
                                                          (fun _ -> ())
                                                          [
-                                                             Ui.box
+                                                             Ui.flex
                                                                  (fun _ -> ())
                                                                  [
                                                                      let statusLabel =
@@ -757,8 +759,24 @@ module TaskForm =
                                                                              $"{nameof Postponed} ({time |> FlukeTime.Stringify})"
                                                                          | status -> $"{status}"
 
-                                                                     str
-                                                                         $"""{username}: {date |> FlukeDate.Stringify} / {statusLabel}"""
+                                                                     Ui.flex
+                                                                         (fun _ -> ())
+                                                                         [
+                                                                             Ui.str
+                                                                                 $"{username}: {date |> FlukeDate.Stringify} / "
+                                                                             Ui.box
+                                                                                 (fun x ->
+                                                                                     x.color <-
+                                                                                         Cell.getCellColor
+                                                                                             userState
+                                                                                             (UserStatus (
+                                                                                                 Username username,
+                                                                                                 status
+                                                                                             )))
+                                                                                 [
+                                                                                     str $"{statusLabel}"
+                                                                                 ]
+                                                                         ]
 
                                                                      InputLabelIconButton.InputLabelIconButton
                                                                          (fun x ->

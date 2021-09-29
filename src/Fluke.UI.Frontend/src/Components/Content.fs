@@ -100,11 +100,12 @@ module Content =
 
     [<ReactComponent>]
     let Content () =
-        Profiling.addTimestamp (fun () -> "Content.render") getLocals
-
         let deviceInfo = Store.useValue Selectors.Store.deviceInfo
         let alias = Store.useValue Selectors.Gun.alias
         let _ = Auth.useGunAliasLoader ()
+
+        let inline getLocals () = $"alias={alias} {getLocals ()}"
+        Profiling.addTimestamp (fun () -> "Content.render") getLocals
 
         Ui.flex
             (fun x ->
