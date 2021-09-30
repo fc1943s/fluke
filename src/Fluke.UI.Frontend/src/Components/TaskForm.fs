@@ -759,11 +759,15 @@ module TaskForm =
                                                                              $"{nameof Postponed} ({time |> FlukeTime.Stringify})"
                                                                          | status -> $"{status}"
 
-                                                                     Ui.flex
-                                                                         (fun _ -> ())
+                                                                     Ui.stack
+                                                                         (fun x ->
+                                                                             x.direction <- "row"
+                                                                             x.flexFlow <- "wrap"
+                                                                             x.whiteSpace <- "nowrap")
                                                                          [
-                                                                             Ui.str
-                                                                                 $"{username}: {date |> FlukeDate.Stringify} / "
+                                                                             Ui.str $"{username}:"
+                                                                             Ui.str $"{date |> FlukeDate.Stringify}"
+                                                                             Ui.str "/"
                                                                              Ui.box
                                                                                  (fun x ->
                                                                                      x.color <-

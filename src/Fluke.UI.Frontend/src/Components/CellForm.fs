@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open Browser.Types
 open Feliz
 open FsCore
 open Fable.React
@@ -7,7 +8,6 @@ open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.UserInteraction
 open FsStore
 open FsStore.Hooks
-open FsStore.Bindings
 open FsUi.Bindings
 open Fluke.Shared
 open Fluke.UI.Frontend.State
@@ -19,13 +19,10 @@ open FsStore.State
 
 module CellForm =
     [<ReactComponent>]
-    let rec CellForm taskIdAtom dateAtom =
-        let taskId, date = Store.useValueTuple taskIdAtom dateAtom
+    let rec CellForm taskId date =
         let (TaskName taskName) = Store.useValue (Atoms.Task.name taskId)
-
         let attachmentIdSet = Store.useValue (Selectors.Cell.attachmentIdSet (CellRef (taskId, date)))
         let visibleTaskSelectedDateMap = Store.useValue Selectors.Session.visibleTaskSelectedDateMap
-
 
         let attachmentIdList =
             React.useMemo (
@@ -34,6 +31,17 @@ module CellForm =
                     box attachmentIdSet
                 |]
             )
+
+        let setCellUIFlag = Store.useSetState (Atoms.User.uiFlag UIFlagType.Cell)
+
+        //        let setDate = Store.useCallbackRef (fun _ setter date -> promise {
+//            Atom.change setter (Atoms.User.uiFlag UIFlagType.Cell) (
+//                fun cellUIFlag ->
+//                    match cellUIFlag with
+//                                        | UIFlag.Cell (taskId, _) -> (UIFlag.Cell (taskId, date))
+//                                        | uiFlag -> uiFlag
+//                )
+//        })
 
         let onAttachmentAdd =
             Store.useCallbackRef
@@ -80,10 +88,73 @@ module CellForm =
                                    |> Seq.fold Set.union Set.empty
                                    |> Set.count
                                    <= 1 then
-                                    Ui.box
-                                        (fun x -> x.userSelect <- "text")
+                                    Ui.stack
+                                        (fun x ->
+                                            x.direction <- "row"
+                                            x.alignItems <- "baseline"
+                                            x.flexFlow <- "wrap")
                                         [
-                                            str $"Date: {date |> FlukeDate.Stringify}"
+                                            Ui.str "Date:"
+
+                                            Input.Input
+                                                {|
+                                                    CustomProps =
+                                                        fun x ->
+                                                            x.inputFormat <- Some Input.InputFormat.Number
+                                                            x.fixedValue <- date.Day |> Day.Value |> string |> Some
+                                                    Props =
+                                                        fun x ->
+                                                            x.minWidth <- "75px"
+
+                                                            x.onChange <-
+                                                                fun (e: KeyboardEvent) ->
+                                                                    promise {
+                                                                        match e.Value with
+                                                                        | String.Valid day ->
+                                                                            setCellUIFlag (
+                                                                                UIFlag.Cell (
+                                                                                    taskId,
+                                                                                    { date with Day = Day (int day) }
+                                                                                    |> FlukeDate.DateTime
+                                                                                    |> FlukeDate.FromDateTime
+                                                                                )
+                                                                            )
+                                                                        | _ -> ()
+                                                                    }
+                                                |}
+
+                                            Dropdown.EnumDropdown<Month>
+                                                date.Month
+                                                (fun month ->
+                                                    setCellUIFlag (UIFlag.Cell (taskId, { date with Month = month })))
+                                                (fun x -> x.minWidth <- "65px")
+
+                                            Input.Input
+                                                {|
+                                                    CustomProps =
+                                                        fun x ->
+                                                            x.inputFormat <- Some Input.InputFormat.Number
+                                                            x.fixedValue <- date.Year |> Year.Value |> string |> Some
+                                                    Props =
+                                                        fun x ->
+                                                            x.minWidth <- "85px"
+
+                                                            x.onChange <-
+                                                                fun (e: KeyboardEvent) ->
+                                                                    promise {
+                                                                        match e.Value with
+                                                                        | String.Valid year ->
+                                                                            setCellUIFlag (
+                                                                                UIFlag.Cell (
+                                                                                    taskId,
+                                                                                    { date with Year = Year (int year) }
+                                                                                    |> FlukeDate.DateTime
+                                                                                    |> FlukeDate.FromDateTime
+                                                                                )
+                                                                            )
+                                                                        | _ -> ()
+                                                                    }
+                                                |}
                                         ]
                                 else
                                     nothing
@@ -94,7 +165,7 @@ module CellForm =
                                         x.alignItems <- "center")
                                     [
                                         Ui.str "Status: "
-                                        CellMenu.CellMenu taskIdAtom dateAtom None false
+                                        CellMenu.CellMenu taskId date None false
                                     ]
                             ])
 
@@ -119,7 +190,7 @@ module CellForm =
 
         let selectedTaskIdListByArchive = Store.useValue Selectors.Session.selectedTaskIdListByArchive
 
-        let taskIdAtom, dateAtom =
+        let taskId, date =
             React.useMemo (
                 (fun () ->
                     match cellUIFlag with
@@ -127,7 +198,7 @@ module CellForm =
                         selectedTaskIdListByArchive
                         |> List.contains taskId
                         ->
-                        Some (Jotai.jotai.atom taskId), Some (Jotai.jotai.atom date)
+                        Some taskId, Some date
                     | _ -> None, None),
                 [|
                     box cellUIFlag
@@ -135,8 +206,8 @@ module CellForm =
                 |]
             )
 
-        match taskIdAtom, dateAtom with
-        | Some taskIdAtom, Some dateAtom -> CellForm taskIdAtom dateAtom
+        match taskId, date with
+        | Some taskId, Some date -> CellForm taskId date
         | _ ->
             Ui.box
                 (fun x -> x.padding <- "15px")

@@ -27,9 +27,8 @@ open FsUi.Components
 module CellMenu =
 
     [<ReactComponent>]
-    let PostponeTooltipText dateAtom =
+    let PostponeTooltipText date =
         let position = Store.useValue Atoms.Session.position
-        let date = Store.useValue dateAtom
         let visibleTaskSelectedDateMap = Store.useValue Selectors.Session.visibleTaskSelectedDateMap
 
         str
@@ -153,8 +152,7 @@ module CellMenu =
                     |> Map.iter (Atoms.Task.selectionSet >> Atom.set setter))
 
     [<ReactComponent>]
-    let CellMenu taskIdAtom dateAtom (onClose: (unit -> unit) option) (floating: bool) =
-        let taskId, date = Store.useValueTuple taskIdAtom dateAtom
+    let CellMenu taskId date (onClose: (unit -> unit) option) (floating: bool) =
         let alias = Store.useValue Selectors.Gun.alias
         let cellHeight = Store.useValue Atoms.User.cellHeight
         let cellWidth = Store.useValue Atoms.User.cellWidth
@@ -318,7 +316,7 @@ module CellMenu =
                         Ui.box
                             (fun _ -> ())
                             [
-                                PostponeTooltipText dateAtom
+                                PostponeTooltipText date
                             ]
                         |> wrapButtonTooltip (Postponed None)
 

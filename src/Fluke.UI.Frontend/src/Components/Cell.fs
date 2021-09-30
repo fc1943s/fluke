@@ -173,8 +173,8 @@ module Cell =
                             [ //
                                 if isReadWrite then //
                                     CellMenu.CellMenu
-                                        input.TaskIdAtom
-                                        input.DateAtom
+                                        taskId
+                                        date
                                         (Some disclosure.onClose) // None
                                         true
                                 else //

@@ -100,6 +100,9 @@ module UserInteraction =
         static member inline Value (AttachmentId guid) = guid
         static member inline Default = AttachmentId Guid.Empty
 
+    and Year with
+        static member inline Value (Year year) = year
+
 
 
     and FlukeDate with
