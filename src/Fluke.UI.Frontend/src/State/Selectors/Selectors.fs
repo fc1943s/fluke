@@ -13,7 +13,7 @@ open Fluke.Shared.Domain.State
 #nowarn "40"
 
 
-module rec Selectors =
+module Selectors =
     let interval2 = 750
 
     let rec dateArray =

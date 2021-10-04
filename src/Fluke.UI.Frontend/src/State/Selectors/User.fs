@@ -9,7 +9,7 @@ open Fluke.UI.Frontend.State.State
 open Fluke.UI.Frontend.State
 
 
-module rec User =
+module User =
     let rec userState =
         Atom.readSelector
             (StoreAtomPath.ValueAtomPath (Fluke.root, Atoms.User.collection, [], AtomName (nameof userState)))

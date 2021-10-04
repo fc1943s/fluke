@@ -29,26 +29,30 @@ module PositionUpdater =
             (fun getter setter ->
                 promise {
                     let hub = Atom.get getter Selectors.Hub.hub
-                    let hubUrl = Atom.get getter Atoms.hubUrl
+                    let hubUrls = Atom.get getter Atoms.hubUrls
 
-                    match hubUrl with
-                    | Some (String.Valid _) ->
-                        match hub with
-                        | Some hub when hub.connectionId = None ->
-                            printfn
-                                $"position timer. hub.connectionId={hub.connectionId}. triggering hubTrigger **skipped** window.hubTrigger()"
+                    hubUrls
+                    |> Array.iteri
+                        (fun i hubUrl ->
+                            match hubUrl with
+                            | String.Valid _ ->
+                                match hub.[i] with
+                                | hub when hub.connectionId = None ->
+                                    printfn
+                                        $"position timer. hub.connectionId={hub.connectionId}. triggering hubTrigger **skipped** window.hubTrigger()"
 
-                            match Dom.window () with
-                            | Some window -> window?hubTrigger <- fun () -> Atom.change setter Atoms.hubTrigger ((+) 1)
-                            | None -> ()
+                                    match Dom.window () with
+                                    | Some window ->
+                                        window?hubTrigger <- fun () -> Atom.change setter Atoms.hubTrigger ((+) 1)
+                                    | None -> ()
 
-                            if hubCount = 3 then
-                                Atom.change setter Atoms.hubTrigger ((+) 1)
-                                setHubCount 0
-                            else
-                                setHubCount (hubCount + 1)
-                        | _ -> ()
-                    | _ -> ()
+                                    if hubCount < 3 then setHubCount (hubCount + 1)
+                                | _ -> ()
+                            | _ -> ())
+
+                    if hubCount >= 3 then
+                        Atom.change setter Atoms.hubTrigger ((+) 1)
+                        setHubCount 0
 
                     Atom.set setter (Atoms.Device.devicePing deviceInfo.DeviceId) (Ping (string DateTime.Now.Ticks))
                 })

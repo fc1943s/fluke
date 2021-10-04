@@ -102,6 +102,7 @@ module CellForm =
                                                         fun x ->
                                                             x.inputFormat <- Some Input.InputFormat.Number
                                                             x.fixedValue <- date.Day |> Day.Value |> string |> Some
+                                                            x.containerProps <- Some (fun x -> x.flex <- "1")
                                                     Props =
                                                         fun x ->
                                                             x.minWidth <- "75px"
@@ -127,7 +128,7 @@ module CellForm =
                                                 date.Month
                                                 (fun month ->
                                                     setCellUIFlag (UIFlag.Cell (taskId, { date with Month = month })))
-                                                (fun x -> x.minWidth <- "65px")
+                                                (fun _ -> ())
 
                                             Input.Input
                                                 {|
@@ -135,6 +136,7 @@ module CellForm =
                                                         fun x ->
                                                             x.inputFormat <- Some Input.InputFormat.Number
                                                             x.fixedValue <- date.Year |> Year.Value |> string |> Some
+                                                            x.containerProps <- Some (fun x -> x.flex <- "1")
                                                     Props =
                                                         fun x ->
                                                             x.minWidth <- "85px"

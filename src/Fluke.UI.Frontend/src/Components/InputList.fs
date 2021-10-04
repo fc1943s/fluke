@@ -29,9 +29,7 @@ module InputList =
             )
 
         Ui.stack
-            (fun x ->
-                x.flex <- "1"
-                x.spacing <- "0")
+            (fun x -> x.spacing <- "0")
             [
                 yield!
                     inputList

@@ -6,7 +6,7 @@ open Fluke.UI.Frontend.State
 open FsStore
 
 
-module rec Information =
+module Information =
     let rec attachmentIdMap =
         Atom.Primitives.readSelectorFamily
             (fun (information: Information) getter ->

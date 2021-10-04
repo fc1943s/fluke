@@ -62,7 +62,9 @@ module AddAttachmentInput =
                     })
 
         Ui.stack
-            (fun x -> x.spacing <- "0")
+            (fun x ->
+                x.spacing <- "0"
+                x.flex <- "1")
             [
                 Ui.flex
                     (fun _ -> ())

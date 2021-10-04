@@ -31,12 +31,15 @@ module Store =
         selectorFamily collection name read (fun _ _ _ _ -> failwith "readSelectorFamily readonly")
 
 
-module rec Cell =
-    let collection = Collection (nameof Cell)
+[<AutoOpen>]
+module CellMagic =
+    module rec Cell =
+        let collection = Collection (nameof Cell)
 
+module Cell =
     let rec sessionStatus =
         Store.selectorFamily
-            collection
+            Cell.collection
             (nameof sessionStatus)
             (fun (CellRef (taskId, date)) getter ->
                 let hideSchedulingOverlay = Atom.get getter Atoms.User.hideSchedulingOverlay
@@ -75,7 +78,7 @@ module rec Cell =
 
     let rec selected =
         Store.selectorFamily
-            collection
+            Cell.collection
             (nameof selected)
             (fun (CellRef (taskId, date)) getter ->
                 let selectionSet = Atom.get getter (Atoms.Task.selectionSet taskId)
@@ -162,7 +165,7 @@ module rec Cell =
 
     let rec sessions =
         Store.readSelectorFamily
-            collection
+            Cell.collection
             (nameof sessions)
             (fun (CellRef (taskId, date)) getter ->
                 let sessions = Atom.get getter (Atoms.Task.sessions taskId)
@@ -173,7 +176,7 @@ module rec Cell =
 
     let rec sessionCount =
         Store.readSelectorFamily
-            collection
+            Cell.collection
             (nameof sessionCount)
             (fun cellRef getter ->
                 let sessions = Atom.get getter (sessions cellRef)
@@ -181,7 +184,7 @@ module rec Cell =
 
     let rec attachmentIdSet =
         Store.readSelectorFamily
-            collection
+            Cell.collection
             (nameof attachmentIdSet)
             (fun (CellRef (taskId, date)) getter ->
                 let cellAttachmentIdMap = Atom.get getter (Task.cellAttachmentIdMap taskId)

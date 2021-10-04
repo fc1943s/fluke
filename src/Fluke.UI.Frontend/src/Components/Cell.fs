@@ -41,7 +41,7 @@ module Cell =
 //                                do! setSelected (taskId, dateId, newSelected)
                     )
 
-    let getCellColor userState status =
+    let inline getCellColor userState status =
         let cellColorDisabled = userState.CellColorDisabled
         let cellColorSuggested = userState.CellColorSuggested
         let cellColorPending = userState.CellColorPending

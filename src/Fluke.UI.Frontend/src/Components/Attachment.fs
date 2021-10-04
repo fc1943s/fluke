@@ -82,7 +82,7 @@ module Attachment =
                             if not editing then
                                 AttachmentComment.AttachmentComment comment
                             else
-                                Ui.flex
+                                Ui.box
                                     (fun x -> x.position <- "relative")
                                     [
                                         Input.Input

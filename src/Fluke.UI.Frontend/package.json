@@ -63,8 +63,8 @@
 
     "@microsoft/signalr": "6.0.0-rc.1.21452.15",
 
-    "react": "18.0.0-alpha-0883c4cd3-20210929",
-    "react-dom": "18.0.0-alpha-0883c4cd3-20210929",
+    "react": "18.0.0-alpha-7d38e4fd8-20210930",
+    "react-dom": "18.0.0-alpha-7d38e4fd8-20210930",
 
     "jotai": "~1.3.6",
 
@@ -99,7 +99,7 @@
     "typescript": "~4.4",
     "ts-node": "~10.2",
     "@types/node" : "~16.10",
-    "ts2fable" : "0.8.0-build.616",
+    "ts2fable" : "0.8.0-build.620",
 
     "@welldone-software/why-did-you-render": "~6.2",
 

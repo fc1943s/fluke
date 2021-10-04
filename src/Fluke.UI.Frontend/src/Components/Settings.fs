@@ -6,7 +6,6 @@ open FsCore.BaseModel
 open FsStore.Bindings.Gun
 open FsStore.Model
 open FsUi.State
-open Browser.Types
 open Fable.React
 open Feliz
 open System
@@ -23,11 +22,12 @@ open FsStore.State
 
 
 module Settings =
-    let gunOptionsReference = AtomReference.Atom Atoms.gunOptions
+    let gunPeersReference = AtomReference.Atom Atoms.gunPeers
 
     [<ReactComponent>]
     let GunPeersInput () =
-        let tempGunOptions = Store.useTempState gunOptionsReference
+        let tempGunPeers = Store.useTempState gunPeersReference
+        let gunSync, setGunSync = Store.useState Atoms.gunSync
 
         Ui.box
             (fun x -> x.display <- "inline")
@@ -65,52 +65,45 @@ module Settings =
                         Checkbox.Checkbox
                             None
                             (fun x ->
-                                x.isChecked <-
-                                    match tempGunOptions.CurrentValue, tempGunOptions.TempValue with
-                                    | GunOptions.Sync _, _ -> true
-                                    | _ -> false
-
+                                x.isChecked <- gunSync
                                 x.alignSelf <- "center"
 
                                 x.onChange <-
                                     fun _ ->
                                         promise {
+                                            if not gunSync then
+                                                tempGunPeers.SetCurrentValue tempGunPeers.TempValue
+                                            else
+                                                tempGunPeers.SetTempValue tempGunPeers.CurrentValue
 
-                                            match tempGunOptions.CurrentValue, tempGunOptions.TempValue with
-                                            | GunOptions.Sync _, GunOptions.Sync _ ->
-                                                tempGunOptions.SetCurrentValue GunOptions.Minimal
-                                            | GunOptions.Sync peers, GunOptions.Minimal ->
-                                                tempGunOptions.SetTempValue (GunOptions.Sync peers)
-                                                tempGunOptions.SetCurrentValue GunOptions.Minimal
-                                            | GunOptions.Minimal, GunOptions.Sync peers ->
-                                                tempGunOptions.SetCurrentValue (GunOptions.Sync peers)
-                                                tempGunOptions.SetTempValue GunOptions.Minimal
-                                            | GunOptions.Minimal, GunOptions.Minimal ->
-                                                tempGunOptions.SetTempValue (GunOptions.Sync [||])
+                                            setGunSync (not gunSync)
+                                        //                                            match tempGunOptions.CurrentValue, tempGunOptions.TempValue with
+//                                            | GunOptions.Sync _, GunOptions.Sync _ ->
+//                                                tempGunOptions.SetCurrentValue GunOptions.Minimal
+//                                            | GunOptions.Sync peers, GunOptions.Minimal ->
+//                                                tempGunOptions.SetTempValue (GunOptions.Sync peers)
+//                                                tempGunOptions.SetCurrentValue GunOptions.Minimal
+//                                            | GunOptions.Minimal, GunOptions.Sync peers ->
+//                                                tempGunOptions.SetCurrentValue (GunOptions.Sync peers)
+//                                                tempGunOptions.SetTempValue GunOptions.Minimal
+//                                            | GunOptions.Minimal, GunOptions.Minimal ->
+//                                                tempGunOptions.SetTempValue (GunOptions.Sync [||])
                                         })
 
                         InputList.InputList
-                            (fun x ->
-                                x.isDisabled <-
-                                    match tempGunOptions.CurrentValue, tempGunOptions.TempValue with
-                                    | GunOptions.Sync _, _ -> true
-                                    | _ -> false)
+                            (fun x -> x.isDisabled <- gunSync)
                             (fun _ -> ())
-                            (match tempGunOptions.TempValue, tempGunOptions.CurrentValue with
-                             | GunOptions.Sync gunPeers, _ -> gunPeers |> Array.map GunPeer.Value
-                             | _, GunOptions.Sync gunPeers -> gunPeers |> Array.map GunPeer.Value
-                             | _ -> [||])
-                            (Array.map GunPeer
-                             >> GunOptions.Sync
-                             >> tempGunOptions.SetTempValue)
+                            (tempGunPeers.TempValue |> Array.map GunPeer.Value)
+                            (Array.map GunPeer >> tempGunPeers.SetTempValue)
                     ]
             ]
 
-    let hubUrlReference = AtomReference.Atom Atoms.hubUrl
+    let hubUrlsReference = AtomReference.Atom Atoms.hubUrls
 
     [<ReactComponent>]
     let HubUrlInput () =
-        let tempHubUrl = Store.useTempState hubUrlReference
+        let tempHubUrls = Store.useTempState hubUrlsReference
+        let hubSync, setHubSync = Store.useState Atoms.hubSync
 
         Ui.box
             (fun x -> x.display <- "inline")
@@ -131,46 +124,36 @@ module Settings =
                         Checkbox.Checkbox
                             None
                             (fun x ->
-                                x.isChecked <-
-                                    match tempHubUrl.CurrentValue, tempHubUrl.TempValue with
-                                    | Some _, _ -> true
-                                    | _ -> false
+                                x.isChecked <- hubSync
 
                                 x.alignSelf <- "center"
 
                                 x.onChange <-
                                     fun _ ->
                                         promise {
-                                            match tempHubUrl.CurrentValue, tempHubUrl.TempValue with
-                                            | Some _, Some _ -> tempHubUrl.SetTempValue None
-                                            | Some current, None ->
-                                                tempHubUrl.SetTempValue (Some current)
-                                                tempHubUrl.SetCurrentValue None
-                                            | None, Some temp ->
-                                                tempHubUrl.SetCurrentValue (Some temp)
-                                                tempHubUrl.SetTempValue None
-                                            | None, None -> tempHubUrl.SetTempValue (Some "")
+                                            if not hubSync then
+                                                tempHubUrls.SetCurrentValue tempHubUrls.TempValue
+                                            else
+                                                tempHubUrls.SetTempValue tempHubUrls.CurrentValue
+
+                                            setHubSync (not hubSync)
+
+                                        //                                            match tempHubUrls.CurrentValue, tempHubUrls.TempValue with
+//                                            | Some _, Some _ -> tempHubUrls.SetTempValue None
+//                                            | Some current, None ->
+//                                                tempHubUrls.SetTempValue (Some current)
+//                                                tempHubUrls.SetCurrentValue None
+//                                            | None, Some temp ->
+//                                                tempHubUrls.SetCurrentValue (Some temp)
+//                                                tempHubUrls.SetTempValue None
+//                                            | None, None -> tempHubUrls.SetTempValue (Some "")
                                         })
 
-                        Input.Input
-                            {|
-                                Props =
-                                    fun x ->
-
-                                        x.isDisabled <-
-                                            match tempHubUrl.CurrentValue, tempHubUrl.TempValue with
-                                            | Some _, _ -> true
-                                            | _ -> false
-
-                                        x.onChange <-
-                                            fun (e: KeyboardEvent) -> promise { tempHubUrl.SetValue (Some e.Value) }
-                                CustomProps =
-                                    fun x ->
-                                        x.fixedValue <-
-                                            tempHubUrl.TempValue
-                                            |> Option.defaultValue (tempHubUrl.CurrentValue |> Option.defaultValue "")
-                                            |> Some
-                            |}
+                        InputList.InputList
+                            (fun x -> x.isDisabled <- hubSync)
+                            (fun _ -> ())
+                            tempHubUrls.TempValue
+                            tempHubUrls.SetTempValue
                     ]
             ]
 
@@ -399,7 +382,6 @@ module Settings =
                             (fun x -> x.spacing <- "10px")
                             [
                                 GunPeersInput ()
-
                                 HubUrlInput ()
                             ])
                     ]

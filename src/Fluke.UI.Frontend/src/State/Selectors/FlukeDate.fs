@@ -10,9 +10,12 @@ open FsStore.Bindings.Gun
 open FsStore.Model
 
 
+[<AutoOpen>]
+module FlukeDateMagic =
+    module rec FlukeDate =
+        let collection = Collection (nameof FlukeDate)
 
-module rec FlukeDate =
-    let collection = Collection (nameof FlukeDate)
+module FlukeDate =
 
     let inline formatDate date =
         date
@@ -23,9 +26,9 @@ module rec FlukeDate =
     let inline readSelectorFamily name =
         Atom.readSelectorFamily
             (fun (date: FlukeDate) ->
-                StoreAtomPath.ValueAtomPath (Fluke.root, collection, formatDate date, AtomName name))
+                StoreAtomPath.ValueAtomPath (Fluke.root, FlukeDate.collection, formatDate date, AtomName name))
 
-    let isToday =
+    let rec isToday =
         readSelectorFamily
             (nameof isToday)
             (fun (date: FlukeDate) getter ->
