@@ -231,7 +231,10 @@ module SearchForm =
                         Input.LeftIconInput
                             {|
                                 Icon = Icons.bs.BsSearch |> Icons.render
-                                CustomProps = fun x -> x.fixedValue <- Some searchText
+                                CustomProps =
+                                    fun x ->
+                                        x.fixedValue <- Some searchText
+                                        x.containerProps <- Some (fun x -> x.flex <- "1")
                                 Props =
                                     fun x ->
                                         x.onChange <-

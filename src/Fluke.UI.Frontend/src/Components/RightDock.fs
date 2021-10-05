@@ -171,7 +171,9 @@ module RightDock =
                     (fun x ->
                         x.width <- "24px"
                         x.position <- "relative"
-                        x.margin <- "1px")
+                        x.margin <- "1px"
+                        x.overflowX <- "hidden"
+                        x.overflowY <- "auto")
                     [
                         Ui.stack
                             (fun x ->

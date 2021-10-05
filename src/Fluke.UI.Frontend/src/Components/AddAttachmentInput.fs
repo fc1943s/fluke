@@ -92,6 +92,7 @@ module AddAttachmentInput =
                                                 x.inputScope <- Some (InputScope.Temp Gun.defaultSerializer)
                                                 x.autoFocusOnAllMounts <- true
                                                 x.variableHeight <- true
+                                                x.containerProps <- Some (fun x -> x.flex <- "1")
 
                                                 x.onEnterPress <-
                                                     Some (fun _ -> promise { if ctrlPressed then do! addAttachment () })

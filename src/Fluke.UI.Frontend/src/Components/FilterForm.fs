@@ -66,7 +66,9 @@ module FilterForm =
                     [
                         str "Filter",
                         (Ui.stack
-                            (fun x -> x.spacing <- "15px")
+                            (fun x ->
+                                x.spacing <- "15px"
+                                x.flex <- "1")
                             [
                                 Input.LeftIconInput
                                     {|

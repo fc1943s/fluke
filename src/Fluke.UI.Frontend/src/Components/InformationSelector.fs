@@ -250,9 +250,7 @@ module InformationSelector =
                                                         x.padding <- "1px"
                                                         x.marginBottom <- "6px"
                                                         x.marginTop <- "10px"
-                                                        x.maxHeight <- "217px"
-                                                        x.overflowY <- "auto"
-                                                        x.flexBasis <- 0)
+                                                        x.maxHeight <- "217px")
                                                     [
                                                         yield!
                                                             sortedInformationList

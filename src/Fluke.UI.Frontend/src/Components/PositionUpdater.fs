@@ -36,10 +36,10 @@ module PositionUpdater =
                         (fun i hubUrl ->
                             match hubUrl with
                             | String.Valid _ ->
-                                match hub.[i] with
-                                | hub when hub.connectionId = None ->
+                                match hub |> Array.tryItem i with
+                                | Some hub when hub.connectionId = None ->
                                     printfn
-                                        $"position timer. hub.connectionId={hub.connectionId}. triggering hubTrigger **skipped** window.hubTrigger()"
+                                        "position timer. hub.connectionId=None. triggering hubTrigger **skipped** window.hubTrigger()"
 
                                     match Dom.window () with
                                     | Some window ->

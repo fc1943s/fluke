@@ -72,7 +72,10 @@ module DatabaseForm =
 
         Accordion.AccordionAtom
             {|
-                Props = fun x -> x.flex <- "1"
+                Props =
+                    fun x ->
+                        x.flex <- "1"
+                        x.overflow <- "unset"
                 Atom = Atoms.User.accordionHiddenFlag AccordionType.DatabaseForm
                 Items =
                     [
