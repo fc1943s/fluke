@@ -60,20 +60,21 @@ module FilterForm =
 
         Accordion.AccordionAtom
             {|
-                Props = fun x -> x.flex <- "1"
+                Props = fun _ -> ()
                 Atom = Atoms.User.accordionHiddenFlag AccordionType.TaskForm
                 Items =
                     [
                         str "Filter",
                         (Ui.stack
-                            (fun x ->
-                                x.spacing <- "15px"
-                                x.flex <- "1")
+                            (fun x -> x.spacing <- "15px")
                             [
                                 Input.LeftIconInput
                                     {|
                                         Icon = Icons.bs.BsSearch |> Icons.render
-                                        CustomProps = fun x -> x.fixedValue <- Some filter.Filter
+                                        CustomProps =
+                                            fun x ->
+                                                x.fixedValue <- Some filter.Filter
+                                                x.containerProps <- Some (fun x -> x.flex <- "1")
                                         Props =
                                             fun x ->
                                                 x.autoFocus <- true

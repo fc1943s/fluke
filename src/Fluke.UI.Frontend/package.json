@@ -53,7 +53,7 @@
     "rooks": "~5.7",
     "binconv": "~0.2",
     "@shelf/fast-chunk-string": "~1.1",
-    "date-fns": "~2.24",
+    "date-fns": "~2.25",
     "jssha": "~3.2",
 
     "@pmmmwh/react-refresh-webpack-plugin": "~0.4",
@@ -75,14 +75,14 @@
     "@emotion/react": "~11.4",
     "@emotion/styled": "~11.3",
     "framer-motion": "~4.1",
-    "react-icons": "~4.2",
+    "react-icons": "~4.3",
 
     "react-checkbox-tree": "~1.7",
     "react-beautiful-dnd": "~13.1",
     "re-resizable": "~6.9",
     "react-color": "3.0.0-beta.3",
     "react-markdown": "~7.0",
-    "remark-gfm": "~2.0",
+    "remark-gfm": "~3.0",
 
     "electron-is-dev": "~2.0",
     "electron-window-state": "~5.0",
@@ -106,8 +106,8 @@
     "fable-loader": "~2.1",
     "fable-compiler": "~2.13",
 
-    "@typescript-eslint/eslint-plugin": "~4.32",
-    "@typescript-eslint/parser": "~4.32",
+    "@typescript-eslint/eslint-plugin": "~4.33",
+    "@typescript-eslint/parser": "~4.33",
     "eslint": "~7.32",
     "eslint-plugin-react": "~7.26",
     "eslint-plugin-import": "~2.24",
@@ -152,7 +152,7 @@
 
     "react-refresh": "~0.10",
 
-    "concurrently": "~6.2",
+    "concurrently": "~6.3",
 
     "cordova": "~10.0",
     "cordova-android": "~10.1",

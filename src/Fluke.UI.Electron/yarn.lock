@@ -859,10 +859,10 @@ electron-publish@22.14.0:
     lazy-val "^1.0.5"
     mime "^2.5.2"
 
-electron@16.0.0-alpha.2:
-  version "16.0.0-alpha.2"
-  resolved "https://registry.yarnpkg.com/electron/-/electron-16.0.0-alpha.2.tgz#c8b8cdd64b7747ed93dc90f69fafb0a3b5593314"
-  integrity sha512-GISAzIW+v9Kr+j6zssv1CLRgklyxfdxZiXzgMD5oGSZLK456eKjpUQyjgYW1qcMzJgiA/yrEdl5fWTFj+h/Low==
+electron@16.0.0-alpha.5:
+  version "16.0.0-alpha.5"
+  resolved "https://registry.yarnpkg.com/electron/-/electron-16.0.0-alpha.5.tgz#73e6911a841347d0a86dd2b464f38fc0a9e75c9b"
+  integrity sha512-rCB3oVqfJwsAC/Bb8LyYs/FM2WMYK0eHxogCZWXiuHhU6oiz5BRckOvkcoYuDzOyVwynqIelofwozYvVRYfBdw==
   dependencies:
     "@electron/get" "^1.13.0"
     "@types/node" "^14.6.2"

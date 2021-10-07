@@ -110,8 +110,7 @@ module AreaSelector =
                                             x.alignItems <- "stretch"
                                             x.marginBottom <- "6px"
                                             x.maxHeight <- "217px"
-                                            x.overflowY <- "auto"
-                                            x.flexBasis <- 0)
+                                            x.overflowY <- "auto")
                                         [
                                             yield!
                                                 sortedAreaList

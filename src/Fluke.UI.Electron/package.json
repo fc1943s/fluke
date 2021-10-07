@@ -20,7 +20,7 @@
     "https-localhost": "~4.7"
   },
   "devDependencies": {
-    "electron": "16.0.0-alpha.2",
+    "electron": "16.0.0-alpha.5",
     "electron-builder": "~22.14"
   },
   "build": {

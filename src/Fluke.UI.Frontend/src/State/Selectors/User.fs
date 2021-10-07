@@ -214,13 +214,13 @@ module User =
                                                 background = "gray.45"
                                                 opacity = 0.8
                                                 backgroundClip = "content-box"
-                                                borderLeft = "3px solid transparent"
+                                                borderLeft = "2px solid transparent"
                                             |}
                                         ``*::-webkit-scrollbar-thumb:hover`` =
                                             {|
                                                 background = "gray.77"
                                                 backgroundClip = "content-box"
-                                                borderLeft = "3px solid transparent"
+                                                borderLeft = "2px solid transparent"
                                             |}
                                         ``#root`` = {| display = "flex" |}
                                         ``[data-popper-placement][style*="visibility: visible"]`` = {| zIndex = 3 |}

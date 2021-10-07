@@ -159,9 +159,7 @@ module LeftDock =
                     (fun x ->
                         x.width <- "24px"
                         x.position <- "relative"
-                        x.margin <- "1px"
-                        x.overflowX <- "hidden"
-                        x.overflowY <- "auto")
+                        x.margin <- "1px")
                     [
                         Ui.stack
                             (fun x ->
