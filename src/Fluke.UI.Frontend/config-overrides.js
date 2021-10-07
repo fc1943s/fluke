@@ -34,7 +34,7 @@ module.exports = (config, env) => Object.assign(
     ]),
     addWebpackPlugin(
       new webpack.ContextReplacementPlugin(
-        /gun/,
+        /(gun|power-assert-formatter)/,
         (data) => {
           delete data.dependencies[0].critical;
           return data;

@@ -34,6 +34,7 @@
     "cypress-watch": "concurrently \"npm:watch\" \"npm:cypress\"",
     "cypress-run": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 cypress run --headed",
 
+    "outdated-pre": "npx npm-check-updates --pre 1",
     "frontend-serve": "cross-env PORT=33922 NODE_ENV=production serve cra_output",
     "test-watch": "yarn test --watchAll",
     "test-build-watch": "concurrently \"npm:watch:frontend-build\" \"npm:test-watch\"",
@@ -56,7 +57,7 @@
     "date-fns": "~2.25",
     "jssha": "~3.2",
 
-    "@pmmmwh/react-refresh-webpack-plugin": "~0.4",
+    "@pmmmwh/react-refresh-webpack-plugin": "~0.5.1",
 
     "gun": "0.2020.1235",
     "@peculiar/asn1-schema": "~2.0",
@@ -66,7 +67,7 @@
     "react": "18.0.0-alpha-7d38e4fd8-20210930",
     "react-dom": "18.0.0-alpha-7d38e4fd8-20210930",
 
-    "jotai": "~1.3.6",
+    "jotai": "1.3.8",
 
     "@chakra-ui/react": "~1.6",
     "@chakra-ui/system": "~1.7",
@@ -83,6 +84,8 @@
     "react-color": "3.0.0-beta.3",
     "react-markdown": "~7.0",
     "remark-gfm": "~3.0",
+    "util": "~0.12",
+    "assert": "~2.0",
 
     "electron-is-dev": "~2.0",
     "electron-window-state": "~5.0",
@@ -142,7 +145,7 @@
     "postinstall-postinstall": "~2.1",
 
     "cross-env": "~7.0",
-    "react-scripts": "~4.0",
+    "react-scripts": "5.0.0-next.47",
     "react-app-rewired": "~2.1",
     "customize-cra": "~1.0",
     "customize-cra-react-refresh": "~1.1",
