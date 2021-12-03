@@ -303,15 +303,7 @@ module Database =
                         }
 
                     if databaseState.TaskStateMap
-                       |> Map.exists
-                           (fun _ taskState ->
-                               taskState.Task.Name
-                               |> TaskName.Value
-                               |> String.IsNullOrWhiteSpace
-                               || taskState.Task.Information
-                                  |> Information.Name
-                                  |> InformationName.Value
-                                  |> String.IsNullOrWhiteSpace) then
+                       |> Map.exists (fun _ taskState -> taskState.Task |> Task.Loaded |> not) then
                         Error "Database is not fully synced"
                     else
                         Ok databaseState)

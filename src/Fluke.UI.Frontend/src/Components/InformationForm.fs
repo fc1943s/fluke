@@ -10,7 +10,6 @@ open FsStore.Hooks
 open FsUi.Bindings
 open FsCore
 open Fluke.UI.Frontend.State
-open System
 open Fluke.Shared.Domain
 open Fluke.Shared
 open Fluke.UI.Frontend.State.State
@@ -115,14 +114,7 @@ module InformationForm =
                             ])
 
                         match information with
-                        | Some information when
-                            isReadWrite
-                            && information
-                               |> Information.Name
-                               |> InformationName.Value
-                               |> String.IsNullOrWhiteSpace
-                               |> not
-                            ->
+                        | Some information when isReadWrite && information |> Information.Loaded ->
                             str "Attachments",
                             (Ui.stack
                                 (fun x ->

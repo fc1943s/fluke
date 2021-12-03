@@ -4,23 +4,22 @@ storage: none
 source https://api.nuget.org/v3/index.json
 source https://nuget.pkg.github.com/fc1943s/index.json username: "%GITHUB_ACTOR%" password: "%GITHUB_READ_PACKAGES_TOKEN%"
 
-nuget FSharp.Core ~> 5.0
+nuget FSharp.Core >= 6.0 prerelease
 
 // group Fluke.Shared
-nuget Myriad.Core ~> 0.5
-nuget Myriad.Plugins ~> 0.5
-nuget Myriad.Sdk ~> 0.5
+nuget Myriad.Core ~> 0.7
+nuget Myriad.Plugins ~> 0.7
+nuget Myriad.Sdk ~> 0.7
 
 // Fluke.UI.Frontend
 nuget FsUi ~> 0.0 prerelease
 
 // Fluke.UI.Electron.Main
 nuget Fable.Electron ~> 6.0
-nuget Fable.Promise ~> 2.2
 
 // Testing
 nuget altcover ~> 8.2
-nuget Microsoft.NET.Test.Sdk ~> 16.11 prerelease
+nuget Microsoft.NET.Test.Sdk ~> 17.1 prerelease
 nuget YoloDev.Expecto.TestSdk ~> 0.12
 
 // Build

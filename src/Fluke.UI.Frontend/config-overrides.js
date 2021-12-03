@@ -8,6 +8,7 @@ const {
   removeModuleScopePlugin,
   useBabelRc,
   getBabelLoader,
+  addWebpackModuleRule,
   addWebpackPlugin
 } = require('customize-cra');
 
@@ -32,6 +33,13 @@ module.exports = (config, env) => Object.assign(
       path.resolve('./src'),
       fs.realpathSync('./public'),
     ]),
+    addWebpackModuleRule(
+      {
+        type: 'javascript/auto',
+        test: /\.mjs$/,
+        include: /node_modules/,
+      },
+    ),
     addWebpackPlugin(
       new webpack.ContextReplacementPlugin(
         /(gun|power-assert-formatter)/,

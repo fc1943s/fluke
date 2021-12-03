@@ -161,13 +161,7 @@ module Session =
                 informationArray
                 |> Array.append projectAreas
                 |> Array.append informationAttachmentIdMapArray
-                |> Array.filter
-                    (fun information ->
-                        information
-                        |> Information.Name
-                        |> InformationName.Value
-                        |> String.IsNullOrWhiteSpace
-                        |> not)
+                |> Array.filter Information.Loaded
                 |> Set.ofSeq)
 
 
@@ -224,6 +218,7 @@ module Session =
 
                 let filteredTaskIdArray =
                     selectedTaskStateArray
+                    |> Array.filter (fun taskState -> taskState.Task |> Task.Loaded)
                     |> Array.filter
                         (fun taskState ->
                             let text =
@@ -348,7 +343,7 @@ module Session =
                     |> List.map (fun (taskState, _) -> taskState.Task.Id)
                     |> List.toArray
                 | _ -> [||])
-        |> Engine.wrapAtomWithInterval [||] Selectors.interval2
+    //        |> Engine.wrapAtomWithInterval [||] Selectors.interval2
 
     let rec sortedTaskIdAtoms =
         readSelector (nameof sortedTaskIdAtoms) None (fun getter -> sortedTaskIdArray |> Atom.split |> Atom.get getter)

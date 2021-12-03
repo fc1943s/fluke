@@ -23,13 +23,13 @@ module Model =
         | Area of area: Area
         | Resource of resource: Resource
 
-    and Area = { Name: AreaName }
-
-    and AreaName = AreaName of name: string
-
     and Project = { Name: ProjectName; Area: Area }
 
     and ProjectName = ProjectName of name: string
+
+    and Area = { Name: AreaName }
+
+    and AreaName = AreaName of name: string
 
     and Resource = { Name: ResourceName }
 
@@ -122,6 +122,13 @@ module Model =
             | Area { Name = name } -> InformationName.Area name
             | Resource { Name = name } -> InformationName.Resource name
 
+        static member inline Loaded information =
+            information
+            |> Information.Name
+            |> InformationName.Value
+            |> String.IsNullOrWhiteSpace
+            |> not
+
     and Scheduling with
         static member inline Label scheduling =
             match scheduling with
@@ -198,6 +205,13 @@ module Model =
                 Priority = None
                 Duration = None
             }
+
+        static member inline Loaded task =
+            task.Name
+            |> TaskName.Value
+            |> String.IsNullOrWhiteSpace
+            |> not
+            && task.Information |> Information.Loaded
 
     and FlukeTime with
         static member inline Create hour minute =

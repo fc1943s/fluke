@@ -24,13 +24,7 @@ module InformationSelector =
 
     let isVisibleInformation informationString information =
         match information with
-        | Some information when
-            information
-            |> Information.Name
-            |> InformationName.Value
-            |> String.IsNullOrWhiteSpace
-            ->
-            false
+        | Some information when information |> Information.Loaded |> not -> false
         | Some information when
             information |> Information.isProject
             && informationString = nameof Project
