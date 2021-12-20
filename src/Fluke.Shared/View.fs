@@ -17,7 +17,7 @@ module View =
         | Priority
         | BulletJournal
 
-    let getDateRange dateSequence =
+    let inline getDateRange dateSequence =
         let dateRangeStart =
             dateSequence
             |> List.tryHead

@@ -94,44 +94,20 @@ module Database =
             (nameof taskIdAtoms)
             (Some [||])
             (fun (databaseId: DatabaseId) getter ->
-                Selectors.asyncTaskIdAtoms
-                |> Atom.get getter
-                |> Array.filter
-                    (fun taskIdAtom ->
-                        let taskId = Atom.get getter taskIdAtom
-                        let databaseId' = Atom.get getter (Atoms.Task.databaseId taskId)
-                        databaseId = databaseId'))
+                let taskIdAtoms = Atom.get getter Selectors.asyncTaskIdAtoms
+                let taskIdArray = taskIdAtoms |> Atom.waitForAll |> Atom.get getter
 
+                let databaseIdArray =
+                    taskIdArray
+                    |> Array.map Atoms.Task.databaseId
+                    |> Atom.waitForAll
+                    |> Atom.get getter
 
-    let rec unarchivedTaskIdAtoms =
-        readSelectorFamily
-            (nameof unarchivedTaskIdAtoms)
-            None
-            (fun (databaseId: DatabaseId) getter ->
-                let taskIdAtoms = Atom.get getter (taskIdAtoms databaseId)
-
-                taskIdAtoms
-                |> Array.filter
-                    (fun taskIdAtom ->
-                        let taskId = Atom.get getter taskIdAtom
-                        let archived = Atom.get getter (Atoms.Task.archived taskId)
-                        archived = Some false))
-
-
-    let rec archivedTaskIdAtoms =
-        readSelectorFamily
-            (nameof archivedTaskIdAtoms)
-            None
-            (fun (databaseId: DatabaseId) getter ->
-                let taskIdAtoms = Atom.get getter (taskIdAtoms databaseId)
-
-                taskIdAtoms
-                |> Array.filter
-                    (fun taskIdAtom ->
-                        let taskId = Atom.get getter taskIdAtom
-                        let archived = Atom.get getter (Atoms.Task.archived taskId)
-                        archived = Some true))
-
+                [|
+                    0 .. taskIdArray.Length - 1
+                |]
+                |> Array.filter (fun i -> databaseId = databaseIdArray.[i])
+                |> Array.map (fun i -> taskIdAtoms.[i]))
 
     let rec taskIdAtomsByArchive =
         readSelectorFamily
@@ -139,30 +115,51 @@ module Database =
             None
             (fun (databaseId: DatabaseId) getter ->
                 let archive = Atom.get getter Atoms.User.archive
+                let taskIdAtoms = Atom.get getter (taskIdAtoms databaseId)
+                let taskIdArray = taskIdAtoms |> Atom.waitForAll |> Atom.get getter
 
-                databaseId
-                |> (if archive = Some true then
-                        archivedTaskIdAtoms
-                    else
-                        unarchivedTaskIdAtoms)
-                |> Atom.get getter)
+                let archivedArray =
+                    taskIdArray
+                    |> Array.map Atoms.Task.archived
+                    |> Atom.waitForAll
+                    |> Atom.get getter
+
+                [|
+                    0 .. taskIdArray.Length - 1
+                |]
+                |> Array.filter
+                    (fun i ->
+                        match archive, archivedArray.[i] with
+                        | Some archive, Some archived -> archive = archived
+                        | None, Some archived -> archived = false
+                        | _ -> false)
+                |> Array.map (fun i -> taskIdAtoms.[i]))
 
     let rec informationAttachmentIdMap =
         readSelectorFamily
             (nameof informationAttachmentIdMap)
             (Some Map.empty)
             (fun (databaseId: DatabaseId) getter ->
-                Selectors.asyncAttachmentIdAtoms
-                |> Atom.get getter
-                |> Array.choose
-                    (fun attachmentIdAtom ->
-                        let attachmentId = Atom.get getter attachmentIdAtom
-                        let parent = Atom.get getter (Atoms.Attachment.parent attachmentId)
+                let attachmentIdArray =
+                    Selectors.asyncAttachmentIdAtoms
+                    |> Atom.get getter
+                    |> Atom.waitForAll
+                    |> Atom.get getter
 
-                        match parent with
+                let attachmentIdParentArray =
+                    attachmentIdArray
+                    |> Array.map Atoms.Attachment.parent
+                    |> Atom.waitForAll
+                    |> Atom.get getter
+
+                attachmentIdArray
+                |> Array.mapi
+                    (fun i attachmentId ->
+                        match attachmentIdParentArray.[i] with
                         | Some (AttachmentParent.Information (databaseId', information)) when databaseId' = databaseId ->
                             Some (information, attachmentId)
                         | _ -> None)
+                |> Array.choose id
                 |> Array.groupBy fst
                 |> Array.map (fun (information, items) -> information, items |> Array.map snd |> Set.ofArray)
                 |> Map.ofSeq)
@@ -208,7 +205,7 @@ module Database =
 
                 let taskIdAtoms = Atom.get getter (taskIdAtoms databaseId)
 
-                let taskStateList: TaskState list =
+                let taskStateList =
                     taskIdAtoms
                     |> Array.toList
                     |> List.map (Atom.get getter)
@@ -217,18 +214,29 @@ module Database =
 
                 let informationAttachmentIdMap = Atom.get getter (informationAttachmentIdMap databaseId)
 
+                let attachmentIdArray =
+                    informationAttachmentIdMap
+                    |> Map.values
+                    |> Seq.collect id
+                    |> Seq.toArray
+
+                let attachmentStateMap =
+                    attachmentIdArray
+                    |> Array.map Attachment.attachmentState
+                    |> Atom.waitForAll
+                    |> Atom.get getter
+                    |> Array.choose id
+                    |> Array.mapi (fun i attachmentState -> attachmentIdArray.[i], attachmentState)
+                    |> Map.ofArray
+
                 let informationStateMap =
                     informationAttachmentIdMap
                     |> Map.map
                         (fun information attachmentIdSet ->
                             let attachmentStateList =
                                 attachmentIdSet
-                                |> Set.toArray
-                                |> Array.map Attachment.attachmentState
-                                |> Atom.waitForAll
-                                |> Atom.get getter
-                                |> Array.toList
-                                |> List.choose id
+                                |> Set.toList
+                                |> List.choose attachmentStateMap.TryFind
 
                             {
                                 Information = information

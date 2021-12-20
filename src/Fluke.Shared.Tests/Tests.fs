@@ -230,7 +230,6 @@ module Tests =
             |> Rendering.getDateSequence padding
 
         let expect dateSequence =
-
             let lanes =
                 databaseState.TaskStateMap
                 |> Map.toList

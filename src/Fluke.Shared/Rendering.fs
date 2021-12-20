@@ -9,7 +9,6 @@ open Fluke.Shared.Domain.State
 
 module Rendering =
     let getDateSequence (paddingLeft, paddingRight) (cellDates: FlukeDate list) =
-
         let rec dateLoop (date: DateTime) (maxDate: DateTime) =
             seq {
                 if date <= maxDate then

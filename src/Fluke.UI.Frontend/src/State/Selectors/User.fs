@@ -14,16 +14,25 @@ module User =
         Atom.readSelector
             (StoreAtomPath.ValueAtomPath (Fluke.root, Atoms.User.collection, [], AtomName (nameof userState)))
             (fun getter ->
+                let accordionTypeArray =
+                    Reflection.unionCases<AccordionType>
+                    |> List.toArray
+
+                let uiFlagTypeArray = Reflection.unionCases<UIFlagType> |> List.toArray
+
                 {
                     Archive = Atom.get getter Atoms.User.archive
                     AccordionHiddenFlagMap =
-                        Reflection.unionCases<AccordionType>
-                        |> List.map
-                            (fun accordionType ->
-                                accordionType,
-                                Atom.get getter (Atoms.User.accordionHiddenFlag accordionType)
-                                |> List.toArray)
-                        |> Map.ofList
+                        let accordionHiddenFlagArray =
+                            accordionTypeArray
+                            |> Array.map Atoms.User.accordionHiddenFlag
+                            |> Atom.waitForAll
+                            |> Atom.get getter
+                            |> Array.map List.toArray
+
+                        accordionTypeArray
+                        |> Array.mapi (fun i accordionType -> accordionType, accordionHiddenFlagArray.[i])
+                        |> Map.ofArray
                     CellColorDisabled = Atom.get getter Atoms.User.cellColorDisabled
                     CellColorSuggested = Atom.get getter Atoms.User.cellColorSuggested
                     CellColorPending = Atom.get getter Atoms.User.cellColorPending
@@ -68,14 +77,25 @@ module User =
                     SessionBreakDuration = Atom.get getter Atoms.User.sessionBreakDuration
                     SessionDuration = Atom.get getter Atoms.User.sessionDuration
                     UIFlagMap =
-                        Reflection.unionCases<UIFlagType>
-                        |> List.map (fun uiFlagType -> uiFlagType, Atom.get getter (Atoms.User.uiFlag uiFlagType))
-                        |> Map.ofList
+                        let uiFlagArray =
+                            uiFlagTypeArray
+                            |> Array.map Atoms.User.uiFlag
+                            |> Atom.waitForAll
+                            |> Atom.get getter
+
+                        uiFlagTypeArray
+                        |> Array.mapi (fun i uiFlagType -> uiFlagType, uiFlagArray.[i])
+                        |> Map.ofArray
                     UIVisibleFlagMap =
-                        Reflection.unionCases<UIFlagType>
-                        |> List.map
-                            (fun uiFlagType -> uiFlagType, Atom.get getter (Atoms.User.uiVisibleFlag uiFlagType))
-                        |> Map.ofList
+                        let uiVisibleFlagArray =
+                            uiFlagTypeArray
+                            |> Array.map Atoms.User.uiVisibleFlag
+                            |> Atom.waitForAll
+                            |> Atom.get getter
+
+                        uiFlagTypeArray
+                        |> Array.mapi (fun i uiFlagType -> uiFlagType, uiVisibleFlagArray.[i])
+                        |> Map.ofArray
                     UserColor = Atom.get getter Atoms.User.userColor
                     View = Atom.get getter Atoms.User.view
                     WeekStart = Atom.get getter Atoms.User.weekStart

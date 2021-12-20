@@ -35,7 +35,7 @@
     "cypress-watch": "concurrently \"npm:watch\" \"npm:cypress\"",
     "cypress-run": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 cypress run --headed",
 
-    "outdated-pre": "npx npm-check-updates --pre 1",
+    "outdated-pre": "npm-check-updates --pre 1",
     "frontend-serve": "cross-env PORT=33922 NODE_ENV=production serve cra_output",
     "test-watch": "yarn test --watchAll",
     "test-build-watch": "concurrently \"npm:watch:frontend-build\" \"npm:test-watch\"",
@@ -65,10 +65,10 @@
 
     "@microsoft/signalr": "~6.0.0",
 
-    "react": "18.0.0-beta-a65ceef37-20211130",
-    "react-dom": "18.0.0-beta-a65ceef37-20211130",
+    "react": "18.0.0-rc.0-next-f2a59df48-20211208",
+    "react-dom": "18.0.0-rc.0-next-f2a59df48-20211208",
 
-    "jotai": "~1.4",
+    "jotai": "1.4.6",
 
     "@chakra-ui/react": "~1.7",
     "@chakra-ui/system": "~1.8",
@@ -76,7 +76,7 @@
     "@chakra-ui/media-query": "~1.2",
     "@emotion/react": "~11.7",
     "@emotion/styled": "~11.6",
-    "framer-motion": "~5.3",
+    "framer-motion": "~5.4",
     "react-icons": "~4.3",
 
     "react-checkbox-tree": "~1.7",
@@ -96,6 +96,8 @@
   "devDependencies": {
     "https-localhost": "~4.7",
 
+    "npm-check-updates": "~12.0.4-0",
+
     "http-proxy-middleware": "~2.0",
 
     "@types/react": "~17.0",
@@ -112,9 +114,9 @@
     "fable-loader": "~2.1",
     "fable-compiler": "~2.13",
 
-    "@typescript-eslint/eslint-plugin": "~5.5",
-    "@typescript-eslint/parser": "~5.5",
-    "eslint": "~8.3",
+    "@typescript-eslint/eslint-plugin": "~5.6",
+    "@typescript-eslint/parser": "~5.6",
+    "eslint": "~8.4",
     "eslint-plugin-react": "~7.27",
     "eslint-plugin-import": "~2.25",
     "eslint-plugin-jsx-a11y": "~6.5",
@@ -125,11 +127,11 @@
 
     "jest": "~27.4",
     "jest-environment-jsdom": "~27.4",
-    "ts-jest": "~27.0",
+    "ts-jest": "~27.1",
     "jest-css-modules": "~2.1",
     "@testing-library/react": "~12.1",
     "@testing-library/user-event": "~13.5",
-    "@testing-library/jest-dom": "~5.15",
+    "@testing-library/jest-dom": "~5.16",
 
     "@babel/core": "~7.16",
     "@babel/preset-env": "~7.16",
