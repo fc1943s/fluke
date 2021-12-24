@@ -60,14 +60,26 @@ module Task =
             (nameof taskAttachmentArray)
             (Some [||])
             (fun (taskId: TaskId) getter ->
-                Selectors.asyncAttachmentIdAtoms
-                |> Atom.get getter
-                |> Array.choose
-                    (fun attachmentIdAtom ->
-                        let attachmentId = Atom.get getter attachmentIdAtom
-                        let parent = Atom.get getter (Atoms.Attachment.parent attachmentId)
+                let attachmentIdAtoms =
+                    Selectors.asyncAttachmentIdAtoms
+                    |> Atom.get getter
 
-                        match parent with
+                let attachmentIdArray =
+                    attachmentIdAtoms
+                    |> Atom.waitForAll
+                    |> Atom.get getter
+
+                let parentArray =
+                    attachmentIdArray
+                    |> Array.map Atoms.Attachment.parent
+                    |> Atom.waitForAll
+                    |> Atom.get getter
+
+                attachmentIdArray
+                |> Array.indexed
+                |> Array.choose
+                    (fun (i, attachmentId) ->
+                        match parentArray.[i] with
                         | Some (AttachmentParent.Cell (taskId', date)) when taskId' = taskId ->
                             Some (attachmentId, TaskAttachment.Cell (taskId, date))
                         | Some (AttachmentParent.Task taskId') when taskId' = taskId ->
@@ -125,6 +137,21 @@ module Task =
                     |> Map.ofList
                     |> Map.mapValues (List.map snd)
 
+                let attachmentIdArray =
+                    cellAttachmentIdMap
+                    |> Map.values
+                    |> Seq.collect id
+                    |> Seq.toArray
+
+                let attachmentStateMap =
+                    attachmentIdArray
+                    |> Array.map Attachment.attachmentState
+                    |> Atom.waitForAll
+                    |> Atom.get getter
+                    |> Array.choose id
+                    |> Array.mapi (fun i attachmentState -> attachmentIdArray.[i], attachmentState)
+                    |> Map.ofArray
+
                 let cellStateAttachmentMap =
                     cellAttachmentIdMap
                     |> Map.mapValues
@@ -132,15 +159,12 @@ module Task =
                             let attachmentStateList =
                                 attachmentIdSet
                                 |> Set.toArray
-                                |> Array.map Attachment.attachmentState
-                                |> Atom.waitForAll
-                                |> Atom.get getter
-                                |> Array.toList
-                                |> List.choose id
-                                |> List.sortByDescending
+                                |> Array.choose attachmentStateMap.TryFind
+                                |> Array.sortByDescending
                                     (fun attachmentState ->
                                         attachmentState.Timestamp
                                         |> FlukeDateTime.DateTime)
+                                |> Array.toList
 
                             {
                                 Status = Disabled
